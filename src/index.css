@@ -1,0 +1,229 @@
+@import './styles/app.css';
+
+:root {
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Arial Narrow", "Roboto Condensed", Impact, ui-sans-serif, system-ui, sans-serif;
+
+  /* Spartans light: pale stone, ivory, slate, petrol, muted green, bronze. */
+  --color-bg: #f0e6d6;
+  --color-app-surface: #f4ebdd;
+  --color-surface: #eae2d5;
+  --color-surface-raised: #f8efe2;
+  --color-surface-subtle: #ddd9ce;
+  --color-border: #979b92;
+  --color-border-strong: #6f7771;
+  --color-text: #2e3230;
+  --color-text-muted: #656b67;
+  --color-primary: #1f8582;
+  --color-primary-strong: #176864;
+  --color-primary-text: #176864;
+  --color-primary-muted: #d1ded9;
+  --color-secondary: #7b8d6a;
+  --color-warm-accent: #b67e26;
+  --color-metal: #7e8680;
+  --color-xp: #bd862c;
+  --color-success: #53794f;
+  --color-warning: #a96626;
+  --color-danger: #a74343;
+  --color-focus: #176864;
+  --color-rpg-accent: #b67e26;
+  --color-rpg-border: #927345;
+  --color-on-primary: #ffffff;
+  --color-on-xp: #261a0a;
+  --color-overlay: rgba(18, 20, 19, .76);
+  --color-shadow: rgba(47, 51, 48, .16);
+  --color-faction-spartans: #1f8582;
+  --color-faction-amazonians: #785178;
+
+  /* Settings previews intentionally show both brightness variants. */
+  --swatch-spartans-dark: #1d2322;
+  --swatch-spartans-light: #f4ebdd;
+  --swatch-spartans-accent: #268f8b;
+  --swatch-spartans-metal: #7e8984;
+  --swatch-spartans-xp: #c79232;
+  --swatch-amazonians-dark: #30222e;
+  --swatch-amazonians-light: #f4e9db;
+  --swatch-amazonians-accent: #865a86;
+  --swatch-amazonians-warm: #b76c42;
+  --swatch-amazonians-xp: #d09a38;
+
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Amazonians light: warm ivory, cream, mauve-grey, plum, wine, copper. */
+:root[data-theme-family='amazonians'] {
+  --color-bg: #f0e4d4;
+  --color-app-surface: #f4e9db;
+  --color-surface: #ebe1d8;
+  --color-surface-raised: #f7ede0;
+  --color-surface-subtle: #ddd0d1;
+  --color-border: #9f898e;
+  --color-border-strong: #806c73;
+  --color-text: #352b31;
+  --color-text-muted: #746a6e;
+  --color-primary: #785178;
+  --color-primary-strong: #654061;
+  --color-primary-text: #654061;
+  --color-primary-muted: #e2d3dc;
+  --color-secondary: #98485f;
+  --color-warm-accent: #b96f49;
+  --color-metal: #85777d;
+  --color-xp: #c99032;
+  --color-success: #647b58;
+  --color-warning: #ad672d;
+  --color-danger: #a44449;
+  --color-focus: #654061;
+  --color-rpg-accent: #b96f49;
+  --color-rpg-border: #99715c;
+  --color-on-primary: #ffffff;
+  --color-on-xp: #281a09;
+  --color-overlay: rgba(31, 22, 27, .77);
+  --color-shadow: rgba(62, 45, 54, .16);
+}
+
+/* Spartans dark: black iron and graphite dominate; teal and bronze stay accents. */
+:root[data-theme-family='spartans'][data-brightness='dark'] {
+  --color-bg: #121616;
+  --color-app-surface: #181d1d;
+  --color-surface: #1f2524;
+  --color-surface-raised: #282f2e;
+  --color-surface-subtle: #303635;
+  --color-border: #606a66;
+  --color-border-strong: #7e8984;
+  --color-text: #e8e8e2;
+  --color-text-muted: #a7aeaa;
+  --color-primary: #2e9895;
+  --color-primary-strong: #14706f;
+  --color-primary-text: #58b4af;
+  --color-primary-muted: #213331;
+  --color-secondary: #6e8561;
+  --color-warm-accent: #b77f2f;
+  --color-metal: #737d79;
+  --color-xp: #cb9435;
+  --color-success: #6f9565;
+  --color-warning: #c28a47;
+  --color-danger: #d66a66;
+  --color-focus: #45aaa6;
+  --color-rpg-accent: #b77f2f;
+  --color-rpg-border: #8c6c3b;
+  --color-on-primary: #101716;
+  --color-on-xp: #21170a;
+  --color-overlay: rgba(5, 8, 8, .82);
+  --color-shadow: rgba(0, 0, 0, .24);
+}
+
+/* Amazonians dark: charcoal/aubergine dominates; plum, wine and copper are details. */
+:root[data-theme-family='amazonians'][data-brightness='dark'] {
+  --color-bg: #1f171e;
+  --color-app-surface: #281c27;
+  --color-surface: #31232f;
+  --color-surface-raised: #3a2937;
+  --color-surface-subtle: #44323f;
+  --color-border: #79616f;
+  --color-border-strong: #967887;
+  --color-text: #eee5df;
+  --color-text-muted: #b2a3aa;
+  --color-primary: #906390;
+  --color-primary-strong: #71446f;
+  --color-primary-text: #bd91b7;
+  --color-primary-muted: #493246;
+  --color-secondary: #9a4964;
+  --color-warm-accent: #bc7247;
+  --color-metal: #85777e;
+  --color-xp: #d0a03f;
+  --color-success: #7d936d;
+  --color-warning: #c58d4f;
+  --color-danger: #d86f74;
+  --color-focus: #aa7caa;
+  --color-rpg-accent: #bc7247;
+  --color-rpg-border: #92604c;
+  --color-on-primary: #21151f;
+  --color-on-xp: #271a09;
+  --color-overlay: rgba(12, 7, 11, .82);
+  --color-shadow: rgba(0, 0, 0, .25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme-family='spartans'][data-brightness='system'] {
+    --color-bg: #121616;
+    --color-app-surface: #181d1d;
+    --color-surface: #1f2524;
+    --color-surface-raised: #282f2e;
+    --color-surface-subtle: #303635;
+    --color-border: #606a66;
+    --color-border-strong: #7e8984;
+    --color-text: #e8e8e2;
+    --color-text-muted: #a7aeaa;
+    --color-primary: #2e9895;
+    --color-primary-strong: #14706f;
+    --color-primary-text: #58b4af;
+    --color-primary-muted: #213331;
+    --color-secondary: #6e8561;
+    --color-warm-accent: #b77f2f;
+    --color-metal: #737d79;
+    --color-xp: #cb9435;
+    --color-success: #6f9565;
+    --color-warning: #c28a47;
+    --color-danger: #d66a66;
+    --color-focus: #45aaa6;
+    --color-rpg-accent: #b77f2f;
+    --color-rpg-border: #8c6c3b;
+    --color-on-primary: #101716;
+    --color-on-xp: #21170a;
+    --color-overlay: rgba(5, 8, 8, .82);
+    --color-shadow: rgba(0, 0, 0, .24);
+  }
+
+  :root[data-theme-family='amazonians'][data-brightness='system'] {
+    --color-bg: #1f171e;
+    --color-app-surface: #281c27;
+    --color-surface: #31232f;
+    --color-surface-raised: #3a2937;
+    --color-surface-subtle: #44323f;
+    --color-border: #79616f;
+    --color-border-strong: #967887;
+    --color-text: #eee5df;
+    --color-text-muted: #b2a3aa;
+    --color-primary: #906390;
+    --color-primary-strong: #71446f;
+    --color-primary-text: #bd91b7;
+    --color-primary-muted: #493246;
+    --color-secondary: #9a4964;
+    --color-warm-accent: #bc7247;
+    --color-metal: #85777e;
+    --color-xp: #d0a03f;
+    --color-success: #7d936d;
+    --color-warning: #c58d4f;
+    --color-danger: #d86f74;
+    --color-focus: #aa7caa;
+    --color-rpg-accent: #bc7247;
+    --color-rpg-border: #92604c;
+    --color-on-primary: #21151f;
+    --color-on-xp: #271a09;
+    --color-overlay: rgba(12, 7, 11, .82);
+    --color-shadow: rgba(0, 0, 0, .25);
+  }
+}
+
+* { box-sizing: border-box; }
+html { min-width: 320px; background: var(--color-bg); }
+body { margin: 0; min-width: 320px; min-height: 100svh; background: var(--color-bg); }
+button, input { font: inherit; }
+button { color: inherit; }
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+h1, h2, p { margin-top: 0; }
+h1, h2 { color: var(--color-text); }
+h1 { margin-bottom: .55rem; font-family: var(--font-display); font-size: clamp(2.1rem, 10vw, 4rem); line-height: .98; letter-spacing: .015em; text-transform: uppercase; }
+h2 { margin-bottom: .5rem; font-size: 1.05rem; line-height: 1.25; }
+p { color: var(--color-text-muted); line-height: 1.6; }
+
+@media (prefers-reduced-motion: no-preference) {
+  * { scroll-behavior: smooth; }
+  button { transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
+}
