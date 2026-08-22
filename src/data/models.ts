@@ -15,11 +15,114 @@ export interface SettingsRecord extends EntityRecord {
   units?: 'metric' | 'imperial'
 }
 
+export type ExerciseCategory = 'Chest' | 'Back' | 'Shoulders' | 'Arms' | 'Legs' | 'Core' | 'Full Body' | 'Cardio' | 'Mobility'
+
+export type ExerciseTrackingType =
+  | 'weight_reps'
+  | 'bodyweight_reps'
+  | 'assisted_bodyweight'
+  | 'reps_only'
+  | 'duration'
+  | 'distance_duration'
+  | 'duration_optional_distance'
+  | 'weight_distance'
+  | 'duration_reps'
+
+export type ExerciseEquipment =
+  | 'Barbell'
+  | 'Dumbbell'
+  | 'EZ Bar'
+  | 'Cable'
+  | 'Machine'
+  | 'Smith Machine'
+  | 'Bodyweight'
+  | 'Pull-Up Bar'
+  | 'Bench'
+  | 'Resistance Band'
+  | 'Kettlebell'
+  | 'Medicine Ball'
+  | 'Suspension Trainer'
+  | 'Weight Plate'
+  | 'Landmine'
+  | 'Sled'
+  | 'Battle Rope'
+  | 'Cardio Machine'
+  | 'Other'
+  | 'Back Extension Bench'
+  | 'Trap Bar'
+  | 'Rings'
+  | 'Sandbag'
+  | 'GHD'
+
+export type MovementPattern =
+  | 'Horizontal Push'
+  | 'Vertical Push'
+  | 'Horizontal Pull'
+  | 'Vertical Pull'
+  | 'Squat'
+  | 'Hinge'
+  | 'Lunge'
+  | 'Carry'
+  | 'Rotation'
+  | 'Anti-Rotation'
+  | 'Flexion'
+  | 'Extension'
+  | 'Abduction'
+  | 'Adduction'
+  | 'Locomotion'
+  | 'Conditioning'
+  | 'Mobility'
+  | 'Isometric'
+  | 'Olympic Lift / Explosive'
+  | 'Crawl'
+
+export type CardioMetric =
+  | 'duration'
+  | 'distance'
+  | 'pace'
+  | 'speed'
+  | 'incline'
+  | 'resistance'
+  | 'watts'
+  | 'cadence'
+  | 'strokeRate'
+  | 'heartRate'
+  | 'calories'
+  | 'rounds'
+  | 'reps'
+  | 'load'
+
 export interface Exercise extends EntityRecord {
   name: string
+  aliases: string[]
+  category: ExerciseCategory
+  primaryMuscles: string[]
+  secondaryMuscles: string[]
+  muscleRegions: string[]
+  equipment: ExerciseEquipment
+  trackingType: ExerciseTrackingType
+  movementPattern?: MovementPattern
   source: 'built-in' | 'custom'
   sourceId?: string
-  notes?: string
+  archived: boolean
+  instructions?: string
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+  laterality?: 'bilateral' | 'unilateral' | 'alternating'
+  cardioSubtype?: 'Running' | 'Walking' | 'Cycling' | 'Rowing' | 'Machines' | 'Conditioning'
+  supportedCardioMetrics?: CardioMetric[]
+}
+
+export interface ExercisePreference extends EntityRecord {
+  exerciseId: string
+  favourite: boolean
+  personalNotes?: string
+  customTagIds: string[]
+}
+
+export interface SystemMetadata {
+  id: string
+  value: string
+  updatedAt: string
 }
 
 export interface CustomTag extends EntityRecord {

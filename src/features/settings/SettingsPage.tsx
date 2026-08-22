@@ -110,7 +110,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
       <section className="settings-section" aria-labelledby="about-heading">
         <div className="settings-section-heading"><span>10</span><div><h2 id="about-heading">About FitDex</h2><p>Retro RPG energy. Modern fitness tracking. Local by design.</p></div></div>
-        <div className="about-row"><span className="wordmark-mark">FD</span><div><strong>FitDex</strong><small>Phase 0 · Foundation</small></div></div>
+        <div className="about-row"><span className="wordmark-mark">FD</span><div><strong>FitDex</strong><small>Phase 1A · Exercise Dex</small></div></div>
       </section>
     </div>
   )

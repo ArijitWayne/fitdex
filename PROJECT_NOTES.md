@@ -74,7 +74,7 @@ No cloud sync is planned.
 The Dexie foundation includes typed tables or models for at least:
 
 - Settings
-- Exercises and custom tags/categories
+- Exercises, exercise preferences, and custom tags/categories
 - Workout routines, workouts, workout exercises, and workout sets
 - Cardio sessions
 - Foods, daily nutrition/meals, and food entries
@@ -206,9 +206,53 @@ An active workout should be vertically scrollable rather than split across repea
 
 ## 17. Exercise Dex
 
-The planned built-in library target is approximately 400–600+ exercises initially. Core categories are Chest, Back, Shoulders, Biceps, Triceps, Forearms, Quadriceps, Hamstrings, Glutes, Calves, Adductors, Core, Traps, Neck, Full Body, Cardio, and Mobility. Detailed sub-muscle tagging is planned.
+Exercise Dex is one universal library for everyone. There is no male/female classification, beginner/pro split, or duplication by user type. It is a Workout sub-view; the five primary navigation destinations remain unchanged.
 
-Exercise metadata should support name, aliases, primary muscle, secondary muscles, subgroup, equipment, tracking type, movement pattern, instructions, difficulty, unilateral/bilateral, and built-in/custom status.
+Phase 1A established the initial 198 built-ins. Phase 1E now ships **399 built-in exercises** after final curation. User-facing categories remain exactly Chest, Back, Shoulders, Arms, Legs, Core, Full Body, Cardio, and Mobility. Detailed anatomy remains internal metadata rather than top-level navigation.
+
+Completed subfilters:
+
+- Chest: All, Upper, General, Lower
+- Back: All, Lats, Upper Back, Lower Back
+- Shoulders: All, Front Delts, Side Delts, Rear Delts
+- Arms: All, Biceps, Triceps, Forearms
+- Legs: All, Quads, Hamstrings, Glutes, Calves
+- Core: All, Abs, Obliques, Stability
+- Full Body: All
+- Cardio: All, Running, Walking, Cycling, Rowing, Machines, Conditioning
+- Mobility: All, Upper Body, Lower Body, Full Body
+
+The model supports stable ID, canonical name, aliases, top-level category, primary and secondary muscles, muscle regions, equipment, tracking type, optional movement pattern, built-in/custom source, archived state, optional instructions, difficulty, laterality, cardio subtype, and timestamps.
+
+Built-ins use deterministic `builtin-exercise:<name-slug>` IDs and dataset version 2. Startup seeding upserts canonical metadata only when the version changes or records are missing. Retired canonical records are archived rather than deleted. Custom exercises are not overwritten.
+
+Canonical built-in data and user state are deliberately separate. Favourites, personal notes, and custom-tag links live in `exercisePreferences`, so future canonical updates do not erase them. The current UI exposes a small persistent favourite control; advanced custom-exercise editing remains future work.
+
+Search is local, instant, case-insensitive, whitespace-trimmed, and diacritic-normalized across name, aliases, category, primary/secondary muscles, and equipment. Main-page search covers the full library. Category counts are derived from loaded records. Category feeds combine local search with the approved subfilters and open a simple structured detail view.
+
+Exercise sprites are deferred. Phase 1A renders no fake artwork, silhouettes, placeholders, or Art Pending labels.
+
+### Phase 1B catalog audit
+
+The Phase 1B Exercise Catalog Audit is complete. `EXERCISE_CATALOG.md` is the master inventory and research file for included exercises, classification findings, aliases, exclusions, and expansion candidates. External exercise libraries were used only to discover and cross-check names, equipment, and classifications; no third-party prose or media was copied.
+
+At the Phase 1B checkpoint the shipped dataset remained at 198 built-in exercises, version 1; research candidates were not automatically added.
+
+### Phase 1C catalog resolution
+
+Phase 1C resolved the seven existing-dataset findings and all 18 yellow candidates in `EXERCISE_CATALOG.md`. Its intermediate plan contained 62 canonical additions and 17 alias additions; Phase 1E supersedes that checkpoint.
+
+### Phase 1D catalog-completeness research
+
+Comprehensive resistance, cardio, conditioning, and mobility research produced a 407-record research-complete baseline: 198 existing records plus 209 candidates. The cardio modality and future tracking-field audit are documented in `EXERCISE_CATALOG.md`.
+
+### Phase 1E final dataset integration
+
+Phase 1E is complete. Eight lower-priority candidates were deliberately excluded from the 407-record research baseline, and 201 additions were integrated into built-in dataset version 2 for a final curated baseline of **399 exercises**: Chest 39, Back 47, Shoulders 33, Arms 48, Legs 71, Core 41, Full Body 39, Cardio 47, and Mobility 34.
+
+The 91 approved aliases and seven existing-record corrections are integrated. Power Clean is a distinct canonical exercise; Dragon Flag is a canonical advanced Core exercise using reps-only tracking and the Isometric movement pattern. Equipment now includes Back Extension Bench, Trap Bar, Rings, Sandbag, and GHD. Movement-pattern taxonomy adds Isometric, Olympic Lift / Explosive, and Crawl. Cardio records expose a compact supported-metrics list while retaining one canonical record per modality and optional-distance indoor-bike tracking.
+
+Dataset version 2 refreshes deterministic built-in metadata and adds missing built-ins without touching custom exercises or the separate favourites, personal notes, and custom-tag preference records. The validator and catalog audit enforce the 399-record category totals, 91 aliases, required canonical records, excluded-eight absence, and collision-free source state. Exercise sprites, advanced custom-exercise UX, and workout logging remain future work.
 
 ## 18. Custom exercises and organization
 
@@ -233,9 +277,13 @@ Intended types:
 - `weight_distance` — Farmer Carry
 - `duration_reps`
 
+Supported equipment values are Barbell, Dumbbell, EZ Bar, Cable, Machine, Smith Machine, Bodyweight, Pull-Up Bar, Bench, Resistance Band, Kettlebell, Medicine Ball, Suspension Trainer, Weight Plate, Landmine, Sled, Battle Rope, Cardio Machine, and Other.
+
+Optional movement-pattern metadata supports Horizontal Push, Vertical Push, Horizontal Pull, Vertical Pull, Squat, Hinge, Lunge, Carry, Rotation, Anti-Rotation, Flexion, Extension, Abduction, Adduction, Locomotion, Conditioning, and Mobility. Movement patterns are not a beginner-facing navigation requirement.
+
 ## 20. Cardio
 
-Cardio is a core system, not an afterthought. Planned categories include outdoor, treadmill, track, and trail running; sprints and intervals; walking, incline treadmill, and hiking; outdoor cycling, stationary bike, spin bike, air bike, and recumbent bike; rowing; elliptical; StairMaster/stair climber; swimming; jump rope; SkiErg; boxing; kickboxing; HIIT; circuit training; and battle ropes.
+Cardio is a core system, not an afterthought. The initial Exercise Dex includes running, walking, cycling, rowing, machine, and conditioning subtypes with duration- and distance-aware tracking rather than Weight + Reps. Future expansion can include additional outdoor, machine, aquatic, combat-sport, and conditioning activities.
 
 Possible fields include duration, distance, pace, speed, incline, resistance, calories, and heart rate.
 
@@ -322,19 +370,27 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] Avatar roster finalized
 - [x] Six real avatar PNGs added manually
 - [x] Transparent-background fallback bug fixed in `AvatarPortrait`
+- [x] Universal Exercise Dex browsing, search, category filters, and detail view
+- [x] Versioned 399-exercise built-in dataset with deterministic IDs
+- [x] Separate persistent exercise favourite/user-preference records
+- [x] Lightweight built-in dataset integrity validator
+- [x] Phase 1B master Exercise Catalog audit and researched expansion backlog
+- [x] Read-only catalog grouping/collision audit utility
+- [x] Phase 1C catalog-resolution decisions and Phase 1D expansion audit
+- [x] Phase 1D comprehensive catalog-completeness and cardio-modality research
+- [x] Phase 1E curated 399-exercise dataset version 2 integration
 - [x] Build, lint, TypeScript, and PWA checks passing
 
 ## 29. Current development status
 
-**Current phase:** foundation and visual-system stabilization before feature implementation.
+**Current phase:** Phase 1E Final Exercise Dataset Integration complete; Exercise Dex ships dataset version 2 with 399 built-ins, and workout feature implementation has not started.
 
 Major business features are not implemented. Likely next work:
 
-1. Final visual QA
-2. First manual Git commit
-3. Exercise Dex architecture and browser UX
-4. Exercise dataset
-5. Workout logging
+1. Final Exercise Dex visual/device QA with the 399-record library
+2. Advanced custom-exercise UX
+3. Exercise sprites in a separate asset phase
+4. Workout logging
 
 This list is direction, not completed work.
 

@@ -200,6 +200,48 @@
 .tutorial-dots span.is-active { width: 20px; background: var(--color-xp); }
 .onboarding-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; align-self: end; margin-top: 20px; }
 
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.workout-page { width: 100%; max-width: 760px; margin-inline: auto; }
+.exercise-dex-panel, .exercise-detail-panel { display: grid; min-width: 0; gap: 14px; padding: 0; overflow: hidden; }
+.exercise-dex-panel::before, .exercise-detail-panel::before { left: 18px; }
+.exercise-dex-heading, .exercise-detail-header { display: flex; min-width: 0; align-items: center; gap: 12px; padding: 18px 18px 0; }
+.exercise-dex-heading > div, .exercise-detail-header > div { min-width: 0; flex: 1; }
+.exercise-dex-heading .eyebrow, .exercise-detail-header .eyebrow { margin-bottom: 4px; }
+.exercise-dex-heading h2, .exercise-detail-header h2 { overflow-wrap: anywhere; margin: 0; font-family: var(--font-display); font-size: 1.55rem; line-height: 1.1; text-transform: uppercase; }
+.exercise-dex-heading p:last-child { margin: 4px 0 0; font-size: .78rem; }
+.dex-back-button, .exercise-favourite { display: grid; width: 44px; min-width: 44px; height: 44px; place-items: center; border: 1px solid var(--color-border); background: var(--color-surface-subtle); cursor: pointer; }
+.dex-back-button:hover, .exercise-favourite:hover { border-color: var(--color-primary); background: var(--color-primary-muted); color: var(--color-primary-text); }
+.exercise-favourite.is-selected { border-color: var(--color-xp); color: var(--color-xp); box-shadow: inset 0 -2px 0 var(--color-rpg-border); }
+.exercise-search { position: relative; display: flex; min-height: 48px; align-items: center; gap: 10px; margin-inline: 18px; padding: 0 13px; border: 2px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text-muted); }
+.exercise-search:focus-within { border-color: var(--color-focus); outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.exercise-search input { width: 100%; min-width: 0; height: 44px; padding: 0; border: 0; outline: 0; background: transparent; color: var(--color-text); }
+.exercise-search input::placeholder { color: var(--color-text-muted); opacity: 1; }
+.exercise-filter-strip { display: flex; max-width: 100%; gap: 7px; overflow-x: auto; padding: 2px 18px 8px; scrollbar-width: thin; }
+.exercise-filter { min-height: 42px; flex: 0 0 auto; padding: 7px 12px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text-muted); font-size: .76rem; font-weight: 850; cursor: pointer; }
+.exercise-filter:hover { border-color: var(--color-primary); color: var(--color-primary-text); }
+.exercise-filter.is-selected { border-color: var(--color-primary); background: var(--color-primary-muted); color: var(--color-primary-text); box-shadow: inset 0 -3px 0 var(--color-primary); }
+.exercise-category-list, .exercise-list { display: grid; border-top: 1px solid var(--color-border); }
+.exercise-category-row { display: flex; width: 100%; min-height: 62px; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 18px; border: 0; border-bottom: 1px solid var(--color-border); background: var(--color-surface-raised); text-align: left; cursor: pointer; }
+.exercise-category-row:hover, .exercise-row-main:hover { background: var(--color-primary-muted); color: var(--color-primary-text); }
+.exercise-category-row > span, .exercise-row-main > span { display: grid; min-width: 0; gap: 3px; }
+.exercise-category-row strong, .exercise-row-main strong { overflow: hidden; font-size: .9rem; text-overflow: ellipsis; white-space: nowrap; }
+.exercise-category-row small, .exercise-row-main small { overflow: hidden; color: var(--color-text-muted); font-size: .72rem; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.exercise-result-count { margin: 0; padding: 9px 18px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-subtle); font-size: .72rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
+.exercise-row { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) 52px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-raised); }
+.exercise-row-main { display: flex; min-width: 0; min-height: 62px; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 10px 9px 18px; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.exercise-row-main > svg { flex: 0 0 auto; }
+.exercise-row .exercise-favourite { width: 52px; height: 100%; min-height: 52px; border-width: 0 0 0 1px; box-shadow: none; }
+.exercise-empty-result { margin: 0; padding: 36px 18px; border-top: 1px solid var(--color-border); text-align: center; }
+.exercise-dex-state { min-height: 220px; }
+.exercise-detail-header { padding-bottom: 4px; }
+.exercise-detail-header .exercise-favourite { margin-left: auto; }
+.exercise-detail-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--color-border); }
+.exercise-detail-list > div { min-width: 0; padding: 13px 18px; border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.exercise-detail-list > div:nth-child(even) { border-right: 0; }
+.exercise-detail-list dt { margin-bottom: 4px; color: var(--color-text-muted); font-size: .66rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.exercise-detail-list dd { margin: 0; overflow-wrap: anywhere; font-size: .86rem; font-weight: 750; line-height: 1.4; }
+.exercise-detail-list .exercise-detail-wide { grid-column: 1 / -1; border-right: 0; }
+
 @media (max-width: 374px) {
   .app-main { padding-inline: 12px; }
   .panel, .settings-section { padding: 15px; }
@@ -217,6 +259,13 @@
   .tutorial-style-option { grid-template-columns: 1fr; }
   .tutorial-style-picker { grid-template-columns: 1fr; }
   .tutorial-style-option .family-swatch { width: 100%; }
+  .exercise-dex-heading, .exercise-detail-header { padding-inline: 14px; }
+  .exercise-search { margin-inline: 14px; }
+  .exercise-filter-strip { padding-inline: 14px; }
+  .exercise-category-row { padding-inline: 14px; }
+  .exercise-row-main { padding-left: 14px; }
+  .exercise-detail-list { grid-template-columns: 1fr; }
+  .exercise-detail-list > div { border-right: 0; }
 }
 
 @media (min-width: 700px) {

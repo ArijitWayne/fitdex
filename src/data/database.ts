@@ -6,12 +6,14 @@ import type {
   CustomTag,
   DailyNutrition,
   Exercise,
+  ExercisePreference,
   Food,
   FoodEntry,
   JournalRecord,
   Meal,
   Quest,
   SettingsRecord,
+  SystemMetadata,
   Workout,
   WorkoutExercise,
   WorkoutRoutine,
@@ -20,11 +22,13 @@ import type {
 } from './models'
 
 export const DATABASE_NAME = 'fitdex'
-export const DATABASE_SCHEMA_VERSION = 1
+export const DATABASE_SCHEMA_VERSION = 2
 
 export class FitDexDatabase extends Dexie {
   settings!: Table<SettingsRecord, string>
   exercises!: Table<Exercise, string>
+  exercisePreferences!: Table<ExercisePreference, string>
+  systemMetadata!: Table<SystemMetadata, string>
   customTags!: Table<CustomTag, string>
   workoutRoutines!: Table<WorkoutRoutine, string>
   workouts!: Table<Workout, string>
@@ -45,7 +49,9 @@ export class FitDexDatabase extends Dexie {
     super(DATABASE_NAME)
     this.version(DATABASE_SCHEMA_VERSION).stores({
       settings: '&id, updatedAt',
-      exercises: '&id, name, source, sourceId, updatedAt',
+      exercises: '&id, name, category, source, sourceId, trackingType, equipment, updatedAt',
+      exercisePreferences: '&id, &exerciseId, updatedAt',
+      systemMetadata: '&id, updatedAt',
       customTags: '&id, appliesTo, name, updatedAt',
       workoutRoutines: '&id, name, updatedAt',
       workouts: '&id, routineId, startedAt, completedAt, updatedAt',
@@ -61,6 +67,19 @@ export class FitDexDatabase extends Dexie {
       quests: '&id, status, completedAt, updatedAt',
       xpHistory: '&id, occurredAt, updatedAt',
       journalRecords: '&id, &date, updatedAt',
+    }).upgrade((transaction) => {
+      return transaction.table<Exercise & { notes?: string }, string>('exercises').toCollection().modify((exercise) => {
+        exercise.aliases ??= []
+        exercise.category ??= 'Full Body'
+        exercise.primaryMuscles ??= ['Other']
+        exercise.secondaryMuscles ??= []
+        exercise.muscleRegions ??= []
+        exercise.equipment ??= 'Other'
+        exercise.trackingType ??= 'reps_only'
+        exercise.archived ??= false
+        if (exercise.notes && !exercise.instructions) exercise.instructions = exercise.notes
+        delete exercise.notes
+      })
     })
   }
 }

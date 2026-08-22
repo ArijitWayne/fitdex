@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "audit:catalog": "node --experimental-strip-types src/features/exerciseDex/auditExerciseCatalog.ts",
+    "validate:exercises": "node --experimental-strip-types src/features/exerciseDex/validateExercises.ts",
     "preview": "vite preview"
   },
   "dependencies": {
