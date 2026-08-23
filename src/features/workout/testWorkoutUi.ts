@@ -1,0 +1,56 @@
+/// <reference types="node" />
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+
+const page = fs.readFileSync('src/pages/WorkoutPage.tsx', 'utf8')
+const exerciseDex = fs.readFileSync('src/features/exerciseDex/ExerciseDex.tsx', 'utf8')
+const sessionViews = fs.readFileSync('src/features/workout/WorkoutSessionViews.tsx', 'utf8')
+const css = fs.readFileSync('src/styles/app.css', 'utf8')
+
+const todayIndex = page.indexOf('eyebrow="Today"')
+const routinesIndex = page.indexOf('eyebrow="Your routines"')
+const libraryIndex = page.indexOf('eyebrow="Exercise library"')
+const recentIndex = page.indexOf('eyebrow="Recent workouts"')
+assert.ok(todayIndex >= 0 && todayIndex < routinesIndex && routinesIndex < libraryIndex && libraryIndex < recentIndex)
+
+assert.match(page, /No routines yet/)
+assert.match(page, /No workouts recorded yet/)
+assert.match(page, /Start empty workout/)
+assert.match(page, /Workout in progress/)
+assert.match(page, /Resume workout/)
+assert.match(page, /listRecentWorkouts/)
+assert.doesNotMatch(page, /May 20|fake routine|demo workout/i)
+assert.match(page, /<ExerciseDex onAddToRoutine=/)
+assert.match(page, /<ExerciseDex picker=/)
+assert.match(page, /disabledExerciseIds/)
+assert.match(page, /MIN_PLANNED_SETS/)
+assert.match(page, /MAX_PLANNED_SETS/)
+assert.match(page, /ArrowUp/)
+assert.match(page, /ArrowDown/)
+assert.match(page, /Completed workout snapshots will remain untouched/)
+assert.match(page, /<ActiveWorkoutView/)
+assert.match(page, /<CompletedWorkoutDetail/)
+
+assert.match(sessionViews, /Add to today's workout/)
+assert.match(sessionViews, /Finish workout/)
+assert.match(sessionViews, /Discard workout/)
+assert.match(sessionViews, /DEFAULT_REST_SECONDS/)
+assert.match(sessionViews, /getPreviousPerformance/)
+assert.match(sessionViews, /inputMode="decimal"/)
+assert.match(sessionViews, /inputMode="numeric"/)
+assert.match(sessionViews, /Incomplete draft/)
+
+assert.match(exerciseDex, /export interface ExerciseDexPicker/)
+assert.match(exerciseDex, /onAddToRoutine\?: \(exercise: Exercise\) => void/)
+assert.match(exerciseDex, /Add to routine/)
+assert.match(exerciseDex, /exercise-picker-toggle/)
+
+assert.match(css, /\.workout-hub-grid \{[^}]*display: grid;/s)
+assert.match(css, /@media \(min-width: 700px\)[\s\S]*\.workout-hub-grid \{ grid-template-columns: repeat\(2,/)
+assert.match(css, /\.workout-today \{[^}]*var\(--color-primary\)/s)
+assert.match(css, /\.active-set-row\.is-complete \{[^}]*var\(--color-primary\)/s)
+assert.match(css, /\.active-workout-final-actions \{[^}]*position: sticky;/s)
+assert.match(css, /@media \(max-width: 374px\)[\s\S]*\.active-set-row \{ grid-template-columns:/)
+assert.doesNotMatch(css.match(/\.workout-hub-grid[\s\S]*?\.exercise-dex-panel/)?.[0] ?? '', /#[0-9a-f]{3,8}/i)
+
+console.log('Workout UI assertions passed: hub active state, real start/logger/history flows, reusable pickers, mobile controls, responsive layout, and theme tokens')

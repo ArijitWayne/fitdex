@@ -1,5 +1,7 @@
+import { createId } from './createId'
+
 export function createStableId() {
-  return crypto.randomUUID()
+  return createId()
 }
 
 export function nowIso() {

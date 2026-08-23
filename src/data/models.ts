@@ -15,7 +15,14 @@ export interface SettingsRecord extends EntityRecord {
   units?: 'metric' | 'imperial'
 }
 
-export type ExerciseCategory = 'Chest' | 'Back' | 'Shoulders' | 'Arms' | 'Legs' | 'Core' | 'Full Body' | 'Cardio' | 'Mobility'
+export type ExerciseCategory = 'Chest' | 'Back' | 'Shoulders' | 'Legs' | 'Gluteal' | 'Biceps' | 'Triceps' | 'Forearms' | 'Abs'
+
+/** Kept only so existing custom exercises and historical snapshots remain readable. */
+export type LegacyExerciseCategory = 'Chest' | 'Back' | 'Shoulders' | 'Arms' | 'Legs' | 'Core' | 'Full Body' | 'Cardio' | 'Mobility'
+export type PersistedExerciseCategory = ExerciseCategory | LegacyExerciseCategory
+
+export type ExerciseMediaType = 'video/mp4' | 'image/gif' | 'image/webp'
+export type ExerciseMediaStatus = 'available' | 'not-provided' | 'source-unavailable'
 
 export type ExerciseTrackingType =
   | 'weight_reps'
@@ -95,7 +102,10 @@ export type CardioMetric =
 export interface Exercise extends EntityRecord {
   name: string
   aliases: string[]
-  category: ExerciseCategory
+  /** Compatibility field. New built-ins also expose authoritative `categories`. */
+  category: PersistedExerciseCategory
+  categories?: ExerciseCategory[]
+  primaryCategory?: ExerciseCategory
   primaryMuscles: string[]
   secondaryMuscles: string[]
   muscleRegions: string[]
@@ -104,6 +114,11 @@ export interface Exercise extends EntityRecord {
   movementPattern?: MovementPattern
   source: 'built-in' | 'custom'
   sourceId?: string
+  sourceSlug?: string
+  sourcePage?: string
+  sourceRecordIds?: string[]
+  mediaStatus?: ExerciseMediaStatus
+  equipmentOptions?: ExerciseEquipment[]
   archived: boolean
   instructions?: string
   difficulty?: 'beginner' | 'intermediate' | 'advanced'
@@ -135,16 +150,33 @@ export interface WorkoutRoutine extends EntityRecord {
   notes?: string
 }
 
+export interface RoutineExercise extends EntityRecord {
+  routineId: string
+  exerciseId: string
+  exerciseNameSnapshot: string
+  order: number
+  plannedSets: number
+}
+
 export interface Workout extends EntityRecord {
   routineId?: string
+  routineNameSnapshot?: string
+  nameSnapshot: string
+  status: 'active' | 'completed' | 'discarded'
   startedAt: string
   completedAt?: string
+  durationSeconds?: number
   notes?: string
 }
 
 export interface WorkoutExercise extends EntityRecord {
   workoutId: string
   exerciseId: string
+  exerciseNameSnapshot?: string
+  exerciseCategorySnapshot?: PersistedExerciseCategory
+  trackingTypeSnapshot?: ExerciseTrackingType
+  routineExerciseIdSnapshot?: string
+  plannedSetsSnapshot?: number
   order: number
   notes?: string
 }
@@ -154,6 +186,9 @@ export interface WorkoutSet extends EntityRecord {
   order: number
   reps?: number
   weight?: number
+  durationSeconds?: number
+  distance?: number
+  notes?: string
   completed: boolean
 }
 

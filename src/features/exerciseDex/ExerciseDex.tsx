@@ -1,20 +1,40 @@
-import { ArrowLeft, ChevronRight, Search, Star } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, Plus, Search, Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
 import { db } from '../../data/database'
 import type { Exercise, ExerciseCategory } from '../../data/models'
+import { useTheme } from '../../theme/useTheme'
+import { useResolvedBrightness } from '../../theme/useResolvedBrightness'
 import {
   CATEGORY_SUBFILTERS,
   EXERCISE_CATEGORIES,
   TRACKING_TYPE_LABELS,
+  exerciseBelongsToCategory,
   filterBySubfilter,
+  normalizeExerciseSearch,
   searchExercises,
 } from './exerciseCatalog'
+import { getExerciseCategorySprite } from './exerciseCategorySprites'
+import { getExerciseContent } from './exerciseContent'
 import { ensureBuiltInExercises } from './seedExercises'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
-export function ExerciseDex() {
+export interface ExerciseDexPicker {
+  title: string
+  disabledExerciseIds: ReadonlySet<string>
+  selectedExerciseIds: ReadonlySet<string>
+  onToggleExercise: (exercise: Exercise) => void
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+export function ExerciseDex({ picker, onAddToRoutine }: {
+  picker?: ExerciseDexPicker
+  onAddToRoutine?: (exercise: Exercise) => void
+} = {}) {
+  const { family } = useTheme()
+  const resolvedBrightness = useResolvedBrightness()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [favourites, setFavourites] = useState<Set<string>>(new Set())
   const [loadState, setLoadState] = useState<LoadState>('loading')
@@ -48,12 +68,16 @@ export function ExerciseDex() {
 
   const counts = useMemo(() => {
     const next = new Map<ExerciseCategory, number>(EXERCISE_CATEGORIES.map((item) => [item, 0]))
-    for (const exercise of exercises) next.set(exercise.category, (next.get(exercise.category) ?? 0) + 1)
+    for (const exercise of exercises) {
+      for (const item of EXERCISE_CATEGORIES) {
+        if (exerciseBelongsToCategory(exercise, item)) next.set(item, (next.get(item) ?? 0) + 1)
+      }
+    }
     return next
   }, [exercises])
 
   const categoryExercises = useMemo(
-    () => category ? exercises.filter((exercise) => exercise.category === category) : [],
+    () => category ? exercises.filter((exercise) => exerciseBelongsToCategory(exercise, category)) : [],
     [category, exercises],
   )
   const visibleExercises = useMemo(() => {
@@ -110,6 +134,8 @@ export function ExerciseDex() {
         favourite={favourites.has(selectedExercise.id)}
         onBack={() => setSelectedExercise(null)}
         onToggleFavourite={() => void toggleFavourite(selectedExercise.id)}
+        picker={picker}
+        onAddToRoutine={onAddToRoutine}
       />
     )
   }
@@ -117,10 +143,10 @@ export function ExerciseDex() {
   return (
     <Panel className="exercise-dex-panel">
       <div className="exercise-dex-heading">
-        {category ? <button className="dex-back-button" type="button" onClick={returnToIndex} aria-label="Back to Exercise Dex categories"><ArrowLeft size={20} aria-hidden="true" /></button> : null}
+        {category || picker ? <button className="dex-back-button" type="button" onClick={category ? returnToIndex : picker?.onCancel} aria-label={category ? 'Back to Exercise Dex categories' : 'Back to routine'}><ArrowLeft size={20} aria-hidden="true" /></button> : null}
         <div>
-          <p className="eyebrow">Exercise Dex</p>
-          <h2>{category ?? 'Exercise library'}</h2>
+          <p className="eyebrow">{picker ? 'Exercise picker' : 'Exercise Dex'}</p>
+          <h2>{category ?? picker?.title ?? 'Exercise library'}</h2>
           <p>{category ? `${categoryExercises.length} exercises` : `${exercises.length} universal exercises`}</p>
         </div>
       </div>
@@ -136,7 +162,7 @@ export function ExerciseDex() {
         />
       </label>
 
-      {category ? (
+      {category && CATEGORY_SUBFILTERS[category].length > 1 ? (
         <div className="exercise-filter-strip" aria-label={`${category} exercise filters`}>
           {CATEGORY_SUBFILTERS[category].map((filter) => (
             <button className={filter === subfilter ? 'exercise-filter is-selected' : 'exercise-filter'} type="button" key={filter} aria-pressed={filter === subfilter} onClick={() => setSubfilter(filter)}>{filter}</button>
@@ -144,27 +170,41 @@ export function ExerciseDex() {
         </div>
       ) : null}
 
-      {!category && !query.trim() ? (
-        <div className="exercise-category-list">
+      {!category && !normalizeExerciseSearch(query) ? (
+        <div className="exercise-category-grid">
           {EXERCISE_CATEGORIES.map((item) => (
-            <button className="exercise-category-row" type="button" key={item} onClick={() => openCategory(item)}>
+            <button className="exercise-category-card" type="button" key={item} onClick={() => openCategory(item)}>
+              <img
+                className="exercise-category-sprite"
+                src={getExerciseCategorySprite(item, family, resolvedBrightness)}
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+              />
               <span><strong>{item}</strong><small>{counts.get(item) ?? 0} exercises</small></span>
               <ChevronRight size={20} aria-hidden="true" />
             </button>
           ))}
         </div>
       ) : (
-        <ExerciseRows exercises={visibleExercises} favourites={favourites} onSelect={setSelectedExercise} onToggleFavourite={(id) => void toggleFavourite(id)} />
+        <ExerciseRows exercises={visibleExercises} favourites={favourites} onSelect={setSelectedExercise} onToggleFavourite={(id) => void toggleFavourite(id)} picker={picker} />
       )}
+      {picker ? (
+        <div className="exercise-picker-actions">
+          <button className="secondary-button" type="button" onClick={picker.onCancel}>Cancel</button>
+          <button className="primary-button" type="button" disabled={!picker.selectedExerciseIds.size} onClick={picker.onConfirm}>Add {picker.selectedExerciseIds.size || ''} {picker.selectedExerciseIds.size === 1 ? 'exercise' : 'exercises'}</button>
+        </div>
+      ) : null}
     </Panel>
   )
 }
 
-function ExerciseRows({ exercises, favourites, onSelect, onToggleFavourite }: {
+function ExerciseRows({ exercises, favourites, onSelect, onToggleFavourite, picker }: {
   exercises: readonly Exercise[]
   favourites: ReadonlySet<string>
   onSelect: (exercise: Exercise) => void
   onToggleFavourite: (exerciseId: string) => void
+  picker?: ExerciseDexPicker
 }) {
   if (!exercises.length) return <p className="exercise-empty-result">No exercises match this search and filter.</p>
 
@@ -177,40 +217,94 @@ function ExerciseRows({ exercises, favourites, onSelect, onToggleFavourite }: {
             <span><strong>{exercise.name}</strong><small>{exercise.equipment} · {TRACKING_TYPE_LABELS[exercise.trackingType]}</small></span>
             <ChevronRight size={20} aria-hidden="true" />
           </button>
-          <button
-            className={favourites.has(exercise.id) ? 'exercise-favourite is-selected' : 'exercise-favourite'}
-            type="button"
-            aria-label={`${favourites.has(exercise.id) ? 'Remove' : 'Add'} ${exercise.name} ${favourites.has(exercise.id) ? 'from' : 'to'} favourites`}
-            aria-pressed={favourites.has(exercise.id)}
-            onClick={() => onToggleFavourite(exercise.id)}
-          >
-            <Star size={18} fill={favourites.has(exercise.id) ? 'currentColor' : 'none'} aria-hidden="true" />
-          </button>
+          {picker ? (
+            <button
+              className={picker.selectedExerciseIds.has(exercise.id) ? 'exercise-picker-toggle is-selected' : 'exercise-picker-toggle'}
+              type="button"
+              disabled={picker.disabledExerciseIds.has(exercise.id)}
+              aria-label={picker.disabledExerciseIds.has(exercise.id) ? `${exercise.name} is already in this routine` : `${picker.selectedExerciseIds.has(exercise.id) ? 'Remove' : 'Select'} ${exercise.name}`}
+              aria-pressed={picker.selectedExerciseIds.has(exercise.id)}
+              onClick={() => picker.onToggleExercise(exercise)}
+            >
+              {picker.disabledExerciseIds.has(exercise.id) || picker.selectedExerciseIds.has(exercise.id) ? <Check size={18} aria-hidden="true" /> : <Plus size={18} aria-hidden="true" />}
+            </button>
+          ) : (
+            <button
+              className={favourites.has(exercise.id) ? 'exercise-favourite is-selected' : 'exercise-favourite'}
+              type="button"
+              aria-label={`${favourites.has(exercise.id) ? 'Remove' : 'Add'} ${exercise.name} ${favourites.has(exercise.id) ? 'from' : 'to'} favourites`}
+              aria-pressed={favourites.has(exercise.id)}
+              onClick={() => onToggleFavourite(exercise.id)}
+            >
+              <Star size={18} fill={favourites.has(exercise.id) ? 'currentColor' : 'none'} aria-hidden="true" />
+            </button>
+          )}
         </article>
       ))}
     </div>
   )
 }
 
-function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite }: {
+function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker, onAddToRoutine }: {
   exercise: Exercise
   favourite: boolean
   onBack: () => void
   onToggleFavourite: () => void
+  picker?: ExerciseDexPicker
+  onAddToRoutine?: (exercise: Exercise) => void
 }) {
+  const content = getExerciseContent(exercise.id)
+
   return (
     <Panel className="exercise-detail-panel">
       <div className="exercise-detail-header">
         <button className="dex-back-button" type="button" onClick={onBack} aria-label="Back to exercise list"><ArrowLeft size={20} aria-hidden="true" /></button>
-        <div><p className="eyebrow">Exercise record</p><h2>{exercise.name}</h2></div>
+        <div><p className="eyebrow">Exercise record</p><h2>{exercise.name}</h2><p className="exercise-detail-category">{exercise.categories?.join(' · ') ?? exercise.category}</p></div>
         <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favourites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button>
       </div>
+      {content?.mediaPath ? (
+        <figure className="exercise-detail-media">
+          {content.mediaType === 'video/mp4' ? (
+            <video
+              src={content.mediaPath}
+              aria-label={`${exercise.name} exercise demonstration`}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <img src={content.mediaPath} alt={`${exercise.name} exercise demonstration`} loading="lazy" />
+          )}
+        </figure>
+      ) : null}
+      {content ? (
+        <div className="exercise-detail-content">
+          <section>
+            <h3>How to perform</h3>
+            <p>{content.howToPerform}</p>
+          </section>
+          <section>
+            <h3>How it helps</h3>
+            <p>{content.howItHelps}</p>
+          </section>
+        </div>
+      ) : null}
+      {picker ? (
+        <div className="exercise-detail-action">
+          <button className="primary-button" type="button" disabled={picker.disabledExerciseIds.has(exercise.id)} onClick={() => picker.onToggleExercise(exercise)}>
+            {picker.disabledExerciseIds.has(exercise.id) ? 'Already in routine' : picker.selectedExerciseIds.has(exercise.id) ? 'Remove selection' : 'Select exercise'}
+          </button>
+        </div>
+      ) : onAddToRoutine ? (
+        <div className="exercise-detail-action"><button className="primary-button" type="button" onClick={() => onAddToRoutine(exercise)}>Add to routine</button></div>
+      ) : null}
       <dl className="exercise-detail-list">
-        <div><dt>Category</dt><dd>{exercise.category}</dd></div>
         <div><dt>Primary muscle</dt><dd>{exercise.primaryMuscles.join(', ')}</dd></div>
         <div><dt>Secondary muscles</dt><dd>{exercise.secondaryMuscles.length ? exercise.secondaryMuscles.join(', ') : 'None specified'}</dd></div>
         <div><dt>Region</dt><dd>{exercise.muscleRegions.join(', ')}</dd></div>
-        <div><dt>Equipment</dt><dd>{exercise.equipment}</dd></div>
+        <div><dt>Equipment</dt><dd>{exercise.equipmentOptions?.join(', ') ?? exercise.equipment}</dd></div>
         <div><dt>Tracking method</dt><dd>{TRACKING_TYPE_LABELS[exercise.trackingType]}</dd></div>
         {exercise.movementPattern ? <div><dt>Movement pattern</dt><dd>{exercise.movementPattern}</dd></div> : null}
         {exercise.cardioSubtype ? <div><dt>Cardio type</dt><dd>{exercise.cardioSubtype}</dd></div> : null}

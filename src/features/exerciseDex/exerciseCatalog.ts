@@ -4,24 +4,24 @@ export const EXERCISE_CATEGORIES: readonly ExerciseCategory[] = [
   'Chest',
   'Back',
   'Shoulders',
-  'Arms',
   'Legs',
-  'Core',
-  'Full Body',
-  'Cardio',
-  'Mobility',
+  'Gluteal',
+  'Biceps',
+  'Triceps',
+  'Forearms',
+  'Abs',
 ]
 
 export const CATEGORY_SUBFILTERS: Record<ExerciseCategory, readonly string[]> = {
-  Chest: ['All', 'Upper', 'General', 'Lower'],
-  Back: ['All', 'Lats', 'Upper Back', 'Lower Back'],
-  Shoulders: ['All', 'Front Delts', 'Side Delts', 'Rear Delts'],
-  Arms: ['All', 'Biceps', 'Triceps', 'Forearms'],
-  Legs: ['All', 'Quads', 'Hamstrings', 'Glutes', 'Calves'],
-  Core: ['All', 'Abs', 'Obliques', 'Stability'],
-  'Full Body': ['All'],
-  Cardio: ['All', 'Running', 'Walking', 'Cycling', 'Rowing', 'Machines', 'Conditioning'],
-  Mobility: ['All', 'Upper Body', 'Lower Body', 'Full Body'],
+  Chest: ['All'],
+  Back: ['All'],
+  Shoulders: ['All'],
+  Legs: ['All'],
+  Gluteal: ['All'],
+  Biceps: ['All'],
+  Triceps: ['All'],
+  Forearms: ['All'],
+  Abs: ['All'],
 }
 
 export const TRACKING_TYPE_LABELS: Record<ExerciseTrackingType, string> = {
@@ -37,25 +37,44 @@ export const TRACKING_TYPE_LABELS: Record<ExerciseTrackingType, string> = {
 }
 
 export function normalizeExerciseSearch(value: string) {
-  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLowerCase()
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+function searchForms(value: string) {
+  const normalized = normalizeExerciseSearch(value)
+  if (!normalized) return []
+  return normalized.endsWith('s') && !normalized.endsWith('ss') && normalized.length > 3
+    ? [normalized, normalized.slice(0, -1)]
+    : [normalized]
 }
 
 export function searchExercises(exercises: readonly Exercise[], query: string) {
-  const normalizedQuery = normalizeExerciseSearch(query)
-  if (!normalizedQuery) return exercises
+  const queryForms = searchForms(query)
+  if (!queryForms.length) return exercises
 
-  return exercises.filter((exercise) => normalizeExerciseSearch([
-    exercise.name,
-    ...exercise.aliases,
-    exercise.category,
-    ...exercise.primaryMuscles,
-    ...exercise.secondaryMuscles,
-    exercise.equipment,
-  ].join(' ')).includes(normalizedQuery))
+  return exercises.filter((exercise) => {
+    const searchableText = normalizeExerciseSearch([
+      exercise.name,
+      ...exercise.aliases,
+      exercise.category,
+      ...(exercise.categories ?? []),
+      ...exercise.primaryMuscles,
+      ...exercise.secondaryMuscles,
+      exercise.equipment,
+    ].join(' '))
+    return queryForms.some((form) => searchableText.includes(form))
+  })
 }
 
-export function filterBySubfilter(exercises: readonly Exercise[], category: ExerciseCategory, subfilter: string) {
+export function filterBySubfilter(exercises: readonly Exercise[], _category: ExerciseCategory, subfilter: string) {
   if (subfilter === 'All') return exercises
-  if (category === 'Cardio') return exercises.filter((exercise) => exercise.cardioSubtype === subfilter)
   return exercises.filter((exercise) => exercise.muscleRegions.includes(subfilter))
+}
+
+export function exerciseBelongsToCategory(exercise: Exercise, category: ExerciseCategory) {
+  return exercise.categories?.includes(category) ?? exercise.category === category
 }

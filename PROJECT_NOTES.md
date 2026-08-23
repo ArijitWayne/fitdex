@@ -189,48 +189,25 @@ The approved foundation begins with a player/avatar card showing selected avatar
 
 Nutrition Today summarizes Calories, Protein, Carbohydrates, and Fat. Do not display fantasy combat statistics such as HP, STR, ATK, DEF, or Mana.
 
-## 16. Workout system direction
+## 16. Workout system
 
-Planned functionality:
+Implemented functionality includes reusable routines, starting or resuming an active workout, previous-performance references beside matching exercises, all supported tracking modes, set editing, exercise replacement/reordering, a 90-second rest timer, and session notes. Active workouts are vertically scrollable with large phone-friendly controls and autosave locally as work progresses.
 
-- Templates/routines and starting a workout
-- Previous performance beside the current set
-- Weight, reps, sets, and workout duration
-- Optional warm-up, drop, and failure sets
-- Rest timer
-- Exercise and set notes
-- Add/remove sets and replace/reorder exercises
-- Large phone-friendly controls with minimal typing
-
-An active workout should be vertically scrollable rather than split across repeated page navigation.
+Completed-workout snapshots preserve the routine details and exercise identities used at the time of completion. Warm-up, drop, and failure-set metadata plus advanced exercise/set notes remain future extensions.
 
 ## 17. Exercise Dex
 
 Exercise Dex is one universal library for everyone. There is no male/female classification, beginner/pro split, or duplication by user type. It is a Workout sub-view; the five primary navigation destinations remain unchanged.
 
-Phase 1A established the initial 198 built-ins. Phase 1E now ships **399 built-in exercises** after final curation. User-facing categories remain exactly Chest, Back, Shoulders, Arms, Legs, Core, Full Body, Cardio, and Mobility. Detailed anatomy remains internal metadata rather than top-level navigation.
+The current SmartWorkout-derived built-in catalog is dataset version 4 with **804 active canonical exercises** and 805 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
 
-Completed subfilters:
+The data-driven membership counts are Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. `split-squat-front-foot-elevated` retains both Legs and Gluteal memberships, accounting for the one extra membership.
 
-- Chest: All, Upper, General, Lower
-- Back: All, Lats, Upper Back, Lower Back
-- Shoulders: All, Front Delts, Side Delts, Rear Delts
-- Arms: All, Biceps, Triceps, Forearms
-- Legs: All, Quads, Hamstrings, Glutes, Calves
-- Core: All, Abs, Obliques, Stability
-- Full Body: All
-- Cardio: All, Running, Walking, Cycling, Rowing, Machines, Conditioning
-- Mobility: All, Upper Body, Lower Body, Full Body
-
-The model supports stable ID, canonical name, aliases, top-level category, primary and secondary muscles, muscle regions, equipment, tracking type, optional movement pattern, built-in/custom source, archived state, optional instructions, difficulty, laterality, cardio subtype, and timestamps.
-
-Built-ins use deterministic `builtin-exercise:<name-slug>` IDs and dataset version 2. Startup seeding upserts canonical metadata only when the version changes or records are missing. Retired canonical records are archived rather than deleted. Custom exercises are not overwritten.
+The model supports authoritative multi-category membership, stable SmartWorkout source slug/page/record IDs, source media status, reliable equipment options, FitDex tracking type/movement pattern, and historical category compatibility. Built-ins use stable canonical IDs while leaving custom exercises untouched.
 
 Canonical built-in data and user state are deliberately separate. Favourites, personal notes, and custom-tag links live in `exercisePreferences`, so future canonical updates do not erase them. The current UI exposes a small persistent favourite control; advanced custom-exercise editing remains future work.
 
-Search is local, instant, case-insensitive, whitespace-trimmed, and diacritic-normalized across name, aliases, category, primary/secondary muscles, and equipment. Main-page search covers the full library. Category counts are derived from loaded records. Category feeds combine local search with the approved subfilters and open a simple structured detail view.
-
-Exercise sprites are deferred. Phase 1A renders no fake artwork, silhouettes, placeholders, or Art Pending labels.
+Search is local, instant, case-insensitive, whitespace-trimmed, and diacritic-normalized across names, aliases, categories, muscles, and equipment. Normalization supports common variants such as `pushup`/`push up`/`push-up` and `onearm`/`one arm`/`one-arm` in both the Dex and exercise pickers. Category counts are derived from loaded records. Muscle-category cards resolve lightweight theme-specific PNG sprites (Spartan and Amazonian, dark and light) and do not load exercise videos.
 
 ### Phase 1B catalog audit
 
@@ -252,11 +229,91 @@ Phase 1E is complete. Eight lower-priority candidates were deliberately excluded
 
 The 91 approved aliases and seven existing-record corrections are integrated. Power Clean is a distinct canonical exercise; Dragon Flag is a canonical advanced Core exercise using reps-only tracking and the Isometric movement pattern. Equipment now includes Back Extension Bench, Trap Bar, Rings, Sandbag, and GHD. Movement-pattern taxonomy adds Isometric, Olympic Lift / Explosive, and Crawl. Cardio records expose a compact supported-metrics list while retaining one canonical record per modality and optional-distance indoor-bike tracking.
 
-Dataset version 2 refreshes deterministic built-in metadata and adds missing built-ins without touching custom exercises or the separate favourites, personal notes, and custom-tag preference records. The validator and catalog audit enforce the 399-record category totals, 91 aliases, required canonical records, excluded-eight absence, and collision-free source state. Exercise sprites, advanced custom-exercise UX, and workout logging remain future work.
+Dataset version 2 refreshes deterministic built-in metadata and adds missing built-ins without touching custom exercises or the separate favourites, personal notes, and custom-tag preference records. The validator and catalog audit enforce the 399-record category totals, 91 aliases, required canonical records, excluded-eight absence, and collision-free source state. At this Phase 1E checkpoint, exercise sprites, advanced custom-exercise UX, and workout logging were future work.
+
+### Phase 1F historical content research
+
+Phase 1F researched three 40-record written-content batches and a small set of external destinations across NASM, Catalyst Athletics, and MuscleWiki. Those counts are retained only as historical context; the mixed external-link approach is no longer the active content workflow.
+
+### Phase 1G SmartWorkout exercise-media pilot
+
+`EXERCISE_CONTENT_TRACKER.md` is now the authoritative checker for the SmartWorkout-first exercise-media migration. The first pilot integrates exactly 10 canonical exercises with locally stored SmartWorkout demonstrations, concise FitDex-authored instructions, and FitDex-authored “How it helps” copy. Media type is detected from each exact exercise page rather than assumed globally; FitDex supports MP4, GIF, and animated WebP sources.
+
+All 10 current pilot pages expose HTML video elements with MP4 sources, so the pilot stores those actual MP4 assets without converting them to GIF. Exercise Detail renders MP4 through a lightweight muted, autoplaying, inline, looping video without visible controls; GIF or animated WebP is rendered as an image if encountered later. The text “Video not supported” inside a source page's video element is browser fallback text, not evidence that media is unavailable. If valid media is absent, the media area is omitted; exercises without content retain the existing metadata-only detail view.
+
+The canonical dataset remains unchanged at 399 built-ins and dataset version 2. The remaining 389 exercises are deferred until this pilot is approved.
+
+### Phase 1G SmartWorkout bulk Batch 1
+
+Bulk Batch 1 processed the next 65 canonical exercises in dataset order, bringing the SmartWorkout research/content total to 75 records. Fifty-two Batch 1 records have verified local MP4 demonstrations; 13 have FitDex-authored written content without media because no exact or sufficiently equivalent SmartWorkout match was found. The tracker records those skipped mappings for later user review without changing the 399-record canonical library.
+
+Exercise media remains local development storage under `public/exercises`, outside the JavaScript and CSS bundles and excluded from PWA precaching. After all 399 records are migrated and audited, the planned next architecture step is Cloudflare-hosted, on-demand media; that migration is not part of this phase.
+
+### Phase 1G SmartWorkout bulk Batch 2
+
+Bulk Batch 2 processed the next 65 canonical exercises, from Machine Preacher Curl through Hanging Leg Raise, bringing the running SmartWorkout research/content total to 140. Fifty-one records have verified local MP4 demonstrations; 13 have no exact or sufficiently equivalent SmartWorkout mapping and one has a confirmed page whose published MP4 source returns 404, so those 14 remain written-content-only without fabricated media.
+
+The local development library now contains 113 verified MP4 files (85,158,588 bytes). Media remains outside JS/CSS bundles and PWA precaching; Cloudflare-hosted on-demand media remains the planned post-audit migration. The canonical library remains 399 records at dataset version 2; the next 259 records are deferred to later bulk batches.
+
+### Phase 1G SmartWorkout bulk Batch 3
+
+Bulk Batch 3 processed 65 canonical records, from Hanging Knee Raise through Archer Push-Up, bringing content coverage to 205. Twenty verified SmartWorkout MP4 demonstrations were added; records without a page-verified Exact or defensible Equivalent mapping retain FitDex-authored written content only. The canonical library remains unchanged, media remains excluded from PWA precaching, and Cloudflare-hosted on-demand media remains a future migration.
+
+### Phase 1G SmartWorkout bulk Batch 4
+
+Bulk Batch 4 processed 65 canonical records, from Decline Machine Press through Farmer Hold, bringing coverage to 270 of 399. Thirty-one verified MP4 demonstrations were added; No-Match and Variation-only records remain canonical with written content and pending user review rather than being removed or assigned weak media. Local development media totals 164 MP4s (131,292,640 bytes), remains outside PWA precaching, and will move to Cloudflare only after the full migration audit.
+
+### Phase 1G SmartWorkout bulk Batch 5
+
+Bulk Batch 5 adds 65 canonical written-content records, from Kettlebell Goblet Squat through Barbell Clean and Press, taking coverage to 335 of 399. Twenty-five page-verified SmartWorkout MP4 demonstrations were added; the remaining 40 are logged as No Match, remain canonical, and retain written content without forced media mappings. Canonical data remains unchanged and exercise media remains outside PWA precaching pending the future Cloudflare on-demand migration.
+
+### Phase 1G SmartWorkout bulk Batch 6
+
+Bulk Batch 6 adds written content coverage for the final 64 canonical exercises, bringing the centralized content layer to 399 of 399. No unverified media is attached; the remaining media gaps remain canonical, written-content-only, outside PWA precaching, and eligible for a later SmartWorkout media-gap audit before the planned Cloudflare on-demand migration.
+
+### Phase 1H full content and media audit
+
+The final audit confirms 399 unique canonical records and 399 unique content records. The active library has 186 verified MP4 demonstrations totaling 153,166,551 bytes, with no missing, duplicate-path, duplicate-source, or orphan media files. The 213 written-content-only records reconcile as 207 No Match, five Variation-only, and one valid Exact match whose declared MP4 returns HTTP 404. No GIF or animated WebP is currently active.
+
+Later-batch boilerplate was replaced with canonical-metadata-aware copy covering equipment, movement pattern, and category-specific value. Exercise media remains static, excluded from PWA precaching, and loaded only by Exercise Detail. The consolidated media-gap review in `EXERCISE_CONTENT_TRACKER.md` is the authority for future user decisions; no canonical removal occurred. Cloudflare migration remains deferred until explicitly scheduled.
+
+### Phase 1I SmartWorkout-aligned canonical rebuild
+
+At the Phase 1I checkpoint, the legacy 399-record v2 catalog was superseded by 813 unique SmartWorkout page identities, 813 FitDex content records, and 804 verified MP4 demonstrations totaling 695,871,888 bytes; nine SmartWorkout pages provided no media element, and no declared source asset failed. Media stayed in `public/exercises/`, outside the JS/CSS bundles and PWA precache, and loaded only in the selected Exercise Detail. Cloudflare was not implemented and remained the planned later on-demand host.
+
+All 399 legacy IDs have deterministic migration decisions: 257 map to a v3 successor and 142 retire without a high-confidence successor. The prior 213 non-media records reconcile as 71 mapped and 142 retired; every former media-backed record has a successor. Dexie/database and built-in dataset version 3 remap preferences and workout references, preserve old workout display snapshots, archive unmapped built-ins, deactivate obsolete favourites without deleting notes/tags, and leave custom exercises unchanged. `EXERCISE_CATALOG.md` documents the architecture; `EXERCISE_CONTENT_TRACKER.md` owns the exact active inventory and migration tables.
+
+### Phase 1I.1 demonstrated-media requirement
+
+Phase 1I.1 retires the nine SmartWorkout pages that provide no usable demonstration media. Dataset/database version 4 has 804 active built-ins, 804 content records, and 804 verified MP4 demonstrations; every active built-in now has verified media. Category memberships were recalculated, while the remaining page-slug IDs are unchanged. The v4 seed archives retired records, keeps workout history displayable through snapshots, deactivates retired active references safely, and leaves custom exercises unchanged. Exercise media remains outside PWA precaching and Cloudflare remains deferred.
+
+### Phase 1K.1 local Workout Hub and routines
+
+The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for multi-select routine picking and Exercise Detail can add an exercise directly to a routine. Built-in and custom exercises share the same stable-ID reference path, duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
+
+The built-in exercise dataset remains version 4 with 804 records. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local. Future `.fitdex` backup/restore must include routines, routine exercises, workout sessions, session exercises, and set/activity logs.
+
+### Phase 1K.2 active workout logging and history
+
+Active workouts now persist incrementally in the existing Dexie v5 `workouts`, `workoutExercises`, and `workoutSets` stores. FitDex permits one active session at a time, supports routine-derived snapshot sessions and empty/ad-hoc sessions, restores elapsed time from the persisted start timestamp, and autosaves names, notes, exercise order, tracking-mode-specific values, set completion, and structural changes. Routine edits never rewrite an active or completed session.
+
+Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Finishing preserves incomplete draft rows without counting them as completed, while a completely empty/non-meaningful session must be discarded. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Custom exercises use the same flow. Future `.fitdex` backup must include all five workout/routine stores; Journal, Progress, PR, streak, and XP features can consume these records later. RPE, calorie estimation, and Journal linking remain intentionally deferred.
+
+### Android/WebView local-ID compatibility
+
+Persistent local records now use the shared `createId()` utility. It prefers `globalThis.crypto.randomUUID()` and falls back offline to an RFC 4122 UUID v4 built with `globalThis.crypto.getRandomValues()` when Android/WebView environments do not expose `randomUUID()`. Existing stored IDs, Dexie schema v5, and canonical built-in IDs are unchanged; no `Math.random()` fallback is used.
+
+### Current Exercise Dex and workout milestone snapshot
+
+The active Exercise Dex is built-in dataset version 4: 804 stable canonical IDs, 804 verified local MP4 demonstrations, and complete FitDex-authored How to Perform/How it Helps content. Category memberships total 805 because `split-squat-front-foot-elevated` belongs to both Legs and Gluteal: Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. Normalized search supports punctuation/spacing variants such as `pushup`/`push up`/`push-up` and `onearm`/`one arm`/`one-arm`; the Exercise Dex remains the shared browser and picker engine.
+
+Demonstrations stay under `public/exercises/`, load only in Exercise Detail, and are excluded from PWA precaching. The dynamic category-sprite system has nine sprites in each Spartan Dark, Spartan Light, Amazonian Dark, and Amazonian Light set under `public/exercise-categories/`. Cloudflare/R2 is not configured; a production media-delivery layer remains future work.
+
+The Workout tab is the parent hub for Today (Start/Resume), Your Routines, Exercise Library, and Recent Workouts. Local schema v5 tables are `workoutRoutines`, `routineExercises`, `workouts`, `workoutExercises`, and `workoutSets`; there is no cloud database, account requirement, or workout sync. Routine items default to three planned sets (1–20 allowed), preserve an exercise-name snapshot and deterministic order, and reject duplicate exercise IDs. Canonical values are kilograms, kilometres, and seconds, with existing `settings.units` controlling kg/lb and km/mi display/input conversion. A lightweight 90-second rest timer is resettable/skippable; session notes are supported, while RPE/RIR, calorie estimation, and advanced exercise/set notes remain deferred.
 
 ## 18. Custom exercises and organization
 
-Users will be able to create custom exercises with a name, primary and secondary muscles, category, subcategory, equipment, tracking type, movement, personal tags, and notes. Users may also create organizational categories/tags.
+Custom exercise records share the same ID-reference path as built-ins in routines, active workouts, picker contexts, completed history, and previous-performance lookup. A full custom-exercise editor and advanced organizational UX remain future work.
 
 These concepts remain separate:
 
@@ -266,7 +323,7 @@ These concepts remain separate:
 
 ## 19. Exercise tracking types
 
-Intended types:
+Implemented tracking types:
 
 - `weight_reps` — Chest Press
 - `bodyweight_reps` — Push-up
@@ -274,6 +331,7 @@ Intended types:
 - `reps_only`
 - `duration` — Plank
 - `distance_duration` — Running
+- `duration_optional_distance`
 - `weight_distance` — Farmer Carry
 - `duration_reps`
 
@@ -371,7 +429,7 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] Six real avatar PNGs added manually
 - [x] Transparent-background fallback bug fixed in `AvatarPortrait`
 - [x] Universal Exercise Dex browsing, search, category filters, and detail view
-- [x] Versioned 399-exercise built-in dataset with deterministic IDs
+- [x] Versioned SmartWorkout-derived built-in dataset with deterministic page-slug IDs
 - [x] Separate persistent exercise favourite/user-preference records
 - [x] Lightweight built-in dataset integrity validator
 - [x] Phase 1B master Exercise Catalog audit and researched expansion backlog
@@ -379,18 +437,29 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] Phase 1C catalog-resolution decisions and Phase 1D expansion audit
 - [x] Phase 1D comprehensive catalog-completeness and cardio-modality research
 - [x] Phase 1E curated 399-exercise dataset version 2 integration
+- [x] Phase 1F historical Exercise Content Tracker research (three 40-record batches)
+- [x] Phase 1G SmartWorkout exercise-media content pilot (10 records)
+- [x] Phase 1G SmartWorkout Bulk Batch 1 and Batch 2 (130 additional records)
+- [x] Phase 1G SmartWorkout migration content coverage (399 records)
+- [x] Phase 1H full content/media integrity and gap audit
+- [x] Phase 1I SmartWorkout-aligned v3 canonical rebuild and legacy-reference migration
+- [x] Phase 1I.1 retirement of nine media-less SmartWorkout pages; v4 demonstrated-media catalog
+- [x] Phase 1K.1 local Workout Hub, routine CRUD, reusable Exercise Dex picker, and v5 workout schema foundation
+- [x] Phase 1K.2 active workout logging, persistent completed workout history, previous-performance lookup, and rest timer
+- [x] Android/WebView Web-Crypto UUID v4 fallback for local persistent IDs
 - [x] Build, lint, TypeScript, and PWA checks passing
 
 ## 29. Current development status
 
-**Current phase:** Phase 1E Final Exercise Dataset Integration complete; Exercise Dex ships dataset version 2 with 399 built-ins, and workout feature implementation has not started.
+**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, previous-performance lookup, and Android/WebView-compatible local ID generation are complete on Dexie schema version 5.
 
-Major business features are not implemented. Likely next work:
+Likely next work:
 
-1. Final Exercise Dex visual/device QA with the 399-record library
-2. Advanced custom-exercise UX
-3. Exercise sprites in a separate asset phase
-4. Workout logging
+1. Production deployment and Cloudflare setup from zero, including appropriate R2/media delivery for exercise videos
+2. Final PWA and real-device visual/device QA
+3. `.fitdex` backup/restore for user-owned local state
+4. Journal integration, Progress/personal records, and XP/streak features driven by real workout facts
+5. Advanced custom-exercise UX and a later decision about retired no-media exercises
 
 This list is direction, not completed work.
 

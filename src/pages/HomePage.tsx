@@ -49,7 +49,7 @@ export function HomePage() {
         <Panel className="status-panel">
           <div className="status-panel-heading"><Dumbbell size={19} aria-hidden="true" /><p className="eyebrow">Next workout</p></div>
           <h2>No session planned</h2>
-          <p className="muted">Workout planning arrives in a future phase.</p>
+          <p className="muted">Build local workout routines from the complete Exercise Dex.</p>
         </Panel>
       </div>
     </div>
