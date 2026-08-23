@@ -1,96 +1,128 @@
 # FitDex
 
-FitDex is a mobile-first, local-first fitness-tracking PWA with a restrained retro-RPG interface. It runs on Android, iPhone, and desktop browsers, storing user-owned training data on the device through Dexie/IndexedDB rather than requiring an account or cloud sync.
+> A local-first fitness companion for workouts, nutrition logging, and a retro RPG-inspired interface.
 
-## What exists now
+FitDex is a mobile-first Progressive Web App for building routines, logging real workouts, and tracking food on your own device. It pairs practical fitness tools with original pixel-art styling—without requiring an account or storing personal workout or nutrition history in a FitDex cloud database.
+
+## Features
 
 ### Exercise Dex
 
-- Built-in Exercise Dex dataset version **4** with **804 active canonical exercises**.
-- Every active exercise has a verified local MP4 demonstration, FitDex-authored **How to Perform** content, and **How it Helps** content.
-- The nine categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs.
-- Category memberships: Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, Abs 104 — **805 memberships** total because one exercise belongs to both Legs and Gluteal.
-- Canonical IDs use stable `builtin-exercise:<smartworkout-page-slug>` values. Search normalizes punctuation and spacing, so `pushup`, `push up`, `push-up`, `onearm`, `one arm`, and `one-arm` resolve consistently.
-- The same Exercise Dex powers normal browsing, routine selection, and active-workout selection; built-in and custom exercises are supported in picker contexts.
+- Search **804** active built-in exercises across nine muscle categories.
+- Browse verified demonstrations, FitDex-authored instructions, equipment, and tracking guidance.
+- Use normalized local search for common punctuation and spacing variants.
+- Explore themed category pixel art across all four visual themes.
 
-### Exercise media and category sprites
+### Workout & Routines
 
-- **804 verified MP4 files** currently live in `public/exercises/` and render only when the relevant Exercise Detail is open.
-- Exercise media is intentionally excluded from the PWA precache and remains local development storage for now.
-- Cloudflare/R2 media hosting is **not configured**. Production media delivery is future work.
-- Category art dynamically resolves from the active Spartan/Amazonian family and light/dark brightness. There are nine sprites in each of the four sets:
+- Create reusable routines and set planned set counts.
+- Start from a routine or begin an empty workout.
+- Resume one locally autosaved active session at a time.
+- Log reps, weight, duration, or distance as appropriate for each exercise.
+- Review previous performance, use the rest timer, and keep completed workout history as read-only snapshots.
 
-```text
-public/exercise-categories/
-├── spartan/dark/ and spartan/light/
-└── amazonian/dark/ and amazonian/light/
-```
+### Food & Nutrition
 
-### Workout system
+- Log foods under Breakfast, Lunch, Supper, or Dinner.
+- Enter calories, protein, carbohydrates, fat, fiber, sugar, saturated fat, and sodium manually.
+- Browse dates, review meal and daily totals, and edit or delete individual entries.
+- Reuse remembered foods with their saved category and default nutrition values.
+- Choose fixed pixel-art categories or create a custom category through Other with a personal accent color and one recolorable generic pixel icon.
 
-The Workout tab is the training hub:
+### Local-first PWA
 
-```text
-Workout
-├── Today — Start or Resume Workout
-├── Your Routines
-├── Exercise Library
-└── Recent Workouts
-```
+- Personal workout and food history live locally in IndexedDB through Dexie.
+- No account is required and FitDex does not currently run a cloud database for that history.
+- The app is installable and supports offline app-shell use after loading/installation as provided by the PWA.
 
-Routines are editable local templates with ordered exercise-ID references and planned set counts. A routine defaults to three sets per exercise, allows 1–20 sets, prevents duplicate exercise IDs, and supports built-in and custom exercises. Deleting a routine never deletes completed workout history.
+### Themes & Pixel Art
 
-FitDex supports persistent active workouts started from a routine or as an empty session. One active workout is allowed at a time; it can be resumed after navigation, refresh, browser restart, or PWA restart. Users can add, remove, and reorder exercises and sets, enter tracking-mode-specific values, mark sets complete, finish, or discard a session. Each mutation saves to IndexedDB immediately.
+- Original FitDex retro-RPG/pixel-game styling—not a Pokédex clone.
+- Spartans Dark, Spartans Light, Amazonians Dark, and Amazonians Light.
+- Theme-aware exercise category sprites and food icons.
 
-Supported tracking modes are `weight_reps`, `bodyweight_reps`, `assisted_bodyweight`, `reps_only`, `duration`, `distance_duration`, `duration_optional_distance`, `weight_distance`, and `duration_reps`. Values are stored canonically in kilograms, kilometres, and seconds; existing `settings.units` drives kg/lb and km/mi display/input conversion.
+## Local-first by design
 
-The historical model is deliberate:
+FitDex keeps editable and historical data deliberately separate:
 
 ```text
-ROUTINE = editable template
-ACTIVE WORKOUT = mutable in-progress snapshot
-COMPLETED WORKOUT = immutable historical snapshot
+Routines           → editable templates
+Active workouts    → resumable local sessions
+Completed workouts → historical snapshots
+Remembered foods   → reusable local templates
+Food log entries   → historical nutrition snapshots
 ```
 
-Completed history stores workout/routine snapshots, exercise IDs/names/categories/tracking modes/order, timestamps, duration, and set/activity data. Later routine edits or deletion cannot rewrite the record. Previous performance matches stable exercise IDs and considers only prior completed workouts; active and discarded sessions are ignored. Recent Workouts contains real completed data only. Summary metrics include duration, exercise count, total/completed sets, and eligible resistance volume from completed `weight_reps` sets. Calories, RPE/RIR, and advanced exercise/set notes are intentionally not implemented; session-level notes and a lightweight 90-second resettable/skippable rest timer are available.
+Changing a routine, a remembered food, or a custom category does not rewrite past completed workouts or food logs. A portable `.fitdex` backup/restore flow is planned, but is not available yet—clearing browser or PWA data currently removes local history.
 
-## Local-first data and ID compatibility
+## Technology
 
-Dexie database schema version is **5**. Core workout stores are `workoutRoutines`, `routineExercises`, `workouts`, `workoutExercises`, and `workoutSets`; no FitDex cloud database, account-required storage, or workout cloud sync exists.
+| Technology | Purpose |
+| --- | --- |
+| React + TypeScript | Application UI and typed domain model |
+| Vite | Development server and production build |
+| Dexie + IndexedDB | Local persistence for user-owned data |
+| vite-plugin-pwa / Workbox | Installable PWA and offline app shell |
+| lucide-react | Interface icons and accessible fallbacks |
+| Cloudflare Workers + Wrangler | Static-asset application deployment |
 
-Persistent local IDs use `src/utils/createId.ts`: it prefers `globalThis.crypto.randomUUID()` and falls back to an RFC 4122 UUID v4 created with `globalThis.crypto.getRandomValues()` for Android/WebView environments that lack `randomUUID()`. It works offline, never uses `Math.random()`, and never regenerates existing IDs or canonical built-in exercise IDs.
+```text
+Browser / installed PWA
+          ↓
+       React UI
+          ↓
+      Dexie / IndexedDB
 
-Future `.fitdex` backup/restore must include routines, routine exercises, workouts, workout exercises, workout sets, and the rest of the user-owned FitDex state. Backup/restore is not implemented yet.
+Cloudflare Workers Static Assets serve the application and its static assets.
+Personal workout and nutrition data stays on the device.
+```
 
-## Stack and local development
+## Current status
 
-- React 19, TypeScript, Vite
-- Dexie/IndexedDB
-- `vite-plugin-pwa` / Workbox for installable offline app-shell support
-- Oxlint
+**Implemented**
+
+- Exercise Dex: dataset version 4, 804 active built-ins, 804 verified demonstrations, and written exercise content
+- Routine building, active workout logging, autosave, rest timer, previous performance, and completed-workout history
+- Food / Nutrition V1 with local food memory, date navigation, totals, categories, and custom categories
+- Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
+
+**Planned / upcoming**
+
+- Journal integration
+- Progress, body tracking, and personal records
+- Home dashboard refinement
+- XP, levels, and streaks driven by real activity
+- `.fitdex` backup/restore
+- Onboarding/settings polish and broader device QA
+
+## Screenshots
+
+> Product screenshots and previews are coming soon.
+
+## Getting started
+
+Requires a current Node.js/npm installation.
 
 ```bash
+git clone https://github.com/ArijitWayne/fitdex.git
+cd fitdex
 npm install
 npm run dev
 ```
 
-Useful checks:
+## Useful commands
 
-```bash
-npm run validate:exercises
-npm run validate:exercise-content
-npm run test:exercise-dex
-npm run test:workout-sessions
-npm run test:create-id
-npm run build
-npm run lint
-```
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Type-check and create a production build |
+| `npm run lint` | Run Oxlint |
+| `npm run test:exercise-dex` | Check Exercise Dex UI/data contracts |
+| `npm run test:workout-sessions` | Check workout session behavior |
+| `npm run test:food` | Check Food V1 repository behavior |
 
-## Next product work
+## Deployment
 
-1. Production deployment and Cloudflare setup from zero.
-2. Appropriate Cloudflare R2/media delivery for heavy exercise videos.
-3. Production PWA and real-device QA.
-4. `.fitdex` backup/restore.
-5. Journal integration and Progress/personal-record views.
-6. XP, streak, and gamification features driven by real workout facts.
+FitDex is configured for Cloudflare Workers Static Assets via `wrangler.jsonc`. Build with `npm run build`; Wrangler is the deployment tool. This deployment serves the app and its static assets only—FitDex does not store user workout or nutrition records in Cloudflare, and R2 is not configured.
+
+FitDex is under active development. No license file is currently included in this repository.

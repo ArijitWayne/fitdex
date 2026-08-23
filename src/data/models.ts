@@ -222,6 +222,58 @@ export interface FoodEntry extends EntityRecord {
   servings: number
 }
 
+export const FOOD_MEALS = ['breakfast', 'lunch', 'supper', 'dinner'] as const
+export type FoodMeal = (typeof FOOD_MEALS)[number]
+
+export const PREDEFINED_FOOD_CATEGORY_IDS = [
+  'chicken', 'eggs', 'meat', 'fish-seafood', 'dairy', 'grains-rice', 'fruits',
+  'flour-wheat', 'vegetables', 'nuts-seeds', 'drinks', 'supplements', 'desserts-snacks',
+  'processed-foods', 'junk-food', 'other',
+] as const
+export type PredefinedFoodCategoryId = (typeof PREDEFINED_FOOD_CATEGORY_IDS)[number]
+
+export interface FoodNutrition {
+  kcal?: number
+  protein?: number
+  carbs?: number
+  fat?: number
+  fiber?: number
+  sugar?: number
+  saturatedFat?: number
+  sodium?: number
+}
+
+export interface CustomFoodCategory extends EntityRecord {
+  name: string
+  normalizedName: string
+  color: string
+}
+
+export interface RememberedFood extends EntityRecord, FoodNutrition {
+  name: string
+  normalizedName: string
+  categoryId: PredefinedFoodCategoryId
+  customCategoryId?: string
+  customCategoryName?: string
+  customCategoryColor?: string
+  timesUsed: number
+  lastUsedAt: string
+  mealUsage: Partial<Record<FoodMeal, number>>
+}
+
+export interface FoodLogEntry extends EntityRecord, FoodNutrition {
+  date: string
+  meal: FoodMeal
+  rememberedFoodId?: string
+  foodName: string
+  categoryId?: PredefinedFoodCategoryId
+  categoryName: string
+  categoryKind: 'predefined' | 'custom' | 'unresolved'
+  customCategoryId?: string
+  customCategoryName?: string
+  customCategoryColor?: string
+}
+
 export interface BodyMeasurement extends EntityRecord {
   recordedAt: string
   weight?: number

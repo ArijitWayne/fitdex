@@ -16,7 +16,11 @@
     "test:workout-id-compatibility": "node --experimental-strip-types src/features/workout/testWorkoutIdCompatibility.ts",
     "test:workout-sessions": "node --experimental-strip-types src/features/workout/testWorkoutSessions.ts",
     "test:workout-ui": "node --experimental-strip-types src/features/workout/testWorkoutUi.ts",
+    "test:food": "node --experimental-strip-types src/features/food/testFoodRepository.ts",
+    "test:food-migration": "node --experimental-strip-types src/features/food/testFoodMigration.ts",
+    "test:food-ui": "node --experimental-strip-types src/features/food/testFoodUi.ts",
     "test:create-id": "node --experimental-strip-types src/utils/testCreateId.ts",
+    "test:local-date": "node --experimental-strip-types src/utils/testLocalDate.ts",
     "validate:exercises": "node --experimental-strip-types src/features/exerciseDex/validateExercises.ts",
     "preview": "vite preview"
   },

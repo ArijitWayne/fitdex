@@ -9,8 +9,10 @@ import type {
   ExercisePreference,
   Food,
   FoodEntry,
+  FoodLogEntry,
   JournalRecord,
   Meal,
+  RememberedFood,
   Quest,
   RoutineExercise,
   SettingsRecord,
@@ -20,10 +22,11 @@ import type {
   WorkoutRoutine,
   WorkoutSet,
   XpHistoryEntry,
+  CustomFoodCategory,
 } from './models'
 
 export const DATABASE_NAME = 'fitdex'
-export const DATABASE_SCHEMA_VERSION = 5
+export const DATABASE_SCHEMA_VERSION = 6
 
 const DATABASE_STORES_V4 = {
   settings: '&id, updatedAt',
@@ -47,12 +50,19 @@ const DATABASE_STORES_V4 = {
   journalRecords: '&id, &date, updatedAt',
 } as const
 
-const DATABASE_STORES = {
+const DATABASE_STORES_V5 = {
   ...DATABASE_STORES_V4,
   routineExercises: '&id, routineId, exerciseId, [routineId+order], &[routineId+exerciseId], updatedAt',
   workouts: '&id, routineId, status, startedAt, completedAt, [status+completedAt], updatedAt',
   workoutExercises: '&id, workoutId, exerciseId, [workoutId+order], [exerciseId+workoutId], updatedAt',
   workoutSets: '&id, workoutExerciseId, [workoutExerciseId+order], completed, updatedAt',
+} as const
+
+const DATABASE_STORES = {
+  ...DATABASE_STORES_V5,
+  rememberedFoods: '&id, &normalizedName, lastUsedAt, timesUsed, updatedAt',
+  foodLogEntries: '&id, date, meal, [date+meal], rememberedFoodId, createdAt, updatedAt',
+  customFoodCategories: '&id, &normalizedName, name, updatedAt',
 } as const
 
 export class FitDexDatabase extends Dexie {
@@ -71,6 +81,9 @@ export class FitDexDatabase extends Dexie {
   dailyNutrition!: Table<DailyNutrition, string>
   meals!: Table<Meal, string>
   foodEntries!: Table<FoodEntry, string>
+  rememberedFoods!: Table<RememberedFood, string>
+  foodLogEntries!: Table<FoodLogEntry, string>
+  customFoodCategories!: Table<CustomFoodCategory, string>
   bodyMeasurements!: Table<BodyMeasurement, string>
   achievements!: Table<Achievement, string>
   quests!: Table<Quest, string>
@@ -110,7 +123,7 @@ export class FitDexDatabase extends Dexie {
 
     // v5 adds routine items and snapshot-friendly workout indexes while
     // preserving and completing any early workout records already on-device.
-    this.version(DATABASE_SCHEMA_VERSION).stores(DATABASE_STORES).upgrade(async (transaction) => {
+    this.version(5).stores(DATABASE_STORES_V5).upgrade(async (transaction) => {
       const [routines, exercises] = await Promise.all([
         transaction.table<WorkoutRoutine, string>('workoutRoutines').toArray(),
         transaction.table<Exercise, string>('exercises').toArray(),
@@ -136,6 +149,10 @@ export class FitDexDatabase extends Dexie {
         workoutExercise.trackingTypeSnapshot ??= exercise?.trackingType
       })
     })
+
+    // v6 adds local-first Food V1 stores. Legacy nutrition placeholders remain
+    // untouched so existing on-device data is never reset or discarded.
+    this.version(DATABASE_SCHEMA_VERSION).stores(DATABASE_STORES)
   }
 }
 

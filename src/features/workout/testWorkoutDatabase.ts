@@ -35,7 +35,7 @@ const versionFourStores = {
 await Dexie.delete(databaseName)
 
 // Existing-v4 upgrade fixture: user-created exercise, preference, routine, and
-// historical workout records must all survive the v5 schema migration.
+// historical workout records must all survive the v4 through v6 migrations.
 const legacy = new Dexie(databaseName)
 legacy.version(4).stores(versionFourStores)
 await legacy.open()
@@ -95,7 +95,7 @@ await legacy.table('workoutExercises').add({
 legacy.close()
 
 const { DATABASE_SCHEMA_VERSION, FitDexDatabase, db } = await import('../../data/database.ts')
-assert.equal(DATABASE_SCHEMA_VERSION, 5)
+assert.equal(DATABASE_SCHEMA_VERSION, 6)
 await db.open()
 
 assert.ok(db.tables.some((table) => table.name === 'routineExercises'))
@@ -146,7 +146,7 @@ assert.equal(await db.workoutRoutines.get(persistedRoutine.id), undefined)
 assert.equal((await db.exercises.get(customExercise.id))?.name, customExercise.name)
 assert.equal((await db.workouts.get('workout:legacy'))?.nameSnapshot, routine.name)
 
-// Fresh install: all v5 stores are available; normal seeding restores exactly
+// Fresh install: all v6 stores are available; normal seeding restores exactly
 // the authoritative 804 built-ins without changing dataset version 4.
 db.close()
 await Dexie.delete(databaseName)
@@ -163,4 +163,4 @@ assert.equal(await db.exercisePreferences.count(), 0)
 db.close()
 await Dexie.delete(databaseName)
 
-console.log('Workout database tests passed: real v4→v5 upgrade, data preservation, idempotent reload, local routine persistence/isolation, and fresh-install catalog storage')
+console.log('Workout database tests passed: real v4→v6 upgrade, data preservation, idempotent reload, local routine persistence/isolation, and fresh-install catalog storage')

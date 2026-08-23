@@ -35,6 +35,18 @@
   --color-faction-spartans: #1f8582;
   --color-faction-amazonians: #785178;
 
+  /* Food custom-category palette: semantic, stable across all four themes. */
+  --food-custom-amber: #a86b08;
+  --food-custom-coral: #b85c43;
+  --food-custom-crimson: #a93d52;
+  --food-custom-plum: #805080;
+  --food-custom-violet: #6958a8;
+  --food-custom-blue: #326da8;
+  --food-custom-teal: #247b78;
+  --food-custom-green: #487d49;
+  --food-custom-olive: #74733a;
+  --food-custom-slate: #596773;
+
   /* Settings previews intentionally show both brightness variants. */
   --swatch-spartans-dark: #1d2322;
   --swatch-spartans-light: #f4ebdd;

@@ -86,15 +86,16 @@ assert.equal(routinesAfterDelete.length, 0)
 assert.equal(completedWorkout.nameSnapshot, 'Push Day')
 assert.ok(builtInExercises.some((exercise) => exercise.id === canonical.id))
 
-// Database/migration readiness: v5 adds the routine table while preserving the v4 catalog.
-assert.equal(DATABASE_SCHEMA_VERSION, 5)
+// Database/migration readiness: v6 retains the v5 routine table and v4 catalog.
+assert.equal(DATABASE_SCHEMA_VERSION, 6)
 assert.equal(BUILT_IN_EXERCISE_DATASET_VERSION, 4)
 assert.equal(builtInExercises.length, 804)
 assert.ok(db.tables.some((table) => table.name === 'routineExercises'))
 const databaseSource = fs.readFileSync('src/data/database.ts', 'utf8')
 const repositorySource = fs.readFileSync('src/features/workout/routineRepository.ts', 'utf8')
 assert.match(databaseSource, /this\.version\(4\)\.stores\(DATABASE_STORES_V4\)/)
-assert.match(databaseSource, /this\.version\(DATABASE_SCHEMA_VERSION\)\.stores\(DATABASE_STORES\)\.upgrade/)
+assert.match(databaseSource, /this\.version\(5\)\.stores\(DATABASE_STORES_V5\)\.upgrade/)
+assert.match(databaseSource, /this\.version\(DATABASE_SCHEMA_VERSION\)\.stores\(DATABASE_STORES\)/)
 assert.match(databaseSource, /workout\.nameSnapshot \?\?=/)
 assert.match(databaseSource, /workout\.status \?\?=/)
 assert.match(databaseSource, /workoutExercise\.trackingTypeSnapshot \?\?=/)
@@ -112,4 +113,4 @@ assert.deepEqual(searchExercises(builtInExercises, 'one-arm').map((exercise) => 
 assert.deepEqual(searchExercises(builtInExercises, 'onearm').map((exercise) => exercise.id), oneArmIds)
 assert.ok(searchExercises(builtInExercises.filter((exercise) => exerciseBelongsToCategory(exercise, 'Chest')), 'pushup').every((exercise) => exerciseBelongsToCategory(exercise, 'Chest')))
 
-console.log('Workout routine tests passed: CRUD, canonical/custom references, duplicate guard, set bounds, reordering, history isolation, v5 schema readiness, and shared picker search')
+console.log('Workout routine tests passed: CRUD, canonical/custom references, duplicate guard, set bounds, reordering, history isolation, v6 schema readiness, and shared picker search')

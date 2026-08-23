@@ -26,12 +26,13 @@ Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers a
 - IndexedDB
 - `vite-plugin-pwa`
 - `lucide-react`
+- Cloudflare Workers Static Assets / Wrangler
 
 The architecture is PWA-first. Capacitor is planned for later Android packaging but is not installed.
 
 ## 3. Hosting and distribution
 
-Cloudflare Pages is the preferred web host because FitDex is primarily a static, local-first PWA.
+FitDex is configured for Cloudflare Workers Static Assets through `wrangler.jsonc`; the Worker serves the built application and its static assets. It is not a user-data backend: workout and food records remain in local Dexie/IndexedDB. R2 is not configured.
 
 Planned distribution:
 
@@ -50,7 +51,7 @@ Users should eventually be able to create a portable `.fitdex` backup and restor
 
 Portable backups must preserve:
 
-- Workouts, sets, routines, custom exercises, exercise metadata, and cardio
+- Workouts, sets, routines, exercise metadata, and cardio
 - Foods, meals, and nutrition history
 - Measurements and PRs
 - XP, level, quests, and plan streak
@@ -67,7 +68,7 @@ Architecture requirements:
 - An automatic safety backup before restore
 - Manual backups and automatic local backups
 
-No cloud sync is planned.
+No cloud sync is implemented. `.fitdex` backup/restore remains future work and must include `rememberedFoods`, `foodLogEntries`, and `customFoodCategories` alongside the existing user-owned state.
 
 ## 5. Current database foundation
 
@@ -82,7 +83,7 @@ The Dexie foundation includes typed tables or models for at least:
 - Achievements, quests, and XP history
 - Journal/day records
 
-The schema foundation exists; full business logic is not implemented.
+Workout and Food business logic is implemented; other foundation models remain future-facing.
 
 ## 6. Main navigation
 
@@ -203,9 +204,9 @@ The current SmartWorkout-derived built-in catalog is dataset version 4 with **80
 
 The data-driven membership counts are Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. `split-squat-front-foot-elevated` retains both Legs and Gluteal memberships, accounting for the one extra membership.
 
-The model supports authoritative multi-category membership, stable SmartWorkout source slug/page/record IDs, source media status, reliable equipment options, FitDex tracking type/movement pattern, and historical category compatibility. Built-ins use stable canonical IDs while leaving custom exercises untouched.
+The model supports authoritative multi-category membership, stable SmartWorkout source slug/page/record IDs, source media status, reliable equipment options, FitDex tracking type/movement pattern, and historical category compatibility. Built-ins use stable canonical IDs while preserving compatibility with any older custom-exercise records.
 
-Canonical built-in data and user state are deliberately separate. Favourites, personal notes, and custom-tag links live in `exercisePreferences`, so future canonical updates do not erase them. The current UI exposes a small persistent favourite control; advanced custom-exercise editing remains future work.
+Canonical built-in data and user state are deliberately separate. Favourites, personal notes, and custom-tag links live in `exercisePreferences`, so future canonical updates do not erase them. The current UI exposes a small persistent favourite control; a custom-exercise creator is not part of the supported product direction.
 
 Search is local, instant, case-insensitive, whitespace-trimmed, and diacritic-normalized across names, aliases, categories, muscles, and equipment. Normalization supports common variants such as `pushup`/`push up`/`push-up` and `onearm`/`one arm`/`one-arm` in both the Dex and exercise pickers. Category counts are derived from loaded records. Muscle-category cards resolve lightweight theme-specific PNG sprites (Spartan and Amazonian, dark and light) and do not load exercise videos.
 
@@ -289,7 +290,7 @@ Phase 1I.1 retires the nine SmartWorkout pages that provide no usable demonstrat
 
 ### Phase 1K.1 local Workout Hub and routines
 
-The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for multi-select routine picking and Exercise Detail can add an exercise directly to a routine. Built-in and custom exercises share the same stable-ID reference path, duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
+The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for multi-select routine picking and Exercise Detail can add an exercise directly to a routine. Built-ins use the supported stable-ID reference path; compatibility for historical custom-exercise records remains non-destructive. Duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
 
 The built-in exercise dataset remains version 4 with 804 records. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local. Future `.fitdex` backup/restore must include routines, routine exercises, workout sessions, session exercises, and set/activity logs.
 
@@ -297,23 +298,45 @@ The built-in exercise dataset remains version 4 with 804 records. Dexie schema v
 
 Active workouts now persist incrementally in the existing Dexie v5 `workouts`, `workoutExercises`, and `workoutSets` stores. FitDex permits one active session at a time, supports routine-derived snapshot sessions and empty/ad-hoc sessions, restores elapsed time from the persisted start timestamp, and autosaves names, notes, exercise order, tracking-mode-specific values, set completion, and structural changes. Routine edits never rewrite an active or completed session.
 
-Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Finishing preserves incomplete draft rows without counting them as completed, while a completely empty/non-meaningful session must be discarded. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Custom exercises use the same flow. Future `.fitdex` backup must include all five workout/routine stores; Journal, Progress, PR, streak, and XP features can consume these records later. RPE, calorie estimation, and Journal linking remain intentionally deferred.
+Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Finishing preserves incomplete draft rows without counting them as completed, while a completely empty/non-meaningful session must be discarded. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Historical custom-exercise records remain readable through the same compatibility path. Future `.fitdex` backup must include all five workout/routine stores; Journal, Progress, PR, streak, and XP features can consume these records later. RPE, calorie estimation, and Journal linking remain intentionally deferred.
+
+### Phase 2B local-first Food V1
+
+Food is a complete manual, offline nutrition logger with exactly four ordered meal identifiers: `breakfast`, `lunch`, `supper`, and `dinner`. It uses no external food database, nutrition API, barcode lookup, cloud persistence, account, targets, or seeded example entries. Users can browse any local calendar date (`YYYY-MM-DD`), view calculated daily and meal totals, open a meal, add a new or remembered food, edit that historical entry, and delete only that entry. Viewing a date never creates data.
+
+Dexie schema version 6 retains all v5 and legacy tables and adds three user-owned stores:
+
+- `rememberedFoods`: unique normalized name, display name, category/default-nutrition values, usage count, last-use timestamp, and compact per-meal usage counts.
+- `foodLogEntries`: date/meal indexed historical snapshots containing food name, predefined/custom category snapshot, and the eight optional nutrition facts.
+- `customFoodCategories`: unique normalized reusable name, fixed accessible color token, and timestamps.
+
+The locked predefined categories are Chicken, Eggs, Meat, Fish & Seafood, Dairy, Grains & Rice, Flour & Wheat, Fruits, Vegetables, Nuts & Seeds, Drinks, Supplements, Desserts / Snacks, Processed Foods, Junk Food, and Other. Flour & Wheat remains separate from Grains & Rice. Other creates a reusable custom category with one of these ten semantic color tokens: `amber`, `coral`, `crimson`, `plum`, `violet`, `blue`, `teal`, `green`, `olive`, or `slate`. One shared token-to-visible-color mapping drives picker swatches, the unsaved live preview, saved category rendering, and applicable historical fallback rendering. Predefined categories use fixed assets; custom categories share the single neutral bowl-style, mask-friendly `/food/categories/category-other.webp` base, dynamically recolored at runtime from the saved token (or neutral fallback when unavailable). Save is not required for the live preview, and saved colors persist across navigation and reload.
+
+Only user-created custom categories are deletable; repository code also rejects predefined IDs. Deleting a custom category atomically deletes its `customFoodCategories` record and mapped remembered-food templates, but never historical `foodLogEntries`. Affected historical logs retain their food name, date, meal, and nutrition facts, become `Uncategorized`, and can be edited to assign a current predefined or custom category. Their historical custom color snapshot may still tint the generic orphan icon; it does not keep the deleted category active.
+
+Food name normalization is Unicode-aware, case-insensitive, punctuation-tolerant, and whitespace-collapsing: examples such as `Chicken Breast`, `chicken breast`, `CHICKEN BREAST`, and `Chicken  Breast` map conservatively to one remembered-food lookup; approximate names are not merged. Empty search shows recent and frequent local foods, deterministically ranked by same-meal usage, recency, and frequency. Selecting one pre-fills its category and defaults, but edits for the current portion affect only the new historical snapshot and never silently rewrite the remembered template. The remembered-food search uses the unified FitDex field pattern: one outer field containing icon, input, and clear action, with outer `:focus-within` treatment and no nested visual borders.
+
+Tracked facts are calories (`kcal`), protein, carbohydrates, fat, fiber, sugar, saturated fat (grams), and sodium (milligrams). Name and category are required; each nutrition value is independently optional. Blank remains unknown/absent, explicit zero remains zero, decimals are accepted, and negative, NaN, or non-finite values are rejected. Totals derive from raw entries and ignore missing facts rather than persisting invented zeros.
+
+`src/utils/localDate.ts` defines local calendar identity for conditional Today status using `getFullYear()`, `getMonth()`, and `getDate()` rather than UTC `toISOString()` conversion. Only the actual local current date receives the Food date status label; previous/next navigation uses local `YYYY-MM-DD` values. The permanent Workout Hub “Today” heading is a separate semantic section title, not a selected-date status.
+
+Future Journal and Progress views can group or aggregate the date/meal indexed facts without changing the schema. Future `.fitdex` backup/restore must include all three Food V1 stores in addition to the retained legacy nutrition tables. Food pixel assets live under `public/food/` and resolve from `/food/meals/meal-{meal}.webp` and `/food/categories/category-{categoryId}.webp`; custom categories use the CSS-masked Other base above. Accessible Lucide fallbacks remain available; no emoji or scraped artwork ships.
 
 ### Android/WebView local-ID compatibility
 
-Persistent local records now use the shared `createId()` utility. It prefers `globalThis.crypto.randomUUID()` and falls back offline to an RFC 4122 UUID v4 built with `globalThis.crypto.getRandomValues()` when Android/WebView environments do not expose `randomUUID()`. Existing stored IDs, Dexie schema v5, and canonical built-in IDs are unchanged; no `Math.random()` fallback is used.
+Persistent local records now use the shared `createId()` utility. It prefers `globalThis.crypto.randomUUID()` and falls back offline to an RFC 4122 UUID v4 built with `globalThis.crypto.getRandomValues()` when Android/WebView environments do not expose `randomUUID()`. Existing stored IDs and canonical built-in IDs are unchanged through Dexie schema v6; no `Math.random()` fallback is used.
 
 ### Current Exercise Dex and workout milestone snapshot
 
 The active Exercise Dex is built-in dataset version 4: 804 stable canonical IDs, 804 verified local MP4 demonstrations, and complete FitDex-authored How to Perform/How it Helps content. Category memberships total 805 because `split-squat-front-foot-elevated` belongs to both Legs and Gluteal: Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. Normalized search supports punctuation/spacing variants such as `pushup`/`push up`/`push-up` and `onearm`/`one arm`/`one-arm`; the Exercise Dex remains the shared browser and picker engine.
 
-Demonstrations stay under `public/exercises/`, load only in Exercise Detail, and are excluded from PWA precaching. The dynamic category-sprite system has nine sprites in each Spartan Dark, Spartan Light, Amazonian Dark, and Amazonian Light set under `public/exercise-categories/`. Cloudflare/R2 is not configured; a production media-delivery layer remains future work.
+Demonstrations stay under `public/exercises/`, load only in Exercise Detail, and are excluded from PWA precaching. The dynamic category-sprite system has nine sprites in each Spartan Dark, Spartan Light, Amazonian Dark, and Amazonian Light set under `public/exercise-categories/`. The app is deployed through Cloudflare Workers Static Assets; R2 is not configured, and any separate media-hosting decision remains future work.
 
 The Workout tab is the parent hub for Today (Start/Resume), Your Routines, Exercise Library, and Recent Workouts. Local schema v5 tables are `workoutRoutines`, `routineExercises`, `workouts`, `workoutExercises`, and `workoutSets`; there is no cloud database, account requirement, or workout sync. Routine items default to three planned sets (1–20 allowed), preserve an exercise-name snapshot and deterministic order, and reject duplicate exercise IDs. Canonical values are kilograms, kilometres, and seconds, with existing `settings.units` controlling kg/lb and km/mi display/input conversion. A lightweight 90-second rest timer is resettable/skippable; session notes are supported, while RPE/RIR, calorie estimation, and advanced exercise/set notes remain deferred.
 
-## 18. Custom exercises and organization
+## 18. Exercise-library direction and organization
 
-Custom exercise records share the same ID-reference path as built-ins in routines, active workouts, picker contexts, completed history, and previous-performance lookup. A full custom-exercise editor and advanced organizational UX remain future work.
+FitDex’s supported exercise library is the 804 built-in Exercise Dex. Existing compatibility structures for older custom-exercise records remain non-destructive, but the product direction does not promote a custom-exercise creation workflow. Personal favourites, notes, and custom tags remain separate user-owned organization data.
 
 These concepts remain separate:
 
@@ -347,11 +370,7 @@ Possible fields include duration, distance, pace, speed, incline, resistance, ca
 
 ## 21. Nutrition
 
-Exact meal structure: Breakfast, Lunch, Supper, and Dinner.
-
-Core tracked nutrition is Calories, Protein, Carbohydrates, and Fat. Fibre, sugar, sodium, cholesterol, and micronutrients are possible later additions. The planned local food experience includes My Foods, frequent foods, and fast logging.
-
-USDA FoodData Central, Open Food Facts, and later barcode scanning are possible external lookup sources. External lookup is not implemented.
+Food / Nutrition V1 is implemented as a manual local logger; the detailed source of truth is the Food V1 section above. Its fixed meal structure is Breakfast, Lunch, Supper, and Dinner, and it supports calories, protein, carbohydrates, fat, fiber, sugar, saturated fat, and sodium as individually optional values. Remembered foods, recent/frequent suggestions, fast manual entry, date navigation, and totals are implemented locally. External nutrition lookup, barcode scanning, cloud food sync, targets, cholesterol, and micronutrients are not implemented.
 
 ## 22. Progress
 
@@ -447,19 +466,20 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] Phase 1K.1 local Workout Hub, routine CRUD, reusable Exercise Dex picker, and v5 workout schema foundation
 - [x] Phase 1K.2 active workout logging, persistent completed workout history, previous-performance lookup, and rest timer
 - [x] Android/WebView Web-Crypto UUID v4 fallback for local persistent IDs
+- [x] Phase 2B complete local-first Food V1, remembered foods, snapshots, categories, suggestions, and v6 schema
 - [x] Build, lint, TypeScript, and PWA checks passing
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, previous-performance lookup, and Android/WebView-compatible local ID generation are complete on Dexie schema version 5.
+**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, and Android/WebView-compatible local ID generation are complete on Dexie schema version 6.
 
 Likely next work:
 
-1. Production deployment and Cloudflare setup from zero, including appropriate R2/media delivery for exercise videos
-2. Final PWA and real-device visual/device QA
-3. `.fitdex` backup/restore for user-owned local state
-4. Journal integration, Progress/personal records, and XP/streak features driven by real workout facts
-5. Advanced custom-exercise UX and a later decision about retired no-media exercises
+1. Final PWA and real-device visual/device QA
+2. `.fitdex` backup/restore for user-owned local state
+3. Journal integration, Progress/personal records, and XP/streak features driven by real workout facts
+4. Onboarding/settings polish
+5. A future decision about separate exercise-media hosting and retired no-media exercises
 
 This list is direction, not completed work.
 
