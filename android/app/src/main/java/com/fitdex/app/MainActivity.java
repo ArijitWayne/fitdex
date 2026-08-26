@@ -1,4 +1,4 @@
-package com.arijitbhaduri.fitdex;
+package com.fitdex.app;
 
 import com.getcapacitor.BridgeActivity;
 

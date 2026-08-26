@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.arijitbhaduri.fitdex',
+  appId: 'com.fitdex.app',
   appName: 'FitDex',
   webDir: 'dist',
 }
