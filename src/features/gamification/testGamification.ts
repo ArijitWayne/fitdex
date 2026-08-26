@@ -13,6 +13,8 @@ assert.deepEqual(ACHIEVEMENTS.filter((item) => item.category === 'EXERCISE_DEX')
 assert.deepEqual(Object.fromEntries(['WORKOUT', 'CONSISTENCY', 'PERFORMANCE', 'EXERCISE_DEX', 'NUTRITION', 'PROGRESSION'].map((category) => [category, ACHIEVEMENTS.filter((item) => item.category === category).length])), { WORKOUT: 10, CONSISTENCY: 8, PERFORMANCE: 7, EXERCISE_DEX: 6, NUTRITION: 11, PROGRESSION: 10 })
 assert.deepEqual(XP_REWARDS, { plannedRoutine: 30, plannedWorkout: 30, unplannedWorkout: 20, personalRecord: 15, calorieTarget: 5, proteinTarget: 5, fullFoodLog: 5 })
 assert.ok(ACHIEVEMENTS.filter((achievement) => achievement.id.startsWith('calorie-target-') || achievement.id.startsWith('protein-target-')).every((achievement) => !achievement.dormant))
+assert.ok(!Object.keys(XP_REWARDS).some((reward) => /(?:carb|fat|fiber)/i.test(reward)))
+assert.ok(!ACHIEVEMENTS.some((achievement) => /(?:carb|fat|fiber)-target/i.test(achievement.id)))
 
 assert.equal(LEVEL_XP_THRESHOLDS.length, 100)
 assert.equal(LEVEL_XP_THRESHOLDS[0], 0)
