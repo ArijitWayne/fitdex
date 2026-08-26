@@ -464,6 +464,8 @@ Data & Storage placeholders include Create Backup, Restore Backup, Automatic Bac
 ## 26. PWA and mobile requirements
 
 - Installable PWA with a service worker and offline app shell
+
+The header does not advertise service-worker readiness during ordinary use. It shows a compact, live `Offline` status only when the browser reports `navigator.onLine === false`, then hides it again on the `online` event; this status does not imply backup or cloud sync.
 - Mobile-first, adaptive layouts driven by available logical viewport/window size rather than named devices
 - 320 CSS px narrow robustness floor; primary phone optimization range is 360–440 CSS px
 - Internal QA width classes: compact below 600, medium 600–839, expanded 840–1199, large 1200–1599, and extra large from 1600

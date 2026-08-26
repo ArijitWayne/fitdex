@@ -1,5 +1,6 @@
 import { ChartNoAxesColumnIncreasing, Dumbbell, House, NotebookTabs, Settings, Utensils } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { AppDestination } from '../../types/navigation'
 
 const destinations: Array<{ id: AppDestination; icon: LucideIcon; label: string }> = [
@@ -19,6 +20,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, destination, onNavigate, onOpenSettings, settingsOpen }: AppShellProps) {
+  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine)
+  useEffect(() => {
+    const updateOnline = () => setOnline(navigator.onLine)
+    window.addEventListener('online', updateOnline)
+    window.addEventListener('offline', updateOnline)
+    return () => { window.removeEventListener('online', updateOnline); window.removeEventListener('offline', updateOnline) }
+  }, [])
   return (
     <div className="app-frame">
       <header className="app-header">
@@ -26,9 +34,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
           <span className="wordmark-mark">FD</span>
           <span>FitDex</span>
         </button>
-        <div className="header-status" aria-label="FitDex status">
-          <span className="status-dot" aria-hidden="true" /> Offline ready
-        </div>
+        {!online ? <div className="connectivity-status" role="status" aria-live="polite"><span aria-hidden="true">●</span> Offline</div> : null}
         <button
           className={`icon-button ${settingsOpen ? 'is-active' : ''}`}
           type="button"
