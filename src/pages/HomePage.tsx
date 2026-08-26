@@ -1,4 +1,4 @@
-import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, Flame, NotebookTabs, Trophy, Utensils } from 'lucide-react'
+import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, Flame, NotebookTabs, Utensils } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { AvatarPortrait } from '../features/avatar/AvatarPortrait'
@@ -63,7 +63,6 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
         <Panel className="home-dashboard-panel home-gamification" eyebrow="Your progress">
           <button className="gamification-level-button" type="button" onClick={() => setGamificationView('rank')}><LevelProgress data={data.gamification} compact /><ChevronRight aria-hidden="true" /></button>
           <button className="home-streak-button" type="button" onClick={() => setGamificationView('streak')}><Flame aria-hidden="true" /><span><strong>{data.gamification.streak.current}</strong><small>Plan Streak</small></span><em>{data.gamification.freezeBalance} {data.gamification.freezeBalance === 1 ? 'Freeze' : 'Freezes'} available</em><ChevronRight aria-hidden="true" /></button>
-          <DailyQuest data={data} />
           {data.gamification.latestAchievement ? <div className="home-latest-achievement"><GamificationBadge kind="achievement" size="small" src={achievementAssetPath(data.gamification.latestAchievement.definition.id)} label={data.gamification.latestAchievement.definition.name} /><span><small>Latest Achievement</small><strong>{data.gamification.latestAchievement.definition.name}</strong><em>Unlocked {new Date(data.gamification.latestAchievement.unlocked.unlockedAt).toLocaleDateString()}</em></span><button className="text-button" type="button" onClick={() => onOpenAchievements ? onOpenAchievements() : onNavigate('progress')}>View Achievements</button></div> : null}
         </Panel>
 
@@ -96,19 +95,6 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
       </>}
     </div>
   )
-}
-
-function DailyQuest({ data }: { data: HomeDashboardData }) {
-  const snapshot = data.gamification.today
-  const paused = Boolean(data.gamification.activePause)
-  let title = 'No training quest today'
-  let reward = ''
-  let complete = false
-  if (paused) title = 'Daily Quest paused'
-  else if (snapshot?.plannedType === 'routine') { title = `Complete ${snapshot.routineNameSnapshot ?? 'planned routine'}`; reward = '+30 XP'; complete = data.completedByStartDate.some((entry) => entry.workout.routineId === snapshot.routineId) }
-  else if (snapshot?.plannedType === 'workout_day') { title = "Complete today's workout"; reward = '+30 XP'; complete = data.completedByStartDate.length > 0 }
-  else if (snapshot?.plannedType === 'rest_day') title = 'Recovery Day'
-  return <div className={`daily-quest${complete ? ' is-complete' : ''}`}><Trophy aria-hidden="true" /><span><small>Daily Quest</small><strong>{complete ? `✓ ${title}` : title}</strong></span>{reward ? <b>{reward}</b> : null}</div>
 }
 
 function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {

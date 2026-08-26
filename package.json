@@ -1,7 +1,7 @@
 {
   "name": "fitdex",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,6 +27,9 @@
     "test:food-migration": "node --experimental-strip-types src/features/food/testFoodMigration.ts",
     "test:food-ui": "node --experimental-strip-types src/features/food/testFoodUi.ts",
     "test:food-breakdown": "node --experimental-strip-types src/features/food/testFoodBreakdown.ts",
+    "test:nutrition-targets": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetCalculator.ts",
+    "test:nutrition-targets-ui": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetsUi.ts",
+    "test:nutrition-targets-repository": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetRepository.ts",
     "test:guides": "node --experimental-strip-types src/features/help/testGuides.ts",
     "test:journal": "node --experimental-strip-types src/features/journal/testJournal.ts",
     "test:journal-ui": "node --experimental-strip-types src/features/journal/testJournalUi.ts",

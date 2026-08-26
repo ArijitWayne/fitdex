@@ -47,7 +47,7 @@ function App() {
             ) : destination === 'workout' ? (
               <WorkoutPage initialView={workoutEntry} initialRoutineId={workoutEntry === 'start-routine' ? workoutTargetId : undefined} initialWorkoutId={workoutEntry === 'history' ? workoutTargetId : undefined} />
             ) : destination === 'food' ? (
-              <FoodPage />
+              <FoodPage onOpenSettings={() => setSettingsOpen(true)} />
             ) : destination === 'progress' ? (
               <ProgressPage initialView={progressEntry} />
             ) : (

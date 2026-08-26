@@ -1,5 +1,6 @@
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
+import { liveQuery } from 'dexie'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
@@ -9,6 +10,9 @@ import { isLocalToday } from '../utils/localDate'
 import { GuideDialog } from '../features/help/GuideDialog'
 import { foodTutorialSteps } from '../features/help/tutorialSteps'
 import { hasSeenTutorial, markTutorialSeen } from '../features/help/tutorialPreferences'
+import type { NutritionTargets } from '../data/models'
+import { loadNutritionTargets } from '../features/nutritionTargets/nutritionTargetRepository'
+import { calculateRmr, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from '../features/nutritionTargets/nutritionTargetCalculator'
 
 type View = { kind: 'overview' } | { kind: 'meal'; meal: FoodMeal } | { kind: 'add'; meal: FoodMeal; remembered?: RememberedFood; editing?: FoodLogEntry }
 type NutritionStrings = Record<keyof Required<FoodNutrition>, string>
@@ -55,11 +59,24 @@ function NutritionBreakdownCard({ entries, totals }: { entries: readonly FoodLog
   </section>
 }
 
-export function FoodPage() {
+function DailyTargetsCard({ targets, totals, onEdit }: { targets: NutritionTargets; totals: FoodNutrition; onEdit: () => void }) {
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const calories = totals.kcal ?? 0; const protein = totals.protein ?? 0
+  const tdee = calculateTdee(calculateRmr(targets), targets.activityLevel)
+  const calorie = evaluateCalorieDay(targets, calories, tdee); const proteinDay = evaluateProteinDay(targets.proteinTargetGrams, protein)
+  const calorieDifference = Math.round(targets.calorieTarget - calories); const proteinDifference = Math.round(targets.proteinTargetGrams - protein)
+  const statusCopy: Record<typeof calorie.status, string> = { target_achieved: 'Within target range', below_target_outer: 'Below your planned target', too_far_below: 'Significantly below estimated needs', below_safety_floor: 'Intake below safety floor', above_target: 'Above your target', below_target: 'Below your target' }
+  return <><section className={`panel daily-targets is-${calorie.status}`} aria-labelledby="daily-targets-title"><header><p className="eyebrow" id="daily-targets-title">Daily targets</p><button className="text-button" type="button" onClick={onEdit}>Edit</button></header><TargetMetric label="Calories" current={calories} target={targets.calorieTarget} unit="kcal" difference={calorieDifference} status={statusCopy[calorie.status]} onInfo={() => setDetailsOpen(true)} /><TargetMetric label="Protein" current={protein} target={targets.proteinTargetGrams} unit="g" difference={proteinDifference} status={proteinDay.achievementEligible ? 'Target achieved' : 'Protein target in progress'} /><footer><span>Goal: {targets.goal === 'lose' ? 'Lose Weight' : targets.goal === 'gain' ? 'Gain Weight' : 'Maintain Weight'}</span><button className="text-button" type="button" onClick={onEdit}>Edit</button></footer></section>{detailsOpen ? <div className="food-dialog-backdrop"><section className="food-dialog target-status-dialog" role="dialog" aria-modal="true" aria-labelledby="target-status-title"><header><div><p className="eyebrow">Daily targets</p><h2 id="target-status-title">{statusCopy[calorie.status]}</h2></div><button type="button" aria-label="Close target details" onClick={() => setDetailsOpen(false)}><X /></button></header><dl className="target-detail-list"><div><dt>Your target</dt><dd>{targets.calorieTarget} kcal</dd></div><div><dt>You consumed</dt><dd>{Math.round(calories)} kcal</dd></div><div><dt>Estimated maintenance</dt><dd>≈ {tdee} kcal</dd></div>{targets.goal === 'lose' ? <div><dt>Estimated deficit</dt><dd>≈ {Math.round(calorie.estimatedDeficit)} kcal</dd></div> : null}</dl><p>{calorie.status === 'target_achieved' ? "You're within your planned calorie range for today." : calorie.status === 'below_target_outer' ? "You're below your planned target today. Staying closer to your planned intake is generally more consistent with your target." : calorie.status === 'too_far_below' ? 'Your logged intake is significantly below your estimated energy needs today. FitDex does not count this toward calorie-target progress.' : calorie.status === 'below_safety_floor' ? 'Your logged intake is very low today. FitDex does not count this toward calorie-target progress.' : "You're outside your calorie target range today. This does not count toward calorie-target progress."}</p><p className="muted">Calorie needs are estimates. FitDex is not medical advice.</p><button className="primary-button" type="button" onClick={() => setDetailsOpen(false)}>Continue</button></section></div> : null}</>
+}
+
+function TargetMetric({ label, current, target, unit, difference, status, onInfo }: { label: string; current: number; target: number; unit: string; difference: number; status: string; onInfo?: () => void }) { const percent = Math.min(100, Math.max(0, (current / target) * 100)); return <section className="daily-target-metric"><p className="eyebrow">{label}</p><strong>{Math.round(current)} / {Math.round(target)} {unit}</strong><small>{difference >= 0 ? `${difference} ${unit} remaining` : `${Math.abs(difference)} ${unit} ${unit === 'g' ? 'over target' : 'over'}`}</small><div className="gamification-progress" role="progressbar" aria-label={`${label}: ${Math.round(current)} of ${Math.round(target)} ${unit}`} aria-valuemin={0} aria-valuemax={target} aria-valuenow={current}><i style={{ width: `${percent}%` }} /></div><button className="daily-target-status" type="button" onClick={onInfo} disabled={!onInfo}>{status}{onInfo ? ' · Details' : ''}</button></section> }
+
+export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [date, setDate] = useState(() => normalizeDate(new Date()))
   const [entries, setEntries] = useState<FoodLogEntry[]>([])
   const [view, setView] = useState<View>({ kind: 'overview' })
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [targets, setTargets] = useState<NutritionTargets>()
   const refresh = useCallback(async () => { setEntries(await listFoodEntries(date)) }, [date])
   useEffect(() => {
     let active = true
@@ -67,6 +84,10 @@ export function FoodPage() {
     return () => { active = false }
   }, [date])
   useEffect(() => { void hasSeenTutorial('food').then((seen) => { if (!seen) setTutorialOpen(true) }) }, [])
+  useEffect(() => {
+    const subscription = liveQuery(loadNutritionTargets).subscribe({ next: setTargets, error: () => setTargets(undefined) })
+    return () => subscription.unsubscribe()
+  }, [])
   const totals = useMemo(() => nutritionTotals(entries), [entries])
   const navigateDate = (nextDate: string) => { setDate(nextDate); setEntries([]); setView({ kind: 'overview' }) }
 
@@ -76,6 +97,7 @@ export function FoodPage() {
   return <div className="page-stack food-page">
     <header className="food-header"><div><p className="eyebrow">Nutrition hub</p><h1>Food</h1></div><button className="page-help-button" type="button" onClick={() => setTutorialOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Food Works</button><div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><strong>{formatDate(date)}</strong><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>{isLocalToday(date) ? <span className="food-today">Today</span> : null}</header>
     <section className="panel food-daily-totals" aria-labelledby="daily-totals"><p className="eyebrow" id="daily-totals">Daily totals</p><MacroStrip nutrition={totals} /><MacroStrip nutrition={totals} secondary /></section>
+    {targets?.enabled && targets.calorieTarget > 0 ? <DailyTargetsCard targets={targets} totals={totals} onEdit={() => onOpenSettings?.()} /> : null}
     <NutritionBreakdownCard key={date} entries={entries} totals={totals} />
     <section className="food-meal-list" aria-label="Meals">{FOOD_MEALS.map((meal) => { const mealEntries = entries.filter((entry) => entry.meal === meal); const mealTotals = nutritionTotals(mealEntries); return <article className="panel food-meal-card" key={meal}><button className="food-meal-open" type="button" onClick={() => setView({ kind: 'meal', meal })}><MealIcon meal={meal} /><span className="food-meal-title"><strong>{FOOD_MEAL_LABELS[meal]}</strong><small>{mealEntries.length} {mealEntries.length === 1 ? 'item' : 'items'}</small></span><ChevronRight aria-hidden="true" /></button><MacroStrip nutrition={mealTotals} />{!mealEntries.length ? <p className="food-empty">No foods logged.</p> : null}<button className="secondary-button food-add-button" type="button" onClick={() => setView({ kind: 'add', meal })}><Plus size={18} aria-hidden="true" /> Add Food</button></article> })}</section>
     {tutorialOpen ? <GuideDialog eyebrow="How Food Works" steps={foodTutorialSteps} onClose={() => { setTutorialOpen(false); void markTutorialSeen('food') }} /> : null}

@@ -38,7 +38,7 @@ FitDex is a mobile-first Progressive Web App for building routines, logging real
 
 - Earn idempotent XP from completed training, genuine Personal Records, and fully logged nutrition days.
 - Progress through 100 Levels and nine named Ranks while Lifetime XP remains local to the device.
-- Build a plan-based streak with automatic Streak Freezes, Travel/Sickness Pauses, protected Weekly Plan changes, contextual Daily Quests, and 52 permanent Achievements.
+- Build a plan-based streak with automatic Streak Freezes, Travel/Sickness Pauses, protected Weekly Plan changes, and 52 permanent Achievements.
 
 ### Local-first PWA
 
@@ -99,7 +99,7 @@ Personal workout and nutrition data stays on the device.
 - Progress + Personal Records V1 with local period trends, derived training volume, nutrition averages, and tracking-aware all-time PRs
 - Home Dashboard V1 with real active/completed workout state, daily nutrition and activity, recent progress, and direct shortcuts
 - Optional editable, device-local Display Name plus optimized priority loading for the selected Home avatar
-- Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, Daily Quest, and 52 Achievements
+- Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, and 52 Achievements
 - Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
 
 **Planned / upcoming**

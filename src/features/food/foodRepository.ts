@@ -109,7 +109,7 @@ export async function editFoodLog(id: string, draft: FoodDraft) {
   const name = draft.name.trim().replace(/\s+/g, ' ')
   if (!name) throw new Error('Food name is required.')
   validateNutrition(draft)
-  return db.transaction('rw', [db.foodLogEntries, db.customFoodCategories], async () => {
+  const updated = await db.transaction('rw', [db.foodLogEntries, db.customFoodCategories], async () => {
     const existing = await db.foodLogEntries.get(id)
     if (!existing) throw new Error('Food entry not found.')
     const category = await resolveCategory(draft)
@@ -127,9 +127,11 @@ export async function editFoodLog(id: string, draft: FoodDraft) {
     await db.foodLogEntries.put(updated)
     return updated
   })
+  await reconcileFoodGamification()
+  return updated
 }
 
-export async function deleteFoodLog(id: string) { await db.foodLogEntries.delete(id) }
+export async function deleteFoodLog(id: string) { await db.foodLogEntries.delete(id); await reconcileFoodGamification() }
 
 export async function listCustomCategories() { return db.customFoodCategories.orderBy('name').toArray() }
 

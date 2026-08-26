@@ -182,7 +182,7 @@ The six source portraits were reduced from 1024 × 1536 RGBA PNGs (about 11 MB t
 
 ## 14. Gamification scope
 
-Gamification V1 is implemented with an idempotent XP ledger, 100 Levels, nine ranks, contextual Daily Quest, historical plan snapshots, Plan Streak protection, and 52 permanent Achievements. Rest Days preserve continuity but do not increase the numerical streak.
+Gamification V1 is implemented with an idempotent XP ledger, 100 Levels, nine ranks, historical plan snapshots, Plan Streak protection, and 52 permanent Achievements. Rest Days preserve continuity but do not increase the numerical streak.
 
 Do not add pets, animal companions, monsters, battles, inventory, fantasy currency, maps, collectible creatures, leaderboards, or social feeds without explicit approval.
 
@@ -452,11 +452,12 @@ Planned/current sections:
 - Nutrition
 - Gamification
 - Data & Storage
-- Exercise Dex
 - Help
 - About FitDex
 
 Profile currently includes avatar selection and an optional editable local Display Name. Display Name is saved into the canonical existing Settings record, preserves all other settings fields, and can be cleared; it is presentation metadata rather than a fitness-history fact.
+
+The stale Exercise Dex Settings placeholder is intentionally absent because Exercise Dex has no meaningful preferences yet. About FitDex uses the established PWA icon, user-facing product/local-first copy, developer credit for Arijit Bhaduri, and the build-time app version sourced from `package.json`.
 
 Data & Storage placeholders include Create Backup, Restore Backup, Automatic Backups, Backup Frequency, Backup Location, Number of Backups Retained, and Export My Data. There is no cloud sync.
 
@@ -594,8 +595,16 @@ Daily Quest reuses the same plan-satisfaction rule: the scheduled routine (+30),
 
 The catalog contains exactly 52 permanent, no-XP trophies: Workout 10, Consistency 8, Performance 7, Exercise Dex 6, Nutrition 11, and Progression 10. Exercise Dex milestones are exactly First Exercise, 5/10/25/50 Different Exercises, and All Categories. Unique stable IDs come only from completed workout snapshots and are deduplicated; unknown retired IDs can count uniquely. All Categories requires safely resolved participation across Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs. Nutrition target milestones remain visible and dormant until targets exist; complete nutrition days require Breakfast, Lunch, Supper, and Dinner.
 
-Unlock rows are permanent even when later history deletion lowers dynamic progress. New unlocks are grouped in one notification, and Level/Rank transitions are derived from unseen XP event boundaries so reloads do not repeat them. Home keeps today’s actual workout first, then compact Level/Rank, Plan Streak/Freeze, Daily Quest, and optional latest-achievement surfaces. Progress provides Overview, Records, and Achievements navigation, rank journey, recent XP, transparent earning rules, category filters, accessible progress bars, and locked measurable progress. Settings links to the concise gamification guide.
+Unlock rows are permanent even when later history deletion lowers dynamic progress. New unlocks are grouped in one notification, and Level/Rank transitions are derived from unseen XP event boundaries so reloads do not repeat them. Home keeps today’s actual workout first, then compact Level/Rank, Plan Streak/Freeze, and optional latest-achievement surfaces. Progress provides Overview, Records, and Achievements navigation, rank journey, recent XP, transparent earning rules, category filters, accessible progress bars, and locked measurable progress. Settings links to the concise gamification guide.
 
 The final 52 achievement WebPs live in `/gamification/achievements/`, alongside the nine rank emblems for 61 shared assets. A single explicit ID-to-filename resolver preserves persistent achievement IDs where they intentionally differ from artwork names (for example, `10-workouts` → `workouts-10.webp`); it is used by Home, Progress, and notifications. Achievement unlock notifications show the achievement badge, rank-up notifications show the rank badge, and level-up notifications use milestone achievement artwork only at Levels 10/25/50/75/100. The same artwork is reused in unlocked and locked states via opacity/grayscale, with generic semantic fallbacks only for missing or unknown assets.
 
 Offline reconciliation and source-key uniqueness make repeated Home loads, database reopens, and catch-up passes idempotent. Existing completed history remains readable; achievement eligibility can derive from it, while XP begins only at activation. Completed-workout deletion recalculates current PRs and derived progress but does not revoke XP or unlocks.
+
+## 34. Nutrition Targets V1
+
+Nutrition Targets are optional local fields on the singleton Settings record, so Dexie remains at schema version 7. They store enabled state, Lose/Maintain/Gain goal, adult age/sex/height/weight/activity inputs, calorie target source, and calorie/protein targets. Food observes the saved settings reactively, rendering Daily Targets whenever targets are enabled with a valid calorie target. Numeric target controls retain empty string drafts while editing and validate only at calculation/save. A stable `nutritionTargetsInitializedAt` plus latest-enable boundary prevents historic Food logs and disabled intervals from being back-awarded; current settings are used when viewing historical Food dates in V1.
+
+FitDex estimates RMR with Mifflin–St Jeor and maintenance as RMR × activity factor: Sedentary 1.20, Lightly Active 1.375, Moderately Active 1.55, Very Active 1.725, and Extremely Active 1.90. Lose Weight recommends TDEE −500 by default or TDEE −750; Maintain recommends TDEE; Gain recommends TDEE +250. Users can always manually override targets. Calorie needs are estimates, not medical advice.
+
+Daily Targets appears between Food Daily Totals and Nutrition Breakdown when enabled. It evaluates the selected local Food date from authoritative logged kcal/protein totals. Intake below 1,000 kcal never counts. Lose Weight counts only a 0–1,000 kcal estimated deficit, treating 751–1,000 as an eligible outer zone without bonus; deficits over 1,000, intake over target, and below-floor intake do not count. Maintain/Gain use a FitDex ±10% adherence band. Protein meets its target at or above the chosen grams with no penalty for exceeding it. Eligible dates award one idempotent +5 calorie and/or +5 protein event, never a multiplier; paused dates receive neither. The six existing target achievements now count those ledger events.

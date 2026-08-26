@@ -5,6 +5,7 @@ import { getLocalDateKey, shiftLocalDateKey } from '../../utils/localDate.ts'
 import { derivePersonalRecords } from '../progress/personalRecords.ts'
 import { loadProgressSource } from '../progress/progressRepository.ts'
 import { getLocalSettingsRecord, updateLocalSettings } from '../settings/settingsRepository.ts'
+import { calculateRmr, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from '../nutritionTargets/nutritionTargetCalculator.ts'
 import { isHistoricalWorkoutSetLogged } from '../workout/workoutModel.ts'
 import { ACHIEVEMENTS, type AchievementDefinition, type AchievementProgressKey } from './achievementCatalog.ts'
 import { INITIAL_FREEZE_BALANCE, MAX_FREEZE_BALANCE, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, levelForXp } from './gamificationConfig.ts'
@@ -198,6 +199,21 @@ async function reconcileFoodXp(initializedAt: string, pauses: readonly StreakPau
     if (pauseForDate(pauses, date)) continue
     const meals = new Set(entries.filter((entry) => entry.date === date).map((entry) => entry.meal))
     if (FOOD_MEALS.every((meal) => meals.has(meal))) await addXpEvent('full_food_log', XP_REWARDS.fullFoodLog, `full-food-log:${date}`, iso(), { localDate: date })
+  }
+  const settings = await getLocalSettingsRecord()
+  const targets = settings?.nutritionTargets
+  const targetInitializedAt = settings?.nutritionTargetsInitializedAt
+  if (!targets?.enabled || !targetInitializedAt) return
+  const targetActivationDate = getLocalDateKey(new Date(settings.nutritionTargetsEligibleFrom ?? targetInitializedAt))
+  const estimatedTdee = calculateTdee(calculateRmr(targets), targets.activityLevel)
+  for (const date of dates.filter((dateKey) => dateKey >= targetActivationDate)) {
+    if (pauseForDate(pauses, date)) continue
+    const dayEntries = entries.filter((entry) => entry.date === date)
+    const calories = dayEntries.reduce((sum, entry) => sum + (entry.kcal ?? 0), 0)
+    const protein = dayEntries.reduce((sum, entry) => sum + (entry.protein ?? 0), 0)
+    const occurredAt = `${date}T12:00:00.000Z`
+    if (evaluateCalorieDay(targets, calories, estimatedTdee).achievementEligible) await addXpEvent('calorie_target', XP_REWARDS.calorieTarget, `calorie-target:${date}`, occurredAt, { localDate: date, calories, target: targets.calorieTarget })
+    if (evaluateProteinDay(targets.proteinTargetGrams, protein).achievementEligible) await addXpEvent('protein_target', XP_REWARDS.proteinTarget, `protein-target:${date}`, occurredAt, { localDate: date, protein, target: targets.proteinTargetGrams })
   }
 }
 

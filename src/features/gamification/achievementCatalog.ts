@@ -35,8 +35,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
 
   milestone('NUTRITION', 'first-fully-logged-day', 'First Fully Logged Day', 'Log food in Breakfast, Lunch, Supper, and Dinner.', 'completeNutritionDays', 1),
   ...[7, 30, 100, 365].map((count) => milestone('NUTRITION', `${count}-complete-nutrition-days`, `${count} Complete Nutrition Days`, `Fully log all four meals on ${count} days.`, 'completeNutritionDays', count)),
-  ...[7, 30, 100].map((count) => milestone('NUTRITION', `calorie-target-${count}`, `Calorie Target ${count} Times`, `Meet your calorie target ${count} times. Requires a future nutrition target setting.`, 'calorieTargetDays', count, true)),
-  ...[7, 30, 100].map((count) => milestone('NUTRITION', `protein-target-${count}`, `Protein Target ${count} Times`, `Meet your protein target ${count} times. Requires a future nutrition target setting.`, 'proteinTargetDays', count, true)),
+  ...[7, 30, 100].map((count) => milestone('NUTRITION', `calorie-target-${count}`, `Calorie Target ${count} Times`, `Meet your calorie target ${count} times.`, 'calorieTargetDays', count)),
+  ...[7, 30, 100].map((count) => milestone('NUTRITION', `protein-target-${count}`, `Protein Target ${count} Times`, `Meet your protein target ${count} times.`, 'proteinTargetDays', count)),
 
   ...[10, 25, 50, 75, 100].map((level) => milestone('PROGRESSION', `level-${level}`, level === 100 ? 'Level 100 / Radiant' : `Reach Level ${level}`, `Reach Level ${level}.`, 'level', level)),
   milestone('PROGRESSION', 'reach-veteran', 'Reach Veteran', 'Reach Level 28 and the Veteran rank.', 'level', 28),

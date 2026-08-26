@@ -21,6 +21,30 @@ export interface SettingsRecord extends EntityRecord {
   foodTutorialSeen?: boolean
   /** Local activation boundary. XP is intentionally not back-awarded before this instant. */
   gamificationInitializedAt?: string
+  nutritionTargets?: NutritionTargets
+  /** Forward-only boundary; Food logged before this setup is never back-awarded. */
+  nutritionTargetsInitializedAt?: string
+  /** Latest forward-only activation boundary; prevents disabled periods back-awarding. */
+  nutritionTargetsEligibleFrom?: string
+}
+
+export type NutritionGoal = 'lose' | 'maintain' | 'gain'
+export type NutritionSex = 'male' | 'female'
+export type NutritionActivityLevel = 'sedentary' | 'light' | 'moderate' | 'very' | 'extreme'
+export type CalorieTargetSource = 'calculated' | 'manual'
+
+export interface NutritionTargets {
+  enabled: boolean
+  goal: NutritionGoal
+  age: number
+  sex: NutritionSex
+  heightCm: number
+  weightKg: number
+  activityLevel: NutritionActivityLevel
+  calorieTarget: number
+  proteinTargetGrams: number
+  calorieTargetSource: CalorieTargetSource
+  updatedAt: string
 }
 
 export const WEEKDAY_IDS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
