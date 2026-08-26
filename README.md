@@ -157,6 +157,12 @@ Android OS automatic backup/device transfer is disabled. `.fitdex` files remain 
 
 `npm run build` keeps local exercise MP4 demonstrations in the browser/PWA output. Android sync and build commands automatically remove only those copied MP4 files from `dist/exercises` before Capacitor packages it, reducing APK size without changing `public/exercises` source media. Exercise details remain available on Android; when a missing packaged demo fails to load, the media area shows a neutral unavailable state. Remote/on-demand exercise media is planned for a future release but is not configured yet.
 
+## Remote exercise media
+
+Set `VITE_EXERCISE_MEDIA_BASE_URL` from `.env.example` to a public HTTPS base URL whose root contains the canonical MP4 filenames from `public/exercises/` (for example, `<base-url>/barbell-bench-press.mp4`). FitDex is provider-independent: Cloudflare R2 is the intended initial host, but changing the base URL is the only application change needed if filenames remain stable. Hosts must allow ordinary HTTPS media access; browser/PWA streaming also needs suitable CORS headers and Range support for seeking.
+
+Android streams configured demos when online and lets users explicitly download individual videos into private app storage. Playback prefers a verified local download, then the configured remote URL, then the neutral unavailable state. Downloads are managed in Settings → Exercise Media, are not in `.fitdex` backups, do not use public Downloads/storage permissions, and are deleted on app uninstall. V1 has no automatic, routine, background, or first-play downloads; remote host provisioning/upload remains separate work.
+
 ## Deployment
 
 FitDex is configured for Cloudflare Workers Static Assets via `wrangler.jsonc`. Build with `npm run build`; Wrangler is the deployment tool. This deployment serves the app and its static assets only—FitDex does not store user workout or nutrition records in Cloudflare, and R2 is not configured.

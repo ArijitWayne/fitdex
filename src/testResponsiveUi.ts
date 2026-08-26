@@ -17,6 +17,7 @@ const weeklyPlan = fs.readFileSync('src/features/workout/WeeklyPlanViews.tsx', '
 const guide = fs.readFileSync('src/features/help/GuideDialog.tsx', 'utf8')
 const appShell = fs.readFileSync('src/components/layout/AppShell.tsx', 'utf8')
 const backup = fs.readFileSync('src/features/backup/BackupSettings.tsx', 'utf8')
+const exerciseMedia = fs.readFileSync('src/features/exerciseMedia/ExerciseMediaSettings.tsx', 'utf8')
 
 assert.match(html, /width=device-width, initial-scale=1\.0, viewport-fit=cover/)
 assert.doesNotMatch(vite, /orientation:/, 'The installed PWA must remain usable in phone landscape')
@@ -130,5 +131,7 @@ assert.match(css, /@media \(min-width: 600px\)[\s\S]*\.backup-dialog-actions-thr
 assert.match(backup, /selectedFilename/)
 assert.match(backup, /backup-dialog-actions backup-dialog-actions-three/)
 assert.match(backup, /Back Up Current Data First/)
+assert.match(exerciseMedia, /Remove all exercise downloads\?/)
+assert.match(exerciseMedia, /Exercise data, routines, and workout history are not affected\./)
 
 console.log('Responsive UI assertions passed: fluid root, landscape-capable PWA, safe areas, dynamic-height dialogs, compact workout rows, wrapping, touch targets, media, charts, search focus, avatars, and precache safety')

@@ -37,6 +37,7 @@
     "test:backup-ui": "node --experimental-strip-types src/features/backup/testBackupUi.ts",
     "test:capacitor-android": "node --experimental-strip-types src/testCapacitorAndroid.ts",
     "test:android-dist": "node scripts/testPrepareAndroidDist.mjs",
+    "test:exercise-media": "node --experimental-strip-types src/features/exerciseMedia/testExerciseMedia.ts",
     "test:guides": "node --experimental-strip-types src/features/help/testGuides.ts",
     "test:journal": "node --experimental-strip-types src/features/journal/testJournal.ts",
     "test:journal-ui": "node --experimental-strip-types src/features/journal/testJournalUi.ts",
@@ -55,6 +56,8 @@
   },
   "dependencies": {
     "@capacitor/core": "^8.5.0",
+    "@capacitor/file-transfer": "^2.0.5",
+    "@capacitor/filesystem": "^8.1.3",
     "dexie": "^4.4.5",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",

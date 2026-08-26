@@ -17,6 +17,7 @@ import {
 } from './exerciseCatalog'
 import { getExerciseCategorySprite } from './exerciseCategorySprites'
 import { getExerciseContent } from './exerciseContent'
+import { downloadExerciseMedia, getExerciseMediaPlayback, removeDownloadedExerciseMedia, supportsNativeExerciseMedia, type MediaPlayback } from '../exerciseMedia/exerciseMediaStore'
 import { ensureBuiltInExercises } from './seedExercises'
 import { listFavouriteExerciseIds, setExerciseFavourite } from './exerciseFavouriteRepository'
 
@@ -285,7 +286,7 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
         <div><p className="eyebrow">Exercise record</p><h2>{exercise.name}</h2><p className="exercise-detail-category">{exercise.categories?.join(' · ') ?? exercise.category}</p></div>
         {!picker ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
       </div>
-      {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : null}
+      {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseId={exercise.id} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : null}
       {content ? (
         <div className="exercise-detail-content">
           <section>
@@ -321,10 +322,29 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
   )
 }
 
-function ExerciseMedia({ exerciseName, mediaPath, mediaType }: { exerciseName: string; mediaPath: string; mediaType?: string }) {
-  const [unavailable, setUnavailable] = useState(false)
+function ExerciseMedia({ exerciseId, exerciseName, mediaPath, mediaType }: { exerciseId: string; exerciseName: string; mediaPath: string; mediaType?: string }) {
+  const [playback, setPlayback] = useState<MediaPlayback>({ kind: 'unavailable' })
+  const [loading, setLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
+  const [progress, setProgress] = useState<{ bytes: number; totalBytes?: number }>()
+  const [status, setStatus] = useState('')
 
-  if (unavailable) {
+  const refresh = () => {
+    setLoading(true)
+    void getExerciseMediaPlayback(exerciseId, mediaPath).then(setPlayback).catch(() => setPlayback({ kind: 'unavailable' })).finally(() => setLoading(false))
+  }
+  useEffect(() => {
+    let active = true
+    void getExerciseMediaPlayback(exerciseId, mediaPath).then((next) => { if (active) setPlayback(next) }).catch(() => { if (active) setPlayback({ kind: 'unavailable' }) }).finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [exerciseId, mediaPath])
+  const download = () => {
+    setDownloading(true); setProgress(undefined); setStatus('')
+    void downloadExerciseMedia(exerciseId, mediaPath, setProgress).then(() => { setStatus('Available offline.'); refresh() }).catch(() => setStatus('Download could not be completed.')).finally(() => setDownloading(false))
+  }
+  const remove = () => { void removeDownloadedExerciseMedia(exerciseId).then(() => { setStatus('Download removed.'); refresh() }).catch(() => setStatus('Download could not be removed.')) }
+
+  if (loading || playback.kind === 'unavailable') {
     return <figure className="exercise-detail-media exercise-detail-media-unavailable"><p role="status">Exercise demonstration unavailable.</p></figure>
   }
 
@@ -332,18 +352,19 @@ function ExerciseMedia({ exerciseName, mediaPath, mediaType }: { exerciseName: s
     <figure className="exercise-detail-media">
       {mediaType === 'video/mp4' ? (
         <video
-          src={mediaPath}
+          src={playback.source}
           aria-label={`${exerciseName} exercise demonstration`}
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
-          onError={() => setUnavailable(true)}
+          onError={() => setPlayback({ kind: 'unavailable' })}
         />
       ) : (
-        <img src={mediaPath} alt={`${exerciseName} exercise demonstration`} loading="lazy" onError={() => setUnavailable(true)} />
+        <img src={playback.source} alt={`${exerciseName} exercise demonstration`} loading="lazy" onError={() => setPlayback({ kind: 'unavailable' })} />
       )}
+      {supportsNativeExerciseMedia() && mediaType === 'video/mp4' ? <figcaption className="exercise-media-actions">{playback.kind === 'local' ? <><p role="status">✓ Available offline</p><button className="secondary-button" type="button" onClick={remove}>Remove download</button></> : <><p>Streams when played.</p><button className="secondary-button" type="button" disabled={downloading} onClick={download}>{downloading ? 'Downloading…' : 'Download for offline'}</button>{downloading && progress ? <progress value={progress.totalBytes ? progress.bytes : undefined} max={progress.totalBytes} aria-label="Exercise video download progress" /> : null}</>}{status ? <p role="status">{status}</p> : null}</figcaption> : null}
     </figure>
   )
 }

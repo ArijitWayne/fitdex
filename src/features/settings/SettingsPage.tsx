@@ -13,6 +13,7 @@ import type { BrightnessPreference, ThemeFamily } from '../../theme/theme'
 import { GamificationHelpButton } from '../gamification/GamificationViews'
 import { APP_VERSION } from '../../appVersion'
 import { BackupSettings } from '../backup/BackupSettings'
+import { ExerciseMediaSettings } from '../exerciseMedia/ExerciseMediaSettings'
 
 const brightnessOptions: Array<{ value: BrightnessPreference; label: string; hint: string }> = [
   { value: 'system', label: 'System', hint: 'Match this device' },
@@ -96,15 +97,16 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
       <NutritionTargetsSettings />
       <section className="settings-section" aria-labelledby="gamification-heading"><div className="settings-section-heading"><span>06</span><div><h2 id="gamification-heading">Gamification</h2><p>XP, Levels, Ranks, Plan Streak protection, and Achievements stay local to this device.</p></div></div><GamificationHelpButton /></section>
 
+      <ExerciseMediaSettings />
       <BackupSettings />
 
       <section className="settings-section" aria-labelledby="help-heading">
-        <div className="settings-section-heading"><span>08</span><div><h2 id="help-heading">Help</h2><p>Return to the field guide whenever you need it.</p></div></div>
+        <div className="settings-section-heading"><span>09</span><div><h2 id="help-heading">Help</h2><p>Return to the field guide whenever you need it.</p></div></div>
         <button className="setting-action" type="button" onClick={onReplayTutorial}>Replay tutorial<span>10 slides →</span></button>
       </section>
 
       <section className="settings-section" aria-labelledby="about-heading">
-        <div className="settings-section-heading"><span>09</span><div><h2 id="about-heading">About FitDex</h2><p>Retro RPG fitness tracking. Local by design.</p></div></div>
+        <div className="settings-section-heading"><span>10</span><div><h2 id="about-heading">About FitDex</h2><p>Retro RPG fitness tracking. Local by design.</p></div></div>
         <div className="about-row"><img className="about-app-icon" src="/pwa-icon.svg" alt="FitDex" /><div><strong>FitDex</strong><small>Version {APP_VERSION}</small></div></div>
         <section className="about-copy" aria-label="About FitDex"><p>FitDex is a local-first fitness tracker for workouts, nutrition, progress tracking, and RPG-style progression.</p><h3>Developed by</h3><p>Arijit Bhaduri</p><h3>Privacy &amp; Data</h3><p>Your FitDex fitness data is stored locally on your device. FitDex does not require an account or FitDex cloud sync.</p></section>
         <dl className="setting-list about-app-info"><div><dt>Version</dt><dd>{APP_VERSION}</dd></div></dl>
