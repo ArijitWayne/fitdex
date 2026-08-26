@@ -9,6 +9,7 @@ import {
   renameRoutineRecord,
   removeRoutineItem,
 } from './routineModel.ts'
+import { clearRoutineFromPlan } from './weeklyPlan.ts'
 
 export interface RoutineWithItems {
   routine: WorkoutRoutine
@@ -82,8 +83,12 @@ export async function deleteRoutineItem(routineId: string, itemId: string) {
 }
 
 export async function deleteRoutine(routineId: string) {
-  await db.transaction('rw', db.workoutRoutines, db.routineExercises, async () => {
+  await db.transaction('rw', db.workoutRoutines, db.routineExercises, db.settings, async () => {
     await db.routineExercises.where('routineId').equals(routineId).delete()
     await db.workoutRoutines.delete(routineId)
+    await db.settings.toCollection().modify((settings) => {
+      settings.weeklyPlan = clearRoutineFromPlan(settings.weeklyPlan, routineId)
+      settings.updatedAt = new Date().toISOString()
+    })
   })
 }

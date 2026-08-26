@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { AvatarPortrait } from '../avatar/AvatarPortrait'
 import { AvatarSelector } from '../avatar/AvatarSelector'
 import { useAvatar } from '../avatar/useAvatar'
+import { MAX_DISPLAY_NAME_LENGTH } from '../profile/displayNameModel'
+import { useProfile } from '../profile/useProfile'
 import { useTheme } from '../../theme/useTheme'
 import type { BrightnessPreference, ThemeFamily } from '../../theme/theme'
 
@@ -24,6 +26,7 @@ function SoonButton({ children }: { children: React.ReactNode }) {
 export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void; onReplayTutorial: () => void }) {
   const { family, brightness, setFamily, setBrightness } = useTheme()
   const { selectedAvatar } = useAvatar()
+  const { displayName, ready, saveDisplayName } = useProfile()
   const [choosingAvatar, setChoosingAvatar] = useState(false)
 
   if (choosingAvatar) {
@@ -77,7 +80,8 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
       </section>
 
       <section className="settings-section" aria-labelledby="profile-heading">
-        <div className="settings-section-heading"><span>02</span><div><h2 id="profile-heading">Profile / Avatar</h2><p>Your cosmetic FitDex champion. No account required.</p></div></div>
+        <div className="settings-section-heading"><span>02</span><div><h2 id="profile-heading">Profile</h2><p>Local preferences for how FitDex addresses you. No account required.</p></div></div>
+        <DisplayNameForm key={ready ? 'profile-ready' : 'profile-loading'} displayName={displayName} ready={ready} onSave={saveDisplayName} />
         <div className="profile-avatar-row">
           <AvatarPortrait avatar={selectedAvatar} size="small" />
           <div><strong>{selectedAvatar.name}</strong><small>{selectedAvatar.archetype}</small></div>
@@ -114,6 +118,23 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
       </section>
     </div>
   )
+}
+
+function DisplayNameForm({ displayName, ready, onSave }: { displayName: string; ready: boolean; onSave: (value: string) => Promise<string> }) {
+  const [value, setValue] = useState(displayName)
+  const [status, setStatus] = useState('')
+  const [saving, setSaving] = useState(false)
+  return <form className="display-name-form" onSubmit={(event) => {
+    event.preventDefault()
+    setSaving(true)
+    setStatus('')
+    void onSave(value).then((saved) => { setValue(saved); setStatus(saved ? 'Display Name saved.' : 'Display Name cleared.') }).catch((reason: unknown) => setStatus(reason instanceof Error ? reason.message : 'Display Name could not be saved.')).finally(() => setSaving(false))
+  }}>
+    <label htmlFor="display-name"><span>Display Name</span><input id="display-name" value={value} disabled={!ready || saving} onChange={(event) => setValue(event.target.value)} autoComplete="nickname" aria-describedby="display-name-help" /></label>
+    <p id="display-name-help">This is what FitDex calls you. Use up to {MAX_DISPLAY_NAME_LENGTH} characters; it stays on this device and can be changed anytime.</p>
+    <button className="secondary-button" type="submit" disabled={!ready || saving}>{saving ? 'Saving…' : 'Save Display Name'}</button>
+    {status ? <p className={status.includes('could not') || status.includes('fewer') ? 'form-error' : 'display-name-status'} role="status">{status}</p> : null}
+  </form>
 }
 
 function SettingsPlaceholder({ number, title, description }: { number: string; title: string; description: string }) {

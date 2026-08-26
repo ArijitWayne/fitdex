@@ -12,8 +12,22 @@ export interface SettingsRecord extends EntityRecord {
   /** Retained temporarily so older exported settings remain readable. */
   theme?: LegacyThemePreference
   selectedAvatarId?: string
+  /** Optional local preference only; not an account or unique username. */
+  displayName?: string
   units?: 'metric' | 'imperial'
+  weeklyPlan?: Partial<Record<WeekdayId, WeeklyPlanAssignment>>
+  weeklyPlanConfigured?: boolean
+  workoutTutorialSeen?: boolean
+  foodTutorialSeen?: boolean
 }
+
+export const WEEKDAY_IDS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
+export type WeekdayId = (typeof WEEKDAY_IDS)[number]
+export type WeeklyPlanAssignment =
+  | { type: 'routine'; routineId: string }
+  | { type: 'workout_day' }
+  | { type: 'rest_day' }
+  | { type: 'no_plan' }
 
 export type ExerciseCategory = 'Chest' | 'Back' | 'Shoulders' | 'Legs' | 'Gluteal' | 'Biceps' | 'Triceps' | 'Forearms' | 'Abs'
 
@@ -164,6 +178,12 @@ export interface Workout extends EntityRecord {
   nameSnapshot: string
   status: 'active' | 'completed' | 'discarded'
   startedAt: string
+  /** Active-workout timer state. Missing values on legacy active records mean running. */
+  timerState?: 'running' | 'paused'
+  /** Whole active seconds banked before the current running interval. */
+  accumulatedActiveSeconds?: number
+  /** Start of the current running interval. */
+  lastResumedAt?: string
   completedAt?: string
   durationSeconds?: number
   notes?: string

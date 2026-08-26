@@ -2,7 +2,8 @@ import Dexie from 'dexie'
 import { db } from '../../data/database.ts'
 import type { Exercise, Workout, WorkoutExercise, WorkoutSet } from '../../data/models.ts'
 import { createId } from '../../utils/createId.ts'
-import { DEFAULT_AD_HOC_SETS, calculateVolume, elapsedSeconds, isMeaningfulSet, normalizeWorkoutName } from './workoutModel.ts'
+import { getLocalDayTimestampRange } from '../../utils/localDate.ts'
+import { DEFAULT_AD_HOC_SETS, calculateVolume, createPausedTimerState, createResumedTimerState, getFinalWorkoutDuration, isHistoricalWorkoutSetLogged, isWorkoutSetLogged, normalizeWorkoutName, validateWorkoutForFinish, type WorkoutFinishValidation } from './workoutModel.ts'
 
 export interface WorkoutExerciseDetail {
   exercise: WorkoutExercise
@@ -31,12 +32,27 @@ export class ActiveWorkoutExistsError extends Error {
   }
 }
 
+export class IncompleteWorkoutError extends Error {
+  readonly validation: WorkoutFinishValidation
+
+  constructor(validation: WorkoutFinishValidation) {
+    super('Some exercises or sets are still empty or incomplete. Fill them in or delete them before saving the workout.')
+    this.validation = validation
+  }
+}
+
+export class CompletedWorkoutRequiredError extends Error {
+  constructor() {
+    super('Only completed workout history can be deleted here.')
+  }
+}
+
 function createRecordId(prefix: string) {
   return `${prefix}:${createId()}`
 }
 
-function nowIso() {
-  return new Date().toISOString()
+function nowIso(now = Date.now()) {
+  return new Date(now).toISOString()
 }
 
 function createWorkoutSet(workoutExerciseId: string, order: number, timestamp: string): WorkoutSet {
@@ -53,7 +69,7 @@ export async function getActiveWorkout() {
   return workout ? getWorkoutDetail(workout.id) : undefined
 }
 
-export async function startWorkoutFromRoutine(routineId: string) {
+export async function startWorkoutFromRoutine(routineId: string, now = Date.now()) {
   return db.transaction('rw', [db.workouts, db.workoutExercises, db.workoutSets, db.workoutRoutines, db.routineExercises, db.exercises], async () => {
     await assertNoActiveWorkout()
     const routine = await db.workoutRoutines.get(routineId)
@@ -61,10 +77,11 @@ export async function startWorkoutFromRoutine(routineId: string) {
     const routineItems = await db.routineExercises.where('routineId').equals(routineId).sortBy('order')
     const definitions = await db.exercises.bulkGet(routineItems.map((item) => item.exerciseId))
     const definitionById = new Map(definitions.filter((item): item is Exercise => Boolean(item)).map((item) => [item.id, item]))
-    const timestamp = nowIso()
+    const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), routineId, routineNameSnapshot: routine.name, nameSnapshot: routine.name,
-      status: 'active', startedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      status: 'active', startedAt: timestamp, timerState: 'running', accumulatedActiveSeconds: 0,
+      lastResumedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     }
     const exerciseRows: WorkoutExercise[] = routineItems.map((item, order) => {
       const definition = definitionById.get(item.exerciseId)
@@ -88,13 +105,14 @@ export async function startWorkoutFromRoutine(routineId: string) {
   })
 }
 
-export async function startEmptyWorkout(name = 'Workout') {
+export async function startEmptyWorkout(name = 'Workout', now = Date.now()) {
   return db.transaction('rw', db.workouts, async () => {
     await assertNoActiveWorkout()
-    const timestamp = nowIso()
+    const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), nameSnapshot: normalizeWorkoutName(name), status: 'active',
-      startedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      startedAt: timestamp, timerState: 'running', accumulatedActiveSeconds: 0,
+      lastResumedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     }
     await db.workouts.add(workout)
     return { workout, exercises: [] } satisfies WorkoutDetail
@@ -162,8 +180,9 @@ export async function updateWorkoutSet(setId: string, patch: Partial<Pick<Workou
     if (value !== undefined && (!Number.isFinite(value) || value < 0)) throw new Error('Values cannot be negative or invalid.')
   }
   if (patch.reps !== undefined && (!Number.isInteger(patch.reps) || patch.reps < 1)) throw new Error('Reps must be a positive whole number.')
-  if (patch.completed === true && !isMeaningfulSet({ ...set, ...patch })) throw new Error('Log a value before completing this set.')
-  await db.workoutSets.update(setId, { ...patch, updatedAt: nowIso() })
+  const next = { ...set, ...patch }
+  const completed = isWorkoutSetLogged(next, exercise.trackingTypeSnapshot ?? 'reps_only')
+  await db.workoutSets.update(setId, { ...patch, completed, updatedAt: nowIso() })
 }
 
 export async function addWorkoutSet(workoutExerciseId: string) {
@@ -226,18 +245,33 @@ export async function getPreviousPerformance(exerciseId: string, currentWorkoutI
   return { workout: previous, exercise: occurrence, sets }
 }
 
-export async function finishWorkout(workoutId: string) {
-  const detail = await getWorkoutDetail(workoutId)
-  if (detail.workout.status !== 'active') throw new Error('This workout is no longer active.')
-  const sets = detail.exercises.flatMap((item) => item.sets)
-  if (!detail.exercises.length || !sets.some((set) => set.completed && isMeaningfulSet(set))) {
-    throw new Error('Complete at least one set with logged activity before finishing.')
-  }
-  const completedAt = nowIso()
-  await db.workouts.update(workoutId, {
-    status: 'completed', completedAt, durationSeconds: elapsedSeconds(detail.workout.startedAt, Date.parse(completedAt)), updatedAt: completedAt,
-  })
+export async function pauseWorkout(workoutId: string, now = Date.now()) {
+  const workout = await requireActiveWorkout(workoutId)
+  await db.workouts.update(workoutId, { ...createPausedTimerState(workout, now), updatedAt: nowIso(now) })
   return getWorkoutDetail(workoutId)
+}
+
+export async function resumeWorkout(workoutId: string, now = Date.now()) {
+  const workout = await requireActiveWorkout(workoutId)
+  await db.workouts.update(workoutId, { ...createResumedTimerState(workout, now), updatedAt: nowIso(now) })
+  return getWorkoutDetail(workoutId)
+}
+
+export async function finishWorkout(workoutId: string, now = Date.now()) {
+  return db.transaction('rw', db.workouts, db.workoutExercises, db.workoutSets, async () => {
+    const detail = await getWorkoutDetail(workoutId)
+    if (detail.workout.status !== 'active') throw new Error('This workout is no longer active.')
+    const validation = validateWorkoutForFinish(detail.exercises)
+    if (!validation.valid) throw new IncompleteWorkoutError(validation)
+    const completedAt = nowIso(now)
+    const sets = detail.exercises.flatMap((item) => item.sets)
+    await db.workoutSets.bulkPut(sets.map((set) => ({ ...set, completed: true, updatedAt: completedAt })))
+    await db.workouts.update(workoutId, {
+      status: 'completed', completedAt, durationSeconds: getFinalWorkoutDuration(detail.workout, now),
+      timerState: undefined, accumulatedActiveSeconds: undefined, lastResumedAt: undefined, updatedAt: completedAt,
+    })
+    return getWorkoutDetail(workoutId)
+  })
 }
 
 export async function discardWorkout(workoutId: string) {
@@ -245,8 +279,44 @@ export async function discardWorkout(workoutId: string) {
   await db.workouts.update(workoutId, { status: 'discarded', updatedAt: nowIso() })
 }
 
+/** Permanently removes one completed session and only its owned snapshot rows. */
+export async function deleteCompletedWorkout(workoutId: string) {
+  await db.transaction('rw', db.workouts, db.workoutExercises, db.workoutSets, async () => {
+    const workout = await db.workouts.get(workoutId)
+    if (!workout || workout.status !== 'completed') throw new CompletedWorkoutRequiredError()
+    const exercises = await db.workoutExercises.where('workoutId').equals(workoutId).toArray()
+    const exerciseIds = exercises.map((exercise) => exercise.id)
+    if (exerciseIds.length) await db.workoutSets.where('workoutExerciseId').anyOf(exerciseIds).delete()
+    await db.workoutExercises.where('workoutId').equals(workoutId).delete()
+    await db.workouts.delete(workoutId)
+  })
+}
+
 export async function listRecentWorkouts(limit = 5): Promise<WorkoutSummary[]> {
   const workouts = await db.workouts.where('[status+completedAt]').between(['completed', Dexie.minKey], ['completed', Dexie.maxKey]).reverse().limit(limit).toArray()
+  return summarizeWorkouts(workouts)
+}
+
+/** Reads only sessions completed within the selected local calendar day. */
+export async function getCompletedWorkoutsForDate(dateKey: string): Promise<WorkoutSummary[]> {
+  const { startTimestamp, endTimestamp } = getLocalDayTimestampRange(dateKey)
+  const startIso = new Date(startTimestamp).toISOString()
+  const endIso = new Date(endTimestamp).toISOString()
+  const workouts = await db.workouts
+    .where('[status+completedAt]')
+    .between(['completed', startIso], ['completed', endIso], true, false)
+    .toArray()
+  return summarizeWorkouts(workouts.sort((left, right) => (left.completedAt ?? '').localeCompare(right.completedAt ?? '')))
+}
+
+/** Weekly-plan ownership follows the workout's local start date, including cross-midnight sessions. */
+export async function getCompletedWorkoutsForStartDate(dateKey: string): Promise<WorkoutSummary[]> {
+  const { startTimestamp, endTimestamp } = getLocalDayTimestampRange(dateKey)
+  const workouts = await db.workouts.where('startedAt').between(new Date(startTimestamp).toISOString(), new Date(endTimestamp).toISOString(), true, false).toArray()
+  return summarizeWorkouts(workouts.filter((workout) => workout.status === 'completed').sort((left, right) => left.startedAt.localeCompare(right.startedAt)))
+}
+
+async function summarizeWorkouts(workouts: Workout[]): Promise<WorkoutSummary[]> {
   if (!workouts.length) return []
   const exercises = await db.workoutExercises.where('workoutId').anyOf(workouts.map((item) => item.id)).toArray()
   const sets = exercises.length ? await db.workoutSets.where('workoutExerciseId').anyOf(exercises.map((item) => item.id)).toArray() : []
@@ -257,7 +327,10 @@ export async function listRecentWorkouts(limit = 5): Promise<WorkoutSummary[]> {
     const resistanceExerciseIds = new Set(workoutExercises.filter((item) => item.trackingTypeSnapshot === 'weight_reps').map((item) => item.id))
     return {
       workout, exerciseCount: workoutExercises.length,
-      completedSetCount: workoutSets.filter((item) => item.completed).length,
+      completedSetCount: workoutSets.filter((item) => {
+        const exercise = workoutExercises.find((entry) => entry.id === item.workoutExerciseId)
+        return isHistoricalWorkoutSetLogged(item, exercise?.trackingTypeSnapshot ?? 'reps_only')
+      }).length,
       totalSetCount: workoutSets.length, volume: calculateVolume(workoutSets.filter((item) => resistanceExerciseIds.has(item.workoutExerciseId))),
     }
   })

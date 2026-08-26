@@ -11,23 +11,28 @@ FitDex is a mobile-first Progressive Web App for building routines, logging real
 - Search **804** active built-in exercises across nine muscle categories.
 - Browse verified demonstrations, FitDex-authored instructions, equipment, and tracking guidance.
 - Use normalized local search for common punctuation and spacing variants.
+- Keep a device-local favorites shortlist, filter it, and search within it.
 - Explore themed category pixel art across all four visual themes.
 
 ### Workout & Routines
 
 - Create reusable routines and set planned set counts.
+- Plan a recurring week with optional Routine Days, open Workout Days, Rest Days, and No Plan days.
 - Start from a routine or begin an empty workout.
-- Resume one locally autosaved active session at a time.
+- Resume or persistently pause one locally autosaved active session at a time; paused time is excluded from the frozen completed duration.
 - Log reps, weight, duration, or distance as appropriate for each exercise.
-- Review previous performance, use the rest timer, and keep completed workout history as read-only snapshots.
+- Review previous performance, use the rest timer, and keep completed workout history as read-only snapshots that can be permanently deleted with confirmation.
+- Add or remove exercises from the same routine/workout picker; active set data is protected by confirmation.
 
 ### Food & Nutrition
 
 - Log foods under Breakfast, Lunch, Supper, or Dinner.
 - Enter calories, protein, carbohydrates, fat, fiber, sugar, saturated fat, and sodium manually.
 - Browse dates, review meal and daily totals, and edit or delete individual entries.
+- Switch one daily nutrition donut between macro-derived calorie contribution and actual logged calories by meal.
 - Reuse remembered foods with their saved category and default nutrition values.
 - Choose fixed pixel-art categories or create a custom category through Other with a personal accent color and one recolorable generic pixel icon.
+- Learn each workflow through replayable Workout/Food guides and lightweight Journal/Progress help.
 
 ### Local-first PWA
 
@@ -84,13 +89,15 @@ Personal workout and nutrition data stays on the device.
 - Exercise Dex: dataset version 4, 804 active built-ins, 804 verified demonstrations, and written exercise content
 - Routine building, active workout logging, autosave, rest timer, previous performance, and completed-workout history
 - Food / Nutrition V1 with local food memory, date navigation, totals, categories, and custom categories
+- Journal V1 with local-date navigation, completed-workout history, and four-meal Food history
+- Progress + Personal Records V1 with local period trends, derived training volume, nutrition averages, and tracking-aware all-time PRs
+- Home Dashboard V1 with real active/completed workout state, daily nutrition and activity, recent progress, and direct shortcuts
+- Optional editable, device-local Display Name plus optimized priority loading for the selected Home avatar
 - Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
 
 **Planned / upcoming**
 
-- Journal integration
-- Progress, body tracking, and personal records
-- Home dashboard refinement
+- Body tracking and measurements
 - XP, levels, and streaks driven by real activity
 - `.fitdex` backup/restore
 - Onboarding/settings polish and broader device QA
@@ -118,8 +125,19 @@ npm run dev
 | `npm run build` | Type-check and create a production build |
 | `npm run lint` | Run Oxlint |
 | `npm run test:exercise-dex` | Check Exercise Dex UI/data contracts |
+| `npm run test:exercise-favourites` | Check local Exercise Dex favorites |
 | `npm run test:workout-sessions` | Check workout session behavior |
+| `npm run test:weekly-plan` | Check recurring planning and schedule safety |
 | `npm run test:food` | Check Food V1 repository behavior |
+| `npm run test:food-breakdown` | Check macro and meal nutrition breakdown calculations |
+| `npm run test:journal` | Check Journal daily queries, summaries, and snapshot behavior |
+| `npm run test:progress` | Check Progress periods, aggregates, trends, and nutrition behavior |
+| `npm run test:personal-records` | Check tracking-aware Personal Record rules |
+| `npm run test:home` | Check Home greetings and derived workout, Food, activity, and recent-progress states |
+| `npm run test:home-schedule` | Check schedule-aware Home behavior |
+| `npm run test:guides` | Check tutorial content and seen-state persistence |
+| `npm run test:home-ui` | Check Home navigation, profile/avatar integration, responsive contracts, and PWA asset policy |
+| `npm run test:display-name` | Check local Display Name validation, editing, clearing, and persistence |
 
 ## Deployment
 

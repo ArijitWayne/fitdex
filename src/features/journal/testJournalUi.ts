@@ -1,0 +1,36 @@
+/// <reference types="node" />
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+
+const page = fs.readFileSync('src/pages/JournalPage.tsx', 'utf8')
+const css = fs.readFileSync('src/styles/app.css', 'utf8')
+const repository = fs.readFileSync('src/features/journal/journalRepository.ts', 'utf8')
+const database = fs.readFileSync('src/data/database.ts', 'utf8')
+
+assert.match(page, /title="Journal" description="Your daily fitness history"/)
+assert.match(page, /aria-label="Previous day"/)
+assert.match(page, /aria-label="Next day"/)
+assert.match(page, /isLocalToday\(date\)/)
+assert.match(page, /shiftLocalDateKey/)
+assert.match(page, /FOOD_MEALS\.map/)
+assert.match(page, /No entries/)
+assert.match(page, /No activity logged/)
+assert.match(page, /View Workout/)
+assert.match(page, /<CompletedWorkoutDetail/)
+assert.match(page, /entry\.categoryKind === 'unresolved' \? 'Uncategorized'/)
+assert.doesNotMatch(page, /editFoodLog|deleteFoodLog|toISOString/)
+assert.match(repository, /getCompletedWorkoutsForDate\(dateKey\)/)
+assert.match(repository, /listFoodEntries\(dateKey\)/)
+assert.doesNotMatch(repository, /journalRecords|\.add\(|\.put\(/)
+assert.match(database, /DATABASE_SCHEMA_VERSION = 6/)
+assert.doesNotMatch(database, /journalDays|journalEntries|journalSummary/)
+assert.match(css, /\.journal-summary-grid \{[^}]*grid-template-columns: repeat\(2,/s)
+assert.match(css, /@media \(max-width: 374px\)[\s\S]*\.journal-summary-grid \{ grid-template-columns: 1fr; \}/)
+assert.match(css, /\.journal-workout-card \{[^}]*var\(--color-primary\)/s)
+assert.match(css, /\.journal-meal-card \{[^}]*var\(--color-rpg-accent\)/s)
+assert.doesNotMatch(css.match(/\/\* Journal V1[\s\S]*$/)?.[0] ?? '', /#[0-9a-f]{3,8}/i)
+
+console.log('Journal UI assertions passed: local date controls, summaries, fixed meals, empty states, detail reuse, responsive layout, and theme tokens')
+assert.match(page, /How Journal Works/)
+assert.match(page, /read-only daily history/)
+assert.match(page, /Completed sessions appear automatically/)

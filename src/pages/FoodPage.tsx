@@ -1,11 +1,14 @@
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
 import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getFrequentFoods, getRecentFoods, listCustomCategories, listFoodEntries, searchRememberedFoods, type FoodDraft } from '../features/food/foodRepository'
-import { categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate } from '../features/food/foodModel'
+import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, type NutritionBreakdown } from '../features/food/foodModel'
 import { isLocalToday } from '../utils/localDate'
+import { GuideDialog } from '../features/help/GuideDialog'
+import { foodTutorialSteps } from '../features/help/tutorialSteps'
+import { hasSeenTutorial, markTutorialSeen } from '../features/help/tutorialPreferences'
 
 type View = { kind: 'overview' } | { kind: 'meal'; meal: FoodMeal } | { kind: 'add'; meal: FoodMeal; remembered?: RememberedFood; editing?: FoodLogEntry }
 type NutritionStrings = Record<keyof Required<FoodNutrition>, string>
@@ -21,16 +24,49 @@ function MacroStrip({ nutrition, secondary = false }: { nutrition: FoodNutrition
   return <div className={secondary ? 'food-macros food-macros-secondary' : 'food-macros'}>{rows.map(([key, label, unit]) => <div key={key}><strong>{valueOrDash(nutrition[key], unit)}</strong><span>{label}</span></div>)}</div>
 }
 
+type BreakdownMode = 'macros' | 'meals'
+const breakdownColors = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-chart-3)', 'var(--color-chart-4)']
+
+function nutritionGradient(breakdown: NutritionBreakdown) {
+  if (!breakdown.totalKcal) return 'none'
+  let cursor = 0
+  const stops = breakdown.slices.flatMap((slice, index) => {
+    const start = cursor
+    cursor += slice.percentage
+    return [`${breakdownColors[index]} ${start}%`, `${breakdownColors[index]} ${cursor}%`]
+  })
+  return `conic-gradient(${stops.join(', ')})`
+}
+
+function NutritionBreakdownCard({ entries, totals }: { entries: readonly FoodLogEntry[]; totals: FoodNutrition }) {
+  const [mode, setMode] = useState<BreakdownMode>('macros')
+  const breakdown = mode === 'macros' ? calculateMacroCalorieBreakdown(totals) : calculateMealCalorieBreakdown(entries)
+  const emptyMessage = !entries.length ? 'No nutrition logged for this day.' : mode === 'macros' ? 'No macro data logged.' : 'No meal calories logged.'
+  const context = mode === 'macros' ? 'Macro-derived contribution' : 'Daily logged total'
+  const accessibleSummary = breakdown.slices.map((slice) => `${slice.label}: ${Math.round(slice.kcal)} kilocalories, ${Math.round(slice.percentage)} percent`).join('; ')
+
+  return <section className="panel food-breakdown" aria-labelledby="nutrition-breakdown-title">
+    <header><div><p className="eyebrow" id="nutrition-breakdown-title">Nutrition breakdown</p><h2>{mode === 'macros' ? 'Calorie contribution' : 'Calories by meal'}</h2></div><div className="food-breakdown-switch" role="group" aria-label="Nutrition breakdown view"><button type="button" aria-pressed={mode === 'macros'} onClick={() => setMode('macros')}>Macros</button><button type="button" aria-pressed={mode === 'meals'} onClick={() => setMode('meals')}>Meals</button></div></header>
+    {!breakdown.totalKcal ? <p className="food-breakdown-empty">{emptyMessage}</p> : <div className="food-breakdown-body">
+      <div className="food-donut" style={{ '--food-donut': nutritionGradient(breakdown) } as CSSProperties} role="img" aria-label={`${context}: ${Math.round(breakdown.totalKcal)} kilocalories. ${accessibleSummary}`}><div><strong>{Math.round(breakdown.totalKcal)}</strong><span>kcal</span><small>{context}</small></div></div>
+      <div className="food-breakdown-legend">{breakdown.slices.map((slice, index) => <div key={slice.key}><i style={{ '--food-slice': breakdownColors[index] } as CSSProperties} aria-hidden="true" /><span><strong>{slice.label}</strong><small>{mode === 'macros' ? `${Math.round((slice.grams ?? 0) * 10) / 10} g · ` : ''}{Math.round(slice.kcal)} kcal · {Math.round(slice.percentage)}%</small></span></div>)}</div>
+    </div>}
+    {mode === 'macros' && entries.length ? <p className="food-breakdown-note">Daily logged total: <strong>{Math.round(totals.kcal ?? 0)} kcal</strong>. Macro split is calculated from logged protein, carbs, and fat.</p> : null}
+  </section>
+}
+
 export function FoodPage() {
   const [date, setDate] = useState(() => normalizeDate(new Date()))
   const [entries, setEntries] = useState<FoodLogEntry[]>([])
   const [view, setView] = useState<View>({ kind: 'overview' })
+  const [tutorialOpen, setTutorialOpen] = useState(false)
   const refresh = useCallback(async () => { setEntries(await listFoodEntries(date)) }, [date])
   useEffect(() => {
     let active = true
     void listFoodEntries(date).then((rows) => { if (active) setEntries(rows) })
     return () => { active = false }
   }, [date])
+  useEffect(() => { void hasSeenTutorial('food').then((seen) => { if (!seen) setTutorialOpen(true) }) }, [])
   const totals = useMemo(() => nutritionTotals(entries), [entries])
   const navigateDate = (nextDate: string) => { setDate(nextDate); setEntries([]); setView({ kind: 'overview' }) }
 
@@ -38,9 +74,11 @@ export function FoodPage() {
   if (view.kind === 'meal') return <MealDetail date={date} meal={view.meal} entries={entries.filter((entry) => entry.meal === view.meal)} onBack={() => setView({ kind: 'overview' })} onAdd={() => setView({ kind: 'add', meal: view.meal })} onEdit={(editing) => setView({ kind: 'add', meal: view.meal, editing })} onChanged={refresh} />
 
   return <div className="page-stack food-page">
-    <header className="food-header"><div><p className="eyebrow">Nutrition hub</p><h1>Food</h1></div><div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><strong>{formatDate(date)}</strong><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>{isLocalToday(date) ? <span className="food-today">Today</span> : null}</header>
+    <header className="food-header"><div><p className="eyebrow">Nutrition hub</p><h1>Food</h1></div><button className="page-help-button" type="button" onClick={() => setTutorialOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Food Works</button><div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><strong>{formatDate(date)}</strong><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>{isLocalToday(date) ? <span className="food-today">Today</span> : null}</header>
     <section className="panel food-daily-totals" aria-labelledby="daily-totals"><p className="eyebrow" id="daily-totals">Daily totals</p><MacroStrip nutrition={totals} /><MacroStrip nutrition={totals} secondary /></section>
+    <NutritionBreakdownCard key={date} entries={entries} totals={totals} />
     <section className="food-meal-list" aria-label="Meals">{FOOD_MEALS.map((meal) => { const mealEntries = entries.filter((entry) => entry.meal === meal); const mealTotals = nutritionTotals(mealEntries); return <article className="panel food-meal-card" key={meal}><button className="food-meal-open" type="button" onClick={() => setView({ kind: 'meal', meal })}><MealIcon meal={meal} /><span className="food-meal-title"><strong>{FOOD_MEAL_LABELS[meal]}</strong><small>{mealEntries.length} {mealEntries.length === 1 ? 'item' : 'items'}</small></span><ChevronRight aria-hidden="true" /></button><MacroStrip nutrition={mealTotals} />{!mealEntries.length ? <p className="food-empty">No foods logged.</p> : null}<button className="secondary-button food-add-button" type="button" onClick={() => setView({ kind: 'add', meal })}><Plus size={18} aria-hidden="true" /> Add Food</button></article> })}</section>
+    {tutorialOpen ? <GuideDialog eyebrow="How Food Works" steps={foodTutorialSteps} onClose={() => { setTutorialOpen(false); void markTutorialSeen('food') }} /> : null}
   </div>
 }
 

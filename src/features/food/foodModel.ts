@@ -1,4 +1,4 @@
-import type { FoodMeal, FoodNutrition, PredefinedFoodCategoryId } from '../../data/models.ts'
+import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PredefinedFoodCategoryId } from '../../data/models.ts'
 
 export const FOOD_MEAL_LABELS: Record<FoodMeal, string> = {
   breakfast: 'Breakfast', lunch: 'Lunch', supper: 'Supper', dinner: 'Dinner',
@@ -81,6 +81,45 @@ export function nutritionTotals(rows: readonly FoodNutrition[]): FoodNutrition {
     if (values.length) totals[field] = values.reduce((sum, value) => sum + value, 0)
   }
   return totals
+}
+
+export interface NutritionBreakdownSlice {
+  key: string
+  label: string
+  grams?: number
+  kcal: number
+  percentage: number
+}
+
+export interface NutritionBreakdown {
+  totalKcal: number
+  slices: NutritionBreakdownSlice[]
+}
+
+function withPercentages(slices: Array<Omit<NutritionBreakdownSlice, 'percentage'>>): NutritionBreakdown {
+  const totalKcal = slices.reduce((sum, slice) => sum + slice.kcal, 0)
+  return {
+    totalKcal,
+    slices: slices.map((slice) => ({ ...slice, percentage: totalKcal > 0 ? (slice.kcal / totalKcal) * 100 : 0 })),
+  }
+}
+
+/** Macro energy uses the standard protein/carbohydrate/fat 4/4/9 conversion. */
+export function calculateMacroCalorieBreakdown(nutrition: FoodNutrition): NutritionBreakdown {
+  return withPercentages([
+    { key: 'protein', label: 'Protein', grams: nutrition.protein ?? 0, kcal: (nutrition.protein ?? 0) * 4 },
+    { key: 'carbs', label: 'Carbs', grams: nutrition.carbs ?? 0, kcal: (nutrition.carbs ?? 0) * 4 },
+    { key: 'fat', label: 'Fat', grams: nutrition.fat ?? 0, kcal: (nutrition.fat ?? 0) * 9 },
+  ])
+}
+
+/** Meal energy intentionally uses only historical kcal snapshots, never inferred macros. */
+export function calculateMealCalorieBreakdown(entries: readonly FoodLogEntry[]): NutritionBreakdown {
+  return withPercentages(FOOD_MEALS.map((meal) => ({
+    key: meal,
+    label: FOOD_MEAL_LABELS[meal],
+    kcal: entries.filter((entry) => entry.meal === meal).reduce((sum, entry) => sum + (entry.kcal ?? 0), 0),
+  })))
 }
 
 export function parseOptionalNutrition(value: string): number | undefined {

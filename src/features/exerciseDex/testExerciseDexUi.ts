@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { EXERCISE_CATEGORIES, exerciseBelongsToCategory, normalizeExerciseSearch, searchExercises } from './exerciseCatalog.ts'
+import { EXERCISE_CATEGORIES, exerciseBelongsToCategory, normalizeExerciseSearch, searchExercises, searchFavouriteExercises } from './exerciseCatalog.ts'
 import { builtInExercises } from './exerciseData.ts'
 
 assert.deepEqual(EXERCISE_CATEGORIES, [
@@ -34,6 +34,7 @@ const chestPushUpResults = searchExercises(builtInExercises.filter((exercise) =>
 assert.ok(chestPushUpResults.some((exercise) => exercise.id === namedPushUp.id))
 assert.ok(chestPushUpResults.every((exercise) => exerciseBelongsToCategory(exercise, 'Chest')))
 assert.equal(normalizeExerciseSearch(' One-Arm Dumbbell Row! '), 'onearmdumbbellrow')
+assert.deepEqual(searchFavouriteExercises(builtInExercises, new Set([namedPushUp.id]), 'push-ups').map((exercise) => exercise.id), [namedPushUp.id])
 
 const component = fs.readFileSync('src/features/exerciseDex/ExerciseDex.tsx', 'utf8')
 const css = fs.readFileSync('src/styles/app.css', 'utf8')
@@ -47,9 +48,18 @@ assert.match(component, /className="exercise-category-grid"/)
 assert.match(component, /<label className="exercise-search">/)
 assert.match(component, /export interface ExerciseDexPicker/)
 assert.match(component, /onAddToRoutine\?: \(exercise: Exercise\) => void/)
-assert.match(component, /className=\{picker\.selectedExerciseIds\.has\(exercise\.id\) \? 'exercise-picker-toggle is-selected'/)
+assert.match(component, /picker\.existingExerciseIds\.has\(exercise\.id\) \? 'exercise-picker-toggle is-added'/)
+assert.match(component, /exercise-picker-contextbar/)
+assert.match(component, />Added</)
+assert.match(component, /await picker\.onAddExercise\(exercise\)/)
+assert.match(component, /await picker\.onRemoveExercise\(exercise\)/)
+assert.match(component, /exercise-library-scope/)
+assert.match(component, /Favorites/)
+assert.match(component, /No favorite exercises yet/)
+assert.match(component, /!picker \? <button className=\{favourite/)
+assert.doesNotMatch(component, /selectedExerciseIds/)
 assert.match(component, />Add to routine<\/button>/)
-assert.match(component, /!normalizeExerciseSearch\(query\)/)
+assert.match(component, /libraryScope === 'all' && !normalizeExerciseSearch\(query\)/)
 assert.match(component, /className="exercise-category-sprite"/)
 assert.match(component, /getExerciseCategorySprite\(item, family, resolvedBrightness\)/)
 assert.doesNotMatch(component, /MuscleGroupArtwork|muscle-group-artwork|muscle-highlight/)

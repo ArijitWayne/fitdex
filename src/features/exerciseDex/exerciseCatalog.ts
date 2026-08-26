@@ -70,6 +70,10 @@ export function searchExercises(exercises: readonly Exercise[], query: string) {
   })
 }
 
+export function searchFavouriteExercises(exercises: readonly Exercise[], favouriteIds: ReadonlySet<string>, query: string) {
+  return searchExercises(exercises.filter((exercise) => favouriteIds.has(exercise.id)), query)
+}
+
 export function filterBySubfilter(exercises: readonly Exercise[], _category: ExerciseCategory, subfilter: string) {
   if (subfilter === 'All') return exercises
   return exercises.filter((exercise) => exercise.muscleRegions.includes(subfilter))

@@ -172,11 +172,13 @@ public/avatars/amazonians/hippolyta.png
 
 Do not rename them without updating avatar configuration. `AvatarPortrait` behavior is:
 
-- Loading: clean neutral container
+- Loading: dimensionally stable neutral container
 - Loaded: real PNG only
 - Error: existing Art Pending fallback
 
 The fallback must never render underneath transparent portions of a successfully loaded PNG.
+
+The six source portraits were reduced from 1024 × 1536 RGBA PNGs (about 11 MB total) to 384 × 576 PNGs (about 1.6 MB total), still comfortably above their largest rendered size. The selected above-the-fold Home portrait is the only priority image: it loads eagerly with high fetch priority and explicit dimensions, while selector portraits remain lazy. The original delay was caused by multi-megabyte transfer/decode work combined with lazy-loading an above-the-fold image. No PWA rule change was required because the existing Workbox PNG glob already precaches all six portraits; exercise MP4s remain excluded.
 
 ## 14. Gamification scope
 
@@ -186,9 +188,11 @@ Do not add pets, animal companions, monsters, battles, inventory, fantasy curren
 
 ## 15. Home screen direction
 
-The approved foundation begins with a player/avatar card showing selected avatar, faction, avatar name, archetype, level, and XP bar. It is followed by Daily Quest, Plan Streak, Nutrition Today, and Next Workout.
+Home Dashboard V1 is implemented as an honest, derived overview of existing local facts. Its compact hero shows the selected avatar, archetype, local-date-aware greeting, and date. An optional editable Display Name is stored in the existing Settings record and updates the greeting reactively; it is trimmed, Unicode-safe, limited to 30 characters, clearable, local-only, and requires neither an account nor a schema migration.
 
-Nutrition Today summarizes Calories, Protein, Carbohydrates, and Fat. Do not display fantasy combat statistics such as HP, STR, ATK, DEF, or Mana.
+Dashboard sections are Today's Workout, Nutrition Today, Today's Activity, Recent Progress, and Quick Access. Workout state distinguishes an active resumable session, one or more completed sessions today, and a truthful empty state; direct actions enter Resume, Start Workout, or Exercise Dex through the existing Workout flow. Nutrition is derived from today's `FoodLogEntry` snapshots and shows calories, protein, and fixed four-meal logged/empty markers. Activity summarizes completed workouts, persisted training duration, logged food count, and protein. Recent Progress reuses the established PR rules and unit conversion, plus completed-workout count and training volume for the inclusive last seven local calendar days. Quick Access links to Exercise Dex, Journal, Progress, and Food.
+
+Home creates no persistent summary, XP, streak, goal, scheduling, or PR rows. Its repository composes the existing active-workout lookup, Food daily query, and Progress source/PR derivation, so historical snapshots remain authoritative and Dexie stays at schema version 6. A fully empty database produces explicit zero/empty states without seeded examples. XP, levels, streaks, quests, calorie targets, goals, body metrics, and charts remain future features; do not imply them before real source data and rules exist. Do not display fantasy combat statistics such as HP, STR, ATK, DEF, or Mana.
 
 ## 16. Workout system
 
@@ -199,6 +203,8 @@ Completed-workout snapshots preserve the routine details and exercise identities
 ## 17. Exercise Dex
 
 Exercise Dex is one universal library for everyone. There is no male/female classification, beginner/pro split, or duplication by user type. It is a Workout sub-view; the five primary navigation destinations remain unchanged.
+
+Standalone Exercise Dex provides All/Favorites scope plus row and detail star controls. Favorites are local stable exercise IDs stored in the existing `exercisePreferences` records (`favourite: boolean`), preserving notes/tags and leaving Settings untouched; unknown or retired IDs are ignored safely when resolving the current catalog. Favorites search reuses the normalized catalog search. Contextual routine/workout pickers intentionally omit favorites and instead show only their target-specific Add/Added state. This adds no store or migration and keeps Dexie at version 6.
 
 The current SmartWorkout-derived built-in catalog is dataset version 4 with **804 active canonical exercises** and 805 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
 
@@ -290,19 +296,43 @@ Phase 1I.1 retires the nine SmartWorkout pages that provide no usable demonstrat
 
 ### Phase 1K.1 local Workout Hub and routines
 
-The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for multi-select routine picking and Exercise Detail can add an exercise directly to a routine. Built-ins use the supported stable-ID reference path; compatibility for historical custom-exercise records remains non-destructive. Duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
+The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for contextual routine picking and Exercise Detail can add an exercise directly to a routine. Built-ins use the supported stable-ID reference path; compatibility for historical custom-exercise records remains non-destructive. Duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
 
 The built-in exercise dataset remains version 4 with 804 records. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local. Future `.fitdex` backup/restore must include routines, routine exercises, workout sessions, session exercises, and set/activity logs.
 
 ### Phase 1K.2 active workout logging and history
 
-Active workouts now persist incrementally in the existing Dexie v5 `workouts`, `workoutExercises`, and `workoutSets` stores. FitDex permits one active session at a time, supports routine-derived snapshot sessions and empty/ad-hoc sessions, restores elapsed time from the persisted start timestamp, and autosaves names, notes, exercise order, tracking-mode-specific values, set completion, and structural changes. Routine edits never rewrite an active or completed session.
+Active workouts now persist incrementally in the existing Dexie v5 `workouts`, `workoutExercises`, and `workoutSets` stores. FitDex permits one active session at a time, supports routine-derived snapshot sessions and empty/ad-hoc sessions, restores elapsed time from persisted timing state, and autosaves names, notes, exercise order, tracking-mode-specific values, derived logged-set compatibility state, and structural changes. Routine edits never rewrite an active or completed session.
 
-Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Finishing preserves incomplete draft rows without counting them as completed, while a completely empty/non-meaningful session must be discarded. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Historical custom-exercise records remain readable through the same compatibility path. Future `.fitdex` backup must include all five workout/routine stores; Journal, Progress, PR, streak, and XP features can consume these records later. RPE, calorie estimation, and Journal linking remain intentionally deferred.
+Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Legacy completed workouts may retain incomplete rows and historical `completed` flags and remain readable without migration or rewriting. New finalization rules are stricter: every remaining exercise must contain at least one set row, every remaining row must be valid for its tracking type, and at least one logged set must exist overall. Users must fill or delete empty/incomplete rows and fill or remove empty exercises before saving. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Historical custom-exercise records remain readable through the same compatibility path. Future `.fitdex` backup must include all five workout/routine stores; Journal and Progress/PRs now derive from these facts, while streak and XP features can consume them later. RPE and calorie estimation remain intentionally deferred.
+
+### Workout timer and interaction correctness milestone
+
+The active `Workout` record owns a persisted running/paused timer lifecycle without a new store or schema bump. New sessions store `timerState`, `accumulatedActiveSeconds`, and `lastResumedAt`; legacy active records with those optional fields missing remain compatible and are treated as running from `startedAt`. While running, displayed duration is the banked active seconds plus whole seconds since the last resume. Pausing banks that duration and freezes it; resuming starts a new running interval; finishing from either state persists the final active-only value to immutable `durationSeconds`. Starting Finish from a running workout banks a candidate duration before draft flush, validation, and confirmation. Invalid Finish resumes the originally running timer; canceling a valid confirmation also resumes from the cancellation time, excluding time spent in the Finish dialog. An originally paused workout stays paused through invalid or canceled Finish. No timer tick is written to IndexedDB—only start, pause, resume, and finish transitions persist. A running session includes background/device-lock wall time, while an explicitly paused session remains frozen across navigation, refresh, or PWA restart.
+
+The rest countdown remains an independent in-memory control and continues under its existing behavior when the workout timer is paused. Because set logging no longer has a Complete button, each logged row exposes a separate explicit Rest action; merely typing through a valid state never starts or restarts the countdown. Home labels a paused session truthfully and opens the same active workout. Journal and Progress continue to consume completed `durationSeconds` snapshots only, so excluded pause time naturally carries into historical summaries and analytics.
+
+Active set inputs use controlled local drafts with the existing save-on-blur persistence boundary. One tracking-aware helper classifies each row as empty, incomplete, or logged. All required valid data means logged automatically: weight plus reps for `weight_reps`, reps for bodyweight/reps-only, assistance plus reps for assisted bodyweight, duration for duration and optional-distance duration, distance plus duration, weight plus distance, or duration plus reps as appropriate. Counters derive from current drafts, so they update immediately when required values become valid or are cleared. Repository autosave mirrors this derived result into the retained legacy `completed` field for index/history compatibility; it is no longer a user-controlled completion action. Finish flushes current drafts before repository validation. Routine templates remain plans and are not subject to active-workout finalization validation. Previous performance still reads only prior completed sessions.
+
+Active logging uses compact set cards: set number and previous performance share the header, compatible metric fields stay side-by-side at normal phone widths and stack at the 320 px robustness floor, and `Logged` / `Incomplete` / `Empty` appears in the same bottom strip as the explicit Rest and accessible icon-only Delete actions. Rest remains user-triggered and is never started merely by entering valid values. Exercise headers and reorder/remove controls retain their semantics, while the reduced sticky Finish/Discard bar and matching safe-area/navigation clearance let the final set scroll fully above all fixed actions.
+
+Completed workout history can be permanently deleted from Recent Workouts or Completed Workout Detail only after an accessible irreversible-action confirmation. `deleteCompletedWorkout` rejects active or discarded sessions and uses one Dexie transaction over `workouts`, `workoutExercises`, and `workoutSets`: it resolves exercise snapshots through the existing `workoutId` index, resolves sets through their existing `workoutExerciseId` index, and removes exactly that completed session and its owned snapshots. The source routine, routine items, Exercise Dex definitions, Food history, other completed sessions, and an active session remain untouched. No store, index, migration, or cached history was added; schema remains v6. Home, Journal, Progress, Personal Records and their exercise count, and previous-performance lookup all query the remaining source snapshots, so deletion naturally recalculates them and the next-best PR or next-most-recent performance becomes visible.
+
+Contextual Exercise Dex pickers persist a reversible `+ Add` / `✓ Added` toggle through the target repository. Routine removal changes only the template. Active-workout removal deletes only that session's exercise snapshot and owned sets; untouched empty rows may be removed immediately, while any incomplete or logged set (as determined by the shared tracking-aware classifier) requires a fixed accessible confirmation. Only after a successful write and target refresh does the row derive its next state from current routine/workout contents, so failures retain the truthful state and reopening reconstructs it. Standalone Exercise Dex has no Added state. A sticky contextual Back/Done bar preserves the routine/workout return path, while Workout Hub library navigation, routine Add Exercise, and active-workout Pause/Resume plus Add Exercise are available near the top. The sticky finish/discard bar and scroll content share safe-area/navigation height variables, with explicit bottom clearance so the final controls can scroll fully above it.
+
+### Recurring Weekly Plan and connected help
+
+The Workout hub owns one recurring local weekly template with stable Monday-through-Sunday keys. Every day remains explicitly one of `routine` (stable `routineId`), `workout_day`, `rest_day`, or `no_plan`; routines are optional, so a brand-new user can plan open training days and recovery without creating a template. The seven assignments and `weeklyPlanConfigured` live as non-indexed fields on the singleton Settings record, keeping Dexie at schema version 6 and preserving a compact future input for Plan Streak work without implementing streaks. Missing data defaults to No Plan. Routine names and exercise counts resolve live by ID, and deleting a routine atomically changes only its affected assignments to No Plan while leaving active/completed workouts untouched.
+
+Home remains derived from Settings, routines, active/completed workouts, and Food facts. Active workout is the highest-priority Today state. A Routine Day is satisfied only by a completed workout whose persisted source `routineId` matches; a different completed workout is shown as activity while the assigned routine remains pending. A generic Workout Day is satisfied by any completed workout whose local `startedAt` date is today. Rest Day remains planned recovery even when unplanned activity exists, and No Plan remains distinct from both. Cross-midnight workouts belong to their local start day for plan interpretation. Deleting the only matching completion naturally makes the routine pending again. The weekly plan is only a current recurring template: edits do not reconstruct or snapshot historical schedules, and no history, Journal, or Progress records are rewritten.
+
+Workout provides a replayable 12-step How Workouts Work guide and Food provides a replayable 7-step How Food Works guide. Each auto-opens once when its optional Settings flag (`workoutTutorialSeen` or `foodTutorialSeen`) is absent, while page-level Help controls always allow replay. The shared lightweight dialog supplies modal semantics, focused step headings, Escape, Back/Next, Skip/Done, scroll containment, safe areas, and short-landscape behavior without a new dependency. Journal and Progress expose manual one-screen help only: Journal explains its completed-workout/FoodLogEntry-derived read-only model; Progress explains completed-workout and Food analytics, including Resistance Volume as weight × reps workload. Low-data Home explains that Workout and Food entries automatically feed Home, Journal, and Progress. No XP, streak, backup, notification, date override, or cache store is included.
 
 ### Phase 2B local-first Food V1
 
 Food is a complete manual, offline nutrition logger with exactly four ordered meal identifiers: `breakfast`, `lunch`, `supper`, and `dinner`. It uses no external food database, nutrition API, barcode lookup, cloud persistence, account, targets, or seeded example entries. Users can browse any local calendar date (`YYYY-MM-DD`), view calculated daily and meal totals, open a meal, add a new or remembered food, edit that historical entry, and delete only that entry. Viewing a date never creates data.
+
+The overview has one derived Nutrition Breakdown card with an accessible Macros/Meals segmented control and a CSS conic-gradient donut backed by a complete text legend. Macros uses only protein × 4, carbohydrates × 4, and fat × 9; entered daily kcal remains separately labeled and is never forced to match the macro-derived total. Meals uses actual `FoodLogEntry.kcal` snapshots in the locked Breakfast/Lunch/Supper/Dinner order and never fabricates missing calories from macros. Empty days and zero-macro days render intentional no-data states. No chart dependency, table, or schema migration is involved.
 
 Dexie schema version 6 retains all v5 and legacy tables and adds three user-owned stores:
 
@@ -320,7 +350,7 @@ Tracked facts are calories (`kcal`), protein, carbohydrates, fat, fiber, sugar, 
 
 `src/utils/localDate.ts` defines local calendar identity for conditional Today status using `getFullYear()`, `getMonth()`, and `getDate()` rather than UTC `toISOString()` conversion. Only the actual local current date receives the Food date status label; previous/next navigation uses local `YYYY-MM-DD` values. The permanent Workout Hub “Today” heading is a separate semantic section title, not a selected-date status.
 
-Future Journal and Progress views can group or aggregate the date/meal indexed facts without changing the schema. Future `.fitdex` backup/restore must include all three Food V1 stores in addition to the retained legacy nutrition tables. Food pixel assets live under `public/food/` and resolve from `/food/meals/meal-{meal}.webp` and `/food/categories/category-{categoryId}.webp`; custom categories use the CSS-masked Other base above. Accessible Lucide fallbacks remain available; no emoji or scraped artwork ships.
+Journal and Progress now group or aggregate these date/meal indexed facts without changing the schema. Future `.fitdex` backup/restore must include all three Food V1 stores in addition to the retained legacy nutrition tables. Food pixel assets live under `public/food/` and resolve from `/food/meals/meal-{meal}.webp` and `/food/categories/category-{categoryId}.webp`; custom categories use the CSS-masked Other base above. Accessible Lucide fallbacks remain available; no emoji or scraped artwork ships.
 
 ### Android/WebView local-ID compatibility
 
@@ -374,17 +404,38 @@ Food / Nutrition V1 is implemented as a manual local logger; the detailed source
 
 ## 22. Progress
 
-Planned areas:
+Progress + Personal Records V1 is implemented as a derived analytics layer over completed `Workout` / `WorkoutExercise` / `WorkoutSet` snapshots and `FoodLogEntry` snapshots. It creates no Progress or PR records, never rewrites history, and leaves Dexie at schema version 6. The repository fetches completed sessions, bulk-loads their exercise and set snapshots, and aggregates in memory without per-exercise IndexedDB queries. Active workouts, discarded workouts, routines, and incomplete sets never contribute.
 
-- **Body:** weight, waist, chest, biceps, thighs, shoulders, custom measurements, and later progress photos
-- **Strength:** best set, highest weight, estimated 1RM, training volume, exercise history, and PRs
-- **Nutrition:** average calories/protein, target adherence, and macro consistency
+Dashboard period filters are 7D, 30D, 90D, and All. Finite windows use inclusive local calendar dates ending today (today plus the prior 6, 29, or 89 local days), with equal-length immediately preceding windows for volume comparison. Seven-day charts use daily buckets, 30D uses six five-day buckets, 90D uses consecutive seven-day buckets with a final partial bucket, and All uses calendar months spanning the available source data. Charts are lightweight CSS bars backed by accessible text; no chart dependency or smoothing is used.
+
+Overview workout count means completed sessions, including multiple sessions on one day. Training time sums persisted `durationSeconds`. Resistance volume sums `weight × reps` only for completed `weight_reps` sets with valid stored values. Current and previous period volume compare as a percentage; a zero previous total reports no previous volume, and All omits comparison. Canonical kg values remain unchanged, while the shared unit utility converts displayed weight/volume to lb and distance to mi for imperial settings.
+
+Progress labels this metric Resistance Volume and explains it as “Total weight × reps across logged resistance sets.” It remains a workload/tonnage measure, not calories burned or a universal training-quality score.
+
+PR identity is stable exercise ID, and the overview PR count means exercises with at least one valid all-time metric. Snapshot names keep retired or deleted exercises readable; current catalog aliases supplement full-view search when available. Preview records are sorted by the most recently achieved winning metric. Exact value ties prefer the latest completed occurrence, with metric-specific secondary rules where stated.
+
+PR rules are explicit by tracking type:
+
+- `weight_reps`: heaviest weight (ties prefer more reps), best reps at that heaviest weight, and best single-set `weight × reps` volume. Estimated 1RM is intentionally excluded.
+- `bodyweight_reps` and `reps_only`: highest reps, without invented body weight.
+- `assisted_bodyweight`: highest reps plus lowest assistance among sets achieving the best reps; more assistance is never treated as stronger.
+- `duration`: longest duration.
+- `distance_duration`: longest distance and longest duration; no pace record.
+- `duration_optional_distance`: longest duration and longest present distance; missing distance is ignored.
+- `weight_distance`: heaviest weight and longest distance as separate records.
+- `duration_reps`: longest duration and highest reps as separate records.
+
+Nutrition averages are calories and protein divided by days containing at least one `FoodLogEntry`, not by every calendar day in the selected period. Missing nutrient fields contribute nothing to that nutrient total, while the entry still makes its date a logged-food day. The nutrition chart shows average calories per logged day in each period bucket. Targets, compliance states, body measurements, body-fat estimates, AI recommendations, goals, estimated 1RM, XP, streaks, and social comparison remain outside V1.
 
 ## 23. Journal and history
 
-Journal is the full chronological fitness history. A day may include a workout, exercises/sets, cardio, nutrition and its four meals, macros, body weight, measurements, rest status, notes, and XP/quest outcome.
+Journal V1 is implemented as a derived, read-oriented daily history view. It queries completed `Workout` rows by the selected local completion day and reads `FoodLogEntry` rows by their indexed `YYYY-MM-DD` date; it does not create Journal copies or use the retained legacy `journalRecords` table. Dexie remains schema version 6.
 
-Planned day states are workout completed, planned rest, workout skipped, and unplanned workout.
+The page provides previous/next local-calendar-day navigation, a `Today` badge only for the actual current local date, and daily summaries for completed-session count, persisted workout duration, calories, and protein. Multiple completed workouts on one day are supported. Workout cards use the persisted session name, duration, and workout-exercise snapshot count, and `View Workout` reuses the existing completed-workout detail component.
+
+Food history is rendered in the fixed Breakfast, Lunch, Supper, Dinner order. Every meal remains visible, including subdued `No entries` states, and non-empty meals show food-name snapshots plus calorie/protein totals calculated from `FoodLogEntry` snapshot values. Deleted custom-category entries remain readable as Uncategorized without resolving the deleted category record. Food rows are read-only in Journal V1 because Food currently has no app-level route to a specific entry; editing remains in Food.
+
+An entirely empty day shows honest zero summaries and an explicit no-activity state; food-only and workout-only days render their available source normally. The page uses existing theme tokens, panels, Food category/meal icon renderers, semantic controls, and responsive layouts. Manual notes, mood, photos, charts, measurements, PRs, XP, streaks, and derived day-state classifications remain future scope.
 
 ## 24. Tutorial and onboarding
 
@@ -405,14 +456,20 @@ Planned/current sections:
 - Help
 - About FitDex
 
+Profile currently includes avatar selection and an optional editable local Display Name. Display Name is saved into the canonical existing Settings record, preserves all other settings fields, and can be cleared; it is presentation metadata rather than a fitness-history fact.
+
 Data & Storage placeholders include Create Backup, Restore Backup, Automatic Backups, Backup Frequency, Backup Location, Number of Backups Retained, and Export My Data. There is no cloud sync.
 
 ## 26. PWA and mobile requirements
 
 - Installable PWA with a service worker and offline app shell
-- Mobile safe-area handling
-- Primary responsive target: 360–430 px
-- Touch-friendly controls and responsive desktop layout
+- Mobile-first, adaptive layouts driven by available logical viewport/window size rather than named devices
+- 320 CSS px narrow robustness floor; primary phone optimization range is 360–440 CSS px
+- Internal QA width classes: compact below 600, medium 600–839, expanded 840–1199, large 1200–1599, and extra large from 1600
+- A small structural breakpoint set is preferred over device-specific rules: narrow-content corrections at 374/479/599, wider content at 700, and desktop sidebar navigation at 980
+- Safe-area-aware header, content, bottom navigation, sticky workout actions, dialogs, and onboarding; dynamic viewport height is used where software keyboards and short landscapes matter
+- Touch-friendly controls, wrapping long user/content names, contained chart scrolling, landscape-capable installed PWA behavior, and bounded tablet/desktop content widths
+- Static responsive contracts supplement—but do not replace—real Android, iOS/Simulator, keyboard, zoom, and representative viewport visual QA
 - Future Wake Lock, haptics, and notifications
 - Platform-adapter boundaries for future Capacitor integration
 
@@ -465,19 +522,25 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] Phase 1I.1 retirement of nine media-less SmartWorkout pages; v4 demonstrated-media catalog
 - [x] Phase 1K.1 local Workout Hub, routine CRUD, reusable Exercise Dex picker, and v5 workout schema foundation
 - [x] Phase 1K.2 active workout logging, persistent completed workout history, previous-performance lookup, and rest timer
+- [x] Tracking-aware automatic set logging, strict clean-workout Finish validation, and captured pause/resume/Finish timing flow
 - [x] Android/WebView Web-Crypto UUID v4 fallback for local persistent IDs
 - [x] Phase 2B complete local-first Food V1, remembered foods, snapshots, categories, suggestions, and v6 schema
+- [x] Journal V1 derived daily history from completed workout and FoodLogEntry snapshots, with no schema change
+- [x] Progress + Personal Records V1 derived analytics, period trends, all-time PR rules, and no schema change
+- [x] Home Dashboard V1 derived from real Workout, Food, and Progress facts, with direct navigation intents and no schema change
+- [x] Optional editable local Display Name in Settings with reactive Home greeting
+- [x] Six avatar PNGs resized for their render envelope, with priority Home loading and retained lazy selector loading
 - [x] Build, lint, TypeScript, and PWA checks passing
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, and Android/WebView-compatible local ID generation are complete on Dexie schema version 6.
+**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, editable local Display Name, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 6.
 
 Likely next work:
 
 1. Final PWA and real-device visual/device QA
 2. `.fitdex` backup/restore for user-owned local state
-3. Journal integration, Progress/personal records, and XP/streak features driven by real workout facts
+3. XP/streak features driven by real workout facts
 4. Onboarding/settings polish
 5. A future decision about separate exercise-media hosting and retired no-media exercises
 

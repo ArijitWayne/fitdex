@@ -1,0 +1,49 @@
+/// <reference types="node" />
+import 'fake-indexeddb/auto'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import Dexie from 'dexie'
+import { foodTutorialSteps, workoutTutorialSteps } from './tutorialSteps.ts'
+
+await Dexie.delete('fitdex')
+const { db } = await import('../../data/database.ts')
+const { hasSeenTutorial, markTutorialSeen } = await import('./tutorialPreferences.ts')
+await db.open()
+const timestamp = '2026-08-24T00:00:00.000Z'
+const settings = { id: 'settings', themeFamily: 'spartans' as const, brightness: 'light' as const, displayName: 'Guide Tester', units: 'metric' as const, selectedAvatarId: 'avatar:test', createdAt: timestamp, updatedAt: timestamp }
+await db.settings.put(settings)
+await db.exercisePreferences.put({ id: 'exercise-preference:test', exerciseId: 'exercise:test', favourite: true, customTagIds: [], createdAt: timestamp, updatedAt: timestamp })
+assert.equal(await hasSeenTutorial('workout'), false)
+assert.equal(await hasSeenTutorial('food'), false)
+await markTutorialSeen('workout')
+await markTutorialSeen('food')
+assert.equal(await hasSeenTutorial('workout'), true)
+assert.equal(await hasSeenTutorial('food'), true)
+const saved = await db.settings.get('settings')
+for (const key of ['themeFamily', 'brightness', 'displayName', 'units', 'selectedAvatarId'] as const) assert.equal(saved?.[key], settings[key])
+assert.equal((await db.exercisePreferences.get('exercise-preference:test'))?.favourite, true)
+assert.equal(workoutTutorialSteps.length, 12)
+assert.equal(foodTutorialSteps.length, 7)
+assert.deepEqual(workoutTutorialSteps.map((step) => step.title), ['Welcome to Workouts', 'Routines Are Optional', 'Plan Your Week', 'Starting a Workout', 'Logging Sets', 'Previous Performance', 'Rest Timer', 'Workout Timer', 'Finishing a Workout', 'Workout History', 'Exercise Dex', 'Workouts on Home'])
+assert.match(foodTutorialSteps[5].sections.map((section) => section.text).join(' '), /Protein × 4.*Carbs × 4.*Fat × 9/)
+
+const dialog = fs.readFileSync('src/features/help/GuideDialog.tsx', 'utf8')
+const workoutPage = fs.readFileSync('src/pages/WorkoutPage.tsx', 'utf8')
+const foodPage = fs.readFileSync('src/pages/FoodPage.tsx', 'utf8')
+const journal = fs.readFileSync('src/pages/JournalPage.tsx', 'utf8')
+const progress = fs.readFileSync('src/pages/ProgressPage.tsx', 'utf8')
+assert.match(dialog, /role="dialog" aria-modal="true"/)
+assert.match(dialog, /event\.key === 'Escape'/)
+assert.match(dialog, />Back</)
+assert.match(dialog, /last \? 'Done' : 'Next'/)
+assert.match(workoutPage, /hasSeenTutorial\('workout'\)/)
+assert.match(foodPage, /hasSeenTutorial\('food'\)/)
+assert.match(workoutPage, /How Workouts Work/)
+assert.match(foodPage, /How Food Works/)
+assert.match(journal, /How Journal Works/)
+assert.match(progress, /How Progress Works/)
+assert.match(progress, /Weight × reps across logged weight-based resistance sets/)
+
+db.close()
+await Dexie.delete('fitdex')
+console.log('Guide tests passed: 12 Workout steps, 7 Food steps, first-seen persistence, manual help controls, modal keyboard behavior, and preference isolation')

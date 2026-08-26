@@ -2,51 +2,57 @@ import { useState } from 'react'
 import { AppShell } from '../components/layout/AppShell'
 import { AvatarProvider } from '../features/avatar/AvatarProvider'
 import { Onboarding } from '../features/onboarding/Onboarding'
+import { ProfileProvider } from '../features/profile/ProfileProvider'
 import { hasCompletedTutorial } from '../features/onboarding/tutorialStorage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { FoodPage } from '../pages/FoodPage'
 import { HomePage } from '../pages/HomePage'
 import { JournalPage } from '../pages/JournalPage'
 import { ProgressPage } from '../pages/ProgressPage'
-import { WorkoutPage } from '../pages/WorkoutPage'
+import { WorkoutPage, type WorkoutEntryView } from '../pages/WorkoutPage'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import type { AppDestination } from '../types/navigation'
 
-const pages: Record<AppDestination, React.ReactNode> = {
-  home: <HomePage />,
-  workout: <WorkoutPage />,
-  food: <FoodPage />,
-  progress: <ProgressPage />,
-  journal: <JournalPage />,
-}
-
 function App() {
   const [destination, setDestination] = useState<AppDestination>('home')
+  const [workoutEntry, setWorkoutEntry] = useState<WorkoutEntryView>('hub')
+  const [workoutTargetId, setWorkoutTargetId] = useState<string>()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [tutorialOpen, setTutorialOpen] = useState(() => !hasCompletedTutorial())
 
   return (
     <ThemeProvider>
       <AvatarProvider>
-        <AppShell
-          destination={destination}
-          onNavigate={(next) => {
-            setDestination(next)
-            setSettingsOpen(false)
-          }}
-          onOpenSettings={() => setSettingsOpen(true)}
-          settingsOpen={settingsOpen}
-        >
-          {settingsOpen ? (
-            <SettingsPage
-              onBack={() => setSettingsOpen(false)}
-              onReplayTutorial={() => setTutorialOpen(true)}
-            />
-          ) : (
-            pages[destination]
-          )}
-        </AppShell>
-        {tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}
+        <ProfileProvider>
+          <AppShell
+            destination={destination}
+            onNavigate={(next) => {
+              if (next === 'workout') setWorkoutEntry('hub')
+              setDestination(next)
+              setSettingsOpen(false)
+            }}
+            onOpenSettings={() => setSettingsOpen(true)}
+            settingsOpen={settingsOpen}
+          >
+            {settingsOpen ? (
+              <SettingsPage
+                onBack={() => setSettingsOpen(false)}
+                onReplayTutorial={() => setTutorialOpen(true)}
+              />
+            ) : destination === 'home' ? (
+              <HomePage onNavigate={setDestination} onOpenWorkout={(entry, targetId) => { setWorkoutEntry(entry); setWorkoutTargetId(targetId); setDestination('workout') }} />
+            ) : destination === 'workout' ? (
+              <WorkoutPage initialView={workoutEntry} initialRoutineId={workoutEntry === 'start-routine' ? workoutTargetId : undefined} initialWorkoutId={workoutEntry === 'history' ? workoutTargetId : undefined} />
+            ) : destination === 'food' ? (
+              <FoodPage />
+            ) : destination === 'progress' ? (
+              <ProgressPage />
+            ) : (
+              <JournalPage />
+            )}
+          </AppShell>
+          {tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}
+        </ProfileProvider>
       </AvatarProvider>
     </ThemeProvider>
   )
