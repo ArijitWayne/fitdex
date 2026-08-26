@@ -12,6 +12,7 @@ import { useTheme } from '../../theme/useTheme'
 import type { BrightnessPreference, ThemeFamily } from '../../theme/theme'
 import { GamificationHelpButton } from '../gamification/GamificationViews'
 import { APP_VERSION } from '../../appVersion'
+import { BackupSettings } from '../backup/BackupSettings'
 
 const brightnessOptions: Array<{ value: BrightnessPreference; label: string; hint: string }> = [
   { value: 'system', label: 'System', hint: 'Match this device' },
@@ -23,10 +24,6 @@ const familyOptions: Array<{ value: ThemeFamily; label: string; hint: string }> 
   { value: 'spartans', label: 'Spartans', hint: 'Steel • Petrol • Green • Bronze' },
   { value: 'amazonians', label: 'Amazonians', hint: 'Plum • Amethyst • Wine • Copper' },
 ]
-
-function SoonButton({ children }: { children: React.ReactNode }) {
-  return <button className="setting-action" type="button" disabled>{children}<span>Soon</span></button>
-}
 
 export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void; onReplayTutorial: () => void }) {
   const { family, brightness, setFamily, setBrightness } = useTheme()
@@ -99,16 +96,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
       <NutritionTargetsSettings />
       <section className="settings-section" aria-labelledby="gamification-heading"><div className="settings-section-heading"><span>06</span><div><h2 id="gamification-heading">Gamification</h2><p>XP, Levels, Ranks, Plan Streak protection, and Achievements stay local to this device.</p></div></div><GamificationHelpButton /></section>
 
-      <section className="settings-section" aria-labelledby="storage-heading">
-        <div className="settings-section-heading"><span>07</span><div><h2 id="storage-heading">Data &amp; Storage</h2><p>Your device is the source of truth. Backup tools arrive in a future phase.</p></div></div>
-        <div className="settings-action-grid"><SoonButton>Create Backup</SoonButton><SoonButton>Restore Backup</SoonButton><SoonButton>Export My Data</SoonButton></div>
-        <dl className="setting-list">
-          <div><dt>Automatic Backups</dt><dd>Not configured</dd></div>
-          <div><dt>Backup Frequency</dt><dd>Weekly</dd></div>
-          <div><dt>Backup Location</dt><dd>Choose when available</dd></div>
-          <div><dt>Number of Backups Retained</dt><dd>3</dd></div>
-        </dl>
-      </section>
+      <BackupSettings />
 
       <section className="settings-section" aria-labelledby="help-heading">
         <div className="settings-section-heading"><span>08</span><div><h2 id="help-heading">Help</h2><p>Return to the field guide whenever you need it.</p></div></div>

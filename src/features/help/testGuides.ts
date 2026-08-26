@@ -23,7 +23,7 @@ const saved = await db.settings.get('settings')
 for (const key of ['themeFamily', 'brightness', 'displayName', 'units', 'selectedAvatarId'] as const) assert.equal(saved?.[key], settings[key])
 assert.equal((await db.exercisePreferences.get('exercise-preference:test'))?.favourite, true)
 assert.equal(workoutTutorialSteps.length, 12)
-assert.equal(foodTutorialSteps.length, 7)
+assert.equal(foodTutorialSteps.length, 8)
 assert.deepEqual(workoutTutorialSteps.map((step) => step.title), ['Welcome to Workouts', 'Routines Are Optional', 'Plan Your Week', 'Starting a Workout', 'Logging Sets', 'Previous Performance', 'Rest Timer', 'Workout Timer', 'Finishing a Workout', 'Workout History', 'Exercise Dex', 'Workouts on Home'])
 assert.match(foodTutorialSteps[5].sections.map((section) => section.text).join(' '), /Protein × 4.*Carbs × 4.*Fat × 9/)
 
@@ -46,4 +46,4 @@ assert.match(progress, /Weight × reps across logged weight-based resistance set
 
 db.close()
 await Dexie.delete('fitdex')
-console.log('Guide tests passed: 12 Workout steps, 7 Food steps, first-seen persistence, manual help controls, modal keyboard behavior, and preference isolation')
+console.log('Guide tests passed: 12 Workout steps, 8 Food steps, first-seen persistence, manual help controls, modal keyboard behavior, and preference isolation')

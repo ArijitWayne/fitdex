@@ -3,8 +3,7 @@ import { deviceStorage } from '../../platform/deviceStorage'
 import { useTheme } from '../../theme/useTheme'
 import { AvatarContext, type AvatarContextValue } from './avatarContext'
 import { getAvatar, getDefaultAvatar, migrateAvatarId } from './avatars'
-
-const SELECTED_AVATAR_STORAGE_KEY = 'fitdex.profile.avatar'
+import { SELECTED_AVATAR_STORAGE_KEY } from './avatarStorage'
 
 export function AvatarProvider({ children }: { children: React.ReactNode }) {
   const { family } = useTheme()

@@ -64,7 +64,7 @@ Remembered foods   → reusable local templates
 Food log entries   → historical nutrition snapshots
 ```
 
-Changing a routine, a remembered food, or a custom category does not rewrite past completed workouts or food logs. A portable `.fitdex` backup/restore flow is planned, but is not available yet—clearing browser or PWA data currently removes local history.
+Changing a routine, a remembered food, or a custom category does not rewrite past completed workouts or food logs. Settings → Data & Storage can download that local state as a portable `.fitdex` file and restore it on another FitDex installation after validation and explicit replace confirmation.
 
 ## Technology
 
@@ -100,12 +100,12 @@ Personal workout and nutrition data stays on the device.
 - Home Dashboard V1 with real active/completed workout state, daily nutrition and activity, recent progress, and direct shortcuts
 - Optional editable, device-local Display Name plus optimized priority loading for the selected Home avatar
 - Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, and 52 Achievements
+- Portable `.fitdex` Backup & Restore V1 with validation, replace-not-merge semantics, and transactional IndexedDB restore
 - Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
 
 **Planned / upcoming**
 
 - Body tracking and measurements
-- `.fitdex` backup/restore
 - Onboarding/settings polish and broader device QA
 
 ## Screenshots

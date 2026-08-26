@@ -47,7 +47,7 @@ Core fitness data does not require a backend database.
 
 User fitness data is stored locally on the device through IndexedDB and Dexie. GitHub stores source code only. FitDex does not provide cloud sync.
 
-Users should eventually be able to create a portable `.fitdex` backup and restore it on another device. They choose where the file is stored, including local Files, Google Drive, iCloud Drive, OneDrive, Dropbox, a NAS, Mac, USB storage, or another provider. A full restore should make a new device reflect the prior FitDex state.
+Users can create a portable `.fitdex` backup and restore it on another device from Settings → Data & Storage. The browser downloads one JSON-based file; the user chooses where to keep or share it. A full V1 restore validates first and then replaces, rather than merges with, the current user-owned state.
 
 Portable backups must preserve:
 
@@ -59,16 +59,16 @@ Portable backups must preserve:
 - Settings, appearance, and selected avatar
 - Custom tags and categories
 
-Architecture requirements:
+Implemented architecture:
 
 - UUID-compatible stable IDs; no auto-increment IDs for user-owned records
 - Database schema versioning and backup-format versioning
-- Migration support for older backups
+- Explicit compatibility and normalization for supported older database schemas
 - Transactional, safe restore
-- An automatic safety backup before restore
-- Manual backups and automatic local backups
+- Optional Back Up Current Data First action before destructive confirmation
+- Manual backups only
 
-No cloud sync is implemented. `.fitdex` backup/restore remains future work and must include `rememberedFoods`, `foodLogEntries`, and `customFoodCategories` alongside the existing user-owned state.
+No cloud sync, backend, upload, encryption, or automatic backup scheduling is implemented. Backup files contain personal FitDex data and must be stored somewhere the user trusts. The exact V1 format and store boundary are documented in section 35.
 
 ## 5. Current database foundation
 
@@ -298,13 +298,13 @@ Phase 1I.1 retires the nine SmartWorkout pages that provide no usable demonstrat
 
 The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for contextual routine picking and Exercise Detail can add an exercise directly to a routine. Built-ins use the supported stable-ID reference path; compatibility for historical custom-exercise records remains non-destructive. Duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
 
-The built-in exercise dataset remains version 4 with 804 records. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local. Future `.fitdex` backup/restore must include routines, routine exercises, workout sessions, session exercises, and set/activity logs.
+The built-in exercise dataset remains version 4 with 804 records. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local and are included in `.fitdex` backups with routine exercises, session exercises, set logs, and cardio.
 
 ### Phase 1K.2 active workout logging and history
 
 Active workouts now persist incrementally in the existing Dexie v5 `workouts`, `workoutExercises`, and `workoutSets` stores. FitDex permits one active session at a time, supports routine-derived snapshot sessions and empty/ad-hoc sessions, restores elapsed time from persisted timing state, and autosaves names, notes, exercise order, tracking-mode-specific values, derived logged-set compatibility state, and structural changes. Routine edits never rewrite an active or completed session.
 
-Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Legacy completed workouts may retain incomplete rows and historical `completed` flags and remain readable without migration or rewriting. New finalization rules are stricter: every remaining exercise must contain at least one set row, every remaining row must be valid for its tracking type, and at least one logged set must exist overall. Users must fill or delete empty/incomplete rows and fill or remove empty exercises before saving. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Historical custom-exercise records remain readable through the same compatibility path. Future `.fitdex` backup must include all five workout/routine stores; Journal and Progress/PRs now derive from these facts, while streak and XP features can consume them later. RPE and calorie estimation remain intentionally deferred.
+Previous performance is matched by stable exercise ID and selects only the newest completed prior session; active and discarded sessions are ignored. Legacy completed workouts may retain incomplete rows and historical `completed` flags and remain readable without migration or rewriting. New finalization rules are stricter: every remaining exercise must contain at least one set row, every remaining row must be valid for its tracking type, and at least one logged set must exist overall. Users must fill or delete empty/incomplete rows and fill or remove empty exercises before saving. Discarded records retain `discarded` status but never appear in Recent Workouts or previous performance. Completed detail renders entirely from workout/exercise snapshots and raw set facts, so routine deletion, exercise renaming, or future retirement cannot erase history. Historical custom-exercise records remain readable through the same compatibility path. `.fitdex` backup includes all five workout/routine stores; Journal and Progress/PRs derive again from the restored facts. RPE and calorie estimation remain intentionally deferred.
 
 ### Workout timer and interaction correctness milestone
 
@@ -350,7 +350,7 @@ Tracked facts are calories (`kcal`), protein, carbohydrates, fat, fiber, sugar, 
 
 `src/utils/localDate.ts` defines local calendar identity for conditional Today status using `getFullYear()`, `getMonth()`, and `getDate()` rather than UTC `toISOString()` conversion. Only the actual local current date receives the Food date status label; previous/next navigation uses local `YYYY-MM-DD` values. The permanent Workout Hub “Today” heading is a separate semantic section title, not a selected-date status.
 
-Journal and Progress now group or aggregate these date/meal indexed facts without changing the schema. Future `.fitdex` backup/restore must include all three Food V1 stores in addition to the retained legacy nutrition tables. Food pixel assets live under `public/food/` and resolve from `/food/meals/meal-{meal}.webp` and `/food/categories/category-{categoryId}.webp`; custom categories use the CSS-masked Other base above. Accessible Lucide fallbacks remain available; no emoji or scraped artwork ships.
+Journal and Progress now group or aggregate these date/meal indexed facts without changing the schema. `.fitdex` backup/restore includes all three Food V1 stores and the retained legacy nutrition tables. Food pixel assets live under `public/food/` and resolve from `/food/meals/meal-{meal}.webp` and `/food/categories/category-{categoryId}.webp`; custom categories use the CSS-masked Other base above. Accessible Lucide fallbacks remain available; no emoji or scraped artwork ships.
 
 ### Android/WebView local-ID compatibility
 
@@ -459,7 +459,7 @@ Profile currently includes avatar selection and an optional editable local Displ
 
 The stale Exercise Dex Settings placeholder is intentionally absent because Exercise Dex has no meaningful preferences yet. About FitDex uses the established PWA icon, user-facing product/local-first copy, developer credit for Arijit Bhaduri, and the build-time app version sourced from `package.json`.
 
-Data & Storage placeholders include Create Backup, Restore Backup, Automatic Backups, Backup Frequency, Backup Location, Number of Backups Retained, and Export My Data. There is no cloud sync.
+Data & Storage provides Create Backup and Choose `.fitdex` File actions. Import validation leads to a preview, a separate replace confirmation, an optional Back Up Current Data First action, and a completion summary. The former automatic-backup/frequency/location/retention and generic export placeholders are removed. There is no cloud sync.
 
 ## 26. PWA and mobile requirements
 
@@ -498,6 +498,7 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] PWA setup
 - [x] Dexie/IndexedDB foundation and typed initial schema
 - [x] Stable ID utilities and backup metadata foundation
+- [x] `.fitdex` Backup & Restore V1
 - [x] Platform-adapter boundaries
 - [x] Initial theme system
 - [x] Navigation icon correction using Lucide
@@ -537,15 +538,14 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, editable local Display Name, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
+**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, editable local Display Name, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
 
 Likely next work:
 
 1. Final PWA and real-device visual/device QA
-2. `.fitdex` backup/restore for user-owned local state
-3. Final rank and achievement artwork using the documented asset contract
-4. Onboarding/settings polish
-5. A future decision about separate exercise-media hosting and retired no-media exercises
+2. Final rank and achievement artwork using the documented asset contract
+3. Onboarding/settings polish
+4. A future decision about separate exercise-media hosting and retired no-media exercises
 
 This list is direction, not completed work.
 
@@ -612,3 +612,17 @@ V1 deliberately limits targets to Calories and Protein. Carbs, Fat, and Fiber ar
 FitDex estimates RMR with Mifflin–St Jeor and maintenance as RMR × activity factor: Sedentary 1.20, Lightly Active 1.375, Moderately Active 1.55, Very Active 1.725, and Extremely Active 1.90. Lose Weight recommends TDEE −500 by default or TDEE −750; Maintain recommends TDEE; Gain recommends TDEE +250. Users can always manually override targets. Calorie needs are estimates, not medical advice.
 
 Daily Targets appears between Food Daily Totals and Nutrition Breakdown when enabled. It evaluates the selected local Food date from authoritative logged kcal/protein totals. Intake below 1,000 kcal never counts. Lose Weight counts only a 0–1,000 kcal estimated deficit, treating 751–1,000 as an eligible outer zone without bonus; deficits over 1,000, intake over target, and below-floor intake do not count. Maintain/Gain use a FitDex ±10% adherence band. Protein meets its target at or above the chosen grams with no penalty for exceeding it. Eligible dates award one idempotent +5 calorie and/or +5 protein event, never a multiplier; paused dates receive neither. The six existing target achievements now count those ledger events.
+
+## 35. `.fitdex` Backup & Restore V1
+
+The portable format is UTF-8 JSON saved with a `.fitdex` extension and custom `application/x-fitdex-backup` MIME type. V1 uses the exact top-level fields `format: "fitdex-backup"`, `formatVersion: 1`, build-time `appVersion`, `databaseSchemaVersion`, ISO `createdAt`, and `data`. Filenames use `fitdex-backup-YYYY-MM-DD-HHmm.fitdex`. A Blob/object URL and temporary download anchor provide a local browser/PWA download; the URL is revoked afterward. No network is involved.
+
+`data` includes 28 authoritative user-state table payloads: `settings`, custom-source `exercises`, `exercisePreferences`, `customTags`, `workoutRoutines`, `routineExercises`, `workouts` (including a persisted active workout), `workoutExercises`, `workoutSets`, `cardioSessions`, `foods`, `dailyNutrition`, `meals`, `foodEntries`, `rememberedFoods`, `foodLogEntries`, `customFoodCategories`, `bodyMeasurements`, `achievements`, `quests`, `xpHistory`, `journalRecords`, `xpEvents`, `planDaySnapshots`, `streakFreezeEvents`, `streakPauses`, `planChangeEvents`, and `achievementUnlocks`. It also includes validated local preferences for theme family, brightness, selected avatar, and onboarding completion. Settings carries display name, weekly plan, tutorials, gamification boundary, and complete Nutrition Targets state.
+
+Built-in exercise definitions, exercise MP4s, food/category art, avatars, badges, rank art, icons, fonts, other static application assets, and `systemMetadata` seeding state are excluded. During restore, shipped built-in exercise rows and system metadata remain in place; only custom-source exercise rows are replaced. Level, Rank, PR summaries, charts, journal summaries, and other derived views are not backed up because they are recomputed from restored authoritative facts. No IDs, timestamps, XP source keys, or achievement ledgers are regenerated or reconciled during restore.
+
+Import is capped at 25 MB and checks size before reading. Validation requires valid non-empty JSON, the exact format marker, supported format version, non-empty app version, valid creation timestamp, integer compatible database schema version, an object `data` payload, expected arrays, valid non-empty primary IDs and timestamps, basic critical fields, custom-only exercise rows, singleton Settings, and no duplicate primary or important unique-index keys. A newer backup format or schema is rejected with explicit copy. Format V1 accepts database schemas 2 through current schema 7; missing stores are defaulted only when the declared older schema predates that store, and known legacy exercise/workout fields receive safe current defaults. Current-schema backups must contain every store payload. Validation failure never opens a write transaction.
+
+Restore V1 is replace-not-merge. One Dexie `rw` transaction spans all 28 included tables: each user store is cleared and bulk-added from the validated payload, while custom exercises are deleted/reinserted without touching built-ins. Any IndexedDB write failure aborts and rolls back the entire transaction. Validated local-storage preferences are applied individually only after that transaction commits, so database failure cannot partially change them. Browser-storage persistence is explicitly best-effort: a failed theme, brightness, avatar, or onboarding write cannot turn a committed database restore into a reported rollback, and the completion dialog names preferences that may keep their current values after reload. The selected incoming backup remains in memory while Back Up Current Data First runs the normal download flow, and restore never continues automatically; the user must still choose Replace & Restore. On success, FitDex shows restored workout, food-entry, routine, and achievement counts, then reloads only when Continue is chosen so providers rebuild from finalized persisted state.
+
+Settings contains no automatic-backup placeholder in V1. There is no scheduler, retention policy, encryption, backend, account, cloud sync, automatic upload, or guarantee that a previously downloaded file still exists. Future backup-format versions require an explicit normalizer; unknown newer versions are never restored best-effort. The Dexie schema remains version 7.

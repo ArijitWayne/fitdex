@@ -30,6 +30,8 @@
     "test:nutrition-targets": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetCalculator.ts",
     "test:nutrition-targets-ui": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetsUi.ts",
     "test:nutrition-targets-repository": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetRepository.ts",
+    "test:backup": "node --experimental-strip-types src/features/backup/testBackup.ts",
+    "test:backup-ui": "node --experimental-strip-types src/features/backup/testBackupUi.ts",
     "test:guides": "node --experimental-strip-types src/features/help/testGuides.ts",
     "test:journal": "node --experimental-strip-types src/features/journal/testJournal.ts",
     "test:journal-ui": "node --experimental-strip-types src/features/journal/testJournalUi.ts",
