@@ -80,8 +80,12 @@ assert.match(css, /\.exercise-category-sprite \{[^}]*object-fit: contain;[^}]*im
 assert.match(css, /\.exercise-search:focus-within \{ border-color: var\(--color-focus\); outline: 0; \}/)
 assert.match(css, /\.exercise-search input:focus-visible \{ outline: 0; \}/)
 assert.match(component, /<video[\s\S]*autoPlay[\s\S]*muted[\s\S]*loop[\s\S]*playsInline[\s\S]*preload="metadata"/)
+assert.match(component, /onError=\{\(\) => setUnavailable\(true\)\}/)
+assert.match(component, /Exercise demonstration unavailable\./)
+assert.match(css, /\.exercise-detail-media-unavailable \{[^}]*min-height: 132px;[^}]*text-align: center;/s)
 assert.doesNotMatch(component.match(/function ExerciseRows[\s\S]*?function ExerciseDetail/)?.[0] ?? '', /<video|<img/)
 assert.match(pwa, /globPatterns: \['\*\*\/\*\.\{js,css,html,svg,png,woff2\}'\]/)
-assert.doesNotMatch(pwa, /mp4|gif|webp/)
+const workboxGlobPatterns = pwa.match(/globPatterns: \[(.*?)\]/)?.[1] ?? ''
+assert.doesNotMatch(workboxGlobPatterns, /mp4|gif|webp/)
 
 console.log('Exercise Dex UI assertions passed: 36 themed category sprites, category order/grid breakpoints, multi-category filtering, detail-only media, and no media precache')

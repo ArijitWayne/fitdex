@@ -285,23 +285,7 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
         <div><p className="eyebrow">Exercise record</p><h2>{exercise.name}</h2><p className="exercise-detail-category">{exercise.categories?.join(' · ') ?? exercise.category}</p></div>
         {!picker ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
       </div>
-      {content?.mediaPath ? (
-        <figure className="exercise-detail-media">
-          {content.mediaType === 'video/mp4' ? (
-            <video
-              src={content.mediaPath}
-              aria-label={`${exercise.name} exercise demonstration`}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
-          ) : (
-            <img src={content.mediaPath} alt={`${exercise.name} exercise demonstration`} loading="lazy" />
-          )}
-        </figure>
-      ) : null}
+      {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : null}
       {content ? (
         <div className="exercise-detail-content">
           <section>
@@ -334,5 +318,32 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
         {exercise.instructions ? <div className="exercise-detail-wide"><dt>Notes</dt><dd>{exercise.instructions}</dd></div> : null}
       </dl>
     </Panel>
+  )
+}
+
+function ExerciseMedia({ exerciseName, mediaPath, mediaType }: { exerciseName: string; mediaPath: string; mediaType?: string }) {
+  const [unavailable, setUnavailable] = useState(false)
+
+  if (unavailable) {
+    return <figure className="exercise-detail-media exercise-detail-media-unavailable"><p role="status">Exercise demonstration unavailable.</p></figure>
+  }
+
+  return (
+    <figure className="exercise-detail-media">
+      {mediaType === 'video/mp4' ? (
+        <video
+          src={mediaPath}
+          aria-label={`${exerciseName} exercise demonstration`}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onError={() => setUnavailable(true)}
+        />
+      ) : (
+        <img src={mediaPath} alt={`${exerciseName} exercise demonstration`} loading="lazy" onError={() => setUnavailable(true)} />
+      )}
+    </figure>
   )
 }

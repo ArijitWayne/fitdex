@@ -73,7 +73,8 @@ Changing a routine, a remembered food, or a custom category does not rewrite pas
 | React + TypeScript | Application UI and typed domain model |
 | Vite | Development server and production build |
 | Dexie + IndexedDB | Local persistence for user-owned data |
-| vite-plugin-pwa / Workbox | Installable PWA and offline app shell |
+| vite-plugin-pwa / Workbox | Installable browser PWA and offline app shell |
+| Capacitor Android | Packaged Android WebView shell |
 | lucide-react | Interface icons and accessible fallbacks |
 | Cloudflare Workers + Wrangler | Static-asset application deployment |
 
@@ -144,6 +145,17 @@ npm run dev
 | `npm run test:guides` | Check tutorial content and seen-state persistence |
 | `npm run test:home-ui` | Check Home navigation, profile/avatar integration, responsive contracts, and PWA asset policy |
 | `npm run test:display-name` | Check local Display Name validation, editing, clearing, and persistence |
+| `npm run test:capacitor-android` | Check Android shell configuration and native privacy/version contracts |
+| `npm run android:sync` | Build the web bundle and copy it into the Android project |
+| `npm run android:build` | Sync and assemble a debug Android APK (requires Android SDK and JDK) |
+
+## Android
+
+FitDex's Android shell is a Capacitor 8 project with package ID `com.arijitbhaduri.fitdex`. It packages `dist` locally; it does not use a remote development-server URL. Install Android Studio with its SDK and a compatible JDK, then run `npm run android:build` (or open `android/` in Android Studio). The command performs a clean debug assembly after syncing, so removed packaged assets cannot persist from an older build. The Android app keeps the same local Dexie/IndexedDB and local-storage model as the browser; uninstalling it clears that local app data, so export a `.fitdex` backup first when it matters.
+
+Android OS automatic backup/device transfer is disabled. `.fitdex` files remain the explicit portable backup path. Import uses the WebView document picker and needs physical-device verification. Export uses the browser Blob/download flow and may not present a reliable Android save destination yet; confirm an exported file is reachable before depending on it. Browser PWA service-worker support remains enabled, while the packaged Android shell uses its local bundle directly.
+
+`npm run build` keeps local exercise MP4 demonstrations in the browser/PWA output. Android sync and build commands automatically remove only those copied MP4 files from `dist/exercises` before Capacitor packages it, reducing APK size without changing `public/exercises` source media. Exercise details remain available on Android; when a missing packaged demo fails to load, the media area shows a neutral unavailable state. Remote/on-demand exercise media is planned for a future release but is not configured yet.
 
 ## Deployment
 

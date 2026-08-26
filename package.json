@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "prepare:android-dist": "node scripts/prepare-android-dist.mjs",
+    "android:sync": "npm run build && npm run prepare:android-dist && npx cap sync android",
+    "android:build": "npm run android:sync && cd android && ./gradlew clean assembleDebug",
     "audit:catalog": "node --experimental-strip-types src/features/exerciseDex/auditExerciseCatalog.ts",
     "validate:exercise-content": "node --experimental-strip-types src/features/exerciseDex/validateExerciseContent.ts",
     "test:exercise-migration": "node --experimental-strip-types src/features/exerciseDex/testExerciseMigration.ts",
@@ -32,6 +35,8 @@
     "test:nutrition-targets-repository": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetRepository.ts",
     "test:backup": "node --experimental-strip-types src/features/backup/testBackup.ts",
     "test:backup-ui": "node --experimental-strip-types src/features/backup/testBackupUi.ts",
+    "test:capacitor-android": "node --experimental-strip-types src/testCapacitorAndroid.ts",
+    "test:android-dist": "node scripts/testPrepareAndroidDist.mjs",
     "test:guides": "node --experimental-strip-types src/features/help/testGuides.ts",
     "test:journal": "node --experimental-strip-types src/features/journal/testJournal.ts",
     "test:journal-ui": "node --experimental-strip-types src/features/journal/testJournalUi.ts",
@@ -49,12 +54,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/core": "^8.5.0",
     "dexie": "^4.4.5",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
