@@ -11,7 +11,7 @@ const { DATABASE_SCHEMA_VERSION, db } = await import('../../data/database.ts')
 const repository = await import('./workoutRepository.ts')
 await db.open()
 
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 assert.equal(BUILT_IN_EXERCISE_DATASET_VERSION, 4)
 assert.equal(builtInExercises.length, 804)
 assert.deepEqual(getTrackingFields('weight_reps'), { weight: true, reps: true, duration: false, distance: false })

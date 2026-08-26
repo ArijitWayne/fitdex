@@ -4,6 +4,7 @@ import type { Exercise, Workout, WorkoutExercise, WorkoutSet } from '../../data/
 import { createId } from '../../utils/createId.ts'
 import { getLocalDayTimestampRange } from '../../utils/localDate.ts'
 import { DEFAULT_AD_HOC_SETS, calculateVolume, createPausedTimerState, createResumedTimerState, getFinalWorkoutDuration, isHistoricalWorkoutSetLogged, isWorkoutSetLogged, normalizeWorkoutName, validateWorkoutForFinish, type WorkoutFinishValidation } from './workoutModel.ts'
+import { reconcileGamification } from '../gamification/gamificationRepository.ts'
 
 export interface WorkoutExerciseDetail {
   exercise: WorkoutExercise
@@ -258,7 +259,7 @@ export async function resumeWorkout(workoutId: string, now = Date.now()) {
 }
 
 export async function finishWorkout(workoutId: string, now = Date.now()) {
-  return db.transaction('rw', db.workouts, db.workoutExercises, db.workoutSets, async () => {
+  const detail = await db.transaction('rw', db.workouts, db.workoutExercises, db.workoutSets, async () => {
     const detail = await getWorkoutDetail(workoutId)
     if (detail.workout.status !== 'active') throw new Error('This workout is no longer active.')
     const validation = validateWorkoutForFinish(detail.exercises)
@@ -272,6 +273,8 @@ export async function finishWorkout(workoutId: string, now = Date.now()) {
     })
     return getWorkoutDetail(workoutId)
   })
+  await reconcileGamification(new Date(now))
+  return detail
 }
 
 export async function discardWorkout(workoutId: string) {

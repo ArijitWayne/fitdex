@@ -19,6 +19,8 @@ export interface SettingsRecord extends EntityRecord {
   weeklyPlanConfigured?: boolean
   workoutTutorialSeen?: boolean
   foodTutorialSeen?: boolean
+  /** Local activation boundary. XP is intentionally not back-awarded before this instant. */
+  gamificationInitializedAt?: string
 }
 
 export const WEEKDAY_IDS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const
@@ -315,6 +317,60 @@ export interface XpHistoryEntry extends EntityRecord {
   amount: number
   reason: string
   occurredAt: string
+}
+
+export type XpEventType = 'planned_routine' | 'planned_workout' | 'unplanned_workout' | 'personal_record' | 'calorie_target' | 'protein_target' | 'full_food_log'
+
+export interface XpEvent extends EntityRecord {
+  type: XpEventType
+  amount: number
+  occurredAt: string
+  /** Globally unique business identity used to make awards idempotent. */
+  sourceKey: string
+  metadata?: Record<string, string | number | boolean | undefined>
+  notificationSeenAt?: string
+}
+
+export type PlanDayType = 'routine' | 'workout_day' | 'rest_day' | 'no_plan'
+export type PlanDayResult = 'pending' | 'success' | 'rest' | 'no_plan' | 'frozen' | 'paused' | 'missed'
+
+export interface PlanDaySnapshot extends EntityRecord {
+  localDate: string
+  plannedType: PlanDayType
+  routineId?: string
+  routineNameSnapshot?: string
+  result: PlanDayResult
+  finalizedAt?: string
+  satisfyingWorkoutId?: string
+  pauseId?: string
+}
+
+export interface StreakFreezeEvent extends EntityRecord {
+  sourceKey: string
+  amount: number
+  type: 'initial' | 'earned' | 'automatic_missed_plan'
+  localDate?: string
+  occurredAt: string
+}
+
+export interface StreakPause extends EntityRecord {
+  reason: 'travel' | 'sickness'
+  startDate: string
+  endDate: string
+}
+
+export interface PlanChangeEvent extends EntityRecord {
+  sourceKey: string
+  type: 'protected' | 'reset'
+  occurredAt: string
+  effectiveDate: string
+}
+
+export interface AchievementUnlock extends EntityRecord {
+  achievementId: string
+  unlockedAt: string
+  sourceKey?: string
+  notificationSeenAt?: string
 }
 
 export interface JournalRecord extends EntityRecord {

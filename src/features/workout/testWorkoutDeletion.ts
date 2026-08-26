@@ -16,7 +16,7 @@ const { getJournalDay } = await import('../journal/journalRepository.ts')
 const repository = await import('./workoutRepository.ts')
 await db.open()
 
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 const definition = builtInExercises.find((exercise) => exercise.trackingType === 'weight_reps')!
 assert.ok(definition)
 await db.exercises.add(definition)

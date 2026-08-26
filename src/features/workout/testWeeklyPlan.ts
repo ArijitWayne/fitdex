@@ -3,23 +3,22 @@ import 'fake-indexeddb/auto'
 import assert from 'node:assert/strict'
 import Dexie from 'dexie'
 import type { Workout } from '../../data/models.ts'
-import { clearRoutineFromPlan, loadWeeklyPlan, saveWeeklyPlanDay, weekdayIdForLocalDateKey, weeklyPlanAssignmentLabel } from './weeklyPlan.ts'
+import { clearRoutineFromPlan, loadWeeklyPlan, saveWeeklyPlan, saveWeeklyPlanDay, weekdayIdForLocalDateKey, weeklyPlanAssignmentLabel } from './weeklyPlan.ts'
 
 await Dexie.delete('fitdex')
 const { db, DATABASE_SCHEMA_VERSION } = await import('../../data/database.ts')
 const routines = await import('./routineRepository.ts')
 const workouts = await import('./workoutRepository.ts')
 await db.open()
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 const timestamp = '2026-08-24T00:00:00.000Z'
 await db.settings.put({ id: 'settings', displayName: 'Plan Tester', themeFamily: 'amazonians', brightness: 'dark', units: 'imperial', selectedAvatarId: 'avatar:test', createdAt: timestamp, updatedAt: timestamp })
 
 let plan = await loadWeeklyPlan()
 assert.equal(plan.configured, false)
 assert.ok(Object.values(plan.days).every((day) => day.type === 'no_plan'))
-plan = await saveWeeklyPlanDay('monday', { type: 'workout_day' })
-plan = await saveWeeklyPlanDay('tuesday', { type: 'rest_day' })
-plan = await saveWeeklyPlanDay('wednesday', { type: 'no_plan' })
+plan = await saveWeeklyPlan({ ...plan.days, monday: { type: 'workout_day' }, tuesday: { type: 'rest_day' }, wednesday: { type: 'no_plan' } })
+assert.equal(await db.planChangeEvents.count(), 0, 'initial Weekly Plan setup is free')
 assert.equal(plan.days.monday.type, 'workout_day')
 assert.equal(plan.days.tuesday.type, 'rest_day')
 assert.equal(plan.days.wednesday.type, 'no_plan')
@@ -27,13 +26,15 @@ assert.equal(weekdayIdForLocalDateKey('2026-08-24'), 'monday')
 
 const routine = await routines.createRoutine('Routine A')
 plan = await saveWeeklyPlanDay('thursday', { type: 'routine', routineId: routine.id })
+assert.equal(await db.planChangeEvents.where('type').equals('protected').count(), 1, 'first material change uses protected allowance')
 assert.equal(weeklyPlanAssignmentLabel(plan.days.thursday, [routine]), 'Routine A')
 const renamed = await routines.renameRoutine(routine, 'Push Day')
 assert.equal(weeklyPlanAssignmentLabel(plan.days.thursday, [renamed]), 'Push Day', 'schedule resolves the live routine name')
 
 const completed: Workout = { id: 'completed:scheduled', routineId: routine.id, routineNameSnapshot: 'Routine A', nameSnapshot: 'Routine A', status: 'completed', startedAt: '2026-08-24T18:20:00.000Z', completedAt: '2026-08-24T19:00:00.000Z', durationSeconds: 2400, createdAt: timestamp, updatedAt: timestamp }
 await db.workouts.add(completed)
-await routines.deleteRoutine(routine.id)
+await routines.deleteRoutine(routine.id, { confirmPlanReset: true })
+assert.equal(await db.planChangeEvents.where('type').equals('reset').count(), 1, 'later scheduled-routine deletion records a streak reset')
 plan = await loadWeeklyPlan()
 assert.equal(plan.days.thursday.type, 'no_plan', 'routine deletion clears its assignments safely')
 assert.ok(await db.workouts.get(completed.id), 'routine deletion never rewrites completed history')
@@ -45,7 +46,8 @@ assert.ok((await workouts.getCompletedWorkoutsForStartDate('2026-08-24')).some((
 assert.equal((await workouts.getCompletedWorkoutsForStartDate('2026-08-25')).some((item) => item.workout.id === crossMidnight.id), false)
 
 const active = await workouts.startEmptyWorkout('Active Snapshot')
-await saveWeeklyPlanDay('friday', { type: 'workout_day' })
+plan = await loadWeeklyPlan()
+await saveWeeklyPlan({ ...plan.days, friday: { type: 'workout_day' } }, { confirmReset: true })
 assert.equal((await db.workouts.get(active.workout.id))?.nameSnapshot, 'Active Snapshot', 'schedule editing does not mutate the active workout')
 await workouts.discardWorkout(active.workout.id)
 

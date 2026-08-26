@@ -8,8 +8,10 @@ import { getCompletedWorkoutsForStartDate } from '../workout/workoutRepository.t
 import { loadRoutines } from '../workout/routineRepository.ts'
 import { loadWeeklyPlan, weekdayIdForLocalDateKey } from '../workout/weeklyPlan.ts'
 import { summarizeTodayFood } from './homeModel.ts'
+import { loadGamificationDashboard } from '../gamification/gamificationRepository.ts'
 
 export async function loadHomeDashboard(todayDateKey: string) {
+  const gamification = await loadGamificationDashboard(todayDateKey)
   const [activeWorkout, foodEntries, progress, routines, weeklyPlan, completedByStartDate] = await Promise.all([
     getActiveWorkout(),
     listFoodEntries(todayDateKey),
@@ -21,7 +23,13 @@ export async function loadHomeDashboard(todayDateKey: string) {
   const completedToday = progress.currentWorkouts.filter((workout) => workout.dateKey === todayDateKey)
   const personalRecords = derivePersonalRecords(progress.allWorkouts, progress.definitions)
   const weekday = weekdayIdForLocalDateKey(todayDateKey)
-  const storedAssignment = weeklyPlan.days[weekday]
+  const todaySnapshot = gamification.today
+  const storedAssignment = todaySnapshot?.plannedType === 'routine' && todaySnapshot.routineId
+    ? { type: 'routine' as const, routineId: todaySnapshot.routineId }
+    : todaySnapshot?.plannedType === 'workout_day' ? { type: 'workout_day' as const }
+    : todaySnapshot?.plannedType === 'rest_day' ? { type: 'rest_day' as const }
+    : todaySnapshot ? { type: 'no_plan' as const }
+    : weeklyPlan.days[weekday]
   const scheduledRoutine = storedAssignment.type === 'routine' ? routines.find((entry) => entry.routine.id === storedAssignment.routineId) : undefined
   const todayAssignment = storedAssignment.type === 'routine' && !scheduledRoutine ? { type: 'no_plan' as const } : storedAssignment
   return {
@@ -43,6 +51,7 @@ export async function loadHomeDashboard(todayDateKey: string) {
     units: progress.units,
     hasHistory: progress.hasAnyHistory || Boolean(activeWorkout),
     mealOrder: FOOD_MEALS,
+    gamification,
   }
 }
 

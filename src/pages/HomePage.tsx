@@ -1,4 +1,4 @@
-import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, NotebookTabs, Utensils } from 'lucide-react'
+import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, Flame, NotebookTabs, Trophy, Utensils } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { AvatarPortrait } from '../features/avatar/AvatarPortrait'
@@ -15,15 +15,19 @@ import { getLocalDateKey } from '../utils/localDate'
 import { displayWeightFromKg } from '../utils/units'
 import { WEEKDAY_IDS } from '../data/models'
 import { WEEKDAY_LABELS, weeklyPlanAssignmentLabel } from '../features/workout/weeklyPlan'
+import { GamificationBadge } from '../features/gamification/GamificationBadge'
+import { LevelProgress, RankDetailView, StreakDetailView } from '../features/gamification/GamificationViews'
+import { achievementAssetPath } from '../features/gamification/gamificationConfig'
 
 export type HomeWorkoutEntry = 'hub' | 'active' | 'start' | 'library' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'
 
-export function HomePage({ onNavigate, onOpenWorkout }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {
+export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void }) {
   const { selectedAvatar } = useAvatar()
   const { displayName } = useProfile()
   const [data, setData] = useState<HomeDashboardData>()
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => new Date())
+  const [gamificationView, setGamificationView] = useState<'rank' | 'streak'>()
   const todayDateKey = getLocalDateKey(now)
 
   useEffect(() => {
@@ -37,6 +41,9 @@ export function HomePage({ onNavigate, onOpenWorkout }: { onNavigate: (destinati
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
   }, [data?.activeWorkout])
+
+  if (data && gamificationView === 'rank') return <RankDetailView data={data.gamification} onBack={() => setGamificationView(undefined)} />
+  if (data && gamificationView === 'streak') return <StreakDetailView data={data.gamification} onBack={() => setGamificationView(undefined)} onChanged={(gamification) => setData({ ...data, gamification })} />
 
   return (
     <div className="page-stack home-page">
@@ -52,6 +59,13 @@ export function HomePage({ onNavigate, onOpenWorkout }: { onNavigate: (destinati
 
       {!data ? <Panel><p className="home-loading" aria-live="polite">Loading today’s dashboard…</p>{error ? <p className="form-error" role="alert">{error}</p> : null}</Panel> : <>
         <TodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} />
+
+        <Panel className="home-dashboard-panel home-gamification" eyebrow="Your progress">
+          <button className="gamification-level-button" type="button" onClick={() => setGamificationView('rank')}><LevelProgress data={data.gamification} compact /><ChevronRight aria-hidden="true" /></button>
+          <button className="home-streak-button" type="button" onClick={() => setGamificationView('streak')}><Flame aria-hidden="true" /><span><strong>{data.gamification.streak.current}</strong><small>Plan Streak</small></span><em>{data.gamification.freezeBalance} {data.gamification.freezeBalance === 1 ? 'Freeze' : 'Freezes'} available</em><ChevronRight aria-hidden="true" /></button>
+          <DailyQuest data={data} />
+          {data.gamification.latestAchievement ? <div className="home-latest-achievement"><GamificationBadge kind="achievement" size="small" src={achievementAssetPath(data.gamification.latestAchievement.definition.id)} label={data.gamification.latestAchievement.definition.name} /><span><small>Latest Achievement</small><strong>{data.gamification.latestAchievement.definition.name}</strong><em>Unlocked {new Date(data.gamification.latestAchievement.unlocked.unlockedAt).toLocaleDateString()}</em></span><button className="text-button" type="button" onClick={() => onOpenAchievements ? onOpenAchievements() : onNavigate('progress')}>View Achievements</button></div> : null}
+        </Panel>
 
         <Panel className="home-dashboard-panel home-week-plan" eyebrow="This week" title={data.weeklyPlan.configured ? 'Recurring workout plan' : 'No workout plan yet'}>
           {data.weeklyPlan.configured ? <div className="home-week-grid">{WEEKDAY_IDS.map((day) => <span className={day === data.weekday ? 'is-today' : ''} key={day}><strong>{WEEKDAY_LABELS[day].slice(0, 3)}</strong><small>{weeklyPlanAssignmentLabel(data.weeklyPlan.days[day], data.routines.map((entry) => entry.routine))}</small></span>)}</div> : <p className="home-subtle-empty">Set workout days, rest days, or assign routines when you create them.</p>}
@@ -82,6 +96,19 @@ export function HomePage({ onNavigate, onOpenWorkout }: { onNavigate: (destinati
       </>}
     </div>
   )
+}
+
+function DailyQuest({ data }: { data: HomeDashboardData }) {
+  const snapshot = data.gamification.today
+  const paused = Boolean(data.gamification.activePause)
+  let title = 'No training quest today'
+  let reward = ''
+  let complete = false
+  if (paused) title = 'Daily Quest paused'
+  else if (snapshot?.plannedType === 'routine') { title = `Complete ${snapshot.routineNameSnapshot ?? 'planned routine'}`; reward = '+30 XP'; complete = data.completedByStartDate.some((entry) => entry.workout.routineId === snapshot.routineId) }
+  else if (snapshot?.plannedType === 'workout_day') { title = "Complete today's workout"; reward = '+30 XP'; complete = data.completedByStartDate.length > 0 }
+  else if (snapshot?.plannedType === 'rest_day') title = 'Recovery Day'
+  return <div className={`daily-quest${complete ? ' is-complete' : ''}`}><Trophy aria-hidden="true" /><span><small>Daily Quest</small><strong>{complete ? `✓ ${title}` : title}</strong></span>{reward ? <b>{reward}</b> : null}</div>
 }
 
 function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {

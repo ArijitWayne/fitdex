@@ -182,9 +182,9 @@ The six source portraits were reduced from 1024 × 1536 RGBA PNGs (about 11 MB t
 
 ## 14. Gamification scope
 
-Approved gamification includes XP, level, a Daily Quest, later weekly quests, Plan Streak, workout completion, nutrition-target completion, and PR events. Scheduled rest days count positively toward adherence and Plan Streak.
+Gamification V1 is implemented with an idempotent XP ledger, 100 Levels, nine ranks, contextual Daily Quest, historical plan snapshots, Plan Streak protection, and 52 permanent Achievements. Rest Days preserve continuity but do not increase the numerical streak.
 
-Do not add pets, animal companions, monsters, battles, inventory, fantasy currency, maps, collectible creatures, leaderboards, or social feeds without explicit approval. Achievements exist in the data foundation, but an achievement-heavy UI is not approved.
+Do not add pets, animal companions, monsters, battles, inventory, fantasy currency, maps, collectible creatures, leaderboards, or social feeds without explicit approval.
 
 ## 15. Home screen direction
 
@@ -192,7 +192,7 @@ Home Dashboard V1 is implemented as an honest, derived overview of existing loca
 
 Dashboard sections are Today's Workout, Nutrition Today, Today's Activity, Recent Progress, and Quick Access. Workout state distinguishes an active resumable session, one or more completed sessions today, and a truthful empty state; direct actions enter Resume, Start Workout, or Exercise Dex through the existing Workout flow. Nutrition is derived from today's `FoodLogEntry` snapshots and shows calories, protein, and fixed four-meal logged/empty markers. Activity summarizes completed workouts, persisted training duration, logged food count, and protein. Recent Progress reuses the established PR rules and unit conversion, plus completed-workout count and training volume for the inclusive last seven local calendar days. Quick Access links to Exercise Dex, Journal, Progress, and Food.
 
-Home creates no persistent summary, XP, streak, goal, scheduling, or PR rows. Its repository composes the existing active-workout lookup, Food daily query, and Progress source/PR derivation, so historical snapshots remain authoritative and Dexie stays at schema version 6. A fully empty database produces explicit zero/empty states without seeded examples. XP, levels, streaks, quests, calorie targets, goals, body metrics, and charts remain future features; do not imply them before real source data and rules exist. Do not display fantasy combat statistics such as HP, STR, ATK, DEF, or Mana.
+Home creates no mutable analytics summary or PR rows. Its repository composes existing facts with the gamification event/snapshot repositories, so historical snapshots remain authoritative on Dexie schema version 7. A fully empty database produces explicit zero/empty states without seeded examples. Do not display fantasy combat statistics such as HP, STR, ATK, DEF, or Mana.
 
 ## 16. Workout system
 
@@ -322,7 +322,7 @@ Contextual Exercise Dex pickers persist a reversible `+ Add` / `✓ Added` toggl
 
 ### Recurring Weekly Plan and connected help
 
-The Workout hub owns one recurring local weekly template with stable Monday-through-Sunday keys. Every day remains explicitly one of `routine` (stable `routineId`), `workout_day`, `rest_day`, or `no_plan`; routines are optional, so a brand-new user can plan open training days and recovery without creating a template. The seven assignments and `weeklyPlanConfigured` live as non-indexed fields on the singleton Settings record, keeping Dexie at schema version 6 and preserving a compact future input for Plan Streak work without implementing streaks. Missing data defaults to No Plan. Routine names and exercise counts resolve live by ID, and deleting a routine atomically changes only its affected assignments to No Plan while leaving active/completed workouts untouched.
+The Workout hub owns one recurring local weekly template with stable Monday-through-Sunday keys. Every day remains explicitly one of `routine` (stable `routineId`), `workout_day`, `rest_day`, or `no_plan`; routines are optional, so a brand-new user can plan open training days and recovery without creating a template. The seven assignments and `weeklyPlanConfigured` remain non-indexed fields on the singleton Settings record and feed the v7 daily commitment snapshots. Missing data defaults to No Plan. Routine names and exercise counts resolve live by ID. Deleting a scheduled routine passes through Plan Commitment protection before clearing affected current-template assignments, while active/completed workouts and historical plan snapshots remain untouched.
 
 Home remains derived from Settings, routines, active/completed workouts, and Food facts. Active workout is the highest-priority Today state. A Routine Day is satisfied only by a completed workout whose persisted source `routineId` matches; a different completed workout is shown as activity while the assigned routine remains pending. A generic Workout Day is satisfied by any completed workout whose local `startedAt` date is today. Rest Day remains planned recovery even when unplanned activity exists, and No Plan remains distinct from both. Cross-midnight workouts belong to their local start day for plan interpretation. Deleting the only matching completion naturally makes the routine pending again. The weekly plan is only a current recurring template: edits do not reconstruct or snapshot historical schedules, and no history, Journal, or Progress records are rewritten.
 
@@ -534,13 +534,13 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, editable local Display Name, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 6.
+**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, editable local Display Name, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
 
 Likely next work:
 
 1. Final PWA and real-device visual/device QA
 2. `.fitdex` backup/restore for user-owned local state
-3. XP/streak features driven by real workout facts
+3. Final rank and achievement artwork using the documented asset contract
 4. Onboarding/settings polish
 5. A future decision about separate exercise-media hosting and retired no-media exercises
 
@@ -565,3 +565,37 @@ The usual workflow is Sol + Low for scoped corrections and documentation, Sol + 
 Update `PROJECT_NOTES.md` whenever there is a meaningful change to architecture, product scope, design direction, database models, a major implementation phase, naming, the avatar roster, backup behavior, distribution strategy, or another significant technical decision.
 
 Do not update it for trivial typo-only changes unless the typo affects this source of truth.
+
+## 33. Gamification V1 architecture
+
+Gamification is a local-first secondary layer over authoritative Workout, Food, Weekly Plan, Exercise Dex, and Progress facts. Dexie v7 adds six forward-only stores without rewriting existing history: `xpEvents` (`&sourceKey`, type, occurredAt), `planDaySnapshots` (`&localDate`, plannedType, result), `streakFreezeEvents` (`&sourceKey`, amount/type/date), `streakPauses` (start/end), `planChangeEvents` (`&sourceKey`, type/effectiveDate), and `achievementUnlocks` (`&achievementId`, unlockedAt). Settings stores only `gamificationInitializedAt`. Level, Rank, Lifetime XP, streak summaries, and live achievement progress remain derived.
+
+### XP, Levels, and Ranks
+
+XP source keys make reconciliation repeat-safe: `workout:<workoutId>`, `pr:<workoutId>:<exerciseId>:<metric>`, and `full-food-log:<localDate>`. Rewards are +30 for the first workout satisfying a planned Routine Day, +30 for the first workout satisfying a generic Workout Day, +20 for an unplanned or additional workout, +15 per genuine distinct PR metric, and +5 for all four meals. Calorie-target and protein-target event hooks remain dormant at +5 because nutrition targets do not yet exist. Deleting later source history never removes earned XP.
+
+XP activates going forward at `gamificationInitializedAt`; older history is not silently back-awarded. Factual achievements may unlock from trustworthy existing history, using detection/initialization time where an exact unlock instant cannot be safely reconstructed. The deterministic 100-entry nonlinear threshold table is centrally generated from audited cumulative anchors: Level 1 = 0, Level 10 = 2,000, Level 25 = 12,000, Level 50 = 27,000, Level 75 = 70,000, and Level 100 = 140,000 XP. Level 100 is the display maximum; Lifetime XP continues.
+
+Rank mapping has no divisions: Recruit 1–6, Regular 7–15, Hardened 16–27, Veteran 28–42, Warrior 43–57, Ascendant 58–72, Immortal 73–87, Legend 88–99, and Radiant 100. Final shared rank artwork is resolved explicitly from the nine files at `/gamification/ranks/<rank>.webp`. The reusable badge component attempts the final asset and falls back without layout shift to semantic CSS/Lucide emblems if an asset is unavailable; there are no temporary raster artworks, theme variants, locked variants, or I/II/III assets.
+
+### Daily commitments and Plan Streak
+
+On activation and every startup/resume reconciliation, FitDex materializes missing local calendar dates from the then-current recurring Weekly Plan. Each snapshot preserves Routine/Workout/Rest/No Plan type, stable routine ID, and routine-name snapshot. Past snapshots are immutable when the recurring plan changes. Reconciliation processes unresolved past dates chronologically; the current day remains Pending. Workout ownership uses local `startedAt`, including cross-midnight sessions.
+
+A matching routine-ID completion or any completion on a generic Workout Day increments Plan Streak. Rest Day, No Plan, Freeze, and Travel/Sickness Pause preserve but do not increment it. A wrong-routine or missed training obligation automatically consumes one available Freeze; with no Freeze, current streak resets to zero. Freeze history is durable. Balance starts at 2, caps at 3, and earns one at each 30-successful-planned-training-day milestone when below cap. Frozen days add no successful day, Workout XP, quest completion, or consistency progress.
+
+Travel/Sickness Pauses are 1–7 inclusive local days, may start today or in the future, and are limited to two uses in a rolling 12-month window rather than a calendar year. The Weekly Plan remains underneath. Paused dates preserve but do not increment streak, consume no Freeze, and award no Workout/Nutrition XP, Daily Quest, or consistency progress. Core correctness never depends on midnight execution or a server.
+
+Weekly Plan is saved as one commitment. Initial setup is free. The first material structural change in a rolling 12-month period records a protected change and retains streak; later material changes require an explicit warning and record a current-streak reset. Changing a day type, routine identity, adding/removing training days, or clearing the plan is material. Routine rename/content/order/set/note edits are not. Deleting a scheduled routine warns and passes through the same protected-change/reset flow. A streak reset never touches XP, Level, Rank, achievements, workout/PR/Food history, or historical plan snapshots.
+
+Daily Quest reuses the same plan-satisfaction rule: the scheduled routine (+30), a generic workout (+30), Recovery Day/no training quest, or Paused. It has no independent mutable progress.
+
+### Achievements and badge assets
+
+The catalog contains exactly 52 permanent, no-XP trophies: Workout 10, Consistency 8, Performance 7, Exercise Dex 6, Nutrition 11, and Progression 10. Exercise Dex milestones are exactly First Exercise, 5/10/25/50 Different Exercises, and All Categories. Unique stable IDs come only from completed workout snapshots and are deduplicated; unknown retired IDs can count uniquely. All Categories requires safely resolved participation across Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs. Nutrition target milestones remain visible and dormant until targets exist; complete nutrition days require Breakfast, Lunch, Supper, and Dinner.
+
+Unlock rows are permanent even when later history deletion lowers dynamic progress. New unlocks are grouped in one notification, and Level/Rank transitions are derived from unseen XP event boundaries so reloads do not repeat them. Home keeps today’s actual workout first, then compact Level/Rank, Plan Streak/Freeze, Daily Quest, and optional latest-achievement surfaces. Progress provides Overview, Records, and Achievements navigation, rank journey, recent XP, transparent earning rules, category filters, accessible progress bars, and locked measurable progress. Settings links to the concise gamification guide.
+
+The final 52 achievement WebPs live in `/gamification/achievements/`, alongside the nine rank emblems for 61 shared assets. A single explicit ID-to-filename resolver preserves persistent achievement IDs where they intentionally differ from artwork names (for example, `10-workouts` → `workouts-10.webp`); it is used by Home, Progress, and notifications. Achievement unlock notifications show the achievement badge, rank-up notifications show the rank badge, and level-up notifications use milestone achievement artwork only at Levels 10/25/50/75/100. The same artwork is reused in unlocked and locked states via opacity/grayscale, with generic semantic fallbacks only for missing or unknown assets.
+
+Offline reconciliation and source-key uniqueness make repeated Home loads, database reopens, and catch-up passes idempotent. Existing completed history remains readable; achievement eligibility can derive from it, while XP begins only at activation. Completed-workout deletion recalculates current PRs and derived progress but does not revoke XP or unlocks.

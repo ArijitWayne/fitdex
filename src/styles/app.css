@@ -490,6 +490,117 @@
   .exercise-detail-list > div { border-right: 0; }
 }
 
+/* Gamification V1: semantic, asset-ready layouts shared by every theme. */
+.gamification-badge { position: relative; display: inline-grid; flex: 0 0 auto; place-items: center; width: 62px; height: 62px; overflow: hidden; border: 2px solid var(--color-rpg-border); background: linear-gradient(145deg, var(--color-primary-muted), var(--color-surface-subtle)); color: var(--color-xp); box-shadow: 2px 2px 0 var(--color-shadow); }
+.gamification-badge.is-rank { clip-path: polygon(50% 0, 94% 20%, 86% 78%, 50% 100%, 14% 78%, 6% 20%); }
+.gamification-badge.is-achievement { border-radius: 50%; }
+.gamification-badge.is-small { width: 46px; height: 46px; }
+.gamification-badge.is-large { width: 108px; height: 108px; }
+.gamification-badge img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.gamification-badge svg { width: 56%; height: 56%; stroke-width: 1.7; }
+.gamification-badge.is-locked { opacity: .55; filter: grayscale(1); }
+.level-progress { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 15px; }
+.level-progress-copy { display: grid; min-width: 0; gap: 4px; }
+.level-progress-copy .eyebrow, .level-progress-copy h2, .level-progress-copy p { margin: 0; }
+.level-progress-copy h2 { overflow-wrap: anywhere; font-family: var(--font-display); font-size: clamp(1.25rem, 6vw, 2rem); color: var(--color-xp); }
+.level-progress-copy > p:not(.eyebrow), .level-progress-copy > small { color: var(--color-text-muted); font-size: .7rem; }
+.gamification-progress { position: relative; width: 100%; height: 10px; overflow: hidden; border: 1px solid var(--color-border-strong); background: var(--color-surface-subtle); }
+.gamification-progress > i { display: block; height: 100%; background: var(--color-xp); }
+.gamification-level-button { display: grid; width: 100%; min-width: 0; min-height: 76px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px; border: 2px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text); text-align: left; cursor: pointer; }
+.gamification-level-button:hover, .home-streak-button:hover { border-color: var(--color-primary); }
+.home-gamification { border-left: 4px solid var(--color-xp); }
+.home-streak-button { display: grid; min-width: 0; min-height: 64px; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px; border: 2px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text); text-align: left; cursor: pointer; }
+.home-streak-button > svg:first-child { color: var(--color-xp); }
+.home-streak-button > span { display: grid; }
+.home-streak-button > span strong { font-family: var(--font-display); font-size: 1.45rem; }
+.home-streak-button small { color: var(--color-text-muted); font-size: .61rem; font-weight: 850; text-transform: uppercase; }
+.home-streak-button em { min-width: 0; overflow-wrap: anywhere; color: var(--color-text-muted); font-size: .69rem; font-style: normal; text-align: right; }
+.daily-quest { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 11px; border: 1px solid var(--color-border); background: var(--color-primary-muted); }
+.daily-quest.is-complete { border-color: var(--color-success); }
+.daily-quest > svg { color: var(--color-xp); }
+.daily-quest > span { display: grid; min-width: 0; gap: 2px; }
+.daily-quest small, .home-latest-achievement small { color: var(--color-text-muted); font-size: .6rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.daily-quest strong { overflow-wrap: anywhere; }
+.daily-quest b { color: var(--color-xp); white-space: nowrap; }
+.home-latest-achievement { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.home-latest-achievement > span { display: grid; min-width: 0; gap: 2px; }
+.home-latest-achievement strong, .home-latest-achievement em { overflow-wrap: anywhere; }
+.home-latest-achievement em { color: var(--color-text-muted); font-size: .65rem; font-style: normal; }
+.gamification-detail, .achievements-page { width: 100%; max-width: 760px; margin-inline: auto; }
+.rank-journey, .recent-xp, .streak-week { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.rank-journey li { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.rank-journey li.is-current { border: 2px solid var(--color-xp); }
+.rank-journey li > span { display: grid; }
+.rank-journey small, .rank-journey em { color: var(--color-text-muted); font-size: .64rem; font-style: normal; }
+.xp-rules { display: grid; gap: 0; margin: 0; border: 1px solid var(--color-border); }
+.xp-rules div { display: flex; min-width: 0; justify-content: space-between; gap: 10px; padding: 9px; border-bottom: 1px solid var(--color-border); }
+.xp-rules div:last-child { border-bottom: 0; }
+.xp-rules dt { overflow-wrap: anywhere; }
+.xp-rules dd { margin: 0; color: var(--color-xp); font-weight: 900; text-align: right; }
+.xp-rules .is-dormant { color: var(--color-text-muted); }
+.recent-xp li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.recent-xp span { display: grid; min-width: 0; }
+.recent-xp strong { overflow-wrap: anywhere; text-transform: capitalize; }
+.recent-xp small { color: var(--color-text-muted); font-size: .62rem; }
+.recent-xp b { color: var(--color-xp); }
+.streak-hero { display: grid; justify-items: center; text-align: center; }
+.streak-hero > strong { font-family: var(--font-display); font-size: clamp(3rem, 18vw, 6rem); color: var(--color-xp); line-height: 1; }
+.streak-hero > small { color: var(--color-text-muted); }
+.streak-week li { display: grid; min-width: 0; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 8px; padding: 9px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.streak-week em { color: var(--color-text-muted); font-style: normal; }
+.pause-dialog, .plan-change-dialog, .gamification-notification { width: min(100%, 520px); max-height: calc(100dvh - 32px); overflow: auto; }
+.pause-dialog { display: grid; gap: 12px; }
+.pause-dialog header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.pause-dialog header h2, .pause-dialog header .eyebrow { margin: 0; }
+.pause-dialog header button { min-width: 44px; min-height: 44px; }
+.pause-dialog fieldset { display: flex; gap: 14px; padding: 10px; border: 1px solid var(--color-border); }
+.pause-dialog label { display: grid; gap: 5px; }
+.pause-dialog fieldset label { display: flex; min-height: 44px; align-items: center; gap: 6px; }
+.pause-dialog input[type='date'] { min-height: 46px; padding: 8px; border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.progress-view-tabs, .achievement-filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; }
+.progress-view-tabs button, .achievement-filters button { flex: 0 0 auto; min-height: 44px; padding: 8px 12px; border: 2px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text); font-weight: 850; cursor: pointer; }
+.progress-view-tabs button[aria-current='page'], .achievement-filters button[aria-pressed='true'] { border-color: var(--color-primary); background: var(--color-primary-muted); color: var(--color-primary-text); }
+.progress-gamification { display: grid; gap: 12px; }
+.progress-gamification-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.achievement-grid { display: grid; gap: 10px; }
+.achievement-card { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 12px; }
+.achievement-card > div { display: grid; min-width: 0; gap: 5px; }
+.achievement-card h2, .achievement-card p { margin: 0; overflow-wrap: anywhere; }
+.achievement-card h2 { font-family: var(--font-display); font-size: 1.05rem; text-transform: uppercase; }
+.achievement-card small { color: var(--color-text-muted); }
+.achievement-card.is-unlocked { border-left: 4px solid var(--color-xp); }
+.gamification-notification { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.gamification-notification h2, .gamification-notification p { margin: 0; }
+.gamification-notification > svg { width: 48px; height: 48px; color: var(--color-xp); }
+.gamification-notification-unlocks { display: grid; width: 100%; margin: 0; padding: 0; gap: 8px; list-style: none; text-align: left; }
+.gamification-notification-unlocks li { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.gamification-notification-unlocks span { overflow-wrap: anywhere; }
+.weekly-plan-commitment { padding: 10px; border-left: 3px solid var(--color-xp); background: var(--color-surface-subtle); }
+.routine-replacement { display: grid; gap: 8px; padding: 10px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.routine-replacement label { display: grid; gap: 5px; }
+.routine-replacement select { width: 100%; min-height: 46px; padding: 8px; border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+
+@media (min-width: 700px) {
+  .achievement-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 374px) {
+  .level-progress { grid-template-columns: 52px minmax(0, 1fr); gap: 9px; }
+  .level-progress .gamification-badge { width: 50px; height: 50px; }
+  .home-streak-button { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .home-streak-button > em { grid-column: 2 / -1; text-align: left; }
+  .home-latest-achievement { grid-template-columns: auto minmax(0, 1fr); }
+  .home-latest-achievement button { grid-column: 1 / -1; }
+  .daily-quest { grid-template-columns: auto minmax(0, 1fr); }
+  .daily-quest b { grid-column: 2; }
+  .achievement-card { grid-template-columns: 46px minmax(0, 1fr); gap: 9px; }
+  .gamification-notification .gamification-badge.is-large { width: 88px; height: 88px; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .pause-dialog, .plan-change-dialog, .gamification-notification { max-height: calc(100dvh - 16px); }
+}
+
 @media (min-width: 700px) {
   .header-status { display: flex; }
   .app-main { padding: 42px max(28px, env(safe-area-inset-right)) 42px max(28px, env(safe-area-inset-left)); }

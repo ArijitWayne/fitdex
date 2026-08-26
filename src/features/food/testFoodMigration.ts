@@ -26,7 +26,7 @@ await legacy.table('foods').add({ id: 'legacy-food', name: 'Legacy placeholder f
 legacy.close()
 
 const { DATABASE_SCHEMA_VERSION, FitDexDatabase, db } = await import('../../data/database.ts')
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 await db.open()
 assert.ok(db.tables.some((table) => table.name === 'rememberedFoods'))
 assert.ok(db.tables.some((table) => table.name === 'foodLogEntries'))
@@ -39,7 +39,7 @@ db.close()
 
 const fresh = new FitDexDatabase()
 await fresh.open()
-assert.equal(fresh.tables.length, Object.keys(storesV5).length + 3)
+assert.equal(fresh.tables.length, Object.keys(storesV5).length + 9)
 fresh.close()
 await Dexie.delete('fitdex')
-console.log('Food migration tests passed: v5 user data preserved, three v6 stores added, and fresh install opens')
+console.log('Food migration tests passed: v5 user data preserved through v7, Food stores retained, and fresh install opens')

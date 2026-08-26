@@ -2,6 +2,7 @@ import { db } from '../../data/database.ts'
 import { PREDEFINED_FOOD_CATEGORY_IDS, type CustomFoodCategory, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PredefinedFoodCategoryId, type RememberedFood } from '../../data/models.ts'
 import { createId } from '../../utils/createId.ts'
 import { categoryName, normalizeFoodName, nutritionTotals, validateNutrition } from './foodModel.ts'
+import { reconcileFoodGamification } from '../gamification/gamificationRepository.ts'
 
 export interface FoodDraft extends FoodNutrition {
   name: string
@@ -74,7 +75,7 @@ export async function addFoodLog(date: string, meal: FoodMeal, draft: FoodDraft)
   const normalizedName = normalizeFoodName(name)
   if (!name || !normalizedName) throw new Error('Food name is required.')
   validateNutrition(draft)
-  return db.transaction('rw', [db.foodLogEntries, db.rememberedFoods, db.customFoodCategories], async () => {
+  const entry = await db.transaction('rw', [db.foodLogEntries, db.rememberedFoods, db.customFoodCategories], async () => {
     const timestamp = nowIso()
     const category = await resolveCategory(draft)
     let remembered = await db.rememberedFoods.where('normalizedName').equals(normalizedName).first()
@@ -100,6 +101,8 @@ export async function addFoodLog(date: string, meal: FoodMeal, draft: FoodDraft)
     await db.foodLogEntries.add(entry)
     return entry
   })
+  await reconcileFoodGamification()
+  return entry
 }
 
 export async function editFoodLog(id: string, draft: FoodDraft) {

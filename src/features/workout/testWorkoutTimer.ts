@@ -30,7 +30,7 @@ await Dexie.delete('fitdex')
 const { db, DATABASE_SCHEMA_VERSION } = await import('../../data/database.ts')
 const repository = await import('./workoutRepository.ts')
 await db.open()
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 
 const exercise: Exercise = {
   id: 'custom-exercise:timer-test', name: 'Timer Test Press', aliases: [], category: 'Chest', categories: ['Chest'], primaryCategory: 'Chest',

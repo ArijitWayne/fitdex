@@ -11,7 +11,7 @@ const { DATABASE_SCHEMA_VERSION, db } = await import('../../data/database.ts')
 const { loadProgressSource } = await import('./progressRepository.ts')
 await db.open()
 
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 assert.deepEqual(getProgressPeriodRange('7d', '2027-01-02'), { startDateKey: '2026-12-27', endDateKey: '2027-01-02', previousStartDateKey: '2026-12-20', previousEndDateKey: '2026-12-26' })
 assert.equal(getProgressPeriodRange('30d', '2026-03-01').startDateKey, '2026-01-31')
 assert.equal(getProgressPeriodRange('90d', '2026-03-01').startDateKey, '2025-12-02')

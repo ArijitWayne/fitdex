@@ -11,7 +11,7 @@ const { getJournalDay } = await import('./journalRepository.ts')
 const { calculateJournalSummary, groupFoodEntriesByMeal, journalMinutes } = await import('./journalModel.ts')
 await db.open()
 
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 
 const iso = (year: number, month: number, day: number, hour: number) => new Date(year, month - 1, day, hour).toISOString()
 const recordTimes = { createdAt: iso(2026, 8, 25, 8), updatedAt: iso(2026, 8, 25, 8) }

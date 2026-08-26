@@ -9,7 +9,7 @@ await Dexie.delete('fitdex')
 const { db, DATABASE_SCHEMA_VERSION } = await import('../../data/database.ts')
 const { listFavouriteExerciseIds, setExerciseFavourite } = await import('./exerciseFavouriteRepository.ts')
 await db.open()
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 
 const archer = builtInExercises.find((exercise) => exercise.name === 'Archer Push-Up')
 const band = builtInExercises.find((exercise) => exercise.name === 'Band Chest Fly')

@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie'
 import type {
   Achievement,
+  AchievementUnlock,
   BodyMeasurement,
   CardioSession,
   CustomTag,
@@ -22,11 +23,16 @@ import type {
   WorkoutRoutine,
   WorkoutSet,
   XpHistoryEntry,
+  XpEvent,
+  PlanDaySnapshot,
+  StreakFreezeEvent,
+  StreakPause,
+  PlanChangeEvent,
   CustomFoodCategory,
 } from './models'
 
 export const DATABASE_NAME = 'fitdex'
-export const DATABASE_SCHEMA_VERSION = 6
+export const DATABASE_SCHEMA_VERSION = 7
 
 const DATABASE_STORES_V4 = {
   settings: '&id, updatedAt',
@@ -65,6 +71,16 @@ const DATABASE_STORES = {
   customFoodCategories: '&id, &normalizedName, name, updatedAt',
 } as const
 
+const DATABASE_STORES_V7 = {
+  ...DATABASE_STORES,
+  xpEvents: '&id, &sourceKey, type, occurredAt',
+  planDaySnapshots: '&id, &localDate, plannedType, result, finalizedAt',
+  streakFreezeEvents: '&id, &sourceKey, type, localDate, occurredAt',
+  streakPauses: '&id, startDate, endDate, createdAt',
+  planChangeEvents: '&id, &sourceKey, type, effectiveDate, occurredAt',
+  achievementUnlocks: '&id, &achievementId, unlockedAt',
+} as const
+
 export class FitDexDatabase extends Dexie {
   settings!: Table<SettingsRecord, string>
   exercises!: Table<Exercise, string>
@@ -89,6 +105,12 @@ export class FitDexDatabase extends Dexie {
   quests!: Table<Quest, string>
   xpHistory!: Table<XpHistoryEntry, string>
   journalRecords!: Table<JournalRecord, string>
+  xpEvents!: Table<XpEvent, string>
+  planDaySnapshots!: Table<PlanDaySnapshot, string>
+  streakFreezeEvents!: Table<StreakFreezeEvent, string>
+  streakPauses!: Table<StreakPause, string>
+  planChangeEvents!: Table<PlanChangeEvent, string>
+  achievementUnlocks!: Table<AchievementUnlock, string>
 
   constructor() {
     super(DATABASE_NAME)
@@ -152,7 +174,11 @@ export class FitDexDatabase extends Dexie {
 
     // v6 adds local-first Food V1 stores. Legacy nutrition placeholders remain
     // untouched so existing on-device data is never reset or discarded.
-    this.version(DATABASE_SCHEMA_VERSION).stores(DATABASE_STORES)
+    this.version(6).stores(DATABASE_STORES)
+
+    // v7 introduces append-only/idempotent gamification history. Existing workout
+    // and food rows are not rewritten and lifetime XP starts at activation.
+    this.version(DATABASE_SCHEMA_VERSION).stores(DATABASE_STORES_V7)
   }
 }
 

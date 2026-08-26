@@ -9,7 +9,7 @@ const { DATABASE_SCHEMA_VERSION, db } = await import('../../data/database.ts')
 const { loadDisplayName, saveDisplayName } = await import('./profileRepository.ts')
 await db.open()
 
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 assert.equal(await loadDisplayName(), '')
 assert.equal(normalizeDisplayName('   Arijit   '), 'Arijit')
 assert.equal(normalizeDisplayName('José 山田'), 'José 山田')

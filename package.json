@@ -21,6 +21,7 @@
     "test:workout-deletion": "node --experimental-strip-types src/features/workout/testWorkoutDeletion.ts",
     "test:workout-ui": "node --experimental-strip-types src/features/workout/testWorkoutUi.ts",
     "test:weekly-plan": "node --experimental-strip-types src/features/workout/testWeeklyPlan.ts",
+    "test:gamification": "node --experimental-strip-types src/features/gamification/testGamification.ts",
     "test:exercise-picker-toggle": "node --experimental-strip-types src/features/workout/testExercisePickerToggle.ts",
     "test:food": "node --experimental-strip-types src/features/food/testFoodRepository.ts",
     "test:food-migration": "node --experimental-strip-types src/features/food/testFoodMigration.ts",

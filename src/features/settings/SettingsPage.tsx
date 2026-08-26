@@ -7,6 +7,7 @@ import { MAX_DISPLAY_NAME_LENGTH } from '../profile/displayNameModel'
 import { useProfile } from '../profile/useProfile'
 import { useTheme } from '../../theme/useTheme'
 import type { BrightnessPreference, ThemeFamily } from '../../theme/theme'
+import { GamificationHelpButton } from '../gamification/GamificationViews'
 
 const brightnessOptions: Array<{ value: BrightnessPreference; label: string; hint: string }> = [
   { value: 'system', label: 'System', hint: 'Match this device' },
@@ -92,7 +93,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
       <SettingsPlaceholder number="03" title="Units" description="Measurement and display preferences." />
       <SettingsPlaceholder number="04" title="Workout Preferences" description="Defaults for training and rest periods." />
       <SettingsPlaceholder number="05" title="Nutrition" description="Daily targets and nutrition display." />
-      <SettingsPlaceholder number="06" title="Gamification" description="XP, quests, and achievement preferences." />
+      <section className="settings-section" aria-labelledby="gamification-heading"><div className="settings-section-heading"><span>06</span><div><h2 id="gamification-heading">Gamification</h2><p>XP, Levels, Ranks, Plan Streak protection, Daily Quest, and Achievements stay local to this device.</p></div></div><GamificationHelpButton /></section>
 
       <section className="settings-section" aria-labelledby="storage-heading">
         <div className="settings-section-heading"><span>07</span><div><h2 id="storage-heading">Data &amp; Storage</h2><p>Your device is the source of truth. Backup tools arrive in a future phase.</p></div></div>

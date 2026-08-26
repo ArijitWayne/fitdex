@@ -23,7 +23,7 @@ await Dexie.delete('fitdex')
 const { DATABASE_SCHEMA_VERSION, db } = await import('../../data/database.ts')
 const { loadHomeDashboard } = await import('./homeRepository.ts')
 await db.open()
-assert.equal(DATABASE_SCHEMA_VERSION, 6)
+assert.equal(DATABASE_SCHEMA_VERSION, 7)
 
 const date = '2026-08-25'
 const timestamp = new Date(2026, 7, 25, 8).toISOString()
