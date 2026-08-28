@@ -18,6 +18,8 @@
   --color-primary-strong: #176864;
   --color-primary-text: #176864;
   --color-primary-muted: #d1ded9;
+  /* Family-aware accent for prominent hero treatments. */
+  --color-hero-accent: var(--color-primary);
   --color-secondary: #7b8d6a;
   --color-warm-accent: #b67e26;
   --color-metal: #7e8680;

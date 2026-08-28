@@ -5,6 +5,7 @@ import { AVATARS } from '../avatar/avatars.ts'
 
 const page = fs.readFileSync('src/pages/HomePage.tsx', 'utf8')
 const css = fs.readFileSync('src/styles/app.css', 'utf8')
+const themeCss = fs.readFileSync('src/index.css', 'utf8')
 const avatar = fs.readFileSync('src/features/avatar/AvatarPortrait.tsx', 'utf8')
 const settings = fs.readFileSync('src/features/settings/SettingsPage.tsx', 'utf8')
 const app = fs.readFileSync('src/app/App.tsx', 'utf8')
@@ -96,6 +97,15 @@ assert.match(vite, /globPatterns: \['\*\*\/\*\.\{js,css,html,svg,png,woff2\}'\]/
 assert.doesNotMatch(vite, /mp4/)
 
 assert.match(css, /\.home-hero \{[^}]*grid-template-columns: auto minmax\(0, 1fr\)/s)
+assert.match(css, /\.home-hero::before \{[^}]*background: var\(--color-hero-accent\)/s)
+assert.match(css, /\.home-hero \.eyebrow \{[^}]*color: var\(--color-hero-accent\)/s)
+assert.doesNotMatch(css, /\.home-hero\[data-faction='amazonians'\]/)
+assert.doesNotMatch(page, /home-hero" data-faction/)
+assert.match(themeCss, /--color-hero-accent: var\(--color-primary\)/)
+assert.match(themeCss, /\/\* Spartans light:[\s\S]*--color-primary: #1f8582/)
+assert.match(themeCss, /\/\* Spartans dark:[\s\S]*--color-primary: #2e9895/)
+assert.match(themeCss, /\/\* Amazonians dark:[\s\S]*--color-primary: #906390/)
+assert.match(themeCss, /:root\[data-theme-family='amazonians'\] \{[\s\S]*--color-primary: #785178/)
 assert.match(css, /\.home-quick-access \{[^}]*grid-template-columns: repeat\(2,/s)
 assert.match(css, /\.home-week-grid \{[^}]*grid-template-columns: repeat\(7,/s)
 assert.match(css, /\.home-music-controls \{[^}]*grid-template-columns: repeat\(4,/s)

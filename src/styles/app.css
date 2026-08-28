@@ -1019,11 +1019,10 @@
 
 /* Home Dashboard V1 and local Display Name settings. */
 .home-page { width: 100%; max-width: 760px; margin-inline: auto; }
-.home-hero { --faction-accent: var(--color-faction-spartans); position: relative; display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 15px; padding: 17px; overflow: hidden; border: 3px solid var(--color-border-strong); background: var(--color-surface-raised); box-shadow: 3px 3px 0 var(--color-shadow); }
-.home-hero[data-faction='amazonians'] { --faction-accent: var(--color-faction-amazonians); }
-.home-hero::before { position: absolute; top: 0; right: 0; left: 0; height: 5px; background: var(--faction-accent); content: ''; }
+.home-hero { position: relative; display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 15px; padding: 17px; overflow: hidden; border: 3px solid var(--color-border-strong); background: var(--color-surface-raised); box-shadow: 3px 3px 0 var(--color-shadow); }
+.home-hero::before { position: absolute; top: 0; right: 0; left: 0; height: 5px; background: var(--color-hero-accent); content: ''; }
 .home-hero > div { min-width: 0; }
-.home-hero .eyebrow { margin: 0 0 5px; color: var(--faction-accent); }
+.home-hero .eyebrow { margin: 0 0 5px; color: var(--color-hero-accent); }
 .home-hero h1 { margin: 0 0 6px; overflow-wrap: anywhere; font-size: clamp(1.75rem, 8vw, 3.25rem); }
 .home-hero time { display: block; color: var(--color-text-muted); font-size: .74rem; font-weight: 800; letter-spacing: .04em; }
 .home-hero p:last-child { margin: 5px 0 0; font-size: .85rem; }

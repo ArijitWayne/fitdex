@@ -52,7 +52,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
 
   return (
     <div className="page-stack home-page">
-      <section className="home-hero" data-faction={selectedAvatar.faction}>
+      <section className="home-hero">
         <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
         <div>
           <p className="eyebrow">FitDex · {selectedAvatar.archetype}</p>
