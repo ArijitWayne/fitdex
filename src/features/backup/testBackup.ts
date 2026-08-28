@@ -13,6 +13,7 @@ import { collectBackupData, createFitDexBackup, restoreFitDexBackup } from './ba
 import { fitDexBackupFilename, serializeFitDexBackup, summarizeFitDexBackup } from './backupSerializer.ts'
 import { BACKUP_STORE_NAMES, BackupValidationError, FITDEX_BACKUP_FORMAT, FITDEX_BACKUP_FORMAT_VERSION, FITDEX_BACKUP_MAX_BYTES, type BackupRecord, type BackupStoreName } from './backupTypes.ts'
 import { parseFitDexBackup, readFitDexBackupFile, validateFitDexBackup } from './backupValidation.ts'
+import { resolveProfileGate } from '../profile/profileGateModel.ts'
 
 const timestamp = '2026-08-26T16:12:00.000Z'
 const later = '2026-08-26T17:12:00.000Z'
@@ -102,6 +103,14 @@ assert.deepEqual(await collectBackupData(db, storage), backup.data)
 assert.equal((await db.exercises.get('built-in:test'))?.source, 'built-in')
 assert.equal((await db.exercises.get('custom:test'))?.name, 'My Test Move')
 assert.equal((await db.systemMetadata.get('restore-sentinel'))?.value, 'preserve')
+
+const oldBackupWithoutDisplayName = parseFitDexBackup(serialized)
+delete oldBackupWithoutDisplayName.data.settings[0].displayName
+await restoreFitDexBackup(oldBackupWithoutDisplayName, db, storage)
+assert.equal((await db.settings.get('settings'))?.displayName, undefined, 'Old backups without a Display Name remain restorable')
+assert.equal(resolveProfileGate('', true), 'migration', 'An old restored profile is directed to the lightweight required-name prompt')
+await restoreFitDexBackup(validated, db, storage)
+assert.equal((await db.settings.get('settings'))?.displayName, 'Backup Tester')
 
 const originalSettings = await db.settings.get('settings')
 const preferencesBeforeFailure = new Map(localValues)

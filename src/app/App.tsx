@@ -17,6 +17,9 @@ import { AudioProvider } from '../features/audio/AudioProvider'
 import { BackNavigationProvider } from '../features/navigation/BackNavigationProvider'
 import { createNavigationHistory } from '../features/navigation/navigationHistory'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
+import { useProfile } from '../features/profile/useProfile'
+import { RequiredDisplayNamePrompt } from '../features/profile/RequiredDisplayNamePrompt'
+import { resolveProfileGate } from '../features/profile/profileGateModel'
 
 interface AppLocation {
   destination: AppDestination
@@ -29,6 +32,11 @@ interface AppLocation {
 const rootLocation: AppLocation = { destination: 'home', settingsOpen: false, workoutEntry: 'hub', progressEntry: 'overview' }
 
 function App() {
+  return <ThemeProvider><AvatarProvider><ProfileProvider><AppContent /></ProfileProvider></AvatarProvider></ThemeProvider>
+}
+
+function AppContent() {
+  const { displayName, ready: profileReady } = useProfile()
   const historyRef = useRef(createNavigationHistory(rootLocation))
   const [location, setLocation] = useState(rootLocation)
   const [historyDepth, setHistoryDepth] = useState(0)
@@ -48,12 +56,13 @@ function App() {
     if (previous) { setHistoryDepth(historyRef.current.entries().length); setLocation(previous) }
   }
   useBackNavigation('app-history', historyDepth > 0, popLocation, 0)
+  const profileGate = profileReady ? resolveProfileGate(displayName, hasCompletedTutorial()) : 'none'
+
+  if (!profileReady) return <div className="profile-gate-loading" aria-live="polite">Loading FitDex…</div>
 
   return (
-    <ThemeProvider>
-      <AvatarProvider>
-        <ProfileProvider>
-          <AppShell
+    <>
+      <AppShell
             destination={location.destination}
             onNavigate={navigateDestination}
             onOpenSettings={() => navigate({ ...location, settingsOpen: true })}
@@ -75,12 +84,10 @@ function App() {
             ) : (
               <JournalPage />
             )}
-          </AppShell>
-          {tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}
-          <GamificationNotificationDialog />
-        </ProfileProvider>
-      </AvatarProvider>
-    </ThemeProvider>
+      </AppShell>
+      {profileGate === 'onboarding' ? <Onboarding requiresDisplayName onClose={() => setTutorialOpen(false)} /> : profileGate === 'migration' ? <RequiredDisplayNamePrompt /> : tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}
+      <GamificationNotificationDialog />
+    </>
   )
 }
 

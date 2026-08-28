@@ -221,9 +221,24 @@
 .tutorial-dots { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 7px; padding: 9px 14px; border-bottom: 1px solid var(--color-border); }
 .tutorial-dots button { display: grid; width: 34px; min-width: 0; height: 28px; place-items: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .tutorial-dots button > span { width: 8px; height: 8px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.tutorial-dots button:hover > span { border-color: var(--color-primary); background: var(--color-primary-muted); }
+.tutorial-dots button:active > span { transform: translateY(1px); }
 .tutorial-dots button.is-active > span { width: 24px; background: var(--color-xp); }
 .tutorial-dots button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 1px; }
 .onboarding-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; padding: 13px max(16px, env(safe-area-inset-right)) calc(13px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); border-top: 2px solid var(--color-border-strong); background: var(--color-surface-raised); }
+.profile-gate-loading { display: grid; min-height: 100dvh; place-items: center; padding: 24px; color: var(--color-text-muted); font-family: var(--font-display); text-transform: uppercase; }
+.profile-name-backdrop { place-items: center; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+.profile-name-prompt { display: grid; width: min(100%, 500px); gap: 14px; padding: 24px; border: 3px solid var(--color-border-strong); background: var(--color-surface-raised); box-shadow: 4px 4px 0 var(--color-shadow); }
+.profile-name-prompt header { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.profile-name-prompt .tutorial-glyph { margin: 0; }
+.profile-name-prompt h1 { margin: 0; font-size: clamp(1.65rem, 8vw, 2.65rem); text-transform: uppercase; }
+.profile-name-prompt header > p:last-child { max-width: 360px; margin: 0; color: var(--color-text-muted); }
+.profile-name-prompt label { display: grid; gap: 7px; color: var(--color-text-muted); font-size: .72rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.profile-name-prompt label > strong, .display-name-form label em { width: fit-content; padding: 2px 5px; background: var(--color-primary-muted); color: var(--color-primary-text); font-size: .6rem; font-style: normal; }
+.profile-name-prompt input { width: 100%; min-height: 52px; padding: 10px 12px; border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font: inherit; letter-spacing: normal; text-transform: none; }
+.profile-name-prompt input:focus-visible, .display-name-form input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.profile-name-meta { display: flex; justify-content: space-between; gap: 10px; color: var(--color-text-muted); font-size: .72rem; }
+.profile-name-prompt > .primary-button { min-height: 48px; }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .workout-page { width: 100%; max-width: 760px; margin-inline: auto; }
@@ -1067,6 +1082,7 @@
 .display-name-form label > span { color: var(--color-text-muted); font-size: .68rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .display-name-form input { width: 100%; min-height: 48px; padding: 9px 11px; border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .display-name-form > p { margin: 0; font-size: .75rem; }
+.display-name-form .display-name-count { justify-self: end; color: var(--color-text-muted); font-family: var(--font-display); }
 .display-name-form > .secondary-button { width: fit-content; }
 .target-toggle { display: flex; min-height: 48px; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); font-weight: 850; }
 .target-toggle input { width: 20px; height: 20px; accent-color: var(--color-primary); }

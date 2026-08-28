@@ -189,7 +189,7 @@ Do not add pets, animal companions, monsters, battles, inventory, fantasy curren
 
 ## 15. Home screen direction
 
-Home Dashboard V1 is implemented as an honest, derived overview of existing local facts. Its compact hero shows the selected avatar, archetype, local-date-aware greeting, and date. An optional editable Display Name is stored in the existing Settings record and updates the greeting reactively; it is trimmed, Unicode-safe, limited to 30 characters, clearable, local-only, and requires neither an account nor a schema migration.
+Home Dashboard V1 is implemented as an honest, derived overview of existing local facts. Its compact hero shows the selected avatar, archetype, local-date-aware greeting, and date. A required editable Display Name is stored in the existing Settings record and updates the greeting reactively as `GOOD MORNING/AFTERNOON/EVENING, <DISPLAY NAME>`; it is trimmed, Unicode-safe, limited to 24 characters, local-only, and requires neither an account nor a schema migration. Long valid names wrap instead of shrinking or overflowing.
 
 Dashboard sections are Today's Workout, Nutrition Today, Today's Activity, Recent Progress, and Quick Access. Workout state distinguishes an active resumable session, one or more completed sessions today, and a truthful empty state; direct actions enter Resume, Start Workout, or Exercise Dex through the existing Workout flow. Nutrition is derived from today's `FoodLogEntry` snapshots and shows calories, protein, and fixed four-meal logged/empty markers. Activity summarizes completed workouts, persisted training duration, logged food count, and protein. Recent Progress reuses the established PR rules and unit conversion, plus completed-workout count and training volume for the inclusive last seven local calendar days. Quick Access links to Exercise Dex, Journal, Progress, and Food.
 
@@ -456,7 +456,7 @@ Planned/current sections:
 - Help
 - About FitDex
 
-Profile currently includes avatar selection and an optional editable local Display Name. Display Name is saved into the canonical existing Settings record, preserves all other settings fields, and can be cleared; it is presentation metadata rather than a fitness-history fact.
+Profile includes avatar selection and a required editable local Display Name. Display Name is saved into the canonical existing Settings record and preserves all other settings fields; it is presentation metadata rather than a fitness-history fact. New users must provide one trimmed non-whitespace name of 1–24 characters before continuing through first-run onboarding. Existing users with completed onboarding but no stored name receive only a one-time lightweight required-name prompt, leaving their workouts, settings, avatar, theme, tutorial state, and other local data untouched. There is no account, authentication, uniqueness check, or cloud profile.
 
 The stale Exercise Dex Settings placeholder is intentionally absent because Exercise Dex has no meaningful preferences yet. About FitDex uses the established PWA icon, user-facing product/local-first copy, developer credit for Arijit Bhaduri, and the build-time app version sourced from `package.json`.
 
@@ -533,7 +533,7 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 - [x] Journal V1 derived daily history from completed workout and FoodLogEntry snapshots, with no schema change
 - [x] Progress + Personal Records V1 derived analytics, period trends, all-time PR rules, and no schema change
 - [x] Home Dashboard V1 derived from real Workout, Food, and Progress facts, with direct navigation intents and no schema change
-- [x] Optional editable local Display Name in Settings with reactive Home greeting
+- [x] Required local Display Name onboarding/migration gate, Settings editing, backup portability, and reactive Home greeting
 - [x] Six avatar PNGs resized for their render envelope, with priority Home loading and retained lazy selector loading
 - [x] Capacitor Android shell, selective private exercise-media downloads, native back handling, and minimal in-app history
 - [x] Audio V1 with local semantic effects, three background tracks, persisted preferences, and Home controls
@@ -542,13 +542,13 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, editable local Display Name, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
+**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, required local Display Name onboarding/migration, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
 
 Likely next work:
 
 1. Final PWA and real-device visual/device QA
 2. Final rank and achievement artwork using the documented asset contract
-3. Onboarding/settings polish
+3. Real-device and release-candidate QA
 4. A future decision about separate exercise-media hosting and retired no-media exercises
 
 This list is direction, not completed work.
@@ -655,7 +655,9 @@ Browser/PWA retains existing local demo playback and has no native download UI. 
 
 ## 38. Field Guide, Audio, and Navigation Polish
 
-The first-run onboarding is the seven-topic FitDex Field Guide: Getting Started, Identity (theme), Identity (avatar), Training, Exercise Dex, Nutrition, and Progress & Safety. Its claims match the current local-first product, including 804 exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. It supports direct topic selection, Back/Next, Skip/Close, safe areas, short landscape, and replay from Settings. Existing focused Workout, Food, Journal, and Progress guides remain available.
+The old tutorial presentation is replaced by the FitDex Field Guide: Home, Personalization, Training, Exercise Dex, Nutrition, Progress & XP, and Offline & Settings. Its retro-RPG panel uses the current theme variables, topic index/direct selectors, progress indicator, Back/Next, Skip/Close, safe areas, short-landscape scrolling, and replay from Settings. Its claims match the current local-first product, including 804 exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. Existing focused Workout, Food, Journal, and Progress guides remain available.
+
+Display Name is an optional persisted property only for compatibility with older local records and V1 backups; new product flows require a valid value. The shared validator trims leading/trailing whitespace, rejects an empty result, and permits at most 24 Unicode characters. Settings exposes the same required input, live counter, validation, and persistence path used by the onboarding/migration prompt. Because it is part of the authoritative Settings record, it is included in normal `.fitdex` export/replace restore without a separate backup field. Older backups without it remain valid; after restore, the lightweight required-name prompt appears while all restored data and onboarding state remain intact.
 
 Audio V1 uses seven bundled, offline-capable files in `public/audio`. The semantic mappings are `select.mp3` for harmless navigation/selection, `add.mp3` for successful add/create actions, `achievements_unlock.mp3` for a genuine achievement unlock or level/rank increase, and `progress_complete.mp3` for successful workout completion or the first logged food entry for a date/meal. No achievement XP was introduced. BGM maps `bgm1.mp3` to Warrior, `bgm2.mp3` to Hardened, `bgm3.mp3` to Villain, and `none` to No Music.
 

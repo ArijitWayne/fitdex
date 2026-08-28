@@ -6,7 +6,7 @@ import { loadNutritionTargets, saveNutritionTargets } from '../nutritionTargets/
 import { AvatarPortrait } from '../avatar/AvatarPortrait'
 import { AvatarSelector } from '../avatar/AvatarSelector'
 import { useAvatar } from '../avatar/useAvatar'
-import { MAX_DISPLAY_NAME_LENGTH } from '../profile/displayNameModel'
+import { displayNameLength, isValidDisplayName, limitDisplayNameInput, MAX_DISPLAY_NAME_LENGTH } from '../profile/displayNameModel'
 import { useProfile } from '../profile/useProfile'
 import { useTheme } from '../../theme/useTheme'
 import type { BrightnessPreference, ThemeFamily } from '../../theme/theme'
@@ -142,14 +142,16 @@ function DisplayNameForm({ displayName, ready, onSave }: { displayName: string; 
   const [saving, setSaving] = useState(false)
   return <form className="display-name-form" onSubmit={(event) => {
     event.preventDefault()
+    if (!isValidDisplayName(value)) { setStatus('Enter a Display Name from 1 to 24 characters.'); return }
     setSaving(true)
     setStatus('')
-    void onSave(value).then((saved) => { setValue(saved); setStatus(saved ? 'Display Name saved.' : 'Display Name cleared.') }).catch((reason: unknown) => setStatus(reason instanceof Error ? reason.message : 'Display Name could not be saved.')).finally(() => setSaving(false))
+    void onSave(value).then((saved) => { setValue(saved); setStatus('Display Name saved.') }).catch((reason: unknown) => setStatus(reason instanceof Error ? reason.message : 'Display Name could not be saved.')).finally(() => setSaving(false))
   }}>
-    <label htmlFor="display-name"><span>Display Name</span><input id="display-name" value={value} disabled={!ready || saving} onChange={(event) => setValue(event.target.value)} autoComplete="nickname" aria-describedby="display-name-help" /></label>
-    <p id="display-name-help">This is what FitDex calls you. Use up to {MAX_DISPLAY_NAME_LENGTH} characters; it stays on this device and can be changed anytime.</p>
-    <button className="secondary-button" type="submit" disabled={!ready || saving}>{saving ? 'Saving…' : 'Save Display Name'}</button>
-    {status ? <p className={status.includes('could not') || status.includes('fewer') ? 'form-error' : 'display-name-status'} role="status">{status}</p> : null}
+    <label htmlFor="display-name"><span>Display Name <em aria-hidden="true">Required</em></span><input id="display-name" value={value} disabled={!ready || saving} required maxLength={MAX_DISPLAY_NAME_LENGTH} onChange={(event) => setValue(limitDisplayNameInput(event.target.value))} autoComplete="nickname" aria-describedby="display-name-help display-name-count" aria-invalid={value.length > 0 && !isValidDisplayName(value)} /></label>
+    <p id="display-name-help">Shown in your FitDex greeting. Stored only on this device.</p>
+    <p className="display-name-count" id="display-name-count" aria-live="polite">{displayNameLength(value)} / {MAX_DISPLAY_NAME_LENGTH}</p>
+    <button className="secondary-button" type="submit" disabled={!ready || saving || !isValidDisplayName(value)}>{saving ? 'Saving…' : 'Save Display Name'}</button>
+    {status ? <p className={status.includes('could not') || status.includes('Enter') ? 'form-error' : 'display-name-status'} role="status">{status}</p> : null}
   </form>
 }
 

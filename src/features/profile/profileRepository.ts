@@ -7,6 +7,6 @@ export async function loadDisplayName() {
 
 export async function saveDisplayName(value: string) {
   const displayName = normalizeDisplayName(value)
-  await updateLocalSettings({ displayName: displayName || undefined })
+  await updateLocalSettings({ displayName })
   return displayName
 }

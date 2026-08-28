@@ -7,6 +7,7 @@ import { AvatarSelector } from '../avatar/AvatarSelector'
 import { completeTutorial } from './tutorialStorage'
 import { useAudio } from '../audio/useAudio'
 import { useBackNavigation } from '../navigation/useBackNavigation'
+import { RequiredDisplayNamePrompt } from '../profile/RequiredDisplayNamePrompt'
 
 interface TutorialSlide {
   icon: LucideIcon
@@ -14,17 +15,17 @@ interface TutorialSlide {
   body: string
   section: string
   path: string
-  kind?: 'style' | 'avatar'
+  kind?: 'personalization'
 }
 
 const slides: TutorialSlide[] = [
-  { icon: Sparkles, section: 'Getting Started', title: 'Your Local Fitness Quest', body: 'Home connects today’s training, nutrition, plan, XP and recent progress without an account.', path: 'HOME → TODAY → QUICK ACCESS' },
-  { icon: Palette, section: 'Identity', title: 'Choose Your Style', body: 'Pick a theme family now. Theme and brightness remain independently adjustable in Settings.', path: 'SETTINGS → APPEARANCE', kind: 'style' },
-  { icon: UserRound, section: 'Identity', title: 'Choose Your Champion', body: 'Choose a cosmetic champion for your local FitDex profile. You can change it whenever you like.', path: 'SETTINGS → PROFILE → AVATAR', kind: 'avatar' },
+  { icon: Sparkles, section: 'Home', title: 'Your Local Fitness Quest', body: 'Home connects today’s training, nutrition, plan, XP and recent progress without an account.', path: 'HOME → TODAY → QUICK ACCESS' },
+  { icon: Palette, section: 'Personalization', title: 'Choose Your Profile', body: 'Pick a theme and cosmetic champion. Both stay local and can be changed whenever you like.', path: 'SETTINGS → PROFILE → APPEARANCE', kind: 'personalization' },
   { icon: Dumbbell, section: 'Training', title: 'Build Your Training', body: 'Create reusable routines or start an empty workout, then record tracking-specific sets and finish to save history.', path: 'WORKOUT → ROUTINES → ADD EXERCISE' },
   { icon: BookOpen, section: 'Exercise Dex', title: 'Explore 804 Exercises', body: 'Browse categories, instructions and demonstrations. Android can selectively download exercise media for offline use.', path: 'WORKOUT → EXERCISE DEX' },
   { icon: Utensils, section: 'Nutrition', title: 'Track Your Fuel', body: 'Log food into Breakfast, Lunch, Supper and Dinner. Daily totals and nutrition trends derive from those entries.', path: 'FOOD → MEAL → ADD FOOD' },
-  { icon: ChartNoAxesColumnIncreasing, section: 'Progress & Safety', title: 'Level Up, Stay Local', body: 'Completed activity powers Progress, personal records, XP and achievements. Your data stays local, works offline and can be moved with a .fitdex backup.', path: 'PROGRESS → ACHIEVEMENTS • SETTINGS → BACKUP' },
+  { icon: ChartNoAxesColumnIncreasing, section: 'Progress & XP', title: 'Level Up With Facts', body: 'Completed activity powers Progress, personal records, XP and achievements from your real training and food records.', path: 'PROGRESS → RECORDS → ACHIEVEMENTS' },
+  { icon: UserRound, section: 'Offline & Settings', title: 'Keep Your Data Yours', body: 'Your data stays local, works offline and can be moved with a .fitdex backup. Android can selectively download exercise media.', path: 'SETTINGS → BACKUP → EXERCISE MEDIA' },
 ]
 
 const styleOptions: Array<{ value: ThemeFamily; label: string; detail: string }> = [
@@ -32,7 +33,13 @@ const styleOptions: Array<{ value: ThemeFamily; label: string; detail: string }>
   { value: 'amazonians', label: 'Amazonians', detail: 'Plum • Amethyst • Wine • Copper' },
 ]
 
-export function Onboarding({ onClose }: { onClose: () => void }) {
+export function Onboarding({ onClose, requiresDisplayName = false }: { onClose: () => void; requiresDisplayName?: boolean }) {
+  const [profileInitialized, setProfileInitialized] = useState(!requiresDisplayName)
+  if (!profileInitialized) return <RequiredDisplayNamePrompt initialOnboarding onSaved={() => setProfileInitialized(true)} />
+  return <FieldGuide onClose={onClose} />
+}
+
+function FieldGuide({ onClose }: { onClose: () => void }) {
   const [index, setIndex] = useState(0)
   const { family, setFamily } = useTheme()
   const { playEffect } = useAudio()
@@ -60,7 +67,7 @@ export function Onboarding({ onClose }: { onClose: () => void }) {
           <h1 id="tutorial-title" ref={headingRef} tabIndex={-1}>{slide.title}</h1>
           <p>{slide.body}</p>
           <div className="tutorial-path"><ShieldCheck size={17} aria-hidden="true" /><span>{slide.path}</span></div>
-          {slide.kind === 'style' ? (
+          {slide.kind === 'personalization' ? (
             <fieldset className="tutorial-style-picker">
               <legend className="sr-only">Theme family</legend>
               {styleOptions.map((option) => (
@@ -73,7 +80,7 @@ export function Onboarding({ onClose }: { onClose: () => void }) {
               ))}
             </fieldset>
           ) : null}
-          {slide.kind === 'avatar' ? <AvatarSelector compact /> : null}
+          {slide.kind === 'personalization' ? <AvatarSelector compact /> : null}
         </div>
         <div className="onboarding-actions">
           <button className="secondary-button" type="button" disabled={index === 0} onClick={() => { void navigateBack() }}>← Back</button>

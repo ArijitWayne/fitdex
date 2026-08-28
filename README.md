@@ -55,6 +55,7 @@ FitDex is a mobile-first Progressive Web App for building routines, logging real
 ### Field Guide, Audio & Navigation
 
 - Learn the current product through a replayable seven-topic FitDex Field Guide plus focused Workout, Food, Journal, and Progress help.
+- Set a required, device-local Display Name during first use; edit it later in Settings for a personalized time-aware Home greeting.
 - Use local interface/progress sound effects and three bundled looping background tracks: Warrior, Hardened, and Villain.
 - Control the current track from Home, pause it temporarily, or persist No Music independently from sound effects.
 - On Android, system Back and the platform back gesture move through FitDex subviews and recent top-level destinations before exiting at Home.
@@ -106,7 +107,7 @@ Personal workout and nutrition data stays on the device.
 - Journal V1 with local-date navigation, completed-workout history, and four-meal Food history
 - Progress + Personal Records V1 with local period trends, derived training volume, nutrition averages, and tracking-aware all-time PRs
 - Home Dashboard V1 with real active/completed workout state, daily nutrition and activity, recent progress, and direct shortcuts
-- Optional editable, device-local Display Name plus optimized priority loading for the selected Home avatar
+- Required, editable, device-local Display Name with a personalized time-aware Home greeting and optimized priority loading for the selected Home avatar
 - Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, and 52 Achievements
 - Portable `.fitdex` Backup & Restore V1 with validation, replace-not-merge semantics, and transactional IndexedDB restore
 - FitDex Field Guide, semantic interface audio, Home music controls, and Android-aware in-app back history
@@ -154,7 +155,7 @@ npm run dev
 | `npm run test:audio` | Check local audio assets, preferences, priority, and UI wiring |
 | `npm run test:navigation` | Check top-level history and Android back-button contracts |
 | `npm run test:home-ui` | Check Home navigation, profile/avatar integration, responsive contracts, and PWA asset policy |
-| `npm run test:display-name` | Check local Display Name validation, editing, clearing, and persistence |
+| `npm run test:display-name` | Check required local Display Name validation, migration gating, editing, and persistence |
 | `npm run test:capacitor-android` | Check Android shell configuration and native privacy/version contracts |
 | `npm run android:sync` | Build the web bundle and copy it into the Android project |
 | `npm run android:build` | Sync and assemble a debug Android APK (requires Android SDK and JDK) |

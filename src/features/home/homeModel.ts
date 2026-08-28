@@ -11,8 +11,8 @@ export function getGreetingPeriod(referenceDate = new Date()) {
 }
 
 export function formatHomeGreeting(displayName: string, referenceDate = new Date()) {
-  const greeting = getGreetingPeriod(referenceDate)
-  return displayName ? `${greeting}, ${displayName}` : greeting
+  const greeting = getGreetingPeriod(referenceDate).toUpperCase()
+  return displayName ? `${greeting}, ${displayName.toUpperCase()}` : greeting
 }
 
 export function formatHomeDate(dateKey: string) {
