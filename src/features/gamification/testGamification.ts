@@ -121,6 +121,30 @@ assert.equal((await db.xpEvents.get('workout:workout:extra'))?.amount, 20, 'an a
 assert.equal(await db.xpEvents.where('type').equals('personal_record').count(), 1)
 assert.equal((await db.xpEvents.where('type').equals('personal_record').first())?.amount, 15)
 
+// A new unplanned workout gets one event, including during a streak pause.
+await db.streakPauses.put({ id: 'pause:xp-check', reason: 'travel', startDate: today, endDate: today, createdAt: `${today}T00:00:00.000Z`, updatedAt: `${today}T00:00:00.000Z` })
+await db.workouts.put({ id: 'workout:unplanned', nameSnapshot: 'Pause Day Workout', status: 'completed', startedAt: `${today}T10:00:00.000Z`, completedAt: `${today}T11:00:00.000Z`, durationSeconds: 3600, createdAt: `${today}T10:00:00.000Z`, updatedAt: `${today}T11:00:00.000Z` })
+await reconcileGamification(new Date(`${today}T12:00:00`))
+await reconcileGamification(new Date(`${today}T12:00:00`))
+assert.equal(await db.xpEvents.where('sourceKey').equals('workout:workout:unplanned').count(), 1)
+assert.equal((await db.xpEvents.get('workout:workout:unplanned'))?.type, 'unplanned_workout')
+assert.equal((await db.xpEvents.get('workout:workout:unplanned'))?.amount, 20)
+await db.streakPauses.delete('pause:xp-check')
+await db.workouts.delete('workout:unplanned')
+await db.xpEvents.delete('workout:workout:unplanned')
+
+// Equal timestamps are eligible, while genuinely pre-activation history stays excluded.
+const activationBoundary = '2026-08-25T00:00:00.000Z'
+await db.workouts.bulkPut([
+  { id: 'workout:activation-edge', nameSnapshot: 'Activation Edge', status: 'completed', startedAt: '2026-08-24T23:30:00.000Z', completedAt: activationBoundary, durationSeconds: 1800, createdAt: '2026-08-24T23:30:00.000Z', updatedAt: activationBoundary },
+  { id: 'workout:historical', nameSnapshot: 'Historical', status: 'completed', startedAt: '2026-08-24T22:00:00.000Z', completedAt: '2026-08-24T23:59:59.999Z', durationSeconds: 3600, createdAt: '2026-08-24T22:00:00.000Z', updatedAt: '2026-08-24T23:59:59.999Z' },
+])
+await reconcileGamification(new Date(`${today}T12:00:00`))
+await reconcileGamification(new Date(`${today}T12:00:00`))
+assert.equal(await db.xpEvents.where('sourceKey').equals('workout:workout:activation-edge').count(), 1)
+assert.equal((await db.xpEvents.get('workout:workout:activation-edge'))?.amount, 20)
+assert.equal(await db.xpEvents.where('sourceKey').equals('workout:workout:historical').count(), 0)
+
 await db.planDaySnapshots.update(`plan-day:${today}`, { plannedType: 'workout_day', result: 'pending' })
 await reconcileGamification(new Date('2026-08-27T12:00:00'))
 await reconcileGamification(new Date('2026-08-27T12:00:00'))

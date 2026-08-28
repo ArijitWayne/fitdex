@@ -1,4 +1,4 @@
-import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, Flame, NotebookTabs, Utensils } from 'lucide-react'
+import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, Flame, Music, NotebookTabs, Pause, Play, SkipBack, SkipForward, Utensils, Volume2, VolumeX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { AvatarPortrait } from '../features/avatar/AvatarPortrait'
@@ -18,16 +18,21 @@ import { WEEKDAY_LABELS, weeklyPlanAssignmentLabel } from '../features/workout/w
 import { GamificationBadge } from '../features/gamification/GamificationBadge'
 import { LevelProgress, RankDetailView, StreakDetailView } from '../features/gamification/GamificationViews'
 import { achievementAssetPath } from '../features/gamification/gamificationConfig'
+import { useAudio } from '../features/audio/useAudio'
+import { BACKGROUND_TRACK_ORDER, cycleBackgroundTrack } from '../features/audio/audioModel'
+import { useBackNavigation } from '../features/navigation/useBackNavigation'
 
 export type HomeWorkoutEntry = 'hub' | 'active' | 'start' | 'library' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'
 
 export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void }) {
   const { selectedAvatar } = useAvatar()
   const { displayName } = useProfile()
+  const { playEffect } = useAudio()
   const [data, setData] = useState<HomeDashboardData>()
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [gamificationView, setGamificationView] = useState<'rank' | 'streak'>()
+  useBackNavigation('home-subview', Boolean(gamificationView), () => setGamificationView(undefined))
   const todayDateKey = getLocalDateKey(now)
 
   useEffect(() => {
@@ -57,25 +62,27 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
         </div>
       </section>
 
+      <HomeMusicController />
+
       {!data ? <Panel><p className="home-loading" aria-live="polite">Loading today’s dashboard…</p>{error ? <p className="form-error" role="alert">{error}</p> : null}</Panel> : <>
         <TodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} />
 
         <Panel className="home-dashboard-panel home-gamification" eyebrow="Your progress">
-          <button className="gamification-level-button" type="button" onClick={() => setGamificationView('rank')}><LevelProgress data={data.gamification} compact /><ChevronRight aria-hidden="true" /></button>
-          <button className="home-streak-button" type="button" onClick={() => setGamificationView('streak')}><Flame aria-hidden="true" /><span><strong>{data.gamification.streak.current}</strong><small>Plan Streak</small></span><em>{data.gamification.freezeBalance} {data.gamification.freezeBalance === 1 ? 'Freeze' : 'Freezes'} available</em><ChevronRight aria-hidden="true" /></button>
-          {data.gamification.latestAchievement ? <div className="home-latest-achievement"><GamificationBadge kind="achievement" size="small" src={achievementAssetPath(data.gamification.latestAchievement.definition.id)} label={data.gamification.latestAchievement.definition.name} /><span><small>Latest Achievement</small><strong>{data.gamification.latestAchievement.definition.name}</strong><em>Unlocked {new Date(data.gamification.latestAchievement.unlocked.unlockedAt).toLocaleDateString()}</em></span><button className="text-button" type="button" onClick={() => onOpenAchievements ? onOpenAchievements() : onNavigate('progress')}>View Achievements</button></div> : null}
+          <button className="gamification-level-button" type="button" onClick={() => { playEffect('select'); setGamificationView('rank') }}><LevelProgress data={data.gamification} compact /><ChevronRight aria-hidden="true" /></button>
+          <button className="home-streak-button" type="button" onClick={() => { playEffect('select'); setGamificationView('streak') }}><Flame aria-hidden="true" /><span><strong>{data.gamification.streak.current}</strong><small>Plan Streak</small></span><em>{data.gamification.freezeBalance} {data.gamification.freezeBalance === 1 ? 'Freeze' : 'Freezes'} available</em><ChevronRight aria-hidden="true" /></button>
+          {data.gamification.latestAchievement ? <div className="home-latest-achievement"><GamificationBadge kind="achievement" size="small" src={achievementAssetPath(data.gamification.latestAchievement.definition.id)} label={data.gamification.latestAchievement.definition.name} /><span><small>Latest Achievement</small><strong>{data.gamification.latestAchievement.definition.name}</strong><em>Unlocked {new Date(data.gamification.latestAchievement.unlocked.unlockedAt).toLocaleDateString()}</em></span><button className="text-button" type="button" onClick={() => { playEffect('select'); if (onOpenAchievements) onOpenAchievements(); else onNavigate('progress') }}>View Achievements</button></div> : null}
         </Panel>
 
         <Panel className="home-dashboard-panel home-week-plan" eyebrow="This week" title={data.weeklyPlan.configured ? 'Recurring workout plan' : 'No workout plan yet'}>
           {data.weeklyPlan.configured ? <div className="home-week-grid">{WEEKDAY_IDS.map((day) => <span className={day === data.weekday ? 'is-today' : ''} key={day}><strong>{WEEKDAY_LABELS[day].slice(0, 3)}</strong><small>{weeklyPlanAssignmentLabel(data.weeklyPlan.days[day], data.routines.map((entry) => entry.routine))}</small></span>)}</div> : <p className="home-subtle-empty">Set workout days, rest days, or assign routines when you create them.</p>}
-          <button className="secondary-button" type="button" onClick={() => onOpenWorkout('plan')}>Set Weekly Plan</button>
+          <button className="secondary-button" type="button" onClick={() => { playEffect('select'); onOpenWorkout('plan') }}>Set Weekly Plan</button>
         </Panel>
 
         <Panel className="home-dashboard-panel home-nutrition" eyebrow="Nutrition today">
           <div className="home-nutrition-totals"><span><strong>{formatNumber(data.food.kcal)} kcal</strong><small>Calories</small></span><span><strong>{formatNumber(data.food.protein)} g</strong><small>Protein</small></span></div>
           <ul className="home-meal-status" aria-label="Meals with logged food">{data.mealOrder.map((meal) => <li key={meal} className={data.food.mealLogged[meal] ? 'is-logged' : ''}><span>{FOOD_MEAL_LABELS[meal]}</span><strong aria-label={data.food.mealLogged[meal] ? `${FOOD_MEAL_LABELS[meal]} has logged food` : `${FOOD_MEAL_LABELS[meal]} has no logged food`}>{data.food.mealLogged[meal] ? '✓ Logged' : '— None'}</strong></li>)}</ul>
           {!data.food.itemCount ? <p className="home-subtle-empty">No food logged today.</p> : null}
-          <button className="secondary-button" type="button" onClick={() => onNavigate('food')}><Utensils size={17} aria-hidden="true" /> Log Food</button>
+          <button className="secondary-button" type="button" onClick={() => { playEffect('select'); onNavigate('food') }}><Utensils size={17} aria-hidden="true" /> Log Food</button>
         </Panel>
 
         <Panel className="home-dashboard-panel" eyebrow="Today's activity">
@@ -85,16 +92,34 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
         <Panel className="home-dashboard-panel home-progress" eyebrow="Recent progress">
           {data.newestPr ? <div className="home-newest-pr"><Award aria-hidden="true" /><div><small>Newest PR</small><strong>{data.newestPr.exerciseName}</strong><span>{formatPersonalRecordMetric(data.newestPr.metrics[0], data.units)} · {formatPersonalRecordDate(data.newestPr.metrics[0].dateKey)}</span></div></div> : <p className="home-subtle-empty">No personal records yet. Complete measurable sets to establish one.</p>}
           <div className="home-seven-day"><span><strong>{data.last7WorkoutCount}</strong><small>Workouts · Last 7 days</small></span><span><strong>{formatNumber(displayWeightFromKg(data.last7VolumeKg, data.units.preference))} {data.units.weightLabel}</strong><small>Training volume</small></span></div>
-          <button className="secondary-button" type="button" onClick={() => onNavigate('progress')}><ChartNoAxesColumnIncreasing size={17} aria-hidden="true" /> View Progress</button>
+          <button className="secondary-button" type="button" onClick={() => { playEffect('select'); onNavigate('progress') }}><ChartNoAxesColumnIncreasing size={17} aria-hidden="true" /> View Progress</button>
         </Panel>
 
         <Panel className="home-dashboard-panel" eyebrow="Quick access">
-          <nav className="home-quick-access" aria-label="Home shortcuts"><button type="button" onClick={() => onOpenWorkout('library')}><BookOpen aria-hidden="true" /><span>Exercise Dex</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => onNavigate('journal')}><NotebookTabs aria-hidden="true" /><span>Journal</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => onNavigate('progress')}><ChartNoAxesColumnIncreasing aria-hidden="true" /><span>Progress</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => onNavigate('food')}><Utensils aria-hidden="true" /><span>Food</span><ChevronRight aria-hidden="true" /></button></nav>
+          <nav className="home-quick-access" aria-label="Home shortcuts"><button type="button" onClick={() => { playEffect('select'); onOpenWorkout('library') }}><BookOpen aria-hidden="true" /><span>Exercise Dex</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => { playEffect('select'); onNavigate('journal') }}><NotebookTabs aria-hidden="true" /><span>Journal</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => { playEffect('select'); onNavigate('progress') }}><ChartNoAxesColumnIncreasing aria-hidden="true" /><span>Progress</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => { playEffect('select'); onNavigate('food') }}><Utensils aria-hidden="true" /><span>Food</span><ChevronRight aria-hidden="true" /></button></nav>
         </Panel>
         {!data.hasHistory && !data.weeklyPlan.configured ? <Panel className="home-dashboard-panel home-connected-help" eyebrow="Your activity will appear here" title="Log once, see it everywhere"><p>Workouts and food you log automatically feed into Home, Journal and Progress.</p></Panel> : null}
       </>}
     </div>
   )
+}
+
+const backgroundTrackLabels = { warrior: 'Warrior', hardened: 'Hardened', villain: 'Villain', none: 'No Music' } as const
+
+function HomeMusicController() {
+  const { ready, backgroundMusic, backgroundMusicPaused, setBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } = useAudio()
+  const selectedTrack = backgroundMusic === 'none' ? undefined : backgroundMusic
+  const changeTrack = (direction: -1 | 1) => setBackgroundMusic(cycleBackgroundTrack(backgroundMusic, direction))
+  return <Panel className="home-music-controller" eyebrow="Battle Music">
+    <div className="home-music-now"><Music aria-hidden="true" /><span><strong>{backgroundTrackLabels[backgroundMusic]}</strong><small>{backgroundMusic === 'none' ? 'Music is off' : backgroundMusicPaused ? 'Paused' : 'Looping locally'}</small></span>{backgroundMusic === 'none' ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}</div>
+    <div className="home-music-controls">
+      <button type="button" disabled={!ready || !selectedTrack} aria-label="Previous background track" onClick={() => changeTrack(-1)}><SkipBack aria-hidden="true" /></button>
+      {backgroundMusic === 'none' ? <button type="button" disabled={!ready} aria-label="Turn background music on" onClick={() => setBackgroundMusic('warrior')}><Play aria-hidden="true" /></button> : <button type="button" disabled={!ready} aria-label={backgroundMusicPaused ? 'Resume background music' : 'Pause background music'} onClick={backgroundMusicPaused ? resumeBackgroundMusic : pauseBackgroundMusic}>{backgroundMusicPaused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}</button>}
+      <button type="button" disabled={!ready || !selectedTrack} aria-label="Next background track" onClick={() => changeTrack(1)}><SkipForward aria-hidden="true" /></button>
+      <button type="button" disabled={!ready || backgroundMusic === 'none'} aria-label="Turn background music off" onClick={() => setBackgroundMusic('none')}><VolumeX aria-hidden="true" /></button>
+    </div>
+    <div className="home-music-tracks" role="group" aria-label="Background music tracks">{BACKGROUND_TRACK_ORDER.map((track) => <button type="button" key={track} aria-pressed={backgroundMusic === track} onClick={() => setBackgroundMusic(track)}>{backgroundTrackLabels[track]}</button>)}</div>
+  </Panel>
 }
 
 function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {

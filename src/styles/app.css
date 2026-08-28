@@ -208,16 +208,22 @@
 .avatar-selector.is-compact .selected-avatar-detail span, .avatar-selector.is-compact .selected-avatar-detail blockquote { font-size: .67rem; }
 
 .onboarding-backdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: end center; padding: 0; background: var(--color-overlay); }
-.onboarding-card { display: grid; width: 100%; max-width: 560px; height: min(680px, 100dvh); min-height: min(620px, 92dvh); max-height: 100dvh; grid-template-rows: auto minmax(0, 1fr) auto auto; padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); border: 2px solid var(--color-border-strong); border-bottom: 0; background: var(--color-surface-raised); box-shadow: 0 -5px 24px var(--color-shadow); }
-.onboarding-topline { display: flex; align-self: start; align-items: center; justify-content: space-between; color: var(--color-text-muted); font-size: .75rem; font-weight: 900; letter-spacing: .12em; }
-.onboarding-content { display: grid; min-height: 0; align-content: center; justify-items: center; padding: 12px 0; overflow-y: auto; text-align: center; }
-.onboarding-content h1 { max-width: 440px; font-size: clamp(2.3rem, 12vw, 3.8rem); }
+.onboarding-card { display: grid; width: 100%; max-width: 620px; height: min(720px, 100dvh); min-height: min(620px, 92dvh); max-height: 100dvh; grid-template-rows: auto auto minmax(0, 1fr) auto; padding: 0; overflow: hidden; border: 2px solid var(--color-border-strong); border-bottom: 0; background: var(--color-surface-raised); box-shadow: 0 -5px 24px var(--color-shadow); }
+.onboarding-topline { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left)); border-bottom: 2px solid var(--color-border-strong); color: var(--color-text-muted); font-size: .72rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.onboarding-topline > div { display: grid; min-width: 0; gap: 3px; }
+.onboarding-topline strong { overflow-wrap: anywhere; color: var(--color-primary-text); font-family: var(--font-display); font-size: .86rem; }
+.onboarding-topline .text-button { min-height: 40px; }
+.onboarding-content { display: grid; min-height: 0; align-content: center; justify-items: center; padding: 18px max(18px, env(safe-area-inset-right)) 16px max(18px, env(safe-area-inset-left)); overflow-y: auto; overscroll-behavior: contain; text-align: center; }
+.onboarding-content h1 { max-width: 470px; margin-block: 5px 10px; font-size: clamp(1.8rem, 9vw, 3.1rem); text-transform: uppercase; }
 .onboarding-content > p:last-child { max-width: 390px; margin: 0; font-size: 1.02rem; }
-.tutorial-glyph { display: grid; width: 86px; height: 86px; place-items: center; margin-bottom: 30px; border: 2px solid var(--color-border); background: var(--color-primary-muted); color: var(--color-primary); font-size: 2.2rem; box-shadow: 5px 5px 0 var(--color-border); }
-.tutorial-dots { display: flex; align-items: center; justify-content: center; gap: 7px; }
-.tutorial-dots span { width: 7px; height: 7px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
-.tutorial-dots span.is-active { width: 20px; background: var(--color-xp); }
-.onboarding-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; align-self: end; margin-top: 20px; }
+.tutorial-glyph { display: grid; width: 76px; height: 76px; place-items: center; margin-bottom: 16px; border: 2px solid var(--color-border); background: var(--color-primary-muted); color: var(--color-primary); box-shadow: 4px 4px 0 var(--color-border); }
+.tutorial-path { display: flex; width: min(100%, 470px); align-items: center; justify-content: center; gap: 8px; margin-top: 18px; padding: 10px; border: 2px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-primary-text); font-family: var(--font-display); font-size: .72rem; line-height: 1.4; text-transform: uppercase; }
+.tutorial-dots { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 7px; padding: 9px 14px; border-bottom: 1px solid var(--color-border); }
+.tutorial-dots button { display: grid; width: 34px; min-width: 0; height: 28px; place-items: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.tutorial-dots button > span { width: 8px; height: 8px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.tutorial-dots button.is-active > span { width: 24px; background: var(--color-xp); }
+.tutorial-dots button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 1px; }
+.onboarding-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; padding: 13px max(16px, env(safe-area-inset-right)) calc(13px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); border-top: 2px solid var(--color-border-strong); background: var(--color-surface-raised); }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .workout-page { width: 100%; max-width: 760px; margin-inline: auto; }
@@ -976,12 +982,21 @@
   .guide-content { padding: 15px; }
   .guide-actions { padding-inline: 12px; }
   .weekly-plan-list button { grid-template-columns: 40px minmax(0, 1fr) auto; padding-inline: 7px; }
+  .onboarding-topline { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  .onboarding-topline > span { display: none; }
+  .tutorial-dots { gap: 2px; padding-inline: 5px; }
+  .tutorial-dots button { width: 28px; }
+  .tutorial-path { font-size: .64rem; }
+  .home-music-tracks button { font-size: .59rem; }
 }
 
 @media (max-height: 480px) and (orientation: landscape) {
   .guide-backdrop { place-items: stretch center; padding-block: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-bottom)); }
   .guide-dialog { max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
   .guide-content { padding-block: 12px; }
+  .onboarding-card { min-height: 0; max-height: calc(100dvh - 16px); }
+  .tutorial-glyph { width: 52px; height: 52px; margin-bottom: 8px; }
+  .tutorial-path { margin-top: 9px; padding: 7px; }
 }
 
 /* Home Dashboard V1 and local Display Name settings. */
@@ -998,6 +1013,19 @@
 .home-dashboard-panel { display: grid; min-width: 0; gap: 13px; }
 .home-dashboard-panel > .eyebrow, .home-dashboard-panel > h2 { margin: 0; }
 .home-dashboard-panel > h2 { overflow-wrap: anywhere; font-family: var(--font-display); font-size: 1.25rem; text-transform: uppercase; }
+.home-music-controller { display: grid; min-width: 0; gap: 11px; }
+.home-music-now { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.home-music-now > svg { color: var(--color-primary); }
+.home-music-now > span { display: grid; min-width: 0; gap: 2px; }
+.home-music-now strong { overflow: hidden; font-family: var(--font-display); text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.home-music-now small { color: var(--color-text-muted); }
+.home-music-controls { display: grid; grid-template-columns: repeat(4, minmax(46px, 1fr)); gap: 7px; }
+.home-music-controls button { display: grid; min-height: 46px; place-items: center; border: 1px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text); cursor: pointer; }
+.home-music-controls button:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary-text); }
+.home-music-controls button:disabled { cursor: not-allowed; opacity: .45; }
+.home-music-tracks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.home-music-tracks button { min-width: 0; min-height: 42px; padding: 6px 3px; overflow: hidden; border: 1px solid var(--color-border); background: var(--color-surface-raised); color: var(--color-text-muted); font-size: .68rem; font-weight: 850; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+.home-music-tracks button[aria-pressed='true'] { border-color: var(--color-primary); background: var(--color-primary-muted); color: var(--color-primary-text); box-shadow: 2px 2px 0 var(--color-primary); }
 .home-dashboard-panel > .primary-button, .home-dashboard-panel > .secondary-button { display: inline-flex; width: fit-content; align-items: center; gap: 7px; }
 .home-workout { border-left: 4px solid var(--color-primary); }
 .home-workout.is-active { border-color: var(--color-primary); box-shadow: 3px 3px 0 var(--color-primary); }
@@ -1042,6 +1070,13 @@
 .display-name-form > .secondary-button { width: fit-content; }
 .target-toggle { display: flex; min-height: 48px; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); font-weight: 850; }
 .target-toggle input { width: 20px; height: 20px; accent-color: var(--color-primary); }
+.audio-sfx-toggle { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 14px; padding: 11px; border: 2px solid var(--color-border); background: var(--color-surface-subtle); cursor: pointer; }
+.audio-sfx-toggle > span { display: grid; gap: 3px; }
+.audio-sfx-toggle small { color: var(--color-muted); }
+.audio-sfx-toggle input { width: 22px; height: 22px; margin-left: auto; accent-color: var(--color-primary); }
+.audio-sfx-toggle i { min-width: 38px; color: var(--color-primary-text); font-family: var(--font-display); font-size: .78rem; font-style: normal; text-align: center; }
+.audio-music-picker { margin: 0; }
+.audio-option { grid-template-columns: minmax(0, 1fr) auto; }
 .target-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; border: 0; }
 .target-form legend { grid-column: 1 / -1; padding: 0; color: var(--color-text-muted); font-size: .68rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .target-form label { display: grid; gap: 6px; min-width: 0; font-size: .78rem; font-weight: 750; }

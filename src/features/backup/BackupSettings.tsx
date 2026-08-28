@@ -116,7 +116,7 @@ export function BackupSettings() {
   const summary = incoming ? summarizeFitDexBackup(incoming) : undefined
 
   return <section className="settings-section backup-settings" aria-labelledby="storage-heading">
-    <div className="settings-section-heading"><span>08</span><div><h2 id="storage-heading">Data &amp; Storage</h2><p>Your device is the source of truth.</p></div></div>
+    <div className="settings-section-heading"><span>09</span><div><h2 id="storage-heading">Data &amp; Storage</h2><p>Your device is the source of truth.</p></div></div>
     <section className="backup-action" aria-labelledby="backup-action-heading"><div><p className="eyebrow">Backup</p><h3 id="backup-action-heading">Protect your FitDex data with a portable backup.</h3></div><button ref={createButtonRef} className="secondary-button" type="button" disabled={busy} onClick={() => openCreate()}><Download size={18} aria-hidden="true" /> Create Backup</button></section>
     <section className="backup-action" aria-labelledby="restore-action-heading"><div><p className="eyebrow">Restore</p><h3 id="restore-action-heading">Restore your data from a FitDex backup.</h3></div><input ref={fileInputRef} className="sr-only" type="file" accept=".fitdex,application/x-fitdex-backup,application/json" aria-label="Choose .fitdex File" onChange={(event) => void readFile(event.target.files?.[0])} /><button ref={chooseButtonRef} className="secondary-button" type="button" disabled={busy} onClick={chooseFile}><Upload size={18} aria-hidden="true" /> {busy ? 'Reading backup…' : 'Choose .fitdex File'}</button></section>
     <p className="backup-privacy-note">Your data stays on your device unless you choose to save or share the backup elsewhere.</p>

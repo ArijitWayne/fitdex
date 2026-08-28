@@ -4,7 +4,7 @@ import type { Exercise, Workout, WorkoutExercise, WorkoutSet } from '../../data/
 import { createId } from '../../utils/createId.ts'
 import { getLocalDayTimestampRange } from '../../utils/localDate.ts'
 import { DEFAULT_AD_HOC_SETS, calculateVolume, createPausedTimerState, createResumedTimerState, getFinalWorkoutDuration, isHistoricalWorkoutSetLogged, isWorkoutSetLogged, normalizeWorkoutName, validateWorkoutForFinish, type WorkoutFinishValidation } from './workoutModel.ts'
-import { reconcileGamification } from '../gamification/gamificationRepository.ts'
+import { ensureGamificationInitialized, reconcileGamification } from '../gamification/gamificationRepository.ts'
 
 export interface WorkoutExerciseDetail {
   exercise: WorkoutExercise
@@ -259,6 +259,15 @@ export async function resumeWorkout(workoutId: string, now = Date.now()) {
 }
 
 export async function finishWorkout(workoutId: string, now = Date.now()) {
+  // Establish the forward-only XP boundary before the completed workout is
+  // committed. If reconciliation fails after the save, a later retry can still
+  // award this workout without making older history eligible.
+  const preflight = await getWorkoutDetail(workoutId)
+  if (preflight.workout.status !== 'active') throw new Error('This workout is no longer active.')
+  const preflightValidation = validateWorkoutForFinish(preflight.exercises)
+  if (!preflightValidation.valid) throw new IncompleteWorkoutError(preflightValidation)
+  await ensureGamificationInitialized(new Date(now))
+
   const detail = await db.transaction('rw', db.workouts, db.workoutExercises, db.workoutSets, async () => {
     const detail = await getWorkoutDetail(workoutId)
     if (detail.workout.status !== 'active') throw new Error('This workout is no longer active.')

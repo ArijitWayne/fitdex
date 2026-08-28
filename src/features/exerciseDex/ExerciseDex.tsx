@@ -20,6 +20,8 @@ import { getExerciseContent } from './exerciseContent'
 import { downloadExerciseMedia, getExerciseMediaPlayback, removeDownloadedExerciseMedia, supportsNativeExerciseMedia, type MediaPlayback } from '../exerciseMedia/exerciseMediaStore'
 import { ensureBuiltInExercises } from './seedExercises'
 import { listFavouriteExerciseIds, setExerciseFavourite } from './exerciseFavouriteRepository'
+import { useAudio } from '../audio/useAudio'
+import { useBackNavigation } from '../navigation/useBackNavigation'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
@@ -38,6 +40,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
   onAddToRoutine?: (exercise: Exercise) => void
 } = {}) {
   const { family } = useTheme()
+  const { playEffect } = useAudio()
   const resolvedBrightness = useResolvedBrightness()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [favourites, setFavourites] = useState<Set<string>>(new Set())
@@ -106,6 +109,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
   }
 
   function openCategory(nextCategory: ExerciseCategory) {
+    playEffect('select')
     setCategory(nextCategory)
     setSubfilter('All')
     setQuery('')
@@ -116,6 +120,12 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
     setSubfilter('All')
     setQuery('')
   }
+
+  const navigateBack = useBackNavigation('exercise-dex', Boolean(selectedExercise || category || picker), () => {
+    if (selectedExercise) setSelectedExercise(null)
+    else if (category) returnToIndex()
+    else picker?.onDone()
+  }, 20)
 
   async function persistPickerToggle(exercise: Exercise) {
     if (!picker || pendingExerciseIds.has(exercise.id)) return
@@ -151,7 +161,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
       <ExerciseDetail
         exercise={selectedExercise}
         favourite={favourites.has(selectedExercise.id)}
-        onBack={() => setSelectedExercise(null)}
+        onBack={() => { void navigateBack() }}
         onToggleFavourite={() => void toggleFavourite(selectedExercise.id)}
         picker={picker}
         pending={pendingExerciseIds.has(selectedExercise.id)}
@@ -163,9 +173,9 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
 
   return (
     <Panel className={picker ? 'exercise-dex-panel is-picker' : 'exercise-dex-panel'}>
-      {picker ? <div className="exercise-picker-contextbar"><button className="dex-back-button" type="button" onClick={picker.onDone} aria-label={`Back to ${picker.targetLabel}`}><ArrowLeft size={20} aria-hidden="true" /></button><strong>Back to {picker.targetLabel}</strong></div> : null}
+      {picker ? <div className="exercise-picker-contextbar"><button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label={`Back to ${picker.targetLabel}`}><ArrowLeft size={20} aria-hidden="true" /></button><strong>Back to {picker.targetLabel}</strong></div> : null}
       <div className="exercise-dex-heading">
-        {category ? <button className="dex-back-button" type="button" onClick={returnToIndex} aria-label="Back to Exercise Dex categories"><ArrowLeft size={20} aria-hidden="true" /></button> : null}
+        {category ? <button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label="Back to Exercise Dex categories"><ArrowLeft size={20} aria-hidden="true" /></button> : null}
         <div>
           <p className="eyebrow">{picker ? 'Exercise picker' : 'Exercise Dex'}</p>
           <h2>{category ?? picker?.title ?? 'Exercise library'}</h2>
@@ -184,12 +194,12 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
         />
       </label>
 
-      {!picker && !category ? <div className="exercise-library-scope" role="group" aria-label="Exercise library scope"><button type="button" aria-pressed={libraryScope === 'all'} onClick={() => setLibraryScope('all')}>All</button><button type="button" aria-pressed={libraryScope === 'favourites'} onClick={() => setLibraryScope('favourites')}><Star size={16} aria-hidden="true" /> Favorites</button></div> : null}
+      {!picker && !category ? <div className="exercise-library-scope" role="group" aria-label="Exercise library scope"><button type="button" aria-pressed={libraryScope === 'all'} onClick={() => { playEffect('select'); setLibraryScope('all') }}>All</button><button type="button" aria-pressed={libraryScope === 'favourites'} onClick={() => { playEffect('select'); setLibraryScope('favourites') }}><Star size={16} aria-hidden="true" /> Favorites</button></div> : null}
 
       {category && CATEGORY_SUBFILTERS[category].length > 1 ? (
         <div className="exercise-filter-strip" aria-label={`${category} exercise filters`}>
           {CATEGORY_SUBFILTERS[category].map((filter) => (
-            <button className={filter === subfilter ? 'exercise-filter is-selected' : 'exercise-filter'} type="button" key={filter} aria-pressed={filter === subfilter} onClick={() => setSubfilter(filter)}>{filter}</button>
+            <button className={filter === subfilter ? 'exercise-filter is-selected' : 'exercise-filter'} type="button" key={filter} aria-pressed={filter === subfilter} onClick={() => { playEffect('select'); setSubfilter(filter) }}>{filter}</button>
           ))}
         </div>
       ) : null}
@@ -211,7 +221,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
           ))}
         </div>
       ) : (
-        <ExerciseRows exercises={visibleExercises} favourites={favourites} onSelect={setSelectedExercise} onToggleFavourite={(id) => void toggleFavourite(id)} picker={picker} pendingExerciseIds={pendingExerciseIds} onToggleExercise={togglePickerExercise} emptyMessage={!picker && libraryScope === 'favourites' && !favourites.size && !query ? 'No favorite exercises yet. Tap ☆ on an exercise to keep it here for quick access.' : undefined} />
+        <ExerciseRows exercises={visibleExercises} favourites={favourites} onSelect={(exercise) => { playEffect('select'); setSelectedExercise(exercise) }} onToggleFavourite={(id) => void toggleFavourite(id)} picker={picker} pendingExerciseIds={pendingExerciseIds} onToggleExercise={togglePickerExercise} emptyMessage={!picker && libraryScope === 'favourites' && !favourites.size && !query ? 'No favorite exercises yet. Tap ☆ on an exercise to keep it here for quick access.' : undefined} />
       )}
       {pickerError ? <p className="workout-feedback exercise-picker-feedback" role="alert">{pickerError}</p> : null}
       {confirmRemoval ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-picker-exercise-title"><h2 id="remove-picker-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmRemoval(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exercise = confirmRemoval; setConfirmRemoval(undefined); void persistPickerToggle(exercise) }}>Remove</button></section></div> : null}

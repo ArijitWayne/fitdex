@@ -1,5 +1,5 @@
 import { ArrowLeft, CalendarClock, CircleHelp, Sparkles, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Panel } from '../../components/ui/Panel.tsx'
 import type { PlanDaySnapshot } from '../../data/models.ts'
 import { dateFromLocalDateKey, getLocalDateKey, shiftLocalDateKey } from '../../utils/localDate.ts'
@@ -9,6 +9,8 @@ import { achievementAssetPath, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, RANK
 import { GamificationBadge } from './GamificationBadge.tsx'
 import { loadGamificationDashboard, loadPendingGamificationNotifications, markGamificationNotificationsSeen, planStreakPause, type GamificationDashboard } from './gamificationRepository.ts'
 import { gamificationHelpSteps } from './gamificationHelp.ts'
+import { useAudio } from '../audio/useAudio.ts'
+import { evaluateGamificationAudioTransition } from '../audio/audioModel.ts'
 
 export function LevelProgress({ data, compact = false }: { data: GamificationDashboard; compact?: boolean }) {
   const { progression } = data
@@ -56,8 +58,24 @@ export function AchievementsView({ data, onBack }: { data: GamificationDashboard
 
 export function GamificationNotificationDialog() {
   const [pending, setPending] = useState<Awaited<ReturnType<typeof loadPendingGamificationNotifications>>>()
-  const refresh = () => void loadPendingGamificationNotifications().then((value) => { if (value.levelUp || value.unlocks.length) setPending(value) })
-  useEffect(() => { refresh(); window.addEventListener('fitdex:gamification-changed', refresh); return () => window.removeEventListener('fitdex:gamification-changed', refresh) }, [])
+  const playedTransitionRef = useRef('')
+  const { playEffect } = useAudio()
+  useEffect(() => {
+    let current = true
+    const refresh = (allowSound: boolean) => void loadPendingGamificationNotifications().then((value) => {
+      if (!current || (!value.levelUp && !value.unlocks.length)) return
+      setPending(value)
+      const transition = evaluateGamificationAudioTransition(playedTransitionRef.current, { levelUp: value.levelUp, afterLevel: value.afterProgress.level, unlockIds: value.unlocks.map((unlock) => unlock.id) }, allowSound)
+      playedTransitionRef.current = transition.signature
+      if (transition.play) {
+        playEffect('achievement_unlock')
+      }
+    })
+    const handleGamificationChanged = () => refresh(true)
+    refresh(false)
+    window.addEventListener('fitdex:gamification-changed', handleGamificationChanged)
+    return () => { current = false; window.removeEventListener('fitdex:gamification-changed', handleGamificationChanged) }
+  }, [playEffect])
   if (!pending) return null
   const close = () => void markGamificationNotificationsSeen().then(() => setPending(undefined))
   const levelMilestoneId = levelMilestoneAchievementId(pending.beforeProgress.level, pending.afterProgress.level)
@@ -86,7 +104,7 @@ function AchievementUnlockList({ unlocks }: { unlocks: Awaited<ReturnType<typeof
 }
 
 export function GamificationHelpButton() { const [open, setOpen] = useState(false); return <><button className="page-help-button" type="button" onClick={() => setOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Gamification Works</button>{open ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setOpen(false)} /> : null}</> }
-function Subheader({ title, onBack }: { title: string; onBack: () => void }) { return <header className="progress-subheader"><button className="back-button" type="button" aria-label="Back" onClick={onBack}><ArrowLeft aria-hidden="true" /></button><div><p className="eyebrow">Gamification</p><h1>{title}</h1></div></header> }
+function Subheader({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <header className="progress-subheader"><button className="back-button" type="button" aria-label="Back" onClick={() => { playEffect('select'); onBack() }}><ArrowLeft aria-hidden="true" /></button><div><p className="eyebrow">Gamification</p><h1>{title}</h1></div></header> }
 function snapshotLabel(snapshot?: Pick<PlanDaySnapshot, 'plannedType' | 'routineNameSnapshot'>) { if (!snapshot) return 'No snapshot'; if (snapshot.plannedType === 'routine') return snapshot.routineNameSnapshot ?? 'Routine'; if (snapshot.plannedType === 'workout_day') return 'Workout'; if (snapshot.plannedType === 'rest_day') return 'Rest'; return 'No Plan' }
 function resultLabel(result?: PlanDaySnapshot['result']) { if (!result || result === 'pending') return 'Pending'; if (result === 'success') return '✓'; if (result === 'rest' || result === 'no_plan') return '—'; return titleCase(result) }
 function titleCase(value: string) { return value.toLowerCase().replaceAll('_', ' ').replace(/(^|\s)\S/g, (letter) => letter.toUpperCase()) }

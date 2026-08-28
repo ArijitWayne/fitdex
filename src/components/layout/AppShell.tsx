@@ -2,6 +2,7 @@ import { ChartNoAxesColumnIncreasing, Dumbbell, House, NotebookTabs, Settings, U
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { AppDestination } from '../../types/navigation'
+import { useAudio } from '../../features/audio/useAudio'
 
 const destinations: Array<{ id: AppDestination; icon: LucideIcon; label: string }> = [
   { id: 'home', icon: House, label: 'Home' },
@@ -20,6 +21,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, destination, onNavigate, onOpenSettings, settingsOpen }: AppShellProps) {
+  const { playEffect } = useAudio()
   const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine)
   useEffect(() => {
     const updateOnline = () => setOnline(navigator.onLine)
@@ -30,7 +32,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
   return (
     <div className="app-frame">
       <header className="app-header">
-        <button className="wordmark" type="button" onClick={() => onNavigate('home')}>
+        <button className="wordmark" type="button" onClick={() => { playEffect('select'); onNavigate('home') }}>
           <span className="wordmark-mark">FD</span>
           <span>FitDex</span>
         </button>
@@ -40,7 +42,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
           type="button"
           aria-label="Open settings"
           aria-pressed={settingsOpen}
-          onClick={onOpenSettings}
+          onClick={() => { playEffect('select'); onOpenSettings() }}
         >
           <Settings size={21} strokeWidth={2} aria-hidden="true" />
         </button>
@@ -54,7 +56,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
               type="button"
               key={item.id}
               aria-current={destination === item.id && !settingsOpen ? 'page' : undefined}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => { playEffect('select'); onNavigate(item.id) }}
             >
               <span className="nav-icon" aria-hidden="true"><item.icon size={22} strokeWidth={2} /></span>
               <span>{item.label}</span>

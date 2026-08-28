@@ -1,6 +1,6 @@
 import { ArrowLeft, Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { NutritionActivityLevel, NutritionGoal, NutritionSex, NutritionTargets } from '../../data/models'
+import type { BackgroundMusicPreference, NutritionActivityLevel, NutritionGoal, NutritionSex, NutritionTargets } from '../../data/models'
 import { calculateRmr, calculateSuggestedCalorieTargets, calculateTdee } from '../nutritionTargets/nutritionTargetCalculator'
 import { loadNutritionTargets, saveNutritionTargets } from '../nutritionTargets/nutritionTargetRepository'
 import { AvatarPortrait } from '../avatar/AvatarPortrait'
@@ -14,6 +14,7 @@ import { GamificationHelpButton } from '../gamification/GamificationViews'
 import { APP_VERSION } from '../../appVersion'
 import { BackupSettings } from '../backup/BackupSettings'
 import { ExerciseMediaSettings } from '../exerciseMedia/ExerciseMediaSettings'
+import { useAudio } from '../audio/useAudio'
 
 const brightnessOptions: Array<{ value: BrightnessPreference; label: string; hint: string }> = [
   { value: 'system', label: 'System', hint: 'Match this device' },
@@ -31,12 +32,13 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
   const { selectedAvatar } = useAvatar()
   const { displayName, ready, saveDisplayName } = useProfile()
   const [choosingAvatar, setChoosingAvatar] = useState(false)
+  const { playEffect } = useAudio()
 
   if (choosingAvatar) {
     return (
       <div className="page-stack avatar-selection-page">
         <header className="page-header settings-header">
-          <button className="back-button" type="button" onClick={() => setChoosingAvatar(false)} aria-label="Back to settings"><ArrowLeft size={21} strokeWidth={2} aria-hidden="true" /></button>
+          <button className="back-button" type="button" onClick={() => { playEffect('select'); setChoosingAvatar(false) }} aria-label="Back to settings"><ArrowLeft size={21} strokeWidth={2} aria-hidden="true" /></button>
           <div><p className="eyebrow">Profile / Avatar</p><h1>Choose your champion</h1><p>Your champion is cosmetic and can be changed at any time.</p></div>
         </header>
         <AvatarSelector />
@@ -47,7 +49,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
   return (
     <div className="page-stack settings-page">
       <header className="page-header settings-header">
-        <button className="back-button" type="button" onClick={onBack} aria-label="Back to FitDex"><ArrowLeft size={21} strokeWidth={2} aria-hidden="true" /></button>
+        <button className="back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back to FitDex"><ArrowLeft size={21} strokeWidth={2} aria-hidden="true" /></button>
         <div><p className="eyebrow">System menu</p><h1>Settings</h1><p>Shape FitDex around the way you train.</p></div>
       </header>
 
@@ -58,7 +60,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
           <div className="family-picker">
             {familyOptions.map((option) => (
               <label className={family === option.value ? 'appearance-option family-option is-selected' : 'appearance-option family-option'} key={option.value}>
-                <input type="radio" name="theme-family" value={option.value} checked={family === option.value} onChange={() => setFamily(option.value)} />
+                <input type="radio" name="theme-family" value={option.value} checked={family === option.value} onChange={() => { playEffect('select'); setFamily(option.value) }} />
                 <span className={`family-swatch family-swatch-${option.value}`} aria-hidden="true"><i /><i /><i /></span>
                 <span className="option-copy"><strong>{option.label}</strong><small>{option.hint}</small></span>
                 <span className="selection-mark" aria-hidden="true"><Check size={15} strokeWidth={3} /></span>
@@ -71,7 +73,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
           <div className="brightness-picker">
             {brightnessOptions.map((option) => (
               <label className={brightness === option.value ? 'appearance-option brightness-option is-selected' : 'appearance-option brightness-option'} key={option.value}>
-                <input type="radio" name="brightness" value={option.value} checked={brightness === option.value} onChange={() => setBrightness(option.value)} />
+                <input type="radio" name="brightness" value={option.value} checked={brightness === option.value} onChange={() => { playEffect('select'); setBrightness(option.value) }} />
                 <span className={`brightness-swatch brightness-swatch-${option.value}`} aria-hidden="true" />
                 <span className="option-copy"><strong>{option.label}</strong><small>{option.hint}</small></span>
                 <span className="selection-mark" aria-hidden="true"><Check size={15} strokeWidth={3} /></span>
@@ -88,7 +90,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
         <div className="profile-avatar-row">
           <AvatarPortrait avatar={selectedAvatar} size="small" />
           <div><strong>{selectedAvatar.name}</strong><small>{selectedAvatar.archetype}</small></div>
-          <button className="secondary-button" type="button" onClick={() => setChoosingAvatar(true)}>Change avatar</button>
+          <button className="secondary-button" type="button" onClick={() => { playEffect('select'); setChoosingAvatar(true) }}>Change avatar</button>
         </div>
       </section>
 
@@ -97,22 +99,41 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
       <NutritionTargetsSettings />
       <section className="settings-section" aria-labelledby="gamification-heading"><div className="settings-section-heading"><span>06</span><div><h2 id="gamification-heading">Gamification</h2><p>XP, Levels, Ranks, Plan Streak protection, and Achievements stay local to this device.</p></div></div><GamificationHelpButton /></section>
 
+      <AudioSettings />
       <ExerciseMediaSettings />
       <BackupSettings />
 
       <section className="settings-section" aria-labelledby="help-heading">
-        <div className="settings-section-heading"><span>09</span><div><h2 id="help-heading">Help</h2><p>Return to the field guide whenever you need it.</p></div></div>
-        <button className="setting-action" type="button" onClick={onReplayTutorial}>Replay tutorial<span>10 slides →</span></button>
+        <div className="settings-section-heading"><span>10</span><div><h2 id="help-heading">Help</h2><p>Return to the field guide whenever you need it.</p></div></div>
+        <button className="setting-action" type="button" onClick={() => { playEffect('select'); onReplayTutorial() }}>Replay tutorial<span>7 topics →</span></button>
       </section>
 
       <section className="settings-section" aria-labelledby="about-heading">
-        <div className="settings-section-heading"><span>10</span><div><h2 id="about-heading">About FitDex</h2><p>Retro RPG fitness tracking. Local by design.</p></div></div>
+        <div className="settings-section-heading"><span>11</span><div><h2 id="about-heading">About FitDex</h2><p>Retro RPG fitness tracking. Local by design.</p></div></div>
         <div className="about-row"><img className="about-app-icon" src="/pwa-icon.svg" alt="FitDex" /><div><strong>FitDex</strong><small>Version {APP_VERSION}</small></div></div>
         <section className="about-copy" aria-label="About FitDex"><p>FitDex is a local-first fitness tracker for workouts, nutrition, progress tracking, and RPG-style progression.</p><h3>Developed by</h3><p>Arijit Bhaduri</p><h3>Privacy &amp; Data</h3><p>Your FitDex fitness data is stored locally on your device. FitDex does not require an account or FitDex cloud sync.</p></section>
         <dl className="setting-list about-app-info"><div><dt>Version</dt><dd>{APP_VERSION}</dd></div></dl>
       </section>
     </div>
   )
+}
+
+const musicOptions: Array<{ value: BackgroundMusicPreference; label: string }> = [
+  { value: 'warrior', label: 'Warrior' },
+  { value: 'hardened', label: 'Hardened' },
+  { value: 'villain', label: 'Villain' },
+  { value: 'none', label: 'No Music' },
+]
+
+function AudioSettings() {
+  const { ready, soundEffectsEnabled, backgroundMusic, setSoundEffectsEnabled, setBackgroundMusic } = useAudio()
+  return <section className="settings-section audio-settings" aria-labelledby="audio-heading">
+    <div className="settings-section-heading"><span>07</span><div><h2 id="audio-heading">Audio</h2><p>Choose local sounds for your FitDex experience.</p></div></div>
+    <label className="audio-sfx-toggle"><span><strong>Sound Effects</strong><small>UI and progress sounds</small></span><input type="checkbox" checked={soundEffectsEnabled} disabled={!ready} onChange={(event) => setSoundEffectsEnabled(event.target.checked)} /><i aria-hidden="true">{soundEffectsEnabled ? 'ON' : 'OFF'}</i></label>
+    <fieldset className="appearance-group audio-music-picker" disabled={!ready}><legend>Background Music</legend><div className="brightness-picker">
+      {musicOptions.map((option) => <label className={backgroundMusic === option.value ? 'appearance-option audio-option is-selected' : 'appearance-option audio-option'} key={option.value}><input type="radio" name="background-music" value={option.value} checked={backgroundMusic === option.value} onChange={() => setBackgroundMusic(option.value)} /><span className="option-copy"><strong>{option.label}</strong></span><span className="selection-mark" aria-hidden="true"><Check size={15} strokeWidth={3} /></span></label>)}
+    </div></fieldset>
+  </section>
 }
 
 function DisplayNameForm({ displayName, ready, onSave }: { displayName: string; ready: boolean; onSave: (value: string) => Promise<string> }) {

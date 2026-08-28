@@ -10,11 +10,14 @@ import { PageHeader } from './PageHeader'
 import { GuideDialog, type GuideStep } from '../features/help/GuideDialog'
 import { AchievementsView, GamificationHelpButton, LevelProgress, RankDetailView } from '../features/gamification/GamificationViews'
 import { loadGamificationDashboard, type GamificationDashboard } from '../features/gamification/gamificationRepository'
+import { useAudio } from '../features/audio/useAudio'
+import { useBackNavigation } from '../features/navigation/useBackNavigation'
 
 const PERIOD_LABELS: Record<ProgressPeriod, string> = { '7d': '7D', '30d': '30D', '90d': '90D', all: 'All' }
 const progressHelpSteps: readonly GuideStep[] = [{ title: 'How Progress Works', sections: [{ text: 'Progress is calculated automatically from completed workouts and Food history. There is nothing extra to log here.' }, { label: 'Workout data', bullets: ['Workout count', 'Training time', 'Resistance Volume', 'Personal Records'] }, { label: 'Food data', bullets: ['Average calories', 'Average protein', 'Nutrition trends'] }, { label: 'Resistance Volume', text: 'Weight × reps across logged weight-based resistance sets. It is a workload measure, not a universal score of training quality.' }] }]
 
 export function ProgressPage({ initialView = 'overview' }: { initialView?: 'overview' | 'achievements' }) {
+  const { playEffect } = useAudio()
   const [period, setPeriod] = useState<ProgressPeriod>('30d')
   const [data, setData] = useState<ProgressSourceData>()
   const [error, setError] = useState('')
@@ -23,6 +26,7 @@ export function ProgressPage({ initialView = 'overview' }: { initialView?: 'over
   const [view, setView] = useState<'overview' | 'records' | 'achievements' | 'rank'>(initialView)
   const [gamification, setGamification] = useState<GamificationDashboard>()
   const referenceDateKey = getLocalDateKey()
+  const navigateBack = useBackNavigation('progress-subview', recordsOpen || view !== 'overview', () => { setRecordsOpen(false); setView('overview') })
 
   useEffect(() => {
     let current = true
@@ -32,14 +36,29 @@ export function ProgressPage({ initialView = 'overview' }: { initialView?: 'over
     return () => { current = false }
   }, [period, referenceDateKey])
 
-  useEffect(() => { void loadGamificationDashboard(referenceDateKey).then(setGamification) }, [referenceDateKey])
+  useEffect(() => {
+    let current = true
+    const refreshGamification = (reconcile: boolean) => {
+      void loadGamificationDashboard(referenceDateKey, reconcile).then((result) => {
+        if (current) setGamification(result)
+      })
+    }
+    const handleGamificationChanged = () => refreshGamification(false)
+    window.addEventListener('fitdex:gamification-changed', handleGamificationChanged)
+    refreshGamification(true)
+    return () => {
+      current = false
+      window.removeEventListener('fitdex:gamification-changed', handleGamificationChanged)
+    }
+  }, [referenceDateKey])
 
   const records = useMemo(() => data ? derivePersonalRecords(data.allWorkouts, data.definitions) : [], [data])
-  if ((recordsOpen || view === 'records') && data) return <PersonalRecordsView records={records} units={data.units} onBack={() => { setRecordsOpen(false); setView('overview') }} />
+  if ((recordsOpen || view === 'records') && data) return <PersonalRecordsView records={records} units={data.units} onBack={() => { void navigateBack() }} />
   if (view === 'achievements' && gamification) return <AchievementsView data={gamification} onBack={() => setView('overview')} />
   if (view === 'rank' && gamification) return <RankDetailView data={gamification} onBack={() => setView('overview')} />
 
   const selectPeriod = (next: ProgressPeriod) => {
+    playEffect('select')
     setData(undefined)
     setError('')
     setPeriod(next)
@@ -56,11 +75,11 @@ export function ProgressPage({ initialView = 'overview' }: { initialView?: 'over
   const displayVolume = data ? displayWeightFromKg(volumeKg, data.units.preference) : 0
 
   return <div className="page-stack progress-page">
-    <PageHeader eyebrow="Character stats" title="Progress" description="See how your training is changing" action={<button className="page-help-button" type="button" onClick={() => setHelpOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Progress Works</button>} />
+    <PageHeader eyebrow="Character stats" title="Progress" description="See how your training is changing" action={<button className="page-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }}><CircleHelp size={18} aria-hidden="true" /> How Progress Works</button>} />
 
-    <nav className="progress-view-tabs" aria-label="Progress sections"><button type="button" aria-current="page">Overview</button><button type="button" onClick={() => setView('records')}>Records</button><button type="button" onClick={() => setView('achievements')}>Achievements</button></nav>
+    <nav className="progress-view-tabs" role="tablist" aria-label="Progress sections"><button type="button" role="tab" aria-selected="true" onClick={() => playEffect('select')}>Overview</button><button type="button" role="tab" aria-selected="false" onClick={() => { playEffect('select'); setView('records') }}>Records</button><button type="button" role="tab" aria-selected="false" onClick={() => { playEffect('select'); setView('achievements') }}>Achievements</button></nav>
 
-    {gamification ? <Panel className="progress-gamification" eyebrow="Level & Rank"><LevelProgress data={gamification} compact /><div className="progress-gamification-actions"><button className="secondary-button" type="button" onClick={() => setView('rank')}>Rank Journey</button><GamificationHelpButton /></div></Panel> : null}
+    {gamification ? <Panel className="progress-gamification" eyebrow="Level & Rank"><LevelProgress data={gamification} compact /><div className="progress-gamification-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setView('rank') }}>Rank Journey</button><GamificationHelpButton /></div></Panel> : null}
 
     <Panel className="progress-overview" eyebrow="Overview">
       <div className="progress-metric-grid">

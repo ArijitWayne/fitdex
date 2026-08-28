@@ -5,6 +5,7 @@ import { db } from '../../data/database'
 import type { Exercise, ExerciseTrackingType, WorkoutSet } from '../../data/models'
 import { displayDistanceFromKm, displayWeightFromKg, getUnitContext, storeDistanceAsKm, storeWeightAsKg, type UnitContext } from '../../utils/units.ts'
 import { ExerciseDex } from '../exerciseDex/ExerciseDex'
+import { useAudio } from '../audio/useAudio'
 import {
   DEFAULT_REST_SECONDS,
   calculateVolume,
@@ -67,6 +68,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   onExit: () => void
   onCompleted: (workoutId: string) => void
 }) {
+  const { playEffect } = useAudio()
   const [detail, setDetail] = useState<WorkoutDetail>()
   const [previous, setPrevious] = useState<Map<string, WorkoutSet[]>>(new Map())
   const [expanded, setExpanded] = useState<string>()
@@ -217,7 +219,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
       title: "Add to today's workout",
       targetLabel: 'workout',
       existingExerciseIds,
-      async onAddExercise(exercise: Exercise) { await addExercisesToWorkout(workoutId, [exercise]); await refresh() },
+      async onAddExercise(exercise: Exercise) { await addExercisesToWorkout(workoutId, [exercise]); playEffect('add'); await refresh() },
       async onRemoveExercise(exercise: Exercise) {
         const item = detail.exercises.find((candidate) => candidate.exercise.exerciseId === exercise.id)
         if (!item) return
@@ -238,7 +240,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
 
   return <div className="page-stack active-workout-page">
     <Panel className="active-workout-header">
-      <button className="dex-back-button" type="button" onClick={onExit} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /></button>
+      <button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onExit() }} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /></button>
       <div>
         <p className="eyebrow">{timerPaused ? 'Workout paused' : 'Workout in progress'}</p>
         <input className="active-workout-name" aria-label="Workout name" maxLength={80} defaultValue={detail.workout.nameSnapshot} key={`${detail.workout.id}:${detail.workout.nameSnapshot}`} onBlur={(event) => void run(() => renameActiveWorkout(workoutId, event.target.value))} />
@@ -256,7 +258,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
         {isOpen ? <div className="active-exercise-body">
           <div className="active-exercise-actions"><button type="button" disabled={index === 0} onClick={() => void run(() => reorderWorkoutExercise(item.exercise.id, -1))}><ArrowUp size={16} aria-hidden="true" /> Up</button><button type="button" disabled={index === detail.exercises.length - 1} onClick={() => void run(() => reorderWorkoutExercise(item.exercise.id, 1))}><ArrowDown size={16} aria-hidden="true" /> Down</button><button type="button" onClick={() => renderedExerciseHasData(item.exercise.id) ? setConfirmExerciseRemovalId(item.exercise.id) : void run(() => removeActiveExercise(item.exercise.id))}><Trash2 size={16} aria-hidden="true" /> Remove</button></div>
           <div className="set-list">{item.sets.map((set, setIndex) => <ActiveSetRow key={set.id} set={set} draft={setDrafts.get(set.id)} setNumber={setIndex + 1} trackingType={item.exercise.trackingTypeSnapshot ?? 'reps_only'} previous={previous.get(item.exercise.exerciseId)?.[setIndex]} units={units} onDraftChange={(field, value) => updateDraft(set.id, field, value)} onDraftSaved={(field, value) => clearDraftField(set.id, field, value)} onSaved={refresh} onStartRest={() => setRest(DEFAULT_REST_SECONDS)} />)}</div>
-          <button className="secondary-button add-set-button" type="button" onClick={() => void run(() => addWorkoutSet(item.exercise.id))}><Plus size={16} aria-hidden="true" /> Add set</button>
+          <button className="secondary-button add-set-button" type="button" onClick={() => void run(async () => { await addWorkoutSet(item.exercise.id); playEffect('add') })}><Plus size={16} aria-hidden="true" /> Add set</button>
         </div> : null}
       </Panel>
     })}</div> : <Panel><p className="eyebrow">Empty workout</p><h2>Add your first exercise</h2><p>Use the complete Exercise Dex to build today’s session.</p></Panel>}
@@ -266,7 +268,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     {feedback ? <p className="workout-feedback" role="status">{feedback}</p> : null}
     <div className="active-workout-final-actions"><button className="text-button" type="button" onClick={() => setConfirmDiscard(true)}>Discard workout</button><button className="primary-button" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>{finishBusy ? 'Checking workout…' : 'Finish workout'}</button></div>
     {finishValidation ? <FinishValidationDialog validation={finishValidation} onClose={() => setFinishValidation(undefined)} /> : null}
-    {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => onCompleted(workoutId)).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
+    {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => { playEffect('progress_complete'); onCompleted(workoutId) }).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
     {confirmDiscard ? <Panel className="workout-confirm"><h2>Discard workout?</h2><p>This session will not appear in history or previous performance.</p><button className="secondary-button" type="button" onClick={() => setConfirmDiscard(false)}>Keep workout</button><button className="danger-button" type="button" onClick={() => void discardWorkout(workoutId).then(onExit)}>Discard</button></Panel> : null}
     {confirmExerciseRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-exercise-title"><h2 id="remove-active-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmExerciseRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exerciseId = confirmExerciseRemovalId; setConfirmExerciseRemovalId(undefined); void run(() => removeActiveExercise(exerciseId)) }}>Remove</button></section></div> : null}
   </div>

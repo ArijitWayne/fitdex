@@ -21,12 +21,17 @@ export interface SettingsRecord extends EntityRecord {
   foodTutorialSeen?: boolean
   /** Local activation boundary. XP is intentionally not back-awarded before this instant. */
   gamificationInitializedAt?: string
+  /** Optional for backward-compatible local settings and portable backups. */
+  soundEffectsEnabled?: boolean
+  backgroundMusic?: BackgroundMusicPreference
   nutritionTargets?: NutritionTargets
   /** Forward-only boundary; Food logged before this setup is never back-awarded. */
   nutritionTargetsInitializedAt?: string
   /** Latest forward-only activation boundary; prevents disabled periods back-awarding. */
   nutritionTargetsEligibleFrom?: string
 }
+
+export type BackgroundMusicPreference = 'warrior' | 'hardened' | 'villain' | 'none'
 
 export type NutritionGoal = 'lose' | 'maintain' | 'gain'
 export type NutritionSex = 'male' | 'female'

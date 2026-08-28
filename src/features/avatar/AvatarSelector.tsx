@@ -2,6 +2,7 @@ import { Check } from 'lucide-react'
 import { AvatarPortrait } from './AvatarPortrait'
 import { AVATARS, type AvatarFaction } from './avatars'
 import { useAvatar } from './useAvatar'
+import { useAudio } from '../audio/useAudio'
 
 const groups: Array<{ faction: AvatarFaction; label: string }> = [
   { faction: 'spartans', label: 'Spartans' },
@@ -10,6 +11,7 @@ const groups: Array<{ faction: AvatarFaction; label: string }> = [
 
 export function AvatarSelector({ compact = false }: { compact?: boolean }) {
   const { selectedAvatar, selectAvatar } = useAvatar()
+  const { playEffect } = useAudio()
 
   return (
     <div className={compact ? 'avatar-selector is-compact' : 'avatar-selector'}>
@@ -19,7 +21,7 @@ export function AvatarSelector({ compact = false }: { compact?: boolean }) {
           <div className="avatar-grid">
             {AVATARS.filter((avatar) => avatar.faction === group.faction).map((avatar) => (
               <label className={selectedAvatar.id === avatar.id ? 'avatar-option is-selected' : 'avatar-option'} key={avatar.id}>
-                <input type="radio" name="avatar" value={avatar.id} checked={selectedAvatar.id === avatar.id} onChange={() => selectAvatar(avatar.id)} />
+                <input type="radio" name="avatar" value={avatar.id} checked={selectedAvatar.id === avatar.id} onChange={() => { playEffect('select'); selectAvatar(avatar.id) }} />
                 <AvatarPortrait avatar={avatar} size={compact ? 'small' : 'medium'} />
                 <span className="avatar-option-copy"><strong>{avatar.name}</strong><small>{avatar.archetype}</small></span>
                 <span className="avatar-selected-mark" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>

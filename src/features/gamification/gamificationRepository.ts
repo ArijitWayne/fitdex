@@ -145,11 +145,10 @@ async function addXpEvent(type: XpEventType, amount: number, sourceKey: string, 
   return true
 }
 
-async function reconcileWorkoutXp(initializedAt: string, snapshots: readonly PlanDaySnapshot[], pauses: readonly StreakPause[]) {
+async function reconcileWorkoutXp(initializedAt: string, snapshots: readonly PlanDaySnapshot[]) {
   const workouts = (await db.workouts.where('status').equals('completed').toArray()).sort((left, right) => left.startedAt.localeCompare(right.startedAt))
   for (const workout of workouts.filter((item) => (item.completedAt ?? item.startedAt) >= initializedAt)) {
     const dateKey = getLocalDateKey(new Date(workout.startedAt))
-    if (pauseForDate(pauses, dateKey)) continue
     const plan = snapshots.find((snapshot) => snapshot.localDate === dateKey)
     const sameDay = workouts.filter((candidate) => getLocalDateKey(new Date(candidate.startedAt)) === dateKey)
     const plannedWinner = plan?.satisfyingWorkoutId ?? (plan?.plannedType === 'routine'
@@ -295,7 +294,7 @@ export async function reconcileGamification(now = new Date()) {
   await finalizePastSnapshots(todayDateKey)
   await reconcileFreezeMilestones()
   const [snapshots, pauses] = await Promise.all([db.planDaySnapshots.orderBy('localDate').toArray(), db.streakPauses.toArray()])
-  await reconcileWorkoutXp(initializedAt, snapshots, pauses)
+  await reconcileWorkoutXp(initializedAt, snapshots)
   await reconcilePrXp(initializedAt)
   await reconcileFoodXp(initializedAt, pauses)
   await reconcileAchievements(snapshots)

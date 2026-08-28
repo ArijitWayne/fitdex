@@ -47,6 +47,10 @@ assert.match(css, /\.active-workout-final-actions \{[^}]*--app-bottom-nav-height
 assert.match(css, /\.food-dialog \{[^}]*100dvh[^}]*overflow-y: auto[^}]*overscroll-behavior: contain/s)
 assert.match(css, /\.onboarding-card \{[^}]*100dvh/s)
 assert.match(css, /\.onboarding-content \{[^}]*min-height: 0[^}]*overflow-y: auto/s)
+assert.match(css, /\.tutorial-dots button \{[^}]*width: 34px[^}]*height: 28px/s)
+assert.match(css, /\.onboarding-actions \{[^}]*safe-area-inset-bottom/s)
+assert.match(css, /\.home-music-controls button \{[^}]*min-height: 46px/s)
+assert.match(css, /\.home-music-tracks button \{[^}]*min-width: 0[^}]*min-height: 42px/s)
 
 assert.match(css, /\.active-set-row \{[^}]*min-width: 0[^}]*gap: 7px[^}]*padding: 8px/s)
 assert.match(css, /\.set-inputs \{[^}]*repeat\(auto-fit, minmax\(112px, 1fr\)\)/s)

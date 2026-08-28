@@ -52,6 +52,13 @@ FitDex is a mobile-first Progressive Web App for building routines, logging real
 - Spartans Dark, Spartans Light, Amazonians Dark, and Amazonians Light.
 - Theme-aware exercise category sprites and food icons.
 
+### Field Guide, Audio & Navigation
+
+- Learn the current product through a replayable seven-topic FitDex Field Guide plus focused Workout, Food, Journal, and Progress help.
+- Use local interface/progress sound effects and three bundled looping background tracks: Warrior, Hardened, and Villain.
+- Control the current track from Home, pause it temporarily, or persist No Music independently from sound effects.
+- On Android, system Back and the platform back gesture move through FitDex subviews and recent top-level destinations before exiting at Home.
+
 ## Local-first by design
 
 FitDex keeps editable and historical data deliberately separate:
@@ -102,12 +109,13 @@ Personal workout and nutrition data stays on the device.
 - Optional editable, device-local Display Name plus optimized priority loading for the selected Home avatar
 - Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, and 52 Achievements
 - Portable `.fitdex` Backup & Restore V1 with validation, replace-not-merge semantics, and transactional IndexedDB restore
+- FitDex Field Guide, semantic interface audio, Home music controls, and Android-aware in-app back history
 - Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
 
 **Planned / upcoming**
 
 - Body tracking and measurements
-- Onboarding/settings polish and broader device QA
+- Broader real-device Android/iOS audio, navigation, file-flow, and responsive QA
 
 ## Screenshots
 
@@ -143,6 +151,8 @@ npm run dev
 | `npm run test:home` | Check Home greetings and derived workout, Food, activity, and recent-progress states |
 | `npm run test:home-schedule` | Check schedule-aware Home behavior |
 | `npm run test:guides` | Check tutorial content and seen-state persistence |
+| `npm run test:audio` | Check local audio assets, preferences, priority, and UI wiring |
+| `npm run test:navigation` | Check top-level history and Android back-button contracts |
 | `npm run test:home-ui` | Check Home navigation, profile/avatar integration, responsive contracts, and PWA asset policy |
 | `npm run test:display-name` | Check local Display Name validation, editing, clearing, and persistence |
 | `npm run test:capacitor-android` | Check Android shell configuration and native privacy/version contracts |
@@ -151,11 +161,11 @@ npm run dev
 
 ## Android
 
-FitDex's Android shell is a Capacitor 8 project with package ID `com.fitdex.app`. It packages `dist` locally; it does not use a remote development-server URL. Install Android Studio with its SDK and a compatible JDK, then run `npm run android:build` (or open `android/` in Android Studio). The command performs a clean debug assembly after syncing, so removed packaged assets cannot persist from an older build. The Android app keeps the same local Dexie/IndexedDB and local-storage model as the browser; uninstalling it clears that local app data, so export a `.fitdex` backup first when it matters. Android treats this ID as a different app from pre-release builds that used `com.arijitbhaduri.fitdex`; no migration between those package IDs is provided.
+FitDex's Android shell is a Capacitor 8 project with package ID `com.fitdex.app`. It packages `dist` locally; it does not use a remote development-server URL. Install Android Studio with its SDK and a compatible JDK, then run `npm run android:build` (or open `android/` in Android Studio). The command performs a clean debug assembly after syncing, so removed packaged assets cannot persist from an older build. Android system Back and the platform back gesture close the deepest open FitDex subview first, then walk recent top-level destinations; Back exits only from the Home root. The Android app keeps the same local Dexie/IndexedDB and local-storage model as the browser; uninstalling it clears that local app data, so export a `.fitdex` backup first when it matters. Android treats this ID as a different app from pre-release builds that used `com.arijitbhaduri.fitdex`; no migration between those package IDs is provided.
 
 Android OS automatic backup/device transfer is disabled. `.fitdex` files remain the explicit portable backup path. Import uses the WebView document picker and needs physical-device verification. Export uses the browser Blob/download flow and may not present a reliable Android save destination yet; confirm an exported file is reachable before depending on it. Browser PWA service-worker support remains enabled, while the packaged Android shell uses its local bundle directly.
 
-`npm run build` keeps local exercise MP4 demonstrations in the browser/PWA output. Android sync and build commands automatically remove only those copied MP4 files from `dist/exercises` before Capacitor packages it, reducing APK size without changing `public/exercises` source media. Exercise details remain available on Android; when a missing packaged demo fails to load, the media area shows a neutral unavailable state. Remote/on-demand exercise media is planned for a future release but is not configured yet.
+`npm run build` keeps local exercise MP4 demonstrations in the browser/PWA output. Android sync and build commands automatically remove only those copied MP4 files from `dist/exercises` before Capacitor packages it, reducing APK size without changing `public/exercises` source media. Exercise details remain available on Android; playback prefers a verified selective download, then a configured remote stream, then a neutral unavailable state. The seven small audio files remain bundled because interface audio and music must work without downloading exercise media.
 
 ## Remote exercise media
 

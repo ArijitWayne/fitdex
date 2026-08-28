@@ -11,6 +11,8 @@ import type { WorkoutSummary } from '../features/workout/workoutRepository'
 import { dateFromLocalDateKey, getLocalDateKey, isLocalToday, shiftLocalDateKey } from '../utils/localDate'
 import { PageHeader } from './PageHeader'
 import { GuideDialog, type GuideStep } from '../features/help/GuideDialog'
+import { useAudio } from '../features/audio/useAudio'
+import { useBackNavigation } from '../features/navigation/useBackNavigation'
 
 const journalHelpSteps: readonly GuideStep[] = [{ title: 'How Journal Works', sections: [{ text: 'Journal is your read-only daily history. You do not create Journal entries manually.' }, { label: 'Workout', text: 'Completed sessions appear automatically.' }, { label: 'Food', text: 'FoodLogEntry meal history appears automatically.' }, { text: 'Use the date controls to review previous days. Journal derives this view without owning duplicate records.' }] }]
 
@@ -28,6 +30,8 @@ export function JournalPage() {
   const [error, setError] = useState('')
   const [workoutId, setWorkoutId] = useState<string>()
   const [helpOpen, setHelpOpen] = useState(false)
+  const { playEffect } = useAudio()
+  const navigateBack = useBackNavigation('journal-subview', Boolean(workoutId), () => setWorkoutId(undefined))
 
   useEffect(() => {
     let current = true
@@ -40,7 +44,7 @@ export function JournalPage() {
   const summary = useMemo(() => day ? calculateJournalSummary(day) : undefined, [day])
   const meals = useMemo(() => groupFoodEntriesByMeal(day?.foodEntries ?? []), [day])
 
-  if (workoutId) return <CompletedWorkoutDetail workoutId={workoutId} onBack={() => setWorkoutId(undefined)} onDeleted={() => { setDay((current) => current ? { ...current, workouts: current.workouts.filter((entry) => entry.workout.id !== workoutId) } : current); setWorkoutId(undefined) }} />
+  if (workoutId) return <CompletedWorkoutDetail workoutId={workoutId} onBack={() => { void navigateBack() }} onDeleted={() => { setDay((current) => current ? { ...current, workouts: current.workouts.filter((entry) => entry.workout.id !== workoutId) } : current); setWorkoutId(undefined) }} />
 
   const navigate = (amount: number) => {
     setDay(undefined)
@@ -50,12 +54,12 @@ export function JournalPage() {
   const empty = Boolean(day && !day.workouts.length && !day.foodEntries.length)
 
   return <div className="page-stack journal-page">
-    <PageHeader eyebrow="Daily record" title="Journal" description="Your daily fitness history" action={<button className="page-help-button" type="button" onClick={() => setHelpOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Journal Works</button>} />
+    <PageHeader eyebrow="Daily record" title="Journal" description="Your daily fitness history" action={<button className="page-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }}><CircleHelp size={18} aria-hidden="true" /> How Journal Works</button>} />
 
     <header className="journal-date-header">
-      <button type="button" aria-label="Previous day" onClick={() => navigate(-1)}><ChevronLeft aria-hidden="true" /></button>
+      <button type="button" aria-label="Previous day" onClick={() => { playEffect('select'); navigate(-1) }}><ChevronLeft aria-hidden="true" /></button>
       <div><CalendarDays size={18} aria-hidden="true" /><strong>{formatDate(date)}</strong></div>
-      <button type="button" aria-label="Next day" onClick={() => navigate(1)}><ChevronRight aria-hidden="true" /></button>
+      <button type="button" aria-label="Next day" onClick={() => { playEffect('select'); navigate(1) }}><ChevronRight aria-hidden="true" /></button>
       {isLocalToday(date) ? <span className="journal-today">Today</span> : null}
     </header>
 
@@ -71,7 +75,7 @@ export function JournalPage() {
 
     <section className="journal-timeline" aria-labelledby="journal-timeline-title">
       <p className="eyebrow" id="journal-timeline-title">Timeline</p>
-      {day?.workouts.map((workout) => <JournalWorkoutCard key={workout.workout.id} summary={workout} onOpen={() => setWorkoutId(workout.workout.id)} />)}
+      {day?.workouts.map((workout) => <JournalWorkoutCard key={workout.workout.id} summary={workout} onOpen={() => { playEffect('select'); setWorkoutId(workout.workout.id) }} />)}
       {FOOD_MEALS.map((meal) => <JournalMealSection key={meal} meal={meal} entries={meals[meal]} />)}
     </section>
     {helpOpen ? <GuideDialog eyebrow="Connected history" steps={journalHelpSteps} onClose={() => setHelpOpen(false)} /> : null}

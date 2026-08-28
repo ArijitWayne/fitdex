@@ -12,7 +12,7 @@ Core principles:
 - User-owned data
 - Mobile-first, with responsive desktop support
 - No required cloud account and no FitDex cloud sync
-- Future Android APK packaging through Capacitor
+- First-party Android packaging through Capacitor
 
 Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers are secondary targets for convenience and testing.
 
@@ -25,10 +25,11 @@ Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers a
 - Dexie
 - IndexedDB
 - `vite-plugin-pwa`
+- Capacitor 8 Android with App, Filesystem, and File Transfer plugins
 - `lucide-react`
 - Cloudflare Workers Static Assets / Wrangler
 
-The architecture is PWA-first. Capacitor is planned for later Android packaging but is not installed.
+The architecture shares one React application between the browser/PWA and a first-party Capacitor Android shell.
 
 ## 3. Hosting and distribution
 
@@ -474,17 +475,17 @@ The header does not advertise service-worker readiness during ordinary use. It s
 - Touch-friendly controls, wrapping long user/content names, contained chart scrolling, landscape-capable installed PWA behavior, and bounded tablet/desktop content widths
 - Static responsive contracts supplement—but do not replace—real Android, iOS/Simulator, keyboard, zoom, and representative viewport visual QA
 - Future Wake Lock, haptics, and notifications
-- Platform-adapter boundaries for future Capacitor integration
+- Platform-adapter boundaries for native-only Capacitor behavior
 
-## 27. Future Capacitor and Android APK
+## 27. Capacitor and Android APK
 
-Planned path:
+Distribution path:
 
 ```text
 React/Vite FitDex → Capacitor → Android project → signed APK → FitDex website download
 ```
 
-The Android package ID must be chosen carefully, the signing key must be preserved securely, and direct distribution will require an APK update mechanism. The PWA and APK should share application code where practical. Capacitor must not be installed yet.
+The permanent Android package ID is `com.fitdex.app`. The signing key must be preserved securely, and direct distribution will require an APK update mechanism. The PWA and APK share application code; native behavior is added only where the platform requires it.
 
 ## 28. Completed implementation work
 
@@ -534,6 +535,9 @@ The Android package ID must be chosen carefully, the signing key must be preserv
 - [x] Home Dashboard V1 derived from real Workout, Food, and Progress facts, with direct navigation intents and no schema change
 - [x] Optional editable local Display Name in Settings with reactive Home greeting
 - [x] Six avatar PNGs resized for their render envelope, with priority Home loading and retained lazy selector loading
+- [x] Capacitor Android shell, selective private exercise-media downloads, native back handling, and minimal in-app history
+- [x] Audio V1 with local semantic effects, three background tracks, persisted preferences, and Home controls
+- [x] Seven-topic FitDex Field Guide replacing the legacy onboarding walkthrough
 - [x] Build, lint, TypeScript, and PWA checks passing
 
 ## 29. Current development status
@@ -575,7 +579,7 @@ Gamification is a local-first secondary layer over authoritative Workout, Food, 
 
 ### XP, Levels, and Ranks
 
-XP source keys make reconciliation repeat-safe: `workout:<workoutId>`, `pr:<workoutId>:<exerciseId>:<metric>`, and `full-food-log:<localDate>`. Rewards are +30 for the first workout satisfying a planned Routine Day, +30 for the first workout satisfying a generic Workout Day, +20 for an unplanned or additional workout, +15 per genuine distinct PR metric, and +5 for all four meals. Calorie-target and protein-target event hooks remain dormant at +5 because nutrition targets do not yet exist. Deleting later source history never removes earned XP.
+XP source keys make reconciliation repeat-safe: `workout:<workoutId>`, `pr:<workoutId>:<exerciseId>:<metric>`, `full-food-log:<localDate>`, and the calorie/protein target keys. Rewards are +30 for the first workout satisfying a planned Routine Day, +30 for the first workout satisfying a generic Workout Day, +20 for an unplanned or additional workout, +15 per genuine distinct PR metric, +5 for all four meals, and +5 for each eligible calorie or protein target. Deleting later source history never removes earned XP.
 
 XP activates going forward at `gamificationInitializedAt`; older history is not silently back-awarded. Factual achievements may unlock from trustworthy existing history, using detection/initialization time where an exact unlock instant cannot be safely reconstructed. The deterministic 100-entry nonlinear threshold table is centrally generated from audited cumulative anchors: Level 1 = 0, Level 10 = 2,000, Level 25 = 12,000, Level 50 = 27,000, Level 75 = 70,000, and Level 100 = 140,000 XP. Level 100 is the display maximum; Lifetime XP continues.
 
@@ -587,7 +591,7 @@ On activation and every startup/resume reconciliation, FitDex materializes missi
 
 A matching routine-ID completion or any completion on a generic Workout Day increments Plan Streak. Rest Day, No Plan, Freeze, and Travel/Sickness Pause preserve but do not increment it. A wrong-routine or missed training obligation automatically consumes one available Freeze; with no Freeze, current streak resets to zero. Freeze history is durable. Balance starts at 2, caps at 3, and earns one at each 30-successful-planned-training-day milestone when below cap. Frozen days add no successful day, Workout XP, quest completion, or consistency progress.
 
-Travel/Sickness Pauses are 1–7 inclusive local days, may start today or in the future, and are limited to two uses in a rolling 12-month window rather than a calendar year. The Weekly Plan remains underneath. Paused dates preserve but do not increment streak, consume no Freeze, and award no Workout/Nutrition XP, Daily Quest, or consistency progress. Core correctness never depends on midnight execution or a server.
+Travel/Sickness Pauses are 1–7 inclusive local days, may start today or in the future, and are limited to two uses in a rolling 12-month window rather than a calendar year. The Weekly Plan remains underneath. Paused dates preserve but do not increment streak and consume no Freeze. Valid workouts completed after gamification activation still earn their normal idempotent workout/PR XP; nutrition-target and full-day nutrition XP remain suppressed for paused dates. Core correctness never depends on midnight execution or a server.
 
 Weekly Plan is saved as one commitment. Initial setup is free. The first material structural change in a rolling 12-month period records a protected change and retains streak; later material changes require an explicit warning and record a current-streak reset. Changing a day type, routine identity, adding/removing training days, or clearing the plan is material. Routine rename/content/order/set/note edits are not. Deleting a scheduled routine warns and passes through the same protected-change/reset flow. A streak reset never touches XP, Level, Rank, achievements, workout/PR/Food history, or historical plan snapshots.
 
@@ -631,15 +635,15 @@ Settings contains no automatic-backup placeholder in V1. There is no scheduler, 
 
 FitDex has a first-party Capacitor Android shell using Capacitor 8.5.0. Its permanent identity is `com.fitdex.app` / `FitDex`, and `capacitor.config.ts` packages the Vite `dist` output with no development-server URL. Android treats this as a different application from pre-release builds created under `com.arijitbhaduri.fitdex`; no package-ID data migration is required during pre-release development. Browser and installed-PWA behavior remains supported. Workbox registration is manual and limited to non-native platforms: the browser still receives the service worker and offline app shell, while Android loads the packaged bundle without a browser service-worker cache layer.
 
-The Android module uses the generated baseline of min SDK 24, target/compile SDK 36, version code 1, and `versionName` 0.5.0 matching the web package. The application does not lock orientation. It keeps the default Capacitor back behavior, does not add StatusBar, Splash Screen, Network, Filesystem, Share, notification, or reminder plugins, and relies on existing CSS safe-area handling. Android 8+ adaptive launcher icons reuse the approved FitDex PWA mark as an Android vector; the standard Capacitor splash remains deliberately minimal.
+The Android module uses the generated baseline of min SDK 24, target/compile SDK 36, version code 1, and `versionName` 0.5.0 matching the web package. The application does not lock orientation. It uses the official Capacitor App plugin for system Back, plus Filesystem and File Transfer for selective exercise-media downloads; it does not add StatusBar, Splash Screen, Network, Share, notification, or reminder plugins and relies on existing CSS safe-area handling. Android 8+ adaptive launcher icons reuse the approved FitDex PWA mark as an Android vector; the standard Capacitor splash remains deliberately minimal.
 
 The WebView continues to use browser-compatible IndexedDB/Dexie and local storage, so authoritative FitDex records remain local to that installation. Android OS auto backup/device-transfer backup is disabled with `android:allowBackup="false"`; `.fitdex` export/import is the explicit portable path. Normal Android updates are expected to retain app data, while uninstalling the app removes its local WebView storage unless the user has exported it first.
 
-To keep Android APKs practical, `npm run android:sync` builds the normal browser/PWA `dist`, then runs `prepare:android-dist` before Capacitor copies assets. That build-only step removes only `.mp4` files below `dist/exercises`; it never changes `public/exercises`, exercise metadata, instructions, category art, or other non-video assets. The normal `npm run build` continues to include the local demos for browser/PWA use, and Workbox continues not to precache MP4s. Android V1 therefore shows a neutral “Exercise demonstration unavailable.” state if a packaged exercise video is requested, while all exercise detail content remains usable. Future demos should be delivered remotely/on-demand; no remote source or backend is configured yet, and the original source files remain available for a future media migration.
+To keep Android APKs practical, `npm run android:sync` builds the normal browser/PWA `dist`, then runs `prepare:android-dist` before Capacitor copies assets. That build-only step removes only `.mp4` files below `dist/exercises`; it never changes `public/exercises`, exercise metadata, instructions, category art, or other non-video assets. The normal `npm run build` continues to include the local demos for browser/PWA use, and Workbox continues not to precache MP4s. Android resolves a demonstration from a verified private selective download, then a configured remote media base URL, then the neutral “Exercise demonstration unavailable.” state. All exercise detail content remains usable, and the original source files remain available for media-host provisioning.
 
 `.fitdex` restore uses the existing file input, which should use the Android WebView/system document picker but still needs real-device verification. Backup export currently uses the browser Blob/download-anchor flow; a WebView may not offer a predictable user-visible save location. Until a future deliberate Filesystem/Share integration is approved, users should verify that an exported file is accessible before relying on it. No cloud, device-transfer, or automatic backup claim is made. `navigator.onLine` remains the existing connectivity signal; no native network plugin was introduced.
 
-Use `npm run android:sync` to build the web bundle and copy it into Android, and `npm run android:build` for a debug APK once Android Studio/SDK and a compatible JDK are installed. This repository's environment did not have a usable JDK, Android SDK, or Android Studio, so Gradle assembly requires local developer tooling. Future Android work should test persistence across force-close/reopen, Android back navigation, orientation/safe areas, offline launch after installation, file import/export behavior, upgrade retention, and notification delivery only when notifications are explicitly implemented.
+Use `npm run android:sync` to build the web bundle and copy it into Android, and `npm run android:build` for a debug APK once Android Studio/SDK and a compatible JDK are installed. This repository's environment did not have a usable JDK, Android SDK, or Android Studio, so Gradle assembly requires local developer tooling. Future Android work should test persistence across force-close/reopen, the implemented system-back stack on physical devices, orientation/safe areas, offline launch after installation, file import/export behavior, upgrade retention, and notification delivery only when notifications are explicitly implemented.
 
 ## 37. Remote Exercise Media + Selective Offline Downloads V1
 
@@ -648,3 +652,15 @@ Every available built-in demonstration already owns a stable canonical `mediaPat
 Android uses `@capacitor/filesystem` 8.1.3 and `@capacitor/file-transfer` 2.0.5. An explicit download writes directly to private `Directory.Data/exercise-media/<canonical-filename>.mp4`; MP4 bytes never enter Dexie or JS memory. Lightweight metadata (exercise ID, video key, relative local path, date, byte size, and a reserved media-version field) is device localStorage, not Dexie. This avoids a schema bump and is deliberately outside `.fitdex` backup/restore. Playback priority is verified local copy, then configured remote stream when online, then the neutral unavailable state. Stale metadata is removed if its file is absent.
 
 Browser/PWA retains existing local demo playback and has no native download UI. Android can explicitly download one demo, shows native transfer progress when length is known, immediately prefers local playback, and can remove it. File Transfer 2 has no safe per-transfer cancellation API, so V1 does not fake Cancel. Settings → Exercise Media shows native-only count/storage, per-download management, and confirmation before removing all; fitness data is unaffected. `prepare:android-dist` still guarantees zero bundled MP4s. The 804 sources remain untouched for future CDN upload. V1 has no automatic first-play/routine/background downloads, Wi-Fi rules, quota, media hashing, or browser offline-video storage.
+
+## 38. Field Guide, Audio, and Navigation Polish
+
+The first-run onboarding is the seven-topic FitDex Field Guide: Getting Started, Identity (theme), Identity (avatar), Training, Exercise Dex, Nutrition, and Progress & Safety. Its claims match the current local-first product, including 804 exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. It supports direct topic selection, Back/Next, Skip/Close, safe areas, short landscape, and replay from Settings. Existing focused Workout, Food, Journal, and Progress guides remain available.
+
+Audio V1 uses seven bundled, offline-capable files in `public/audio`. The semantic mappings are `select.mp3` for harmless navigation/selection, `add.mp3` for successful add/create actions, `achievements_unlock.mp3` for a genuine achievement unlock or level/rank increase, and `progress_complete.mp3` for successful workout completion or the first logged food entry for a date/meal. No achievement XP was introduced. BGM maps `bgm1.mp3` to Warrior, `bgm2.mp3` to Hardened, `bgm3.mp3` to Villain, and `none` to No Music.
+
+Sound effects and background selection are independent properties on the existing Settings record; defaults are effects on and No Music. The shared AudioProvider owns one persistent BGM element across navigation, serializes competing effects by priority (achievement, progress, add, select), pauses BGM while the app is backgrounded, and avoids app-load/reconciliation sounds. Home exposes compact previous/pause-or-resume/next/off controls plus direct track selection using that same preference as Settings. Pause is temporary for the current run and does not overwrite the persisted track; Off persists No Music. Track controls intentionally do not layer a select sound over the opening note.
+
+Semantic `select.mp3` coverage is attached to navigation and harmless choice changes rather than a global click listener. It includes primary navigation, Settings and help navigation, Field Guide controls, Progress tabs/periods, Home shortcuts, and relevant Workout, Food, and Exercise Dex subviews. Data-changing actions retain their specific add/progress/achievement effects, and centralized priority/coalescing prevents a lower-priority click from masking a meaningful completion.
+
+Top-level destinations use a small in-memory history whose root is Home and which ignores consecutive duplicate destinations. The official Capacitor App `backButton` listener is installed only on native platforms. Registered subviews close deepest-first by explicit priority; otherwise Back pops top-level history, and `exitApp()` is called only when no handler remains at Home. Visual back controls route through the same navigation contract where appropriate, so one semantic select effect is requested per back action. This implements Android system Back and the platform back gesture without inventing a custom edge-swipe recognizer or introducing a routing dependency.

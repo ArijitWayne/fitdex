@@ -16,11 +16,14 @@ import { workoutTutorialSteps } from '../features/help/tutorialSteps'
 import { WeeklyPlanEditor, WeeklyPlanPanel } from '../features/workout/WeeklyPlanViews'
 import { emptyWeeklyPlanDays, loadWeeklyPlan, type WeeklyPlan } from '../features/workout/weeklyPlan'
 import { PlanChangeConfirmationRequiredError } from '../features/workout/weeklyPlan'
+import { useAudio } from '../features/audio/useAudio'
+import { useBackNavigation } from '../features/navigation/useBackNavigation'
 
 type WorkoutView = 'hub' | 'library' | 'create' | 'routine' | 'picker' | 'start' | 'add-to-routine' | 'active' | 'history' | 'plan' | 'start-empty' | 'start-routine'
 export type WorkoutEntryView = Extract<WorkoutView, 'hub' | 'library' | 'start' | 'active' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'>
 
 export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWorkoutId }: { initialView?: WorkoutEntryView; initialRoutineId?: string; initialWorkoutId?: string }) {
+  const { playEffect } = useAudio()
   const [view, setView] = useState<WorkoutView>(initialView)
   const [routines, setRoutines] = useState<RoutineWithItems[]>([])
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutSummary[]>([])
@@ -36,6 +39,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan>({ configured: false, days: emptyWeeklyPlanDays() })
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [initialIntentHandled, setInitialIntentHandled] = useState(false)
+  const navigateBack = useBackNavigation('workout-subview', view !== 'hub', () => { void refresh(); setView('hub') })
 
   async function refresh() {
     await ensureBuiltInExercises()
@@ -87,19 +91,19 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
   function closeTutorial() { setTutorialOpen(false); void markTutorialSeen('workout') }
 
-  function openRoutine(routineId: string) { setSelectedRoutineId(routineId); setMessage(''); setView('routine') }
+  function openRoutine(routineId: string) { playEffect('select'); setSelectedRoutineId(routineId); setMessage(''); setView('routine') }
 
   async function addPendingExercise(routineId: string) {
     if (!pendingExercise) return
-    try { await addExercisesToRoutine(routineId, [pendingExercise]); setMessage(`${pendingExercise.name} added to routine.`); setPendingExercise(undefined); await refresh(); setView('library') }
+    try { await addExercisesToRoutine(routineId, [pendingExercise]); playEffect('add'); setMessage(`${pendingExercise.name} added to routine.`); setPendingExercise(undefined); await refresh(); setView('library') }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Exercise could not be added.') }
   }
 
   if (view === 'active' && activeWorkoutId) return <ActiveWorkoutView workoutId={activeWorkoutId} onExit={() => { void refresh(); setView('hub') }} onCompleted={(workoutId) => { setHistoryWorkoutId(workoutId); setActiveWorkoutId(undefined); setActiveWorkout(undefined); void refresh(); setView('history') }} />
-  if (view === 'history' && historyWorkoutId) return <CompletedWorkoutDetail workoutId={historyWorkoutId} onBack={() => { void refresh(); setView('hub') }} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== historyWorkoutId)); setHistoryWorkoutId(undefined); setView('hub'); void refresh() }} />
+  if (view === 'history' && historyWorkoutId) return <CompletedWorkoutDetail workoutId={historyWorkoutId} onBack={() => { void navigateBack() }} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== historyWorkoutId)); setHistoryWorkoutId(undefined); setView('hub'); void refresh() }} />
   if (view === 'plan') return <WeeklyPlanEditor plan={weeklyPlan} routines={routines} onChanged={setWeeklyPlan} onBack={() => setView('hub')} onCreateRoutine={() => setView('create')} />
 
-  if (view === 'library') return <div className="page-stack workout-page"><div className="workout-library-toolbar"><button className="secondary-button" type="button" onClick={() => setView('hub')}><ArrowLeft size={18} aria-hidden="true" /> Back to Workout Hub</button></div><ExerciseDex onAddToRoutine={(exercise) => { setPendingExercise(exercise); setMessage(''); setView('add-to-routine') }} />{message ? <p className="workout-feedback" role="status">{message}</p> : null}</div>
+  if (view === 'library') return <div className="page-stack workout-page"><div className="workout-library-toolbar"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setView('hub') }}><ArrowLeft size={18} aria-hidden="true" /> Back to Workout Hub</button></div><ExerciseDex onAddToRoutine={(exercise) => { setPendingExercise(exercise); setMessage(''); setView('add-to-routine') }} />{message ? <p className="workout-feedback" role="status">{message}</p> : null}</div>
 
   if (view === 'picker' && selectedRoutine) {
     const existingExerciseIds = new Set(selectedRoutine.items.map((item) => item.exerciseId))
@@ -107,7 +111,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
       title: `Add exercises to ${selectedRoutine.routine.name}`,
       targetLabel: 'routine',
       existingExerciseIds,
-      async onAddExercise(exercise) { await addExercisesToRoutine(selectedRoutine.routine.id, [exercise]); await refresh() },
+      async onAddExercise(exercise) { await addExercisesToRoutine(selectedRoutine.routine.id, [exercise]); playEffect('add'); await refresh() },
       async onRemoveExercise(exercise) {
         const item = selectedRoutine.items.find((candidate) => candidate.exerciseId === exercise.id)
         if (!item) return
@@ -120,7 +124,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
   if (view === 'routine' && selectedRoutine) return <RoutineEditor entry={selectedRoutine} replacementOptions={routines.filter((candidate) => candidate.routine.id !== selectedRoutine.routine.id)} message={message} onBack={() => setView('hub')} onChanged={refresh} onAddExercise={() => { setMessage(''); setView('picker') }} onStart={() => void begin(() => startWorkoutFromRoutine(selectedRoutine.routine.id))} onDeleted={async () => { setSelectedRoutineId(undefined); await refresh(); setView('hub') }} />
 
-  if (view === 'create') return <CreateRoutine onCancel={() => setView(pendingExercise ? 'add-to-routine' : 'hub')} onCreated={async (routine) => { if (pendingExercise) await addPendingExercise(routine.id); else { await refresh(); setSelectedRoutineId(routine.id); setView('routine') } }} />
+  if (view === 'create') return <CreateRoutine onCancel={() => setView(pendingExercise ? 'add-to-routine' : 'hub')} onCreated={async (routine) => { playEffect('add'); if (pendingExercise) await addPendingExercise(routine.id); else { await refresh(); setSelectedRoutineId(routine.id); setView('routine') } }} />
 
   if (view === 'add-to-routine' && pendingExercise) return <div className="page-stack workout-page"><Panel className="workout-flow-panel"><FlowHeading title={`Add ${pendingExercise.name} to`} onBack={() => setView('library')} />{routines.length ? <div className="routine-choice-list">{routines.map(({ routine, items }) => <button type="button" key={routine.id} onClick={() => void addPendingExercise(routine.id)}><span><strong>{routine.name}</strong><small>{items.length} exercises</small></span><Plus size={18} aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="Create a routine, then this exercise will be added to it." />}<button className="secondary-button" type="button" onClick={() => setView('create')}>Create new routine</button>{message ? <p className="workout-feedback" role="status">{message}</p> : null}</Panel></div>
 
@@ -135,7 +139,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   </div>}{deleteWorkoutSummary ? <WorkoutDeleteDialog workoutId={deleteWorkoutSummary.workout.id} workoutName={deleteWorkoutSummary.workout.nameSnapshot} onCancel={() => setDeleteWorkoutSummary(undefined)} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== deleteWorkoutSummary.workout.id)); setDeleteWorkoutSummary(undefined); void refresh() }} /> : null}{tutorialOpen ? <GuideDialog eyebrow="How Workouts Work" steps={workoutTutorialSteps} onClose={closeTutorial} /> : null}</div>
 }
 
-function FlowHeading({ title, onBack }: { title: string; onBack: () => void }) { return <div className="workout-flow-heading"><button className="dex-back-button" type="button" onClick={onBack} aria-label="Back"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Workout</p><h2>{title}</h2></div></div> }
+function FlowHeading({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <div className="workout-flow-heading"><button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Workout</p><h2>{title}</h2></div></div> }
 function WorkoutEmpty({ title, body }: { title: string; body: string }) { return <div className="workout-empty"><strong>{title}</strong><p>{body}</p></div> }
 
 function StartWorkoutSelection({ routines, onBack, onStartRoutine, onStartEmpty }: { routines: readonly RoutineWithItems[]; onBack: () => void; onStartRoutine: (id: string) => void; onStartEmpty: () => void }) {

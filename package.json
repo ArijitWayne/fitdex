@@ -25,6 +25,8 @@
     "test:workout-ui": "node --experimental-strip-types src/features/workout/testWorkoutUi.ts",
     "test:weekly-plan": "node --experimental-strip-types src/features/workout/testWeeklyPlan.ts",
     "test:gamification": "node --experimental-strip-types src/features/gamification/testGamification.ts",
+    "test:audio": "node --experimental-strip-types src/features/audio/testAudio.ts",
+    "test:navigation": "node --experimental-strip-types src/features/navigation/testNavigationHistory.ts",
     "test:exercise-picker-toggle": "node --experimental-strip-types src/features/workout/testExercisePickerToggle.ts",
     "test:food": "node --experimental-strip-types src/features/food/testFoodRepository.ts",
     "test:food-migration": "node --experimental-strip-types src/features/food/testFoodMigration.ts",
@@ -55,6 +57,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.0",
     "@capacitor/file-transfer": "^2.0.5",
     "@capacitor/filesystem": "^8.1.3",
