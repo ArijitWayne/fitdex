@@ -1,8 +1,11 @@
 #root { min-height: 100svh; }
 .app-frame { --app-bottom-nav-height: 74px; min-height: 100svh; padding-bottom: calc(var(--app-bottom-nav-height) + env(safe-area-inset-bottom)); background: var(--color-app-surface); }
 .app-header { position: sticky; z-index: 20; top: 0; display: flex; min-height: calc(64px + env(safe-area-inset-top)); align-items: flex-end; gap: 12px; padding: calc(10px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left)); border-bottom: 2px solid var(--color-border-strong); background: color-mix(in srgb, var(--color-app-surface) 96%, transparent); backdrop-filter: blur(14px); }
-.wordmark { display: inline-flex; min-height: 44px; align-items: center; gap: 9px; padding: 0; border: 0; background: transparent; font-family: var(--font-display); font-size: 1.35rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
-.wordmark-mark { display: grid; width: 36px; height: 36px; place-items: center; border: 2px solid var(--color-border-strong); background: var(--color-xp); color: var(--color-on-xp); font-family: var(--font-display); font-size: .85rem; font-weight: 900; box-shadow: 2px 2px 0 var(--color-rpg-border); }
+.wordmark { display: inline-flex; min-width: 0; min-height: 44px; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.wordmark picture { display: contents; }
+.wordmark-image { display: block; width: 42px; height: 42px; flex: 0 0 auto; object-fit: contain; }
+.wordmark-mobile-name { white-space: nowrap; font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+@media (min-width: 600px) { .wordmark-image { width: auto; max-width: 190px; height: 52px; } .wordmark-mobile-name { display: none; } }
 .connectivity-status { display: inline-flex; min-width: 0; min-height: 32px; align-items: center; gap: 5px; margin-left: auto; color: var(--color-secondary); font-size: .7rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
 .icon-button, .back-button { display: grid; width: 44px; min-width: 44px; height: 44px; place-items: center; margin-left: auto; border: 2px solid var(--color-border); background: var(--color-surface-raised); font-size: 1.15rem; cursor: pointer; }
 .icon-button:hover, .icon-button.is-active, .back-button:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-muted); }
@@ -650,7 +653,7 @@
 
 @media (min-width: 980px) {
   .app-frame { --app-bottom-nav-height: 0px; width: min(1180px, calc(100% - 48px)); min-height: calc(100svh - 48px); margin: 24px auto; padding-bottom: 0; border: 2px solid var(--color-border-strong); background: var(--color-app-surface); box-shadow: 4px 4px 0 var(--color-shadow); }
-  .app-header { position: relative; min-height: 72px; padding: 13px 20px; align-items: center; }
+  .app-header { position: relative; min-height: 78px; padding: 13px 20px; align-items: center; }
   .app-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); min-height: calc(100svh - 124px); }
   .app-nav { position: relative; z-index: 1; right: auto; bottom: auto; left: auto; display: flex; min-height: 0; padding: 22px 12px; border: 0; border-right: 2px solid var(--color-border-strong); flex-direction: column; background: var(--color-app-surface); }
   .nav-item { min-height: 46px; align-items: center; justify-content: flex-start; flex-direction: row; gap: 12px; padding: 6px 12px; border-top: 0; border-left: 3px solid transparent; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }

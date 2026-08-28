@@ -3,6 +3,8 @@ import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { AppDestination } from '../../types/navigation'
 import { useAudio } from '../../features/audio/useAudio'
+import { brandingForTheme } from '../../branding/branding'
+import { useTheme } from '../../theme/useTheme'
 
 const destinations: Array<{ id: AppDestination; icon: LucideIcon; label: string }> = [
   { id: 'home', icon: House, label: 'Home' },
@@ -22,6 +24,8 @@ interface AppShellProps {
 
 export function AppShell({ children, destination, onNavigate, onOpenSettings, settingsOpen }: AppShellProps) {
   const { playEffect } = useAudio()
+  const { family } = useTheme()
+  const branding = brandingForTheme(family)
   const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine)
   useEffect(() => {
     const updateOnline = () => setOnline(navigator.onLine)
@@ -33,8 +37,11 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
     <div className="app-frame">
       <header className="app-header">
         <button className="wordmark" type="button" onClick={() => { playEffect('select'); onNavigate('home') }}>
-          <span className="wordmark-mark">FD</span>
-          <span>FitDex</span>
+          <picture>
+            <source media="(min-width: 600px)" srcSet={branding.logo} />
+            <img className="wordmark-image" src={branding.icon} alt="FitDex" />
+          </picture>
+          <span className="wordmark-mobile-name">FitDex</span>
         </button>
         {!online ? <div className="connectivity-status" role="status" aria-live="polite"><span aria-hidden="true">●</span> Offline</div> : null}
         <button

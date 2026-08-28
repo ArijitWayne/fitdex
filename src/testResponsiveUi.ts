@@ -31,6 +31,8 @@ assert.match(appShell, /addEventListener\('online', updateOnline\)/)
 assert.match(appShell, /addEventListener\('offline', updateOnline\)/)
 assert.match(appShell, /!online \? <div className="connectivity-status" role="status" aria-live="polite"/)
 assert.match(appShell, /Offline<\/div> : null/)
+assert.match(appShell, /brandingForTheme\(family\)/)
+assert.match(appShell, /wordmark-mobile-name/)
 
 assert.doesNotMatch(themeCss, /(?:html|body) \{[^}]*min-width:/s, 'The document must not force overflow below the 320px robustness floor')
 assert.match(themeCss, /input, textarea, select \{ min-width: 0; font-size: 1rem; \}/)

@@ -13,7 +13,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['branding/fitdex-icon-spartan.png'],
       manifest: {
         name: 'FitDex',
         short_name: 'FitDex',
@@ -24,8 +24,7 @@ export default defineConfig({
         background_color: '#0b1112',
         theme_color: '#0b1112',
         icons: [
-          { src: '/pwa-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: '/pwa-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: '/branding/fitdex-icon-spartan.png', sizes: '1024x1024', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {

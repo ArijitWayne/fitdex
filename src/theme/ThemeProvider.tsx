@@ -1,6 +1,8 @@
 import { useLayoutEffect, useMemo, useState } from 'react'
 import { deviceStorage } from '../platform/deviceStorage'
 import { ThemeContext, type ThemeContextValue } from './themeContext'
+import { brandingFamilyForTheme, syncFavicon } from '../branding/branding'
+import { syncNativeLauncherBranding } from '../branding/nativeBranding'
 import {
   BRIGHTNESS_STORAGE_KEY,
   LEGACY_THEME_STORAGE_KEY,
@@ -37,6 +39,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dataset.brightness = brightness
     document.documentElement.style.colorScheme = brightness === 'system' ? 'light dark' : brightness
   }, [family, brightness])
+
+  useLayoutEffect(() => {
+    const brandingFamily = brandingFamilyForTheme(family)
+    syncFavicon(brandingFamily)
+    void syncNativeLauncherBranding(brandingFamily)
+  }, [family])
 
   const value = useMemo<ThemeContextValue>(
     () => ({

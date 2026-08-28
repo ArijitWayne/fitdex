@@ -1,0 +1,26 @@
+/// <reference types="node" />
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+const branding = fs.readFileSync('src/branding/branding.ts', 'utf8')
+assert.match(branding, /export type BrandingFamily = 'spartan' \| 'amazonian'/)
+assert.match(branding, /spartan:[\s\S]*logo: '\/branding\/fitdex-logo-spartan\.png'[\s\S]*icon: '\/branding\/fitdex-icon-spartan\.png'/)
+assert.match(branding, /amazonian:[\s\S]*logo: '\/branding\/fitdex-logo-amazonian\.png'[\s\S]*icon: '\/branding\/fitdex-icon-amazonian\.png'/)
+assert.match(branding, /family === 'amazonians' \? 'amazonian' : 'spartan'/)
+assert.match(branding, /querySelector<HTMLLinkElement>\('link\[rel="icon"\]'\)/)
+assert.match(branding, /if \(!link\)[\s\S]*documentRef\.head\.append\(link\)/)
+assert.match(branding, /link\.href = icon/)
+for (const file of ['fitdex-logo-spartan.png', 'fitdex-logo-amazonian.png', 'fitdex-icon-spartan.png', 'fitdex-icon-amazonian.png']) assert.ok(fs.existsSync(`public/branding/${file}`), `${file} must exist`)
+const shell = fs.readFileSync('src/components/layout/AppShell.tsx', 'utf8')
+assert.match(shell, /brandingForTheme\(family\)/)
+assert.match(shell, /media="\(min-width: 600px\)"/)
+assert.match(shell, /wordmark-mobile-name/)
+const styles = fs.readFileSync('src/styles/app.css', 'utf8')
+assert.match(styles, /\.wordmark-image \{[^}]*object-fit: contain/s)
+assert.match(styles, /@media \(min-width: 600px\) \{ \.wordmark-image \{ width: auto; max-width: 190px; height: 52px;/)
+const native = fs.readFileSync('src/branding/nativeBranding.ts', 'utf8')
+assert.match(native, /Capacitor\.isNativePlatform\(\)/)
+assert.match(native, /Capacitor\.getPlatform\(\) !== 'android'/)
+assert.match(native, /activeFamily === family/)
+assert.match(native, /setLauncherBranding\(\{ family \}\)/)
+
+console.log('Branding assertions passed: family mapping, exact assets, responsive header, favicon replacement, and native idempotency guard')

@@ -51,6 +51,8 @@ FitDex is a mobile-first Progressive Web App for building routines, logging real
 - Original FitDex retro-RPG/pixel-game styling—not a Pokédex clone.
 - Spartans Dark, Spartans Light, Amazonians Dark, and Amazonians Light.
 - Theme-aware exercise category sprites and food icons.
+- Complete Spartan/Amazonian FitDex branding follows the selected theme family: full logo on larger headers, compact emblem on phones, and a live browser-tab favicon. Brightness changes retain the same family art.
+- The installed PWA uses the polished Spartan FitDex icon as its stable default. On Capacitor Android, the real launcher icon switches between Spartan and Amazonian with the theme family; there is no separate App Icon preference.
 
 ### Field Guide, Audio & Navigation
 
@@ -111,6 +113,7 @@ Personal workout and nutrition data stays on the device.
 - Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, and 52 Achievements
 - Portable `.fitdex` Backup & Restore V1 with validation, replace-not-merge semantics, and transactional IndexedDB restore
 - FitDex Field Guide, semantic interface audio, Home music controls, and Android-aware in-app back history
+- Theme-aware Spartan/Amazonian branding across the polished responsive header, browser favicon, PWA default, and Android launcher aliases; Android adaptive icons use family-specific dark backgrounds and safely framed crests
 - Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
 
 **Planned / upcoming**

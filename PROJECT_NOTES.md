@@ -31,6 +31,14 @@ Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers a
 
 The architecture shares one React application between the browser/PWA and a first-party Capacitor Android shell.
 
+## 2.1 Theme-aware FitDex branding
+
+The approved local branding assets are `public/branding/fitdex-logo-spartan.png`, `public/branding/fitdex-logo-amazonian.png`, `public/branding/fitdex-icon-spartan.png`, and `public/branding/fitdex-icon-amazonian.png`. The existing theme family is the sole branding source: Spartans Dark and Light use Spartan branding, while Amazonians Dark and Light use Amazonian branding. Brightness never changes the chosen art.
+
+Desktop/larger headers use the full family logo where space permits; compact mobile headers use the family emblem. The browser favicon is updated at runtime when the family changes. The installed PWA intentionally uses the Spartan icon as a stable default because installed-web-app launcher replacement is platform-dependent.
+
+Android uses two launcher activity aliases targeting the same `com.fitdex.app` activity. A tiny local Capacitor `LauncherBranding` helper enables the requested Spartan/Amazonian alias before disabling the other, preserving one launchable app entry and all local data. Derived adaptive launcher foregrounds are safely padded around the supplied final crest art, with deep charcoal Spartan and deep plum Amazonian backgrounds. Some launchers may refresh the icon with a short delay. No second package, installation, branding setting, backup field, backend, or cloud media is introduced. Branding remains bundled static media; exercise videos remain remote/on-demand and audio remains local.
+
 ## 3. Hosting and distribution
 
 FitDex is configured for Cloudflare Workers Static Assets through `wrangler.jsonc`; the Worker serves the built application and its static assets. It is not a user-data backend: workout and food records remain in local Dexie/IndexedDB. R2 is not configured.
@@ -538,6 +546,7 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 - [x] Capacitor Android shell, selective private exercise-media downloads, native back handling, and minimal in-app history
 - [x] Audio V1 with local semantic effects, three background tracks, persisted preferences, and Home controls
 - [x] Seven-topic FitDex Field Guide replacing the legacy onboarding walkthrough
+- [x] Theme-aware Spartan/Amazonian logos, favicon, PWA default icon, and Android launcher aliases with local native switching
 - [x] Build, lint, TypeScript, and PWA checks passing
 
 ## 29. Current development status

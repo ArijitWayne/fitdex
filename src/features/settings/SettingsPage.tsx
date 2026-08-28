@@ -15,6 +15,7 @@ import { APP_VERSION } from '../../appVersion'
 import { BackupSettings } from '../backup/BackupSettings'
 import { ExerciseMediaSettings } from '../exerciseMedia/ExerciseMediaSettings'
 import { useAudio } from '../audio/useAudio'
+import { brandingForTheme } from '../../branding/branding'
 
 const brightnessOptions: Array<{ value: BrightnessPreference; label: string; hint: string }> = [
   { value: 'system', label: 'System', hint: 'Match this device' },
@@ -29,6 +30,7 @@ const familyOptions: Array<{ value: ThemeFamily; label: string; hint: string }> 
 
 export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void; onReplayTutorial: () => void }) {
   const { family, brightness, setFamily, setBrightness } = useTheme()
+  const branding = brandingForTheme(family)
   const { selectedAvatar } = useAvatar()
   const { displayName, ready, saveDisplayName } = useProfile()
   const [choosingAvatar, setChoosingAvatar] = useState(false)
@@ -110,7 +112,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
       <section className="settings-section" aria-labelledby="about-heading">
         <div className="settings-section-heading"><span>11</span><div><h2 id="about-heading">About FitDex</h2><p>Retro RPG fitness tracking. Local by design.</p></div></div>
-        <div className="about-row"><img className="about-app-icon" src="/pwa-icon.svg" alt="FitDex" /><div><strong>FitDex</strong><small>Version {APP_VERSION}</small></div></div>
+        <div className="about-row"><img className="about-app-icon" src={branding.icon} alt="FitDex" /><div><strong>FitDex</strong><small>Version {APP_VERSION}</small></div></div>
         <section className="about-copy" aria-label="About FitDex"><p>FitDex is a local-first fitness tracker for workouts, nutrition, progress tracking, and RPG-style progression.</p><h3>Developed by</h3><p>Arijit Bhaduri</p><h3>Privacy &amp; Data</h3><p>Your FitDex fitness data is stored locally on your device. FitDex does not require an account or FitDex cloud sync.</p></section>
         <dl className="setting-list about-app-info"><div><dt>Version</dt><dd>{APP_VERSION}</dd></div></dl>
       </section>

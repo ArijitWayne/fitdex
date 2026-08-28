@@ -38,6 +38,7 @@
     "test:backup": "node --experimental-strip-types src/features/backup/testBackup.ts",
     "test:backup-ui": "node --experimental-strip-types src/features/backup/testBackupUi.ts",
     "test:capacitor-android": "node --experimental-strip-types src/testCapacitorAndroid.ts",
+    "test:branding": "node --experimental-strip-types src/branding/testBranding.ts",
     "test:android-dist": "node scripts/testPrepareAndroidDist.mjs",
     "test:exercise-media": "node --experimental-strip-types src/features/exerciseMedia/testExerciseMedia.ts",
     "test:guides": "node --experimental-strip-types src/features/help/testGuides.ts",
