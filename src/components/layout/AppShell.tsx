@@ -1,10 +1,11 @@
-import { ChartNoAxesColumnIncreasing, Dumbbell, House, NotebookTabs, Settings, Utensils } from 'lucide-react'
+import { ChartNoAxesColumnIncreasing, Dumbbell, House, Moon, NotebookTabs, Settings, Sun, Utensils } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { AppDestination } from '../../types/navigation'
 import { useAudio } from '../../features/audio/useAudio'
 import { brandingForTheme } from '../../branding/branding'
 import { useTheme } from '../../theme/useTheme'
+import { useResolvedBrightness } from '../../theme/useResolvedBrightness'
 
 const destinations: Array<{ id: AppDestination; icon: LucideIcon; label: string }> = [
   { id: 'home', icon: House, label: 'Home' },
@@ -44,6 +45,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
           <span className="wordmark-mobile-name">FitDex</span>
         </button>
         {!online ? <div className="connectivity-status" role="status" aria-live="polite"><span aria-hidden="true">●</span> Offline</div> : null}
+        {destination === 'home' && !settingsOpen ? <MobileHomeThemeControls /> : null}
         <button
           className={`icon-button ${settingsOpen ? 'is-active' : ''}`}
           type="button"
@@ -74,4 +76,28 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
       </div>
     </div>
   )
+}
+
+function MobileHomeThemeControls() {
+  const { family, setFamily, setBrightness } = useTheme()
+  const brightness = useResolvedBrightness()
+  const { playEffect } = useAudio()
+  const chooseFamily = (nextFamily: 'spartans' | 'amazonians') => {
+    playEffect('select')
+    setFamily(nextFamily)
+  }
+  const toggleBrightness = () => {
+    playEffect('select')
+    setBrightness(brightness === 'dark' ? 'light' : 'dark')
+  }
+  return <div className="mobile-home-theme-controls" role="group" aria-label="Home theme controls">
+    <label className="mobile-home-faction">
+      <span>Faction</span>
+      <select aria-label="Faction" value={family} onChange={(event) => chooseFamily(event.target.value as 'spartans' | 'amazonians')}>
+        <option value="spartans">Spartans</option>
+        <option value="amazonians">Amazonians</option>
+      </select>
+    </label>
+    <button type="button" aria-label={`Switch to ${brightness === 'dark' ? 'light' : 'dark'} mode`} onClick={toggleBrightness}>{brightness === 'dark' ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}</button>
+  </div>
 }

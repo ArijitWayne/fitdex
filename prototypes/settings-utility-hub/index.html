@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en" data-theme-family="spartans" data-brightness="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <title>FitDex Settings Utility Hub</title>
+  <style>
+    :root {
+      --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-display: "Arial Narrow", "Roboto Condensed", Impact, ui-sans-serif, system-ui, sans-serif;
+      --bg: #f0e6d6;
+      --app: #f4ebdd;
+      --surface: #eae2d5;
+      --raised: #f8efe2;
+      --subtle: #ddd9ce;
+      --border: #979b92;
+      --border-strong: #6f7771;
+      --text: #2e3230;
+      --muted: #656b67;
+      --primary: #1f8582;
+      --primary-text: #176864;
+      --primary-muted: #d1ded9;
+      --warm: #b67e26;
+      --danger: #a74343;
+      --shadow: rgba(47, 51, 48, .16);
+      --ease-out: cubic-bezier(.23, 1, .32, 1);
+      color: var(--text);
+      background: var(--bg);
+      font-family: var(--font-body);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    :root[data-theme-family="amazonians"] {
+      --bg: #f0e4d4; --app: #f4e9db; --surface: #ebe1d8; --raised: #f7ede0; --subtle: #ddd0d1;
+      --border: #9f898e; --border-strong: #806c73; --text: #352b31; --muted: #746a6e;
+      --primary: #785178; --primary-text: #654061; --primary-muted: #e2d3dc; --warm: #b96f49;
+      --danger: #a44449; --shadow: rgba(62, 45, 54, .16);
+    }
+    :root[data-theme-family="spartans"][data-brightness="dark"] {
+      --bg: #121616; --app: #181d1d; --surface: #1f2524; --raised: #282f2e; --subtle: #303635;
+      --border: #606a66; --border-strong: #7e8984; --text: #e8e8e2; --muted: #a7aeaa;
+      --primary: #2e9895; --primary-text: #58b4af; --primary-muted: #213331; --warm: #b77f2f;
+      --danger: #d66a66; --shadow: rgba(0, 0, 0, .24);
+    }
+    :root[data-theme-family="amazonians"][data-brightness="dark"] {
+      --bg: #1f171e; --app: #281c27; --surface: #31232f; --raised: #3a2937; --subtle: #44323f;
+      --border: #79616f; --border-strong: #967887; --text: #eee5df; --muted: #b2a3aa;
+      --primary: #906390; --primary-text: #bd91b7; --primary-muted: #493246; --warm: #bc7247;
+      --danger: #d86f74; --shadow: rgba(0, 0, 0, .25);
+    }
+
+    * { box-sizing: border-box; }
+    body { min-width: 320px; min-height: 100vh; margin: 0; background: var(--bg); }
+    button, input, select { font: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+    #stage { min-height: 100vh; }
+    .prototype-shell { width: min(100%, 430px); min-height: 100vh; margin-inline: auto; background: var(--surface); box-shadow: 0 0 0 1px var(--border), 0 22px 70px var(--shadow); }
+    .app-bar { position: sticky; z-index: 5; top: 0; display: flex; min-height: 62px; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-bottom: 2px solid var(--border-strong); background: color-mix(in srgb, var(--app) 95%, transparent); backdrop-filter: blur(14px); }
+    .brand { display: flex; min-width: 0; align-items: center; gap: 9px; }
+    .brand img { width: 38px; height: 38px; object-fit: contain; image-rendering: pixelated; }
+    .brand strong { font-family: var(--font-display); letter-spacing: .05em; text-transform: uppercase; }
+    .local-badge { color: var(--muted); font-size: .64rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .screen { display: grid; gap: 24px; padding: 18px 16px 96px; }
+    .screen-heading { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 12px; }
+    .screen-heading button { display: grid; width: 44px; height: 44px; place-items: center; padding: 0; border: 1px solid var(--border); background: var(--raised); color: var(--text); font-size: 1.35rem; cursor: pointer; }
+    .screen-heading h1 { margin: 2px 0 4px; font-family: var(--font-display); font-size: 2rem; line-height: 1; text-transform: uppercase; }
+    .screen-heading p { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.45; }
+    .eyebrow, .group-label, legend { margin: 0; color: var(--primary-text); font-size: .64rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    .quick-panel { display: grid; gap: 16px; padding: 16px; border-left: 4px solid var(--primary); background: var(--raised); box-shadow: 3px 3px 0 var(--shadow); }
+    .quick-panel > header { display: grid; gap: 3px; }
+    .quick-panel h2 { margin: 0; font-family: var(--font-display); font-size: 1.05rem; text-transform: uppercase; }
+    .quick-control { display: grid; gap: 7px; }
+    .quick-control > span { color: var(--muted); font-size: .7rem; font-weight: 800; }
+    .segmented { display: grid; grid-template-columns: repeat(var(--columns, 2), minmax(0, 1fr)); gap: 5px; }
+    .segmented button { min-width: 0; min-height: 44px; padding: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: .72rem; font-weight: 850; cursor: pointer; transition: color 150ms ease-out, border-color 150ms ease-out, background-color 150ms ease-out, transform 140ms var(--ease-out); }
+    .segmented button[aria-pressed="true"] { border-color: var(--primary); background: var(--primary-muted); color: var(--primary-text); box-shadow: inset 0 -3px 0 var(--primary); }
+    .segmented button:active, .settings-row:active, .switch:active, .primary-action:active, .secondary-action:active { transform: scale(.97); }
+    .toggle-row { display: flex; min-height: 46px; align-items: center; justify-content: space-between; gap: 12px; }
+    .toggle-row span { display: grid; gap: 2px; }
+    .toggle-row strong { font-size: .8rem; }
+    .toggle-row small { color: var(--muted); font-size: .68rem; }
+    .switch { position: relative; width: 50px; min-width: 50px; height: 30px; padding: 0; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--subtle); cursor: pointer; transition: background-color 160ms ease, transform 140ms var(--ease-out); }
+    .switch::after { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--raised); box-shadow: 1px 1px 0 var(--border); content: ""; transition: transform 180ms var(--ease-out); }
+    .switch[aria-pressed="true"] { background: var(--primary); }
+    .switch[aria-pressed="true"]::after { transform: translateX(20px); }
+    .settings-groups { display: grid; gap: 20px; }
+    .settings-group { display: grid; gap: 6px; }
+    .group-label { padding-inline: 2px; }
+    .row-list { border-block: 1px solid var(--border); }
+    .settings-row { display: grid; width: 100%; min-width: 0; min-height: 58px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 2px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); text-align: left; cursor: pointer; transition: background-color 150ms ease, transform 140ms var(--ease-out); }
+    .settings-row:last-child { border-bottom: 0; }
+    .settings-row > span:first-child { display: grid; min-width: 0; gap: 3px; }
+    .settings-row strong { font-family: var(--font-display); font-size: .86rem; text-transform: uppercase; }
+    .settings-row small { overflow-wrap: anywhere; color: var(--muted); font-size: .7rem; }
+    .row-value { display: flex; max-width: 132px; align-items: center; justify-content: flex-end; gap: 7px; color: var(--primary-text); font-size: .7rem; font-weight: 800; text-align: right; }
+    .row-value b { font-size: 1.15rem; font-weight: 500; }
+    .settings-row.is-muted { cursor: default; opacity: .62; }
+    .settings-row.is-muted:active { transform: none; }
+    .subview-form { display: grid; gap: 20px; }
+    .form-section { display: grid; gap: 11px; padding-block: 2px 16px; border-bottom: 1px solid var(--border); }
+    .form-section h2 { margin: 0; font-family: var(--font-display); font-size: 1rem; text-transform: uppercase; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .field { display: grid; min-width: 0; gap: 6px; color: var(--muted); font-size: .7rem; font-weight: 800; }
+    .field input, .field select { width: 100%; min-height: 46px; padding: 9px; border: 1px solid var(--border); background: var(--raised); color: var(--text); }
+    .recommendation { display: grid; gap: 5px; padding: 12px; border-left: 3px solid var(--warm); background: var(--subtle); }
+    .recommendation strong { font-family: var(--font-display); font-size: .88rem; text-transform: uppercase; }
+    .recommendation small, .disclaimer { color: var(--muted); font-size: .7rem; line-height: 1.45; }
+    details.calculation { border-bottom: 1px solid var(--border); }
+    details.calculation summary { display: flex; min-height: 50px; align-items: center; justify-content: space-between; gap: 12px; color: var(--primary-text); font-size: .76rem; font-weight: 850; cursor: pointer; list-style: none; }
+    details.calculation summary::-webkit-details-marker { display: none; }
+    details.calculation summary::after { content: "+"; font-family: var(--font-display); font-size: 1.2rem; }
+    details.calculation[open] summary::after { content: "−"; }
+    details.calculation .field-grid { padding-bottom: 16px; }
+    .primary-action, .secondary-action { min-height: 48px; padding: 10px 16px; font-weight: 850; cursor: pointer; transition: transform 140ms var(--ease-out), filter 160ms ease; }
+    .primary-action { border: 2px solid var(--border-strong); background: var(--primary); color: white; box-shadow: 2px 2px 0 var(--border-strong); }
+    .secondary-action { border: 1px solid var(--border); background: var(--raised); color: var(--text); }
+    .save-action { width: 100%; }
+    .toast { position: fixed; z-index: 20; right: 16px; bottom: 76px; left: 16px; width: min(calc(100% - 32px), 398px); min-height: 44px; margin-inline: auto; padding: 12px 14px; border-left: 3px solid var(--primary); background: var(--raised); box-shadow: 3px 3px 0 var(--shadow); font-size: .76rem; font-weight: 800; }
+    @media (min-width: 700px) { .screen { padding-inline: 22px; } }
+    @media (max-width: 359px) { .screen { padding-inline: 12px; } .quick-panel { padding: 13px; } .row-value { max-width: 110px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+
+    .proto-picker {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(10, 10, 10, 0.82);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 8px 24px rgba(0, 0, 0, 0.24),
+        0 2px 6px rgba(0, 0, 0, 0.12);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .proto-picker-highlight {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      will-change: transform;
+    }
+
+    /* The slide is enabled only after first paint (data-ready), so load doesn't animate. */
+    .proto-picker[data-ready] .proto-picker-highlight {
+      transition:
+        transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+        width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+    }
+
+    .proto-picker-item {
+      position: relative; /* sits above the highlight */
+      display: flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.55);
+      font: inherit;
+      cursor: pointer;
+      transition: color 150ms ease-out;
+    }
+
+    .proto-picker-item:hover {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .proto-picker-item:active {
+      transform: scale(0.97);
+    }
+
+    .proto-picker-item:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.4);
+      outline-offset: 2px;
+    }
+
+    .proto-picker-item[data-active] {
+      color: #fff;
+    }
+
+    .proto-picker-divider {
+      width: 1px;
+      height: 16px;
+      margin: 0 4px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .proto-picker-replay {
+      padding: 0 10px;
+      font-size: 14px;
+    }
+
+    .proto-picker[data-position="top"] {
+      bottom: auto;
+      top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <main id="stage"></main>
+  <nav class="proto-picker" aria-label="Prototype variants">
+    <span class="proto-picker-highlight" aria-hidden="true"></span>
+    <button class="proto-picker-item" data-active aria-current="true">Utility Hub</button>
+  </nav>
+
+  <script>
+    const state = {
+      screen: 'hub',
+      family: 'spartans',
+      brightness: 'dark',
+      sound: true,
+      targetsEnabled: true,
+      goal: 'lose',
+      calorie: '2300',
+      protein: '120'
+    };
+
+    const brandIcon = () => state.family === 'amazonians' ? '/branding/fitdex-icon-amazonian.png' : '/branding/fitdex-icon-spartan.png';
+
+    function appBar() {
+      return `<header class="app-bar"><div class="brand"><img src="${brandIcon()}" alt=""><strong>FitDex</strong></div><span class="local-badge">Local only</span></header>`;
+    }
+
+    function segmented(name, options, selected, columns = options.length) {
+      return `<div class="segmented" style="--columns:${columns}" role="group" aria-label="${name}">${options.map(([value, label]) => `<button type="button" data-control="${name}" data-value="${value}" aria-pressed="${selected === value}">${label}</button>`).join('')}</div>`;
+    }
+
+    function row(title, summary, action, value = '›') {
+      return `<button class="settings-row" type="button" data-action="${action}"><span><strong>${title}</strong><small>${summary}</small></span><span class="row-value">${value}<b aria-hidden="true">›</b></span></button>`;
+    }
+
+    function hub() {
+      return `<article class="prototype-shell">${appBar()}<div class="screen">
+        <header class="screen-heading"><button type="button" data-action="close" aria-label="Back to FitDex">‹</button><div><p class="eyebrow">Settings Utility Hub</p><h1>Settings</h1><p>Shape FitDex around the way you train.</p></div></header>
+
+        <section class="quick-panel" aria-labelledby="quick-title"><header><p class="eyebrow">Quick preferences</p><h2 id="quick-title">Your everyday controls</h2></header>
+          <div class="quick-control"><span>Theme family</span>${segmented('family', [['spartans', 'Spartan'], ['amazonians', 'Amazonian']], state.family)}</div>
+          <div class="quick-control"><span>Brightness</span>${segmented('brightness', [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], state.brightness)}</div>
+          <div class="toggle-row"><span><strong>Sound Effects</strong><small>UI and progress sounds</small></span><button class="switch" type="button" data-control="sound" aria-label="Toggle Sound Effects" aria-pressed="${state.sound}"></button></div>
+        </section>
+
+        <div class="settings-groups">
+          <section class="settings-group"><p class="group-label">Profile</p><div class="row-list">${row('Display Name & Avatar', 'Arijit · Aster', 'profile')}</div></section>
+          <section class="settings-group"><p class="group-label">Training</p><div class="row-list"><div class="settings-row is-muted" aria-label="Training unavailable"><span><strong>Units & Workout Preferences</strong><small>Measurement and training defaults</small></span><span class="row-value">Coming later</span></div></div></section>
+          <section class="settings-group"><p class="group-label">Nutrition</p><div class="row-list">${row('Nutrition Targets', `${state.calorie} kcal · ${state.protein} g protein`, 'nutrition')}</div></section>
+          <section class="settings-group"><p class="group-label">Audio</p><div class="row-list">${row('Battle Music', 'Warrior', 'audio')}</div></section>
+          <section class="settings-group"><p class="group-label">Gamification</p><div class="row-list">${row('How Gamification Works', 'XP, ranks, streaks, and achievements', 'gamification')}</div></section>
+          <section class="settings-group"><p class="group-label">Data & Offline</p><div class="row-list">${row('Exercise Media', '24 exercises cached', 'media')}${row('Backup & Restore', 'Portable local .fitdex backup', 'backup')}</div></section>
+          <section class="settings-group"><p class="group-label">Support</p><div class="row-list">${row('Field Guide', 'Replay 7 tutorial topics', 'guide')}${row('About FitDex', 'Local-first fitness tracking', 'about', 'v0.5.0')}</div></section>
+        </div>
+      </div></article>`;
+    }
+
+    function nutrition() {
+      return `<article class="prototype-shell">${appBar()}<div class="screen">
+        <header class="screen-heading"><button type="button" data-action="back" aria-label="Back to Settings">‹</button><div><p class="eyebrow">Settings</p><h1>Nutrition</h1><p>Set daily targets using your preferred goal and calculation profile.</p></div></header>
+
+        <form class="subview-form" data-nutrition-form>
+          <section class="form-section"><div class="toggle-row"><span><h2>Nutrition Targets</h2><small>Use targets for daily guidance</small></span><button class="switch" type="button" data-control="targets" aria-label="Toggle Nutrition Targets" aria-pressed="${state.targetsEnabled}"></button></div></section>
+          <section class="form-section"><p class="group-label">Goal</p>${segmented('goal', [['lose', 'Lose'], ['maintain', 'Maintain'], ['gain', 'Gain']], state.goal)}</section>
+          <section class="form-section"><p class="group-label">Daily targets</p><div class="field-grid"><label class="field">Calories<input type="number" inputmode="numeric" min="1" name="calorie" value="${state.calorie}" /></label><label class="field">Protein (g)<input type="number" inputmode="decimal" min="0" step="0.1" name="protein" value="${state.protein}" /></label></div></section>
+          <aside class="recommendation"><strong>Estimated maintenance · 2,640 kcal/day</strong><small>Moderate deficit suggestion: 2,300 kcal. Estimate only.</small><button class="secondary-action" type="button" data-action="use-suggestion">Use 2,300 kcal</button></aside>
+          <details class="calculation"><summary>Calculation profile</summary><div class="field-grid"><label class="field">Age<input type="number" min="18" max="120" value="30" /></label><label class="field">Sex<select><option>Female</option><option>Male</option></select></label><label class="field">Height (cm)<input type="number" min="1" value="165" /></label><label class="field">Weight (kg)<input type="number" min="1" step="0.1" value="65" /></label><label class="field">Activity<select><option>Sedentary</option><option>Lightly Active</option><option selected>Moderately Active</option><option>Very Active</option><option>Extremely Active</option></select></label></div></details>
+          <p class="disclaimer">Calorie needs are estimates. FitDex is not medical advice.</p>
+          <button class="primary-action save-action" type="submit">Save Targets</button>
+        </form>
+      </div></article>`;
+    }
+
+    function renderScreen() {
+      document.documentElement.dataset.themeFamily = state.family;
+      document.documentElement.dataset.brightness = state.brightness === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.brightness;
+      document.getElementById('stage').innerHTML = state.screen === 'nutrition' ? nutrition() : hub();
+    }
+
+    function showToast(message) {
+      document.querySelector('.toast')?.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.textContent = message;
+      document.body.append(toast);
+      setTimeout(() => toast.remove(), 1800);
+    }
+
+    document.addEventListener('click', (event) => {
+      const target = event.target.closest('button');
+      if (!target || target.closest('.proto-picker')) return;
+      const control = target.dataset.control;
+      if (control === 'family') { state.family = target.dataset.value; renderScreen(); return; }
+      if (control === 'brightness') { state.brightness = target.dataset.value; renderScreen(); return; }
+      if (control === 'sound') { state.sound = !state.sound; renderScreen(); return; }
+      if (control === 'targets') { state.targetsEnabled = !state.targetsEnabled; renderScreen(); return; }
+      if (control === 'goal') { state.goal = target.dataset.value; renderScreen(); return; }
+      if (target.dataset.action === 'nutrition') { state.screen = 'nutrition'; renderScreen(); return; }
+      if (target.dataset.action === 'back') { state.screen = 'hub'; renderScreen(); return; }
+      if (target.dataset.action === 'use-suggestion') { state.calorie = '2300'; renderScreen(); showToast('2,300 kcal suggestion applied.'); return; }
+      if (target.dataset.action === 'close') { showToast('Prototype only · return to FitDex.'); return; }
+      if (target.dataset.action) showToast(`${target.textContent.trim().split('›')[0]} opens a focused subview.`);
+    });
+
+    document.addEventListener('input', (event) => {
+      if (event.target.name === 'calorie') state.calorie = event.target.value;
+      if (event.target.name === 'protein') state.protein = event.target.value;
+    });
+
+    document.addEventListener('submit', (event) => {
+      if (!event.target.matches('[data-nutrition-form]')) return;
+      event.preventDefault();
+      showToast('Nutrition targets saved in prototype.');
+    });
+
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (state.brightness === 'system') renderScreen(); });
+
+    // `variants` is an array of render functions, one per variant, in picker order.
+    const stage = document.getElementById('stage');
+    const picker = document.querySelector('.proto-picker');
+    const highlight = picker.querySelector('.proto-picker-highlight');
+    const items = [...picker.querySelectorAll('.proto-picker-item:not(.proto-picker-replay)')];
+    const replay = picker.querySelector('.proto-picker-replay');
+    let current = 0;
+
+    function moveHighlight() {
+      const el = items[current];
+      highlight.style.width = el.offsetWidth + 'px';
+      highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+    }
+
+    function mount(i) {
+      stage.innerHTML = '';
+      // Clear first, render next frame, so entrance animations re-run.
+      requestAnimationFrame(() => { stage.innerHTML = variants[i](); });
+    }
+
+    const variants = [() => {
+      state.screen = 'hub';
+      return hub();
+    }];
+
+    function setActive(i) {
+      if (i < 0 || i >= variants.length) return;
+      current = i;
+      items.forEach((el, j) => {
+        el.toggleAttribute('data-active', j === i);
+        if (j === i) el.setAttribute('aria-current', 'true');
+        else el.removeAttribute('aria-current');
+      });
+      moveHighlight();
+      const url = new URL(location);
+      url.searchParams.set('v', i + 1);
+      history.replaceState(null, '', url);
+      mount(i);
+    }
+
+    items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+    replay?.addEventListener('click', () => mount(current));
+    window.addEventListener('resize', moveHighlight);
+
+    document.addEventListener('keydown', (e) => {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= variants.length) setActive(num - 1);
+      else if (e.key === 'ArrowRight') setActive((current + 1) % variants.length);
+      else if (e.key === 'ArrowLeft') setActive((current - 1 + variants.length) % variants.length);
+      else if (e.key === 'r' || e.key === 'R') mount(current);
+    });
+
+    setActive((parseInt(new URLSearchParams(location.search).get('v'), 10) || 1) - 1);
+    // Enable the slide only after first paint, so load doesn't animate.
+    requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+  </script>
+</body>
+</html>

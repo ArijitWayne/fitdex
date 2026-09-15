@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ChevronRight, Pause, Play, Plus, RotateCcw, TimerReset, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, MoreHorizontal, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
 import { db } from '../../data/database'
@@ -6,6 +6,7 @@ import type { Exercise, ExerciseTrackingType, WorkoutSet } from '../../data/mode
 import { displayDistanceFromKm, displayWeightFromKg, getUnitContext, storeDistanceAsKm, storeWeightAsKg, type UnitContext } from '../../utils/units.ts'
 import { ExerciseDex } from '../exerciseDex/ExerciseDex'
 import { useAudio } from '../audio/useAudio'
+import { useBackNavigation } from '../navigation/useBackNavigation'
 import {
   DEFAULT_REST_SECONDS,
   calculateVolume,
@@ -71,7 +72,9 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const { playEffect } = useAudio()
   const [detail, setDetail] = useState<WorkoutDetail>()
   const [previous, setPrevious] = useState<Map<string, WorkoutSet[]>>(new Map())
-  const [expanded, setExpanded] = useState<string>()
+  const [currentExerciseId, setCurrentExerciseId] = useState<string>()
+  const [openMenuExerciseId, setOpenMenuExerciseId] = useState<string>()
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [picker, setPicker] = useState(false)
   const [units, setUnits] = useState<UnitContext>(metricUnits)
   const [now, setNow] = useState(() => Date.now())
@@ -84,12 +87,20 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const [setDrafts, setSetDrafts] = useState<Map<string, SetDraft>>(new Map())
   const [feedback, setFeedback] = useState('')
   const [confirmExerciseRemovalId, setConfirmExerciseRemovalId] = useState<string>()
+  const [showSessionNotes, setShowSessionNotes] = useState(false)
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(() => new Set())
   const timerIsRunning = detail?.workout.status === 'active' && !isWorkoutTimerPaused(detail.workout)
+
+  useBackNavigation('exercise-menu', Boolean(openMenuExerciseId), () => setOpenMenuExerciseId(undefined))
 
   async function refresh() {
     const next = await getWorkoutDetail(workoutId)
     setDetail(next)
-    setExpanded((current) => current ?? next.exercises[0]?.exercise.id)
+    setCurrentExerciseId((current) => {
+      if (current && next.exercises.some((item) => item.exercise.id === current)) return current
+      const firstIncomplete = next.exercises.find((item) => item.sets.some((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') !== 'logged'))
+      return firstIncomplete?.exercise.id ?? next.exercises[0]?.exercise.id
+    })
     const history = await Promise.all(next.exercises.map(async ({ exercise }) => [exercise.exerciseId, (await getPreviousPerformance(exercise.exerciseId, workoutId))?.sets ?? []] as const))
     setPrevious(new Map(history))
   }
@@ -238,35 +249,221 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const loggedSets = detail.exercises.reduce((total, item) => total + item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length, 0)
   const timerPaused = isWorkoutTimerPaused(detail.workout)
 
-  return <div className="page-stack active-workout-page">
-    <Panel className="active-workout-header">
-      <button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onExit() }} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /></button>
-      <div>
-        <p className="eyebrow">{timerPaused ? 'Workout paused' : 'Workout in progress'}</p>
-        <input className="active-workout-name" aria-label="Workout name" maxLength={80} defaultValue={detail.workout.nameSnapshot} key={`${detail.workout.id}:${detail.workout.nameSnapshot}`} onBlur={(event) => void run(() => renameActiveWorkout(workoutId, event.target.value))} />
-        <div className="active-workout-metrics"><strong>{formatDuration(getWorkoutDuration(detail.workout, now))}</strong><span>{detail.exercises.length} exercises</span><span aria-live="polite">{loggedSets}/{allSets.length} sets logged</span>{timerPaused ? <span>Timer is paused</span> : null}</div>
-        <div className="active-workout-top-actions"><button className="secondary-button" type="button" aria-label={timerPaused ? 'Resume workout timer' : 'Pause workout timer'} onClick={() => void run(() => timerPaused ? resumeWorkout(workoutId) : pauseWorkout(workoutId))}>{timerPaused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}{timerPaused ? 'Resume' : 'Pause'}</button>{timerPaused ? <button className="primary-button" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>Finish workout</button> : null}<button className="primary-button" type="button" onClick={() => setPicker(true)}><Plus size={17} aria-hidden="true" /> Add exercise</button></div>
-      </div>
-    </Panel>
+  const toggleExerciseNotes = (exerciseId: string) => {
+    setExpandedNotes((prev) => {
+      const next = new Set(prev)
+      if (next.has(exerciseId)) next.delete(exerciseId)
+      else next.add(exerciseId)
+      return next
+    })
+  }
 
-    {rest !== undefined ? <div className="rest-timer" role="timer"><span>Rest</span><strong>{formatDuration(rest).slice(3)}</strong><button type="button" onClick={() => setRest(DEFAULT_REST_SECONDS)}><RotateCcw size={16} aria-hidden="true" /> Reset</button><button type="button" onClick={() => setRest(undefined)}><X size={16} aria-hidden="true" /> Skip</button></div> : null}
+  return <div className="page-stack active-workout-page">
+    <header className="session-header active-workout-header">
+      <div className="session-top-row">
+        <button
+          className="session-hub-link"
+          type="button"
+          onClick={() => { playEffect('select'); onExit() }}
+          aria-label="Back to Workout Hub"
+        >
+          ← Training Hub
+        </button>
+        <span className={`session-state-badge ${timerPaused ? 'is-paused' : 'is-active'}`}>
+          <span className="state-pulse" aria-hidden="true"></span>
+          <span>{timerPaused ? 'Paused' : 'In Progress'}</span>
+        </span>
+      </div>
+
+      <div className="session-title-wrap active-workout-title-row">
+        {isEditingTitle ? (
+          <form className="active-workout-name-form" onSubmit={(event) => { event.preventDefault(); setIsEditingTitle(false) }}>
+            <input
+              className="session-title-input active-workout-name"
+              aria-label="Workout name"
+              maxLength={80}
+              autoFocus
+              defaultValue={detail.workout.nameSnapshot}
+              key={`${detail.workout.id}:${detail.workout.nameSnapshot}`}
+              onBlur={(event) => {
+                setIsEditingTitle(false)
+                void run(() => renameActiveWorkout(workoutId, event.target.value))
+              }}
+            />
+          </form>
+        ) : (
+          <>
+            <h1 className="session-title active-workout-name-text">{detail.workout.nameSnapshot}</h1>
+            <button
+              className="session-edit-title active-workout-rename-btn text-button"
+              type="button"
+              onClick={() => setIsEditingTitle(true)}
+            >
+              Edit
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="session-stats-bar">
+        <div className="stat-duration">
+          <span>Time</span>
+          <strong>{formatDuration(getWorkoutDuration(detail.workout, now))}</strong>
+          <div className="active-workout-top-actions">
+            <button
+              className="pause-toggle-btn secondary-button"
+              type="button"
+              aria-label={timerPaused ? 'Resume workout timer' : 'Pause workout timer'}
+              onClick={() => void run(() => timerPaused ? resumeWorkout(workoutId) : pauseWorkout(workoutId))}
+            >
+              {timerPaused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
+              <span>{timerPaused ? 'Resume' : 'Pause'}</span>
+            </button>
+          </div>
+        </div>
+        <div className="stat-progress">
+          <span>Sets Logged:</span>
+          <strong aria-live="polite">{loggedSets} / {allSets.length}</strong>
+          <span className="visually-hidden">{loggedSets}/{allSets.length} sets logged</span>
+        </div>
+      </div>
+    </header>
 
     {detail.exercises.length ? <div className="active-exercise-list">{detail.exercises.map((item, index) => {
-      const isOpen = expanded === item.exercise.id
-      return <Panel className="active-exercise-card" key={item.exercise.id}>
-        <button className="active-exercise-heading" type="button" aria-expanded={isOpen} onClick={() => setExpanded(isOpen ? undefined : item.exercise.id)}><span className="exercise-order">{index + 1}</span><span><strong>{item.exercise.exerciseNameSnapshot ?? 'Historical exercise'}</strong><small aria-live="polite">{item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length}/{item.sets.length} sets logged</small></span>{isOpen ? <ChevronDown size={20} aria-hidden="true" /> : <ChevronRight size={20} aria-hidden="true" />}</button>
-        {isOpen ? <div className="active-exercise-body">
-          <div className="active-exercise-actions"><button type="button" disabled={index === 0} onClick={() => void run(() => reorderWorkoutExercise(item.exercise.id, -1))}><ArrowUp size={16} aria-hidden="true" /> Up</button><button type="button" disabled={index === detail.exercises.length - 1} onClick={() => void run(() => reorderWorkoutExercise(item.exercise.id, 1))}><ArrowDown size={16} aria-hidden="true" /> Down</button><button type="button" onClick={() => renderedExerciseHasData(item.exercise.id) ? setConfirmExerciseRemovalId(item.exercise.id) : void run(() => removeActiveExercise(item.exercise.id))}><Trash2 size={16} aria-hidden="true" /> Remove</button></div>
-          <div className="set-list">{item.sets.map((set, setIndex) => <ActiveSetRow key={set.id} set={set} draft={setDrafts.get(set.id)} setNumber={setIndex + 1} trackingType={item.exercise.trackingTypeSnapshot ?? 'reps_only'} previous={previous.get(item.exercise.exerciseId)?.[setIndex]} units={units} onDraftChange={(field, value) => updateDraft(set.id, field, value)} onDraftSaved={(field, value) => clearDraftField(set.id, field, value)} onSaved={refresh} onStartRest={() => setRest(DEFAULT_REST_SECONDS)} />)}</div>
-          <button className="secondary-button add-set-button" type="button" onClick={() => void run(async () => { await addWorkoutSet(item.exercise.id); playEffect('add') })}><Plus size={16} aria-hidden="true" /> Add set</button>
-        </div> : null}
+      const isCurrent = currentExerciseId === item.exercise.id
+      const unloggedIndex = item.sets.findIndex((s) => getWorkoutSetLogState(applySetDraft(s, setDrafts.get(s.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') !== 'logged')
+      const activeSetIndex = unloggedIndex === -1 ? item.sets.length - 1 : unloggedIndex
+      const loggedCount = item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length
+      const trackingType = item.exercise.trackingTypeSnapshot ?? 'reps_only'
+      const isMenuOpen = openMenuExerciseId === item.exercise.id
+      const fields = getTrackingFields(trackingType)
+      const isWeightReps = Boolean(fields.weight && fields.reps)
+      const isComplete = loggedCount === item.sets.length && item.sets.length > 0
+
+      return <Panel className={isCurrent ? 'active-exercise-card is-current' : 'active-exercise-card'} key={item.exercise.id}>
+        <div className="active-exercise-header-row exercise-block-header" onClick={() => setCurrentExerciseId(item.exercise.id)}>
+          <span className="exercise-index exercise-order">{index + 1}</span>
+          <div className="exercise-header-text">
+            <div className="exercise-header-title active-exercise-heading">
+              <strong>{item.exercise.exerciseNameSnapshot ?? 'Historical exercise'}</strong>
+            </div>
+            {item.exercise.exerciseCategorySnapshot ? (
+              <span className="exercise-tag">{item.exercise.exerciseCategorySnapshot}</span>
+            ) : null}
+          </div>
+          <div className="exercise-header-meta">
+            <span className={`set-count-pill ${isComplete ? 'is-complete' : ''}`} aria-live="polite">
+              {loggedCount}/{item.sets.length} Sets
+              <span className="visually-hidden"> sets logged</span>
+            </span>
+            <div className="active-exercise-menu-wrap">
+              <button
+                className="exercise-menu-trigger menu-trigger-btn"
+                type="button"
+                aria-label={`Options for ${item.exercise.exerciseNameSnapshot ?? 'exercise'}`}
+                aria-expanded={isMenuOpen}
+                onClick={(e) => { e.stopPropagation(); setOpenMenuExerciseId(isMenuOpen ? undefined : item.exercise.id) }}
+              >
+                <MoreHorizontal size={18} aria-hidden="true" />
+              </button>
+              {isMenuOpen ? (
+                <div className="exercise-context-menu" role="menu" onClick={(e) => e.stopPropagation()}>
+                  <button type="button" role="menuitem" disabled={index === 0} onClick={() => { setOpenMenuExerciseId(undefined); void run(() => reorderWorkoutExercise(item.exercise.id, -1)) }}><ArrowUp size={16} aria-hidden="true" /> Move up</button>
+                  <button type="button" role="menuitem" disabled={index === detail.exercises.length - 1} onClick={() => { setOpenMenuExerciseId(undefined); void run(() => reorderWorkoutExercise(item.exercise.id, 1)) }}><ArrowDown size={16} aria-hidden="true" /> Move down</button>
+                  <button type="button" role="menuitem" onClick={() => { setOpenMenuExerciseId(undefined); toggleExerciseNotes(item.exercise.id) }}><Pencil size={16} aria-hidden="true" /> {expandedNotes.has(item.exercise.id) ? 'Hide notes' : 'Exercise notes'}</button>
+                  {item.sets.length > 0 ? (
+                    <button type="button" role="menuitem" className="danger-menu-item" onClick={() => { setOpenMenuExerciseId(undefined); void removeWorkoutSet(item.sets[item.sets.length - 1].id).then(refresh) }}><Trash2 size={16} aria-hidden="true" /> Delete set {item.sets.length}</button>
+                  ) : null}
+                  <button type="button" role="menuitem" className="danger-menu-item" onClick={() => { setOpenMenuExerciseId(undefined); if (renderedExerciseHasData(item.exercise.id)) setConfirmExerciseRemovalId(item.exercise.id); else void run(() => removeActiveExercise(item.exercise.id)) }}><Trash2 size={16} aria-hidden="true" /> Remove exercise</button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+        <div className="active-exercise-body set-table-wrap">
+          <div className={`set-table-header ${isWeightReps ? 'weight-reps' : 'reps-only'}`}>
+            <span>Set</span>
+            <span>Previous</span>
+            {fields.weight ? <span>{trackingType === 'assisted_bodyweight' ? 'Assist' : 'Weight'} ({units.weightLabel})</span> : null}
+            {fields.reps ? <span>Reps</span> : null}
+            {fields.duration ? <span>Time (s)</span> : null}
+            {fields.distance ? <span>Dist ({units.distanceLabel})</span> : null}
+            <span style={{ textAlign: 'center' }}>Log</span>
+          </div>
+          <div className="set-list">
+            {item.sets.map((set, setIndex) => (
+              <ActiveSetRow
+                key={set.id}
+                set={set}
+                draft={setDrafts.get(set.id)}
+                setNumber={setIndex + 1}
+                trackingType={trackingType}
+                previous={previous.get(item.exercise.exerciseId)?.[setIndex]}
+                units={units}
+                isActiveSet={isCurrent && setIndex === activeSetIndex}
+                onDraftChange={(field, value) => updateDraft(set.id, field, value)}
+                onDraftSaved={(field, value) => clearDraftField(set.id, field, value)}
+                onSaved={refresh}
+                onStartRest={() => setRest(DEFAULT_REST_SECONDS)}
+              />
+            ))}
+          </div>
+          <div className="exercise-footer-actions">
+            <button className="add-set-btn add-set-button" type="button" onClick={(e) => { e.stopPropagation(); void run(async () => { await addWorkoutSet(item.exercise.id); playEffect('add') }) }}><Plus size={14} aria-hidden="true" /> Add Set</button>
+            <button className="text-button note-toggle-btn" type="button" onClick={(e) => { e.stopPropagation(); toggleExerciseNotes(item.exercise.id) }}>{expandedNotes.has(item.exercise.id) ? 'Hide notes' : 'Notes'}</button>
+          </div>
+          {expandedNotes.has(item.exercise.id) ? (
+            <div className="exercise-note-field is-visible">
+              <textarea
+                defaultValue={item.exercise.notes ?? ''}
+                placeholder="Form notes, seat angle, bench notch…"
+                onBlur={(e) => {
+                  const val = e.target.value.trim()
+                  void db.workoutExercises.update(item.exercise.id, { notes: val || undefined })
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
       </Panel>
     })}</div> : <Panel><p className="eyebrow">Empty workout</p><h2>Add your first exercise</h2><p>Use the complete Exercise Dex to build today’s session.</p></Panel>}
 
-    <button className="primary-button active-add-exercise" type="button" onClick={() => setPicker(true)}><Plus size={18} aria-hidden="true" /> Add exercise</button>
-    <label className="workout-notes"><span>Workout notes</span><textarea defaultValue={detail.workout.notes ?? ''} onBlur={(event) => void run(() => updateWorkoutNotes(workoutId, event.target.value))} placeholder="Optional session notes" /></label>
+    <div className="workout-notes-section">
+      <button
+        type="button"
+        className="text-button note-toggle-btn workout-notes-toggle"
+        onClick={() => setShowSessionNotes(!showSessionNotes)}
+      >
+        <Pencil size={14} aria-hidden="true" /> {showSessionNotes || detail.workout.notes ? 'Workout notes' : '+ Add session notes'}
+      </button>
+      {showSessionNotes || detail.workout.notes ? (
+        <label className="workout-notes">
+          <span className="visually-hidden">Workout notes</span>
+          <textarea defaultValue={detail.workout.notes ?? ''} onBlur={(event) => void run(() => updateWorkoutNotes(workoutId, event.target.value))} placeholder="Optional session notes" />
+        </label>
+      ) : null}
+    </div>
     {feedback ? <p className="workout-feedback" role="status">{feedback}</p> : null}
-    <div className="active-workout-final-actions"><button className="text-button" type="button" onClick={() => setConfirmDiscard(true)}>Discard workout</button><button className="primary-button" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>{finishBusy ? 'Checking workout…' : 'Finish workout'}</button></div>
+    <div className="active-workout-secondary-actions">
+      <button className="text-button active-discard-button" type="button" onClick={() => setConfirmDiscard(true)}>Discard workout</button>
+    </div>
+
+    {rest !== undefined ? (
+      <div className="rest-timer-dock" role="timer">
+        <div className="rest-timer-pill">
+          <span>⏱ Rest</span>
+          <span className="rest-time-display">{formatDuration(rest).slice(3)}</span>
+          <button type="button" className="timer-pill-btn" onClick={() => setRest((current) => current === undefined ? undefined : Math.max(0, current + 30))}>+30s</button>
+          <button type="button" className="timer-pill-btn" onClick={() => setRest((current) => current === undefined ? undefined : Math.max(0, current - 15))}>-15s</button>
+          <button type="button" className="timer-pill-btn is-skip" aria-label="Dismiss rest timer" onClick={() => setRest(undefined)}>✕</button>
+        </div>
+      </div>
+    ) : null}
+
+    <div className="active-workout-final-actions session-bottom-bar">
+      <button className="secondary-button btn-bottom-secondary" type="button" onClick={() => setPicker(true)}><Plus size={16} aria-hidden="true" /> Add exercise</button>
+      <button className="primary-button btn-bottom-primary" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>{finishBusy ? 'Checking workout…' : 'Finish workout'}</button>
+    </div>
     {finishValidation ? <FinishValidationDialog validation={finishValidation} onClose={() => setFinishValidation(undefined)} /> : null}
     {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => { playEffect('progress_complete'); onCompleted(workoutId) }).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
     {confirmDiscard ? <Panel className="workout-confirm"><h2>Discard workout?</h2><p>This session will not appear in history or previous performance.</p><button className="secondary-button" type="button" onClick={() => setConfirmDiscard(false)}>Keep workout</button><button className="danger-button" type="button" onClick={() => void discardWorkout(workoutId).then(onExit)}>Discard</button></Panel> : null}
@@ -298,22 +495,25 @@ function createPersistedDraftPatch(draft: SetDraft, units: UnitContext) {
   return patch
 }
 
-function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, onDraftChange, onDraftSaved, onSaved, onStartRest }: {
+function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, isActiveSet, onDraftChange, onDraftSaved, onSaved, onStartRest }: {
   set: WorkoutSet
   draft?: SetDraft
   setNumber: number
   trackingType: ExerciseTrackingType
   previous?: WorkoutSet
   units: UnitContext
+  isActiveSet?: boolean
   onDraftChange: (field: WorkoutSetMetric, value: string) => void
   onDraftSaved: (field: WorkoutSetMetric, value: string) => void
   onSaved: () => Promise<void>
   onStartRest: () => void
 }) {
+  const { playEffect } = useAudio()
   const fields = getTrackingFields(trackingType)
   const [error, setError] = useState('')
   const renderedSet = applySetDraft(set, draft)
   const logState = getWorkoutSetLogState(renderedSet, trackingType)
+
   async function save(field: WorkoutSetMetric, raw: string) {
     try {
       let value = parseWorkoutNumber(raw, field)
@@ -325,25 +525,140 @@ function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, on
       onDraftSaved(field, raw)
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Invalid value.') }
   }
+
+  function handleCopyPrevious() {
+    if (!previous || logState === 'logged') return
+    const trackingFields = getTrackingFields(trackingType)
+    if (trackingFields.weight && previous.weight !== undefined) {
+      onDraftChange('weight', String(displayWeight(previous.weight, units)))
+    }
+    if (trackingFields.reps && previous.reps !== undefined) {
+      onDraftChange('reps', String(previous.reps))
+    }
+    if (trackingFields.duration && previous.durationSeconds !== undefined) {
+      onDraftChange('durationSeconds', String(previous.durationSeconds))
+    }
+    if (trackingFields.distance && previous.distance !== undefined) {
+      onDraftChange('distance', String(displayDistance(previous.distance, units)))
+    }
+    playEffect('select')
+  }
+
   const valueFor = (field: WorkoutSetMetric, persisted: string | number) => draft?.[field] ?? String(persisted)
-  return <div className={logState === 'logged' ? 'active-set-row is-logged' : logState === 'incomplete' ? 'active-set-row is-incomplete' : 'active-set-row'}>
-    <div className="set-row-heading"><strong className="set-number"><span className="visually-hidden">Set </span>{setNumber}</strong><span className="previous-value"><small>Previous:</small> {formatPreviousSet(previous, trackingType, units.weightLabel, units.distanceLabel)}</span></div>
-    <div className="set-inputs">
-      {fields.weight ? <SetValueInput label={`${trackingType === 'assisted_bodyweight' ? 'Assistance' : 'Weight'} (${units.weightLabel})`} inputMode="decimal" min="0" step="any" value={valueFor('weight', displayWeight(set.weight, units))} onChange={(value) => onDraftChange('weight', value)} onSave={(value) => save('weight', value)} /> : null}
-      {fields.reps ? <SetValueInput label="Reps" inputMode="numeric" min="1" step="1" value={valueFor('reps', set.reps ?? '')} onChange={(value) => onDraftChange('reps', value)} onSave={(value) => save('reps', value)} /> : null}
-      {fields.duration ? <SetValueInput label="Seconds" inputMode="decimal" min="0" step="any" value={valueFor('durationSeconds', set.durationSeconds ?? '')} onChange={(value) => onDraftChange('durationSeconds', value)} onSave={(value) => save('durationSeconds', value)} /> : null}
-      {fields.distance ? <SetValueInput label={`Distance (${units.distanceLabel})`} inputMode="decimal" min="0" step="any" value={valueFor('distance', displayDistance(set.distance, units))} onChange={(value) => onDraftChange('distance', value)} onSave={(value) => save('distance', value)} /> : null}
+  const previousFormatted = formatPreviousSet(previous, trackingType, units.weightLabel, units.distanceLabel)
+  const isWeightReps = Boolean(fields.weight && fields.reps)
+  const rowClasses = [
+    'active-set-row',
+    'proto-set-row',
+    isWeightReps ? 'weight-reps' : 'reps-only',
+    logState === 'logged' ? 'is-logged' : logState === 'incomplete' ? 'is-incomplete' : '',
+    isActiveSet ? 'is-active-set' : '',
+  ].filter(Boolean).join(' ')
+
+  return <div className={rowClasses}>
+    <div className="set-row-heading set-num-badge">
+      <span className="visually-hidden">Set </span>
+      <strong className="set-number">{setNumber}</strong>
     </div>
+
+    {previous && logState !== 'logged' ? (
+      <button
+        type="button"
+        className="prev-copy-btn previous-copy-btn"
+        onClick={handleCopyPrevious}
+        aria-label={`Copy previous performance (${previousFormatted}) to set ${setNumber}`}
+        title="Tap to copy previous values"
+      >
+        <span className="prev-val previous-value">{previousFormatted}</span>
+        <span className="prev-sub previous-copy-tag">Tap Copy</span>
+      </button>
+    ) : (
+      <div className="prev-copy-btn is-empty">
+        <span className="prev-val previous-value">{previous ? previousFormatted : '—'}</span>
+      </div>
+    )}
+
+    {fields.weight ? (
+      <SetValueInput
+        label={`${trackingType === 'assisted_bodyweight' ? 'Assistance' : 'Weight'} (${units.weightLabel})`}
+        placeholder={previous?.weight !== undefined ? String(displayWeight(previous.weight, units)) : undefined}
+        inputMode="decimal"
+        min="0"
+        step="any"
+        value={valueFor('weight', displayWeight(set.weight, units))}
+        onChange={(value) => onDraftChange('weight', value)}
+        onSave={(value) => save('weight', value)}
+      />
+    ) : null}
+    {fields.reps ? (
+      <SetValueInput
+        label="Reps"
+        placeholder={previous?.reps !== undefined ? String(previous.reps) : undefined}
+        inputMode="numeric"
+        min="1"
+        step="1"
+        value={valueFor('reps', set.reps ?? '')}
+        onChange={(value) => onDraftChange('reps', value)}
+        onSave={(value) => save('reps', value)}
+      />
+    ) : null}
+    {fields.duration ? (
+      <SetValueInput
+        label="Seconds"
+        placeholder={previous?.durationSeconds !== undefined ? String(previous.durationSeconds) : undefined}
+        inputMode="decimal"
+        min="0"
+        step="any"
+        value={valueFor('durationSeconds', set.durationSeconds ?? '')}
+        onChange={(value) => onDraftChange('durationSeconds', value)}
+        onSave={(value) => save('durationSeconds', value)}
+      />
+    ) : null}
+    {fields.distance ? (
+      <SetValueInput
+        label={`Distance (${units.distanceLabel})`}
+        placeholder={previous?.distance !== undefined ? String(displayDistance(previous.distance, units)) : undefined}
+        inputMode="decimal"
+        min="0"
+        step="any"
+        value={valueFor('distance', displayDistance(set.distance, units))}
+        onChange={(value) => onDraftChange('distance', value)}
+        onSave={(value) => save('distance', value)}
+      />
+    ) : null}
+
     <div className="set-row-actions">
-      <small className={`set-log-status is-${logState}`} aria-live="polite">{logState === 'logged' ? '✓ Logged' : logState === 'incomplete' ? '○ Incomplete' : '○ Empty'}</small>
-      <div className="set-row-buttons">{logState === 'logged' ? <button className="set-rest-button" type="button" aria-label={`Start rest timer after set ${setNumber}`} onClick={onStartRest}><TimerReset size={16} aria-hidden="true" /><span>Rest</span></button> : null}<button className="set-remove-button" type="button" aria-label={`Delete set ${setNumber}`} onClick={() => void removeWorkoutSet(set.id).then(onSaved)}><Trash2 size={16} aria-hidden="true" /></button></div>
+      <button
+        type="button"
+        className={`set-action-btn ${logState === 'logged' ? 'is-logged' : ''}`}
+        aria-label={logState === 'logged' ? `Set ${setNumber} logged · Start rest timer after set ${setNumber}` : `Set ${setNumber} ${logState}`}
+        title={logState === 'logged' ? 'Set logged · Tap to start rest timer' : `Set ${setNumber} ${logState}`}
+        onClick={() => {
+          if (logState === 'logged') onStartRest()
+        }}
+      >
+        <span aria-hidden="true">{logState === 'logged' ? '✓' : '○'}</span>
+        <span className="visually-hidden">
+          {logState === 'logged' ? '✓ Logged' : logState === 'incomplete' ? '○ Incomplete' : '○ Empty'}
+        </span>
+      </button>
+      <button
+        type="button"
+        className="set-remove-button"
+        aria-label={`Delete set ${setNumber}`}
+        title={`Delete set ${setNumber}`}
+        onClick={() => void removeWorkoutSet(set.id).then(onSaved)}
+      >
+        <Trash2 size={13} aria-hidden="true" />
+      </button>
     </div>
     {error ? <small className="set-error" role="alert">{error}</small> : null}
   </div>
 }
 
-function SetValueInput({ label, inputMode, min, step, value, onChange, onSave }: {
+function SetValueInput({ label, placeholder, inputMode, min, step, value, onChange, onSave }: {
   label: string
+  placeholder?: string
   inputMode: 'decimal' | 'numeric'
   min: string
   step: string
@@ -351,7 +666,23 @@ function SetValueInput({ label, inputMode, min, step, value, onChange, onSave }:
   onChange: (value: string) => void
   onSave: (value: string) => Promise<void>
 }) {
-  return <label><span>{label}</span><input inputMode={inputMode} type="number" min={min} step={step} value={value} onChange={(event) => onChange(event.target.value)} onBlur={(event) => void onSave(event.target.value)} /></label>
+  return (
+    <div className="proto-input-wrap">
+      <label className="visually-hidden"><span>{label}</span></label>
+      <input
+        aria-label={label}
+        className="proto-input"
+        inputMode={inputMode}
+        type="number"
+        min={min}
+        step={step}
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onBlur={(event) => void onSave(event.target.value)}
+      />
+    </div>
+  )
 }
 
 function FinishValidationDialog({ validation, onClose }: { validation: WorkoutFinishValidation; onClose: () => void }) {

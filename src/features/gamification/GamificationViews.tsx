@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarClock, CircleHelp, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, CalendarClock, ChevronRight, CircleHelp, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Panel } from '../../components/ui/Panel.tsx'
 import type { PlanDaySnapshot } from '../../data/models.ts'
@@ -103,7 +103,7 @@ function AchievementUnlockList({ unlocks }: { unlocks: Awaited<ReturnType<typeof
   })}</ul>
 }
 
-export function GamificationHelpButton() { const [open, setOpen] = useState(false); return <><button className="page-help-button" type="button" onClick={() => setOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Gamification Works</button>{open ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setOpen(false)} /> : null}</> }
+export function GamificationHelpButton({ variant = 'default' }: { variant?: 'default' | 'settings-row' }) { const [open, setOpen] = useState(false); const { playEffect } = useAudio(); return <><button className={variant === 'settings-row' ? 'settings-hub-row' : 'page-help-button'} type="button" onClick={() => { if (variant === 'settings-row') playEffect('select'); setOpen(true) }}>{variant === 'settings-row' ? <><span><strong>How Gamification Works</strong><small>XP, ranks, streaks, and achievements</small></span><span className="settings-row-end"><ChevronRight aria-hidden="true" /></span></> : <><CircleHelp size={18} aria-hidden="true" /> How Gamification Works</>}</button>{open ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setOpen(false)} /> : null}</> }
 function Subheader({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <header className="progress-subheader"><button className="back-button" type="button" aria-label="Back" onClick={() => { playEffect('select'); onBack() }}><ArrowLeft aria-hidden="true" /></button><div><p className="eyebrow">Gamification</p><h1>{title}</h1></div></header> }
 function snapshotLabel(snapshot?: Pick<PlanDaySnapshot, 'plannedType' | 'routineNameSnapshot'>) { if (!snapshot) return 'No snapshot'; if (snapshot.plannedType === 'routine') return snapshot.routineNameSnapshot ?? 'Routine'; if (snapshot.plannedType === 'workout_day') return 'Workout'; if (snapshot.plannedType === 'rest_day') return 'Rest'; return 'No Plan' }
 function resultLabel(result?: PlanDaySnapshot['result']) { if (!result || result === 'pending') return 'Pending'; if (result === 'success') return '✓'; if (result === 'rest' || result === 'no_plan') return '—'; return titleCase(result) }

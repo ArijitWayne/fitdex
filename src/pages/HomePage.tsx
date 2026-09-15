@@ -4,7 +4,7 @@ import { Panel } from '../components/ui/Panel'
 import { AvatarPortrait } from '../features/avatar/AvatarPortrait'
 import { useAvatar } from '../features/avatar/useAvatar'
 import { FOOD_MEAL_LABELS } from '../features/food/foodModel'
-import { formatHomeDate, formatHomeGreeting } from '../features/home/homeModel'
+import { formatHomeDate, formatHomeGreeting, getGreetingPeriod } from '../features/home/homeModel'
 import { loadHomeDashboard, type HomeDashboardData } from '../features/home/homeRepository'
 import { formatPersonalRecordDate, formatPersonalRecordMetric } from '../features/progress/personalRecords'
 import { formatTrainingTime } from '../features/progress/progressModel'
@@ -17,7 +17,7 @@ import { WEEKDAY_IDS } from '../data/models'
 import { WEEKDAY_LABELS, weeklyPlanAssignmentLabel } from '../features/workout/weeklyPlan'
 import { GamificationBadge } from '../features/gamification/GamificationBadge'
 import { LevelProgress, RankDetailView, StreakDetailView } from '../features/gamification/GamificationViews'
-import { achievementAssetPath } from '../features/gamification/gamificationConfig'
+import { achievementAssetPath, rankAssetPath } from '../features/gamification/gamificationConfig'
 import { useAudio } from '../features/audio/useAudio'
 import { BACKGROUND_TRACK_ORDER, cycleBackgroundTrack } from '../features/audio/audioModel'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
@@ -50,9 +50,12 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
   if (data && gamificationView === 'rank') return <RankDetailView data={data.gamification} onBack={() => setGamificationView(undefined)} />
   if (data && gamificationView === 'streak') return <StreakDetailView data={data.gamification} onBack={() => setGamificationView(undefined)} onChanged={(gamification) => setData({ ...data, gamification })} />
 
+  const progression = data?.gamification.progression
+  const levelProgress = progression?.maxLevel ? 100 : progression ? Math.min(100, (progression.xpIntoLevel / progression.xpRequiredForNextLevel) * 100) : 0
+
   return (
     <div className="page-stack home-page">
-      <section className="home-hero">
+      <section className="home-desktop-hero">
         <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
         <div>
           <p className="eyebrow">FitDex · {selectedAvatar.archetype}</p>
@@ -62,10 +65,30 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
         </div>
       </section>
 
-      <HomeMusicController />
+      <section className="home-hero home-mobile-hero home-command-home">
+        <header className="home-command-status"><span>FitDex // Field Unit</span><time dateTime={todayDateKey}>{formatCommandDate(now)}</time></header>
+        <div className="home-hero-player home-command-player">
+          <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
+          <div className="home-hero-player-copy">
+            <p className="eyebrow">Player 01 · {getGreetingPeriod(now)}</p>
+            <h1>{displayName || 'Player'}</h1>
+            <small>{progression ? `LV ${progression.level} · ${progression.rank.name}` : 'Loading progression…'}</small>
+          </div>
+          {progression ? <button className="home-command-rank" type="button" onClick={() => { playEffect('select'); setGamificationView('rank') }} aria-label={`Open ${progression.rank.name} rank details`}><GamificationBadge kind="rank" size="small" src={rankAssetPath(progression.rank)} label={`${progression.rank.name} rank emblem`} /><small>{progression.rank.name}</small></button> : <div className="home-command-rank is-loading" aria-hidden="true">—</div>}
+        </div>
+        <div className="home-command-xp"><span>XP</span><div className="home-hero-xp" role="progressbar" aria-label={progression?.maxLevel ? 'Maximum level reached' : progression ? `Level ${progression.level} XP progress` : 'Loading XP progress'} aria-valuemin={0} aria-valuemax={progression?.maxLevel ? 100 : progression?.xpRequiredForNextLevel ?? 100} aria-valuenow={progression?.maxLevel ? 100 : progression?.xpIntoLevel ?? 0}><i style={{ width: `${levelProgress}%` }} /></div><strong>{progression?.totalXp.toLocaleString() ?? '—'}</strong></div>
 
-      {!data ? <Panel><p className="home-loading" aria-live="polite">Loading today’s dashboard…</p>{error ? <p className="form-error" role="alert">{error}</p> : null}</Panel> : <>
-        <TodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} />
+        {data ? <TodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} /> : <section className="home-hero-quest is-loading" aria-live="polite"><p className="eyebrow">Today's Quest</p><h2>Loading mission…</h2></section>}
+
+        {data ? <MobileHomeSupport data={data} onNavigate={onNavigate} onOpenWorkout={onOpenWorkout} onOpenAchievements={onOpenAchievements} playEffect={playEffect} /> : null}
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
+      </section>
+
+      <div className="home-desktop-content">
+        <HomeMusicController />
+
+        {!data ? <Panel><p className="home-loading" aria-live="polite">Loading today’s dashboard…</p>{error ? <p className="form-error" role="alert">{error}</p> : null}</Panel> : <>
+          <div className="home-desktop-workout"><DesktopTodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} /></div>
 
         <Panel className="home-dashboard-panel home-gamification" eyebrow="Your progress">
           <button className="gamification-level-button" type="button" onClick={() => { playEffect('select'); setGamificationView('rank') }}><LevelProgress data={data.gamification} compact /><ChevronRight aria-hidden="true" /></button>
@@ -99,7 +122,8 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
           <nav className="home-quick-access" aria-label="Home shortcuts"><button type="button" onClick={() => { playEffect('select'); onOpenWorkout('library') }}><BookOpen aria-hidden="true" /><span>Exercise Dex</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => { playEffect('select'); onNavigate('journal') }}><NotebookTabs aria-hidden="true" /><span>Journal</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => { playEffect('select'); onNavigate('progress') }}><ChartNoAxesColumnIncreasing aria-hidden="true" /><span>Progress</span><ChevronRight aria-hidden="true" /></button><button type="button" onClick={() => { playEffect('select'); onNavigate('food') }}><Utensils aria-hidden="true" /><span>Food</span><ChevronRight aria-hidden="true" /></button></nav>
         </Panel>
         {!data.hasHistory && !data.weeklyPlan.configured ? <Panel className="home-dashboard-panel home-connected-help" eyebrow="Your activity will appear here" title="Log once, see it everywhere"><p>Workouts and food you log automatically feed into Home, Journal and Progress.</p></Panel> : null}
-      </>}
+        </>}
+      </div>
     </div>
   )
 }
@@ -122,7 +146,110 @@ function HomeMusicController() {
   </Panel>
 }
 
+function mobileMissionCommand(data: HomeDashboardData) {
+  if (data.activeWorkout) return { summary: `${data.activeWorkout.workout.nameSnapshot} · ${isWorkoutTimerPaused(data.activeWorkout.workout) ? 'Paused' : 'In progress'}` }
+  if (data.todayAssignment.type === 'routine' && data.scheduledRoutine) {
+    const routineId = data.todayAssignment.routineId
+    const completed = data.completedByStartDate.find((summary) => summary.workout.routineId === routineId)
+    return { summary: `${data.scheduledRoutine.routine.name} · ${completed ? 'Complete' : 'Ready'}` }
+  }
+  if (data.todayAssignment.type === 'workout_day') return { summary: data.completedByStartDate.length ? 'Workout Day · Complete' : 'Workout Day · Ready' }
+  if (data.todayAssignment.type === 'rest_day') return { summary: 'Rest Day · Recover' }
+  return { summary: data.completedByStartDate.length ? `${data.completedByStartDate[0].workout.nameSnapshot} · Complete` : 'No workout planned' }
+}
+
+function openMobileMission(data: HomeDashboardData, onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void) {
+  if (data.activeWorkout) { onOpenWorkout('active'); return }
+  if (data.todayAssignment.type === 'routine' && data.scheduledRoutine) {
+    const routineId = data.todayAssignment.routineId
+    const completed = data.completedByStartDate.find((summary) => summary.workout.routineId === routineId)
+    if (completed) onOpenWorkout('history', completed.workout.id)
+    else onOpenWorkout('start-routine', routineId)
+    return
+  }
+  if (data.todayAssignment.type === 'workout_day') {
+    const completed = data.completedByStartDate[0]
+    if (completed) onOpenWorkout('history', completed.workout.id)
+    else onOpenWorkout('start-empty')
+    return
+  }
+  if (data.todayAssignment.type === 'rest_day') { onOpenWorkout('plan'); return }
+  onOpenWorkout('hub')
+}
+
+function MobileHomeSupport({ data, onNavigate, onOpenWorkout, onOpenAchievements, playEffect }: { data: HomeDashboardData; onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void; playEffect: (effect: 'select') => void }) {
+  const progressSummary = data.newestPr
+    ? `${data.newestPr.exerciseName} PR · ${formatPersonalRecordMetric(data.newestPr.metrics[0], data.units)}`
+    : data.gamification.latestAchievement
+      ? `${data.gamification.latestAchievement.definition.name} unlocked`
+      : data.last7WorkoutCount
+        ? `${data.last7WorkoutCount} ${data.last7WorkoutCount === 1 ? 'workout' : 'workouts'} in last 7 days`
+        : 'No recent progress yet'
+  const achievementSummary = data.gamification.latestAchievement
+    ? `${data.gamification.latestAchievement.definition.name} · latest unlock`
+    : `${data.gamification.streak.current}-day streak · ${data.gamification.freezeBalance} ${data.gamification.freezeBalance === 1 ? 'freeze' : 'freezes'}`
+  const mission = mobileMissionCommand(data)
+  const journalEmpty = !data.completedToday.length && !data.food.itemCount
+  const journalSummary = journalEmpty
+    ? 'Nothing recorded yet today'
+    : `${data.completedToday.length} ${data.completedToday.length === 1 ? 'workout' : 'workouts'} · ${formatTrainingTime(data.todayTrainingSeconds)} · ${data.food.itemCount} food ${data.food.itemCount === 1 ? 'item' : 'items'}`
+
+  return <section className="home-mobile-support" aria-label="Home command menu">
+    <nav className="home-command-menu" aria-label="Home commands">
+      <CommandRow number="01" title="Today's Mission" summary={mission.summary} selected onClick={() => { playEffect('select'); openMobileMission(data, onOpenWorkout) }} />
+      <CommandRow number="02" title="Nutrition" summary={`${formatNumber(data.food.kcal)} kcal · ${formatNumber(data.food.protein)} g protein`} onClick={() => { playEffect('select'); onNavigate('food') }} />
+      <CommandRow number="03" title="Progress" summary={progressSummary} onClick={() => { playEffect('select'); onNavigate('progress') }} />
+      <CommandRow number="04" title="Achievements" summary={achievementSummary} onClick={() => { playEffect('select'); if (onOpenAchievements) onOpenAchievements(); else onNavigate('progress') }} />
+      <MobileMusicRow number="05" />
+    </nav>
+    <section className="home-mobile-more" aria-labelledby="home-more-title"><p className="eyebrow" id="home-more-title">More from today</p><button className="home-mobile-journal-gateway" type="button" onClick={() => { playEffect('select'); onNavigate('journal') }}><span className="home-journal-mark" aria-hidden="true"><NotebookTabs /></span><span><strong>Today's Journal</strong><small>{journalSummary}</small><em>Workouts, meals, and daily history</em></span><span className="home-journal-action">Open daily record <ChevronRight aria-hidden="true" /></span></button></section>
+  </section>
+}
+
+function CommandRow({ number, title, summary, selected = false, onClick }: { number: string; title: string; summary: string; selected?: boolean; onClick: () => void }) { return <button className={selected ? 'home-command-row is-selected' : 'home-command-row'} type="button" onClick={onClick}><span>{number}</span><b>{title}</b><small>{summary}</small><ChevronRight aria-hidden="true" /></button> }
+
+function MobileMusicRow({ number }: { number: string }) {
+  const { ready, backgroundMusic, backgroundMusicPaused, playEffect, setBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } = useAudio()
+  const [expanded, setExpanded] = useState(false)
+  const state = !ready ? 'loading' : backgroundMusic === 'none' ? 'off' : backgroundMusicPaused ? 'paused' : 'playing'
+  const toggleMusic = () => {
+    playEffect('select')
+    if (backgroundMusic === 'none') setBackgroundMusic('warrior')
+    else if (backgroundMusicPaused) resumeBackgroundMusic()
+    else pauseBackgroundMusic()
+  }
+  const chooseTrack = (track: typeof BACKGROUND_TRACK_ORDER[number] | 'none') => {
+    playEffect('select')
+    setBackgroundMusic(track)
+    setExpanded(false)
+  }
+  return <section className="home-mobile-music">
+    <div className="home-command-music-row"><button className="home-mobile-music-disclosure" type="button" aria-expanded={expanded} onClick={() => { playEffect('select'); setExpanded((current) => !current) }}><span className="home-command-number">{number}</span><b>Battle Music</b><small>{backgroundTrackLabels[backgroundMusic]} · {state}</small><ChevronRight aria-hidden="true" /></button><button className="home-mobile-music-toggle" type="button" disabled={!ready} onClick={toggleMusic} aria-label={backgroundMusic === 'none' ? 'Turn background music on' : backgroundMusicPaused ? 'Resume background music' : 'Pause background music'}>{backgroundMusic === 'none' || backgroundMusicPaused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}</button></div>
+    {expanded ? <fieldset className="home-mobile-music-tracks"><legend className="sr-only">Battle Music track</legend>{([...BACKGROUND_TRACK_ORDER, 'none'] as const).map((track) => <label key={track}><input type="radio" name="home-background-music" value={track} checked={backgroundMusic === track} disabled={!ready} onChange={() => chooseTrack(track)} /><span>{track === 'none' ? 'None' : backgroundTrackLabels[track]}</span><i aria-hidden="true" /></label>)}</fieldset> : null}
+  </section>
+}
+
 function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {
+  if (data.activeWorkout) {
+    const paused = isWorkoutTimerPaused(data.activeWorkout.workout)
+    return <HomeQuest className="is-active" eyebrow={paused ? 'Workout paused' : "Today's Quest · Active"} title={data.activeWorkout.workout.nameSnapshot} detail={`${formatActiveTime(getWorkoutDuration(data.activeWorkout.workout, now.getTime()), paused)} · ${data.activeWorkout.exercises.length} ${data.activeWorkout.exercises.length === 1 ? 'exercise' : 'exercises'}${data.completedToday.length ? ` · ${data.completedToday.length} already completed today` : ''}`} status={paused ? 'Recover' : 'In progress'}><button className="primary-button" type="button" onClick={() => onOpenWorkout('active')}><Dumbbell size={17} aria-hidden="true" /> {paused ? 'Open Paused Workout' : 'Resume Workout'}</button></HomeQuest>
+  }
+  const assignment = data.todayAssignment
+  if (assignment.type === 'routine' && data.scheduledRoutine) {
+    const matching = data.completedByStartDate.find((summary) => summary.workout.routineId === assignment.routineId)
+    const other = data.completedByStartDate.find((summary) => summary.workout.routineId !== assignment.routineId)
+    if (matching) return <HomeQuest className="is-complete" eyebrow="Today's Quest · Complete" title={data.scheduledRoutine.routine.name} detail={`Workout complete · ${formatTrainingTime(matching.workout.durationSeconds ?? 0)} · ${matching.completedSetCount} logged sets`} status="Complete"><button className="secondary-button" type="button" onClick={() => onOpenWorkout('history', matching.workout.id)}>View Workout</button></HomeQuest>
+    return <HomeQuest eyebrow="Today's Quest · Ready" title={data.scheduledRoutine.routine.name} detail={`Scheduled for ${WEEKDAY_LABELS[data.weekday]} · ${data.scheduledRoutine.items.length} ${data.scheduledRoutine.items.length === 1 ? 'exercise' : 'exercises'}${other ? `. ${other.workout.nameSnapshot} workout completed today; ${data.scheduledRoutine.routine.name} is still planned.` : ''}`} status="Ready"><button className="primary-button" type="button" onClick={() => onOpenWorkout('start-routine', assignment.routineId)}><Dumbbell size={17} aria-hidden="true" /> Start {data.scheduledRoutine.routine.name}</button></HomeQuest>
+  }
+  if (assignment.type === 'workout_day') {
+    const completed = data.completedByStartDate[0]
+    return <HomeQuest className={completed ? 'is-complete' : ''} eyebrow={`Today's Quest · ${completed ? 'Complete' : 'Ready'}`} title={completed ? 'Workout Day Complete' : 'Workout Day'} detail={completed ? `${completed.workout.nameSnapshot} completed · ${formatTrainingTime(completed.workout.durationSeconds ?? 0)}` : 'No routine assigned. Choose exercises as you train.'} status={completed ? 'Complete' : 'Ready'}>{completed ? <button className="secondary-button" type="button" onClick={() => onOpenWorkout('history', completed.workout.id)}>View Workout</button> : <button className="primary-button" type="button" onClick={() => onOpenWorkout('start-empty')}><Dumbbell size={17} aria-hidden="true" /> Start Workout</button>}</HomeQuest>
+  }
+  if (assignment.type === 'rest_day') return <HomeQuest eyebrow="Today's Quest · Recover" title="Rest Day" detail={`Recovery is part of the plan.${data.completedByStartDate.length ? ` ${data.completedByStartDate.length} workout ${data.completedByStartDate.length === 1 ? 'was' : 'were'} completed today; the planned Rest Day remains unchanged.` : ''}`} status="Recover" />
+  return <HomeQuest eyebrow="Today's Quest · Ready" title={data.weeklyPlan.configured ? 'No Plan' : 'No workout planned yet'} detail={data.completedByStartDate.length ? `${data.completedByStartDate[0].workout.nameSnapshot} workout completed today. Nothing else is scheduled.` : data.routines.length ? 'Nothing scheduled for today. Start empty or choose a saved routine.' : 'You can start immediately or create a routine for repeated use.'} status="Ready"><div className="home-workout-actions"><button className="primary-button" type="button" onClick={() => onOpenWorkout('start-empty')}><Dumbbell size={17} aria-hidden="true" /> Start Workout</button>{!data.routines.length ? <button className="secondary-button" type="button" onClick={() => onOpenWorkout('create')}>Create Routine</button> : <button className="secondary-button" type="button" onClick={() => onOpenWorkout('start')}>Choose Routine</button>}</div></HomeQuest>
+}
+
+function DesktopTodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {
   if (data.activeWorkout) {
     const paused = isWorkoutTimerPaused(data.activeWorkout.workout)
     return <Panel className="home-dashboard-panel home-workout is-active" eyebrow={paused ? 'Workout paused' : "Today's workout"} title={data.activeWorkout.workout.nameSnapshot}><p>{formatActiveTime(getWorkoutDuration(data.activeWorkout.workout, now.getTime()), paused)} · {data.activeWorkout.exercises.length} {data.activeWorkout.exercises.length === 1 ? 'exercise' : 'exercises'}{data.completedToday.length ? ` · ${data.completedToday.length} already completed today` : ''}</p><button className="primary-button" type="button" onClick={() => onOpenWorkout('active')}><Dumbbell size={17} aria-hidden="true" /> {paused ? 'Open Paused Workout' : 'Resume Workout'}</button></Panel>
@@ -142,6 +269,15 @@ function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardDa
   return <Panel className="home-dashboard-panel home-workout" eyebrow="Today's plan" title={data.weeklyPlan.configured ? 'No Plan' : 'No workout planned yet'}><p>{data.completedByStartDate.length ? `${data.completedByStartDate[0].workout.nameSnapshot} workout completed today. Nothing else is scheduled.` : data.routines.length ? 'Nothing scheduled for today. Start empty or choose a saved routine.' : 'You can start immediately or create a routine for repeated use.'}</p><div className="home-workout-actions"><button className="primary-button" type="button" onClick={() => onOpenWorkout('start-empty')}><Dumbbell size={17} aria-hidden="true" /> Start Workout</button>{!data.routines.length ? <button className="secondary-button" type="button" onClick={() => onOpenWorkout('create')}>Create Routine</button> : <button className="secondary-button" type="button" onClick={() => onOpenWorkout('start')}>Choose Routine</button>}</div></Panel>
 }
 
+function HomeQuest({ children, className = '', eyebrow, title, detail, status }: { children?: React.ReactNode; className?: string; eyebrow: string; title: string; detail: string; status: string }) {
+  return <section className={`home-hero-quest ${className}`.trim()}>
+    <p className="home-command-label">Active command</p>
+    <div className="home-quest-title"><span className="home-command-caret" aria-hidden="true">▶</span><div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2><p>{detail}</p></div><strong className="home-command-state">{status}</strong></div>
+    {children ? <div className="home-quest-actions">{children}</div> : null}
+  </section>
+}
+
 function ActivityMetric({ value, label }: { value: string; label: string }) { return <span><strong>{value}</strong><small>{label}</small></span> }
 function formatNumber(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value) }
+function formatCommandDate(value: Date) { return new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(value).toUpperCase() }
 function formatActiveTime(seconds: number, paused = false) { const minutes = Math.floor(seconds / 60); const hours = Math.floor(minutes / 60); const duration = hours ? `${hours}h ${minutes % 60}m` : `${minutes} min`; return `${duration} ${paused ? 'active · timer paused' : 'elapsed'}` }
