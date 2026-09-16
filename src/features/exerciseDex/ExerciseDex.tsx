@@ -92,10 +92,10 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
     [category, exercises],
   )
   const visibleExercises = useMemo(() => {
-    if (!picker && libraryScope === 'favourites') return searchFavouriteExercises(exercises, favourites, query)
+    if (libraryScope === 'favourites') return searchFavouriteExercises(exercises, favourites, query)
     const scope = category ? filterBySubfilter(categoryExercises, category, subfilter) : exercises
     return searchExercises(scope, query)
-  }, [category, categoryExercises, exercises, favourites, libraryScope, picker, query, subfilter])
+  }, [category, categoryExercises, exercises, favourites, libraryScope, query, subfilter])
 
   async function toggleFavourite(exerciseId: string) {
     const nextFavourite = !favourites.has(exerciseId)
@@ -189,12 +189,22 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
         <input
           type="search"
           value={query}
-          placeholder={category ? `Search ${category.toLowerCase()} exercises…` : 'Search exercises…'}
+          placeholder={category ? `Search ${category.toLowerCase()} exercises…` : picker ? 'Search exercises to add…' : 'Search exercises…'}
           onChange={(event) => setQuery(event.target.value)}
         />
+        {query ? (
+          <button className="exercise-search-clear" type="button" onClick={() => setQuery('')}>
+            Clear
+          </button>
+        ) : null}
       </label>
 
-      {!picker && !category ? <div className="exercise-library-scope" role="group" aria-label="Exercise library scope"><button type="button" aria-pressed={libraryScope === 'all'} onClick={() => { playEffect('select'); setLibraryScope('all') }}>All</button><button type="button" aria-pressed={libraryScope === 'favourites'} onClick={() => { playEffect('select'); setLibraryScope('favourites') }}><Star size={16} aria-hidden="true" /> Favorites</button></div> : null}
+      {!category ? (
+        <div className="exercise-library-scope" role="group" aria-label="Exercise library scope">
+          <button type="button" aria-pressed={libraryScope === 'all'} onClick={() => { playEffect('select'); setLibraryScope('all') }}>All</button>
+          <button type="button" aria-pressed={libraryScope === 'favourites'} onClick={() => { playEffect('select'); setLibraryScope('favourites') }}><Star size={16} aria-hidden="true" /> Favorites</button>
+        </div>
+      ) : null}
 
       {category && CATEGORY_SUBFILTERS[category].length > 1 ? (
         <div className="exercise-filter-strip" aria-label={`${category} exercise filters`}>
@@ -221,7 +231,18 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
           ))}
         </div>
       ) : (
-        <ExerciseRows exercises={visibleExercises} favourites={favourites} onSelect={(exercise) => { playEffect('select'); setSelectedExercise(exercise) }} onToggleFavourite={(id) => void toggleFavourite(id)} picker={picker} pendingExerciseIds={pendingExerciseIds} onToggleExercise={togglePickerExercise} emptyMessage={!picker && libraryScope === 'favourites' && !favourites.size && !query ? 'No favorite exercises yet. Tap ☆ on an exercise to keep it here for quick access.' : undefined} />
+        <ExerciseRows
+          exercises={visibleExercises}
+          favourites={favourites}
+          onSelect={(exercise) => { playEffect('select'); setSelectedExercise(exercise) }}
+          onToggleFavourite={(id) => void toggleFavourite(id)}
+          picker={picker}
+          pendingExerciseIds={pendingExerciseIds}
+          onToggleExercise={togglePickerExercise}
+          emptyMessage={libraryScope === 'favourites' && !favourites.size && !query ? 'No favorite exercises yet. Tap ☆ on an exercise to keep it here for quick access.' : undefined}
+          category={category}
+          libraryScope={libraryScope}
+        />
       )}
       {pickerError ? <p className="workout-feedback exercise-picker-feedback" role="alert">{pickerError}</p> : null}
       {confirmRemoval ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-picker-exercise-title"><h2 id="remove-picker-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmRemoval(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exercise = confirmRemoval; setConfirmRemoval(undefined); void persistPickerToggle(exercise) }}>Remove</button></section></div> : null}
@@ -229,7 +250,18 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
   )
 }
 
-function ExerciseRows({ exercises, favourites, onSelect, onToggleFavourite, picker, pendingExerciseIds, onToggleExercise, emptyMessage }: {
+function ExerciseRows({
+  exercises,
+  favourites,
+  onSelect,
+  onToggleFavourite,
+  picker,
+  pendingExerciseIds,
+  onToggleExercise,
+  emptyMessage,
+  category,
+  libraryScope,
+}: {
   exercises: readonly Exercise[]
   favourites: ReadonlySet<string>
   onSelect: (exercise: Exercise) => void
@@ -238,41 +270,107 @@ function ExerciseRows({ exercises, favourites, onSelect, onToggleFavourite, pick
   pendingExerciseIds: ReadonlySet<string>
   onToggleExercise: (exercise: Exercise) => void
   emptyMessage?: string
+  category?: ExerciseCategory | null
+  libraryScope?: 'all' | 'favourites'
 }) {
-  if (!exercises.length) return <p className="exercise-empty-result">{emptyMessage ?? 'No exercises match this search and filter.'}</p>
+  const sectionTitle = picker
+    ? (category ? `${category} Exercises` : 'Exercises')
+    : category
+    ? `${category} Exercises`
+    : libraryScope === 'favourites'
+    ? 'Favorite Exercises'
+    : 'Search Results'
+
+  const sectionCountLabel = picker
+    ? `${exercises.length} available`
+    : category
+    ? `${exercises.length} exercises`
+    : libraryScope === 'favourites'
+    ? `${exercises.length} saved`
+    : `${exercises.length} ${exercises.length === 1 ? 'result' : 'results'}`
+
+  if (!exercises.length) {
+    return (
+      <div className="exercise-list-empty-wrap">
+        <div className="exercise-section-header panel-head">
+          <h2>{sectionTitle}</h2>
+          <span className="eyebrow">{sectionCountLabel}</span>
+        </div>
+        <p className="exercise-empty-result">{emptyMessage ?? 'No exercises match this search and filter.'}</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="exercise-list" aria-live="polite">
-      <p className="exercise-result-count">{exercises.length} {exercises.length === 1 ? 'result' : 'results'}</p>
-      {exercises.map((exercise) => (
-        <article className="exercise-row" key={exercise.id}>
-          <button className="exercise-row-main" type="button" onClick={() => onSelect(exercise)}>
-            <span><strong>{exercise.name}</strong><small>{exercise.equipment} · {TRACKING_TYPE_LABELS[exercise.trackingType]}</small></span>
-            <ChevronRight size={20} aria-hidden="true" />
-          </button>
-          {picker ? (
-            <button
-              className={picker.existingExerciseIds.has(exercise.id) ? 'exercise-picker-toggle is-added' : 'exercise-picker-toggle'}
-              type="button"
-              disabled={pendingExerciseIds.has(exercise.id)}
-              aria-label={`${picker.existingExerciseIds.has(exercise.id) ? 'Remove' : 'Add'} ${exercise.name} ${picker.existingExerciseIds.has(exercise.id) ? 'from' : 'to'} ${picker.targetLabel}`}
-              onClick={() => onToggleExercise(exercise)}
-            >
-              {pendingExerciseIds.has(exercise.id) ? <span>{picker.existingExerciseIds.has(exercise.id) ? 'Removing…' : 'Adding…'}</span> : picker.existingExerciseIds.has(exercise.id) ? <><Check size={17} aria-hidden="true" /><span>Added</span></> : <Plus size={18} aria-hidden="true" />}
-            </button>
-          ) : (
-            <button
-              className={favourites.has(exercise.id) ? 'exercise-favourite is-selected' : 'exercise-favourite'}
-              type="button"
-              aria-label={`${favourites.has(exercise.id) ? 'Remove' : 'Add'} ${exercise.name} ${favourites.has(exercise.id) ? 'from' : 'to'} favorites`}
-              aria-pressed={favourites.has(exercise.id)}
-              onClick={() => onToggleFavourite(exercise.id)}
-            >
-              <Star size={18} fill={favourites.has(exercise.id) ? 'currentColor' : 'none'} aria-hidden="true" />
-            </button>
-          )}
-        </article>
-      ))}
+    <div className="exercise-list-container" aria-live="polite">
+      <div className="exercise-section-header panel-head">
+        <h2>{sectionTitle}</h2>
+        <span className="eyebrow">{sectionCountLabel}</span>
+      </div>
+      <div className="exercise-list">
+        {exercises.map((exercise) => {
+          const isFav = favourites.has(exercise.id)
+          const isPending = pendingExerciseIds.has(exercise.id)
+
+          return (
+            <article className={picker ? 'exercise-row is-picker' : 'exercise-row'} key={exercise.id}>
+              <button className="exercise-row-main" type="button" onClick={() => onSelect(exercise)}>
+                <span className="exercise-row-info">
+                  <strong>{exercise.name}</strong>
+                  <small>
+                    {picker
+                      ? `${exercise.category} · ${exercise.equipment}`
+                      : category
+                      ? `${exercise.equipment} · ${TRACKING_TYPE_LABELS[exercise.trackingType]}`
+                      : `${exercise.category} · ${exercise.equipment} · ${TRACKING_TYPE_LABELS[exercise.trackingType]}`}
+                  </small>
+                </span>
+              </button>
+              <button
+                className={isFav ? 'btn-star exercise-favourite is-selected is-fav' : 'btn-star exercise-favourite'}
+                type="button"
+                aria-label={`${isFav ? 'Remove' : 'Add'} ${exercise.name} ${isFav ? 'from' : 'to'} favorites`}
+                aria-pressed={isFav}
+                onClick={() => onToggleFavourite(exercise.id)}
+              >
+                <Star size={18} fill={isFav ? 'currentColor' : 'none'} aria-hidden="true" />
+              </button>
+              {picker ? (
+                <button
+                  className={`btn-picker-add ${picker.existingExerciseIds.has(exercise.id) ? 'exercise-picker-toggle is-added' : 'exercise-picker-toggle'}`}
+                  type="button"
+                  disabled={isPending}
+                  aria-label={`${picker.existingExerciseIds.has(exercise.id) ? 'Remove' : 'Add'} ${exercise.name} ${picker.existingExerciseIds.has(exercise.id) ? 'from' : 'to'} ${picker.targetLabel}`}
+                  onClick={() => onToggleExercise(exercise)}
+                >
+                  {isPending ? (
+                    <span>{picker.existingExerciseIds.has(exercise.id) ? 'Removing…' : 'Adding…'}</span>
+                  ) : picker.existingExerciseIds.has(exercise.id) ? (
+                    <>
+                      <Check size={14} aria-hidden="true" strokeWidth={2.8} />
+                      <span>Added</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={14} aria-hidden="true" strokeWidth={2.8} />
+                      <span>Add</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  className="btn-row-nav"
+                  type="button"
+                  onClick={() => onSelect(exercise)}
+                  aria-label={`View ${exercise.name} details`}
+                >
+                  <ChevronRight size={18} aria-hidden="true" />
+                </button>
+              )}
+            </article>
+          )
+        })}
+      </div>
     </div>
   )
 }
