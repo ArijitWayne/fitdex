@@ -10,6 +10,20 @@
       --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-display: "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
       --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --mobile-max-width: 480px;
+      --screen-pad: clamp(8px, 2.5cqi, 12px);
+      --set-grid-gap: clamp(3px, 1.25cqi, 6px);
+      --weight-reps-grid:
+        minmax(20px, 0.34fr)
+        minmax(54px, 1.2fr)
+        minmax(54px, 1fr)
+        minmax(48px, 0.9fr)
+        minmax(40px, 0.55fr);
+      --reps-only-grid:
+        minmax(20px, 0.34fr)
+        minmax(64px, 1.15fr)
+        minmax(64px, 1.4fr)
+        minmax(40px, 0.55fr);
 
       /* Spartan Light (Default) */
       --bg: #f0e6d6;
@@ -160,11 +174,11 @@
       display: flex;
       justify-content: center;
       padding: 16px 8px 80px;
-      transition: all 0.2s ease;
     }
     .proto-viewport {
-      width: 100%;
-      max-width: 430px;
+      width: min(100%, var(--preview-width, 100%));
+      max-width: var(--mobile-max-width);
+      margin-inline: auto;
       background: var(--surface);
       border: 1px solid var(--border-strong);
       box-shadow: 0 12px 36px var(--shadow), 3px 3px 0 var(--border-rpg);
@@ -172,12 +186,13 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      transition: max-width 0.2s ease;
+      container-type: inline-size;
+      container-name: workout-preview;
     }
 
     /* Session Header */
     .session-header {
-      padding: 12px 14px;
+      padding: clamp(10px, 3cqi, 14px);
       background: var(--surface-raised);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -198,12 +213,12 @@
       font-weight: 700;
       color: var(--text-muted);
       border: 1px solid var(--border);
-      padding: 4px 8px;
+      min-height: 40px;
+      padding: 6px 8px;
       background: var(--surface);
       cursor: pointer;
       text-decoration: none;
     }
-    .session-hub-link:hover { border-color: var(--primary); color: var(--primary-text); }
     .session-state-badge {
       display: inline-flex;
       align-items: center;
@@ -216,6 +231,8 @@
       border-radius: 2px;
       border: 1px solid var(--border);
       background: var(--surface);
+      min-width: 0;
+      white-space: nowrap;
     }
     .session-state-badge.is-active {
       border-color: var(--primary);
@@ -237,19 +254,21 @@
     @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.8); } }
 
     .session-title-wrap {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: baseline;
-      justify-content: space-between;
       gap: 8px;
     }
     .session-title {
       margin: 0;
       font-family: var(--font-display);
-      font-size: 1.35rem;
+      font-size: clamp(1.12rem, 5.4cqi, 1.35rem);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.02em;
       line-height: 1.15;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
     .session-edit-title {
       border: 0;
@@ -257,7 +276,9 @@
       color: var(--text-muted);
       font-size: 0.72rem;
       cursor: pointer;
-      padding: 4px;
+      min-width: 44px;
+      min-height: 40px;
+      padding: 6px;
       text-decoration: underline;
     }
 
@@ -266,8 +287,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 6px 10px;
+      gap: clamp(6px, 2cqi, 12px);
+      padding: 6px clamp(7px, 2.5cqi, 10px);
       background: var(--surface-subtle);
       border: 1px solid var(--border);
       border-radius: 2px;
@@ -276,11 +297,12 @@
     .stat-duration {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: clamp(4px, 1.5cqi, 6px);
+      min-width: 0;
     }
     .stat-duration strong {
       font-family: var(--font-mono);
-      font-size: 0.94rem;
+      font-size: clamp(0.82rem, 3.8cqi, 0.94rem);
       font-weight: 800;
       color: var(--primary-text);
     }
@@ -291,24 +313,25 @@
       font-size: 0.68rem;
       font-weight: 800;
       text-transform: uppercase;
-      padding: 3px 8px;
+      min-height: 40px;
+      padding: 5px clamp(6px, 2cqi, 8px);
       border: 1px solid var(--border);
       background: var(--surface-raised);
       cursor: pointer;
     }
-    .pause-toggle-btn:hover { border-color: var(--primary); }
     .stat-progress {
       display: flex;
       align-items: center;
       gap: 6px;
       color: var(--text-muted);
       font-weight: 700;
+      white-space: nowrap;
     }
 
     /* Workout Main Feed */
     .workout-feed {
       flex: 1;
-      padding: 12px 10px 100px;
+      padding: 12px var(--screen-pad) 100px;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -320,18 +343,19 @@
       border: 1px solid var(--border);
       box-shadow: 2px 2px 0 var(--border-rpg);
       position: relative;
-      transition: border-color 0.15s ease;
+      transition: border-color 150ms cubic-bezier(0.23, 1, 0.32, 1);
+      min-width: 0;
     }
     .exercise-block.is-current {
       border: 2px solid var(--primary);
       box-shadow: 3px 3px 0 var(--border-rpg);
     }
     .exercise-block-header {
-      padding: 10px 12px;
-      display: flex;
+      padding: 10px clamp(8px, 2.5cqi, 12px);
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      gap: clamp(6px, 2cqi, 8px);
       border-bottom: 1px solid var(--border);
       background: color-mix(in srgb, var(--surface) 50%, var(--surface-raised));
       cursor: pointer;
@@ -370,12 +394,15 @@
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      white-space: nowrap;
+      min-width: 0;
+    }
+    .exercise-name,
+    .exercise-tag {
+      display: block;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      white-space: nowrap;
     }
     .exercise-tag {
       font-family: var(--font-body);
@@ -384,11 +411,12 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      margin-top: 2px;
     }
     .exercise-header-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: clamp(4px, 1.5cqi, 8px);
       flex-shrink: 0;
     }
     .set-count-pill {
@@ -399,6 +427,7 @@
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text-muted);
+      white-space: nowrap;
     }
     .set-count-pill.is-complete {
       border-color: var(--success);
@@ -406,8 +435,8 @@
       background: color-mix(in srgb, var(--success) 12%, var(--surface));
     }
     .menu-trigger-btn {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       border: 1px solid var(--border);
       background: var(--surface);
       display: grid;
@@ -417,7 +446,6 @@
       cursor: pointer;
       line-height: 1;
     }
-    .menu-trigger-btn:hover { border-color: var(--primary); color: var(--primary-text); }
 
     /* Exercise Context Menu (Dropdown) */
     .exercise-dropdown {
@@ -430,7 +458,7 @@
       box-shadow: 4px 4px 0 var(--border-rpg);
       display: none;
       flex-direction: column;
-      width: 160px;
+      width: min(160px, calc(100% - 20px));
       padding: 4px 0;
     }
     .exercise-dropdown.is-open { display: flex; }
@@ -446,51 +474,62 @@
       align-items: center;
       justify-content: space-between;
     }
-    .exercise-dropdown button:hover { background: var(--primary-muted); color: var(--primary-text); }
     .exercise-dropdown button.is-danger { color: var(--danger); }
-    .exercise-dropdown button.is-danger:hover { background: color-mix(in srgb, var(--danger) 15%, var(--surface)); }
 
     /* Set Table Container */
     .set-table-wrap {
-      padding: 6px 8px 10px;
+      padding: 6px clamp(4px, 2cqi, 8px) 10px;
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
     .set-table-header {
       display: grid;
-      gap: 6px;
-      padding: 4px 8px 2px;
-      font-size: 0.62rem;
+      gap: var(--set-grid-gap);
+      padding: 4px clamp(4px, 2cqi, 8px) 2px;
+      font-size: clamp(0.52rem, 2.15cqi, 0.62rem);
       font-weight: 900;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+    .set-table-header > *,
+    .proto-set-row > * {
+      min-width: 0;
+    }
+    .set-table-header > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .set-table-header.weight-reps {
-      grid-template-columns: 28px minmax(70px, 1.2fr) minmax(72px, 1fr) minmax(64px, 1fr) 42px;
+      grid-template-columns: var(--weight-reps-grid);
     }
     .set-table-header.reps-only {
-      grid-template-columns: 28px minmax(80px, 1.3fr) minmax(90px, 1.5fr) 42px;
+      grid-template-columns: var(--reps-only-grid);
     }
 
     /* Set Row */
     .proto-set-row {
       display: grid;
-      gap: 6px;
+      gap: var(--set-grid-gap);
       align-items: center;
-      padding: 4px 8px;
+      padding: 4px clamp(4px, 2cqi, 8px);
       border: 1px solid var(--border);
       background: var(--surface);
       border-radius: 2px;
-      transition: all 0.15s ease;
-      min-height: 48px;
+      transition:
+        border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1);
+      min-height: 50px;
+      min-width: 0;
     }
     .proto-set-row.weight-reps {
-      grid-template-columns: 28px minmax(70px, 1.2fr) minmax(72px, 1fr) minmax(64px, 1fr) 42px;
+      grid-template-columns: var(--weight-reps-grid);
     }
     .proto-set-row.reps-only {
-      grid-template-columns: 28px minmax(80px, 1.3fr) minmax(90px, 1.5fr) 42px;
+      grid-template-columns: var(--reps-only-grid);
     }
 
     /* Active Set Styling */
@@ -521,33 +560,35 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 1px;
-      padding: 3px 6px;
+      width: 100%;
+      min-width: 0;
+      padding: 3px clamp(3px, 1.5cqi, 6px);
       background: var(--surface-subtle);
       border: 1px dashed var(--border);
       cursor: pointer;
       text-align: left;
       border-radius: 2px;
       overflow: hidden;
-      min-height: 38px;
+      min-height: 42px;
       justify-content: center;
-    }
-    .prev-copy-btn:hover {
-      border-color: var(--primary);
-      border-style: solid;
-      background: var(--primary-muted);
-      color: var(--primary-text);
     }
     .prev-copy-btn .prev-val {
       font-family: var(--font-mono);
-      font-size: 0.74rem;
+      max-width: 100%;
+      font-size: clamp(0.64rem, 2.7cqi, 0.74rem);
       font-weight: 800;
-      white-space: nowrap;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
     }
     .prev-copy-btn .prev-sub {
-      font-size: 0.56rem;
+      max-width: 100%;
+      font-size: clamp(0.5rem, 2cqi, 0.56rem);
       text-transform: uppercase;
       letter-spacing: 0.03em;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Input Fields */
@@ -555,11 +596,13 @@
       position: relative;
       display: flex;
       align-items: center;
+      min-width: 0;
     }
     .proto-input {
       width: 100%;
-      height: 40px;
-      padding: 4px 6px;
+      min-width: 0;
+      height: 42px;
+      padding: 4px clamp(2px, 1.5cqi, 6px);
       font-family: var(--font-mono);
       font-size: 0.95rem;
       font-weight: 800;
@@ -580,8 +623,9 @@
 
     /* Log / Check Toggle Button */
     .set-action-btn {
-      width: 38px;
-      height: 38px;
+      width: 100%;
+      min-width: 0;
+      height: 42px;
       border: 1px solid var(--border);
       background: var(--surface-raised);
       display: grid;
@@ -590,18 +634,27 @@
       font-size: 0.95rem;
       font-weight: 900;
       border-radius: 2px;
-      transition: all 0.1s ease;
+      transition:
+        transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+        border-color 120ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 120ms cubic-bezier(0.23, 1, 0.32, 1),
+        color 120ms cubic-bezier(0.23, 1, 0.32, 1);
       color: var(--text-muted);
       padding: 0;
-    }
-    .set-action-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary-text);
     }
     .proto-set-row.is-logged .set-action-btn {
       background: var(--success);
       border-color: var(--success);
       color: #ffffff;
+    }
+    .set-action-btn:active,
+    .add-set-btn:active,
+    .timer-pill-btn:active,
+    .btn-bottom-secondary:active,
+    .btn-bottom-primary:active,
+    .pause-toggle-btn:active,
+    .menu-trigger-btn:active {
+      transform: scale(0.97);
     }
 
     /* Add Set Row & Note Toggle */
@@ -610,14 +663,15 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 4px 8px;
+      padding: 4px clamp(4px, 2cqi, 8px);
       margin-top: 4px;
     }
     .add-set-btn {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 6px 12px;
+      min-height: 40px;
+      padding: 6px clamp(8px, 3cqi, 12px);
       font-size: 0.72rem;
       font-weight: 800;
       text-transform: uppercase;
@@ -627,10 +681,6 @@
       color: var(--primary-text);
       cursor: pointer;
     }
-    .add-set-btn:hover {
-      border-style: solid;
-      background: var(--primary-muted);
-    }
     .note-toggle-btn {
       font-size: 0.7rem;
       color: var(--text-muted);
@@ -638,6 +688,8 @@
       background: transparent;
       cursor: pointer;
       text-decoration: underline;
+      min-width: 44px;
+      min-height: 40px;
     }
 
     /* Collapsible Note Field */
@@ -659,48 +711,51 @@
     /* Compact Rest Timer Floating Pill */
     .rest-timer-dock {
       position: sticky;
-      bottom: 68px;
+      bottom: calc(70px + env(safe-area-inset-bottom));
       z-index: 40;
       display: flex;
       justify-content: center;
       pointer-events: none;
       margin-top: -38px;
-      padding: 0 10px;
+      padding: 0 var(--screen-pad);
     }
     .rest-timer-pill {
       pointer-events: auto;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
+      gap: clamp(3px, 1.8cqi, 8px);
+      max-width: 100%;
+      padding: 5px clamp(7px, 2.5cqi, 12px);
       background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
       border: 1.5px solid var(--primary);
       box-shadow: 0 4px 14px var(--shadow), 2px 2px 0 var(--border-rpg);
       border-radius: 20px;
       backdrop-filter: blur(12px);
-      font-size: 0.74rem;
+      font-size: clamp(0.66rem, 2.8cqi, 0.74rem);
       font-weight: 800;
       color: var(--text);
+      white-space: nowrap;
     }
     .rest-timer-pill.is-hidden { display: none; }
     .rest-time-display {
       font-family: var(--font-mono);
-      font-size: 0.92rem;
+      font-size: clamp(0.82rem, 3.5cqi, 0.92rem);
       font-weight: 900;
       color: var(--primary-text);
-      min-width: 48px;
+      min-width: 4.75ch;
     }
     .timer-pill-btn {
       border: 1px solid var(--border);
       background: var(--surface);
-      padding: 2px 6px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 2px clamp(4px, 1.5cqi, 6px);
       font-size: 0.65rem;
       font-weight: 800;
       cursor: pointer;
       border-radius: 3px;
       line-height: 1.2;
     }
-    .timer-pill-btn:hover { border-color: var(--primary); color: var(--primary-text); }
     .timer-pill-btn.is-skip { color: var(--text-muted); }
 
     /* Sticky Bottom Action Bar */
@@ -711,18 +766,21 @@
       background: color-mix(in srgb, var(--app) 95%, transparent);
       border-top: 2px solid var(--border-strong);
       box-shadow: 0 -4px 16px var(--shadow);
-      padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+      padding: 8px var(--screen-pad) max(8px, env(safe-area-inset-bottom));
       display: grid;
-      grid-template-columns: 1fr 1.5fr;
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+      gap: clamp(6px, 2cqi, 10px);
       backdrop-filter: blur(12px);
     }
     .btn-bottom-secondary {
-      height: 44px;
+      min-width: 0;
+      min-height: 46px;
+      height: auto;
+      padding: 6px;
       border: 1px solid var(--border-strong);
       background: var(--surface-raised);
       font-weight: 800;
-      font-size: 0.78rem;
+      font-size: clamp(0.68rem, 2.8cqi, 0.78rem);
       text-transform: uppercase;
       letter-spacing: 0.03em;
       cursor: pointer;
@@ -731,15 +789,17 @@
       justify-content: center;
       gap: 5px;
     }
-    .btn-bottom-secondary:hover { border-color: var(--primary); }
     .btn-bottom-primary {
-      height: 44px;
+      min-width: 0;
+      min-height: 46px;
+      height: auto;
+      padding: 6px;
       border: 2px solid var(--primary);
       background: var(--primary);
       color: #fff;
       font-family: var(--font-display);
       font-weight: 900;
-      font-size: 0.92rem;
+      font-size: clamp(0.78rem, 3.3cqi, 0.92rem);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       cursor: pointer;
@@ -749,7 +809,6 @@
       gap: 6px;
       box-shadow: 2px 2px 0 var(--border-rpg);
     }
-    .btn-bottom-primary:hover { filter: brightness(1.08); }
 
     /* Simple Finish Modal */
     .proto-modal-backdrop {
@@ -824,6 +883,62 @@
       color: var(--primary-text);
       display: none;
       border-radius: 2px;
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      text-align: center;
+    }
+
+    .weight-label-short { display: none; }
+
+    @container workout-preview (max-width: 350px) {
+      .session-header { gap: 6px; }
+      .session-top-row { gap: 6px; }
+      .session-hub-link { font-size: 0.68rem; }
+      .session-state-badge { padding-inline: 6px; font-size: 0.62rem; }
+      .session-stats-bar {
+        flex-wrap: wrap;
+        gap: 2px 8px;
+      }
+      .stat-duration {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .stat-progress { margin-left: auto; }
+      .exercise-block-header { grid-template-columns: 22px minmax(0, 1fr) auto; }
+      .exercise-index { width: 22px; height: 24px; }
+      .set-count-pill { padding-inline: 4px; font-size: 0.64rem; }
+      .set-table-header { letter-spacing: 0.025em; }
+      .weight-label-long { display: none; }
+      .weight-label-short { display: inline; }
+      .prev-copy-btn { align-items: center; text-align: center; }
+      .rest-timer-pill > span:first-child { font-size: 0; }
+      .rest-timer-pill > span:first-child::after { content: "⏱"; font-size: 0.76rem; }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .session-hub-link:hover { border-color: var(--primary); color: var(--primary-text); }
+      .pause-toggle-btn:hover { border-color: var(--primary); }
+      .menu-trigger-btn:hover { border-color: var(--primary); color: var(--primary-text); }
+      .exercise-dropdown button:hover { background: var(--primary-muted); color: var(--primary-text); }
+      .exercise-dropdown button.is-danger:hover { background: color-mix(in srgb, var(--danger) 15%, var(--surface)); }
+      .prev-copy-btn:hover {
+        border-color: var(--primary);
+        border-style: solid;
+        background: var(--primary-muted);
+        color: var(--primary-text);
+      }
+      .set-action-btn:hover { border-color: var(--primary); color: var(--primary-text); }
+      .add-set-btn:hover { border-style: solid; background: var(--primary-muted); }
+      .timer-pill-btn:hover { border-color: var(--primary); color: var(--primary-text); }
+      .btn-bottom-secondary:hover { border-color: var(--primary); }
+      .btn-bottom-primary:hover { filter: brightness(1.08); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .state-pulse { animation: none; }
+      .exercise-block,
+      .proto-set-row,
+      .set-action-btn { transition: none; }
     }
   </style>
 </head>
@@ -838,10 +953,15 @@
     <div class="proto-controls">
       <label>Width:
         <select id="widthSelect" onchange="changeViewportWidth(this.value)">
-          <option value="360px">360px (SE)</option>
-          <option value="390px" selected>390px (iPhone 14)</option>
-          <option value="430px">430px (Pro Max)</option>
-          <option value="100%">100% (Responsive)</option>
+          <option value="fluid" selected>Fluid</option>
+          <option value="320px">320px</option>
+          <option value="340px">340px</option>
+          <option value="360px">360px</option>
+          <option value="375px">375px</option>
+          <option value="390px">390px</option>
+          <option value="412px">412px</option>
+          <option value="430px">430px</option>
+          <option value="480px">480px</option>
         </select>
       </label>
       <label>Theme:
@@ -899,9 +1019,9 @@
             <div class="exercise-index">1</div>
             <div class="exercise-header-text">
               <div class="exercise-header-title">
-                Incline DB Press
-                <span class="exercise-tag">Chest · Dumbbell</span>
+                <span class="exercise-name">Incline DB Press</span>
               </div>
+              <span class="exercise-tag">Chest · Dumbbell</span>
             </div>
             <div class="exercise-header-meta">
               <span class="set-count-pill" id="ex-1-sets-badge">2/3 Sets</span>
@@ -921,7 +1041,7 @@
             <div class="set-table-header weight-reps">
               <span>Set</span>
               <span>Previous</span>
-              <span>Weight (kg)</span>
+              <span><span class="weight-label-long">Weight (kg)</span><span class="weight-label-short">Kg</span></span>
               <span>Reps</span>
               <span style="text-align: center;">Log</span>
             </div>
@@ -990,9 +1110,9 @@
             <div class="exercise-index">2</div>
             <div class="exercise-header-text">
               <div class="exercise-header-title">
-                Pull-Ups
-                <span class="exercise-tag">Back · Bodyweight</span>
+                <span class="exercise-name">Pull-Ups</span>
               </div>
+              <span class="exercise-tag">Back · Bodyweight</span>
             </div>
             <div class="exercise-header-meta">
               <span class="set-count-pill" id="ex-2-sets-badge">0/3 Sets</span>
@@ -1123,7 +1243,8 @@
 
     // Viewport and Theme Switchers
     function changeViewportWidth(val) {
-      document.getElementById('viewport').style.maxWidth = val;
+      const width = val === 'fluid' ? '100%' : val;
+      document.getElementById('viewport').style.setProperty('--preview-width', width);
     }
     function changeTheme(theme) {
       document.documentElement.setAttribute('data-theme-family', theme);
@@ -1436,4 +1557,3 @@
   </script>
 </body>
 </html>
-

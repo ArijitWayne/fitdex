@@ -1,34 +1,36 @@
-import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, ChevronRight, CircleHelp, Dumbbell, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, ChevronRight, CircleHelp, Dumbbell, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
-import type { Exercise, RoutineExercise, Workout, WorkoutRoutine } from '../data/models'
+import type { Exercise, RoutineExercise, WorkoutRoutine } from '../data/models'
 import { ExerciseDex } from '../features/exerciseDex/ExerciseDex'
 import { ensureBuiltInExercises } from '../features/exerciseDex/seedExercises'
 import { ActiveWorkoutView, CompletedWorkoutDetail, WorkoutDeleteDialog } from '../features/workout/WorkoutSessionViews'
 import { addExercisesToRoutine, createRoutine, deleteRoutine, deleteRoutineItem, loadRoutines, renameRoutine, reorderRoutineItem, routineScheduledDays, type RoutineWithItems, updateRoutineItemSets } from '../features/workout/routineRepository'
 import { MAX_PLANNED_SETS, MIN_PLANNED_SETS } from '../features/workout/routineModel'
-import { formatDuration, getWorkoutDuration, isWorkoutTimerPaused } from '../features/workout/workoutModel'
-import { ActiveWorkoutExistsError, getActiveWorkout, listRecentWorkouts, startEmptyWorkout, startWorkoutFromRoutine, type WorkoutDetail, type WorkoutSummary } from '../features/workout/workoutRepository'
-import { PageHeader } from './PageHeader'
+import { formatDuration, getWorkoutDuration, getWorkoutSetLogState, isWorkoutTimerPaused } from '../features/workout/workoutModel'
+import { ActiveWorkoutExistsError, discardWorkout, getActiveWorkout, listRecentWorkouts, pauseWorkout, resumeWorkout, startEmptyWorkout, startWorkoutFromRoutine, type WorkoutDetail, type WorkoutSummary } from '../features/workout/workoutRepository'
 import { GuideDialog } from '../features/help/GuideDialog'
 import { hasSeenTutorial, markTutorialSeen } from '../features/help/tutorialPreferences'
 import { workoutTutorialSteps } from '../features/help/tutorialSteps'
-import { WeeklyPlanEditor, WeeklyPlanPanel } from '../features/workout/WeeklyPlanViews'
-import { emptyWeeklyPlanDays, loadWeeklyPlan, type WeeklyPlan } from '../features/workout/weeklyPlan'
+import { WeeklyPlanEditor } from '../features/workout/WeeklyPlanViews'
+import { emptyWeeklyPlanDays, loadWeeklyPlan, WEEKDAY_LABELS, weekdayIdForLocalDateKey, weeklyPlanAssignmentLabel, type WeeklyPlan } from '../features/workout/weeklyPlan'
 import { PlanChangeConfirmationRequiredError } from '../features/workout/weeklyPlan'
 import { useAudio } from '../features/audio/useAudio'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
+import { loadGamificationDashboard, type GamificationDashboard } from '../features/gamification/gamificationRepository'
+import { WEEKDAY_IDS } from '../data/models'
+import { getLocalDateKey, shiftLocalDateKey } from '../utils/localDate'
 
 type WorkoutView = 'hub' | 'library' | 'create' | 'routine' | 'picker' | 'start' | 'add-to-routine' | 'active' | 'history' | 'plan' | 'start-empty' | 'start-routine'
 export type WorkoutEntryView = Extract<WorkoutView, 'hub' | 'library' | 'start' | 'active' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'>
+type ReplacementIntent = { type: 'choose-routine' } | { type: 'open' } | { type: 'today' } | { type: 'routine'; routineId: string; routineName: string }
 
 export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWorkoutId }: { initialView?: WorkoutEntryView; initialRoutineId?: string; initialWorkoutId?: string }) {
   const { playEffect } = useAudio()
   const [view, setView] = useState<WorkoutView>(initialView)
   const [routines, setRoutines] = useState<RoutineWithItems[]>([])
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutSummary[]>([])
-  const [activeWorkoutId, setActiveWorkoutId] = useState<string>()
-  const [activeWorkout, setActiveWorkout] = useState<Workout>()
+  const [activeWorkoutDetail, setActiveWorkoutDetail] = useState<WorkoutDetail>()
   const [historyWorkoutId, setHistoryWorkoutId] = useState<string | undefined>(initialWorkoutId)
   const [deleteWorkoutSummary, setDeleteWorkoutSummary] = useState<WorkoutSummary>()
   const [selectedRoutineId, setSelectedRoutineId] = useState<string>()
@@ -37,18 +39,30 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const [loading, setLoading] = useState(true)
   const [hubNow, setHubNow] = useState(() => Date.now())
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan>({ configured: false, days: emptyWeeklyPlanDays() })
+  const [gamification, setGamification] = useState<GamificationDashboard>()
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [initialIntentHandled, setInitialIntentHandled] = useState(false)
-  const navigateBack = useBackNavigation('workout-subview', view !== 'hub', () => { void refresh(); setView('hub') })
+  const [quickLaunchOpen, setQuickLaunchOpen] = useState(false)
+  const [routineChooserOpen, setRoutineChooserOpen] = useState(false)
+  const [replacementIntent, setReplacementIntent] = useState<ReplacementIntent>()
+  const [showAllRoutines, setShowAllRoutines] = useState(false)
+  const [showAllHistory, setShowAllHistory] = useState(false)
+  const overlayOpen = Boolean(replacementIntent) || routineChooserOpen || quickLaunchOpen
+  const navigateBack = useBackNavigation('workout-subview', overlayOpen || view !== 'hub', () => {
+    if (replacementIntent) setReplacementIntent(undefined)
+    else if (routineChooserOpen) setRoutineChooserOpen(false)
+    else if (quickLaunchOpen) setQuickLaunchOpen(false)
+    else { void refresh(); setView('hub') }
+  }, overlayOpen ? 20 : 10)
 
   async function refresh() {
     await ensureBuiltInExercises()
-    const [nextRoutines, recent, active, nextPlan] = await Promise.all([loadRoutines(), listRecentWorkouts(), getActiveWorkout(), loadWeeklyPlan()])
+    const [nextRoutines, recent, active, nextPlan, nextGamification] = await Promise.all([loadRoutines(), listRecentWorkouts(), getActiveWorkout(), loadWeeklyPlan(), loadGamificationDashboard()])
     setRoutines(nextRoutines)
     setRecentWorkouts(recent)
-    setActiveWorkoutId(active?.workout.id)
-    setActiveWorkout(active?.workout)
+    setActiveWorkoutDetail(active)
     setWeeklyPlan(nextPlan)
+    setGamification(nextGamification)
     setLoading(false)
   }
 
@@ -56,6 +70,8 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   // oxlint-disable-next-line react-hooks/exhaustive-deps, react/set-state-in-effect
   useEffect(() => { void refresh().catch(() => setLoading(false)) }, [])
   useEffect(() => { if (initialView === 'hub') void hasSeenTutorial('workout').then((seen) => { if (!seen) setTutorialOpen(true) }) }, [initialView])
+  const activeWorkout = activeWorkoutDetail?.workout
+  const activeWorkoutId = activeWorkout?.id
   useEffect(() => {
     if (!activeWorkout || isWorkoutTimerPaused(activeWorkout)) return
     const timer = window.setInterval(() => setHubNow(Date.now()), 1000)
@@ -67,31 +83,81 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   async function begin(action: () => Promise<WorkoutDetail>) {
     try {
       const detail = await action()
-      setActiveWorkoutId(detail.workout.id)
-      setActiveWorkout(detail.workout)
+      playEffect('select')
+      setActiveWorkoutDetail(detail)
       setMessage('')
       setView('active')
     } catch (error) {
       if (error instanceof ActiveWorkoutExistsError) {
-        setActiveWorkoutId(error.activeWorkoutId)
         setMessage('A workout is already in progress. Resume or discard it before starting another.')
+        await refresh()
         setView('hub')
       } else setMessage(error instanceof Error ? error.message : 'Workout could not be started.')
     }
   }
 
   // Home start intents use the same repository-backed creation paths as the Workout hub.
-  // oxlint-disable-next-line react-hooks/exhaustive-deps, react/set-state-in-effect
+  // oxlint-disable react-hooks/exhaustive-deps, react/set-state-in-effect
   useEffect(() => {
     if (initialIntentHandled) return
     setInitialIntentHandled(true)
     if (initialView === 'start-empty') void begin(() => startEmptyWorkout())
     if (initialView === 'start-routine' && initialRoutineId) void begin(() => startWorkoutFromRoutine(initialRoutineId))
   }, [initialIntentHandled, initialRoutineId, initialView])
+  // oxlint-enable react-hooks/exhaustive-deps, react/set-state-in-effect
 
   function closeTutorial() { setTutorialOpen(false); void markTutorialSeen('workout') }
 
   function openRoutine(routineId: string) { playEffect('select'); setSelectedRoutineId(routineId); setMessage(''); setView('routine') }
+
+  const todayKey = getLocalDateKey(new Date(hubNow))
+  const todayId = weekdayIdForLocalDateKey(todayKey)
+  const todayAssignment = weeklyPlan.days[todayId]
+  const todayRoutine = todayAssignment.type === 'routine' ? routines.find((entry) => entry.routine.id === todayAssignment.routineId) : undefined
+  const hasTodayPlan = weeklyPlan.configured && (todayAssignment.type === 'routine' ? Boolean(todayRoutine) : todayAssignment.type === 'workout_day')
+
+  const startToday = () => todayAssignment.type === 'routine'
+    ? begin(() => startWorkoutFromRoutine(todayAssignment.routineId))
+    : begin(() => startEmptyWorkout())
+
+  function openQuickLaunch() { playEffect('select'); setQuickLaunchOpen(true) }
+  function chooseRoutine() { playEffect('select'); setQuickLaunchOpen(false); setRoutineChooserOpen(true) }
+  function requestReplacement(intent: ReplacementIntent) { playEffect('select'); setQuickLaunchOpen(false); setRoutineChooserOpen(false); setReplacementIntent(intent) }
+  function startRoutineSafely(routineId: string) {
+    const routineName = routines.find((entry) => entry.routine.id === routineId)?.routine.name ?? 'Routine'
+    if (activeWorkoutId) { setView('hub'); requestReplacement({ type: 'routine', routineId, routineName }); return }
+    void begin(() => startWorkoutFromRoutine(routineId))
+  }
+  function startOpenSafely() {
+    if (activeWorkoutId) { setView('hub'); requestReplacement({ type: 'open' }); return }
+    void begin(() => startEmptyWorkout())
+  }
+
+  async function confirmReplacement() {
+    if (!replacementIntent || !activeWorkoutId) return
+    const intent = replacementIntent
+    try {
+      await discardWorkout(activeWorkoutId)
+      playEffect('select')
+      setActiveWorkoutDetail(undefined)
+      setReplacementIntent(undefined)
+      if (intent.type === 'choose-routine') { await refresh(); setRoutineChooserOpen(true); return }
+      if (intent.type === 'open') { await begin(() => startEmptyWorkout()); return }
+      if (intent.type === 'today') { await startToday(); return }
+      await begin(() => startWorkoutFromRoutine(intent.routineId))
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Workout could not be replaced.'); setReplacementIntent(undefined) }
+  }
+
+  async function toggleHubTimer() {
+    if (!activeWorkoutId || !activeWorkout) return
+    try {
+      playEffect('select')
+      const detail = await (isWorkoutTimerPaused(activeWorkout) ? resumeWorkout(activeWorkoutId) : pauseWorkout(activeWorkoutId))
+      setActiveWorkoutDetail(detail)
+      setQuickLaunchOpen(false)
+      setHubNow(Date.now())
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Workout timer could not be updated.') }
+  }
 
   async function addPendingExercise(routineId: string) {
     if (!pendingExercise) return
@@ -99,7 +165,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
     catch (error) { setMessage(error instanceof Error ? error.message : 'Exercise could not be added.') }
   }
 
-  if (view === 'active' && activeWorkoutId) return <ActiveWorkoutView workoutId={activeWorkoutId} onExit={() => { void refresh(); setView('hub') }} onCompleted={(workoutId) => { setHistoryWorkoutId(workoutId); setActiveWorkoutId(undefined); setActiveWorkout(undefined); void refresh(); setView('history') }} />
+  if (view === 'active' && activeWorkoutId) return <ActiveWorkoutView workoutId={activeWorkoutId} onExit={() => { void refresh(); setView('hub') }} onCompleted={(workoutId) => { setHistoryWorkoutId(workoutId); setActiveWorkoutDetail(undefined); void refresh(); setView('history') }} />
   if (view === 'history' && historyWorkoutId) return <CompletedWorkoutDetail workoutId={historyWorkoutId} onBack={() => { void navigateBack() }} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== historyWorkoutId)); setHistoryWorkoutId(undefined); setView('hub'); void refresh() }} />
   if (view === 'plan') return <WeeklyPlanEditor plan={weeklyPlan} routines={routines} onChanged={setWeeklyPlan} onBack={() => setView('hub')} onCreateRoutine={() => setView('create')} />
 
@@ -122,21 +188,115 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
     }} /></div>
   }
 
-  if (view === 'routine' && selectedRoutine) return <RoutineEditor entry={selectedRoutine} replacementOptions={routines.filter((candidate) => candidate.routine.id !== selectedRoutine.routine.id)} message={message} onBack={() => setView('hub')} onChanged={refresh} onAddExercise={() => { setMessage(''); setView('picker') }} onStart={() => void begin(() => startWorkoutFromRoutine(selectedRoutine.routine.id))} onDeleted={async () => { setSelectedRoutineId(undefined); await refresh(); setView('hub') }} />
+  if (view === 'routine' && selectedRoutine) return <RoutineEditor entry={selectedRoutine} replacementOptions={routines.filter((candidate) => candidate.routine.id !== selectedRoutine.routine.id)} message={message} onBack={() => setView('hub')} onChanged={refresh} onAddExercise={() => { setMessage(''); setView('picker') }} onStart={() => startRoutineSafely(selectedRoutine.routine.id)} onDeleted={async () => { setSelectedRoutineId(undefined); await refresh(); setView('hub') }} />
 
   if (view === 'create') return <CreateRoutine onCancel={() => setView(pendingExercise ? 'add-to-routine' : 'hub')} onCreated={async (routine) => { playEffect('add'); if (pendingExercise) await addPendingExercise(routine.id); else { await refresh(); setSelectedRoutineId(routine.id); setView('routine') } }} />
 
   if (view === 'add-to-routine' && pendingExercise) return <div className="page-stack workout-page"><Panel className="workout-flow-panel"><FlowHeading title={`Add ${pendingExercise.name} to`} onBack={() => setView('library')} />{routines.length ? <div className="routine-choice-list">{routines.map(({ routine, items }) => <button type="button" key={routine.id} onClick={() => void addPendingExercise(routine.id)}><span><strong>{routine.name}</strong><small>{items.length} exercises</small></span><Plus size={18} aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="Create a routine, then this exercise will be added to it." />}<button className="secondary-button" type="button" onClick={() => setView('create')}>Create new routine</button>{message ? <p className="workout-feedback" role="status">{message}</p> : null}</Panel></div>
 
-  if (view === 'start') return <StartWorkoutSelection routines={routines} onBack={() => setView('hub')} onStartRoutine={(id) => void begin(() => startWorkoutFromRoutine(id))} onStartEmpty={() => void begin(() => startEmptyWorkout())} />
+  if (view === 'start') return <StartWorkoutSelection routines={routines} onBack={() => setView('hub')} onStartRoutine={startRoutineSafely} onStartEmpty={startOpenSafely} />
 
-  return <div className="page-stack workout-page"><PageHeader eyebrow="Training hub" title="Workout" description="Build routines, log active sessions, and review local workout history." action={<button className="page-help-button" type="button" onClick={() => setTutorialOpen(true)}><CircleHelp size={18} aria-hidden="true" /> How Workouts Work</button>} />{loading ? <Panel><p>Loading your local workout data…</p></Panel> : <div className="workout-hub-grid">
-    <Panel className="workout-hub-section workout-today" eyebrow="Today" title={activeWorkoutId ? hubTimerPaused ? 'Workout paused' : 'Workout in progress' : 'Start workout'}><p>{activeWorkout ? `${activeWorkout.nameSnapshot} · ${formatDuration(getWorkoutDuration(activeWorkout, hubNow))}${hubTimerPaused ? ' · Timer paused' : ''}` : routines.length ? 'Start from a routine or build an empty session.' : 'Start an empty workout or create your first routine.'}</p><button className="primary-button" type="button" onClick={() => setView(activeWorkoutId ? 'active' : 'start')}>{activeWorkoutId ? hubTimerPaused ? 'Open paused workout' : 'Resume workout' : 'Start workout'}</button>{message ? <p className="workout-feedback" role="status">{message}</p> : null}</Panel>
-    <WeeklyPlanPanel plan={weeklyPlan} routines={routines} onEdit={() => setView('plan')} />
-    <Panel className="workout-hub-section" eyebrow="Your routines" title={routines.length ? `${routines.length} saved` : 'No routines yet'}>{routines.length ? <div className="routine-card-list">{routines.map(({ routine, items }) => <button type="button" key={routine.id} onClick={() => openRoutine(routine.id)}><span><strong>{routine.name}</strong><small>{items.length} {items.length === 1 ? 'exercise' : 'exercises'}</small></span><ChevronRight size={19} aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="Routines are reusable workout templates. You can also start a workout without one." />}<button className="secondary-button" type="button" onClick={() => setView('create')}><Plus size={17} aria-hidden="true" /> Create routine</button></Panel>
-    <Panel className="workout-hub-section workout-library-card" eyebrow="Exercise library" title="804 exercises"><BookOpen size={30} aria-hidden="true" /><p>Browse categories, demonstrations, instructions, and add exercises to routines.</p><button className="secondary-button" type="button" onClick={() => { setMessage(''); setView('library') }}>Open Exercise Dex</button></Panel>
-    <Panel className="workout-hub-section" eyebrow="Recent workouts" title={recentWorkouts.length ? 'Completed sessions' : 'No completed workouts yet'}>{recentWorkouts.length ? <div className="recent-workout-list">{recentWorkouts.map((summary) => <div className="recent-workout-row" key={summary.workout.id}><button className="recent-workout-view" type="button" onClick={() => { setHistoryWorkoutId(summary.workout.id); setView('history') }}><span><strong>{summary.workout.nameSnapshot}</strong><small>{new Date(summary.workout.completedAt ?? summary.workout.startedAt).toLocaleDateString()} · {summary.exerciseCount} exercises · {summary.completedSetCount} sets · {formatDuration(summary.workout.durationSeconds ?? 0)}</small></span><ChevronRight size={18} aria-hidden="true" /></button><button className="recent-workout-delete" type="button" aria-label={`Delete ${summary.workout.nameSnapshot} workout`} onClick={() => setDeleteWorkoutSummary(summary)}><Trash2 size={18} aria-hidden="true" /></button></div>)}</div> : <WorkoutEmpty title="No completed workouts yet" body="Finish a workout and it will appear here." />}</Panel>
-  </div>}{deleteWorkoutSummary ? <WorkoutDeleteDialog workoutId={deleteWorkoutSummary.workout.id} workoutName={deleteWorkoutSummary.workout.nameSnapshot} onCancel={() => setDeleteWorkoutSummary(undefined)} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== deleteWorkoutSummary.workout.id)); setDeleteWorkoutSummary(undefined); void refresh() }} /> : null}{tutorialOpen ? <GuideDialog eyebrow="How Workouts Work" steps={workoutTutorialSteps} onClose={closeTutorial} /> : null}</div>
+  const headerDate = new Date(hubNow)
+  const activeTotalSets = activeWorkoutDetail?.exercises.reduce((sum, item) => sum + item.sets.length, 0) ?? 0
+  const activeLoggedSets = activeWorkoutDetail?.exercises.reduce((sum, item) => sum + item.sets.filter((set) => getWorkoutSetLogState(set, item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length, 0) ?? 0
+  const activeLoggedExercises = activeWorkoutDetail?.exercises.filter((item) => item.sets.some((set) => getWorkoutSetLogState(set, item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged')).length ?? 0
+  const plannedSets = todayRoutine?.items.reduce((sum, item) => sum + item.plannedSets, 0) ?? 0
+  const weekStart = shiftLocalDateKey(todayKey, -WEEKDAY_IDS.indexOf(todayId))
+  const visibleRoutines = showAllRoutines ? routines : routines.slice(0, 3)
+  const visibleHistory = showAllHistory ? recentWorkouts : recentWorkouts.slice(0, 2)
+
+  return <div className="workout-page workout-hub" data-variant="mission-stack">
+    <header className="workout-hub-header">
+      <div><p className="eyebrow">Training</p><h1>Workout Hub</h1></div>
+      <div className="workout-hub-header-meta">
+        {gamification ? <span className="workout-level-badge">Level {gamification.progression.level}</span> : null}
+        <time dateTime={todayKey}>{headerDate.toLocaleDateString(undefined, { weekday: 'short' })}<br />{headerDate.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}</time>
+        <button className="workout-hub-help" type="button" aria-label="How Workouts Work" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
+      </div>
+    </header>
+
+    {loading ? <Panel><p>Loading your local workout data…</p></Panel> : <main className="workout-hub-stack">
+      <section className={`workout-mission-card${activeWorkout ? hubTimerPaused ? ' is-paused' : ' is-active' : ''}`} aria-labelledby="today-mission-title">
+        <div className="workout-mission-core">
+          <div className="workout-mission-top">
+            <span className="workout-mission-label">{activeWorkout ? 'Workout in progress' : hasTodayPlan ? "Today's mission" : "Today's training"}</span>
+            <span className={`workout-state-badge${activeWorkout ? hubTimerPaused ? ' is-paused' : ' is-active' : ''}`}>{activeWorkout ? <i aria-hidden="true" /> : null}{activeWorkout ? hubTimerPaused ? 'Paused' : 'Active' : hasTodayPlan ? `${WEEKDAY_LABELS[todayId].slice(0, 3)} · Planned` : todayAssignment.type === 'rest_day' ? 'Rest Day' : 'Open Slot'}</span>
+          </div>
+          <h2 id="today-mission-title">{activeWorkout?.nameSnapshot ?? todayRoutine?.routine.name ?? (hasTodayPlan ? 'Workout Day' : todayAssignment.type === 'rest_day' ? 'Recovery Day' : 'No workout planned')}</h2>
+          <p>{activeWorkout ? hubTimerPaused ? 'Timer paused. Session data remains safe on this device.' : 'Live session · Continue where you left off.' : todayRoutine ? `${todayRoutine.items.length} ${todayRoutine.items.length === 1 ? 'exercise' : 'exercises'} ready to train.` : hasTodayPlan ? 'Build this planned session as you train.' : todayAssignment.type === 'rest_day' ? 'Recovery is part of the plan. Train only if you need to.' : 'Start open training now, or choose a saved routine.'}</p>
+        </div>
+        <div className="workout-mission-side">
+          {activeWorkout ? <div className="workout-mission-stats">
+            <div><span>Elapsed</span><strong>{formatDuration(getWorkoutDuration(activeWorkout, hubNow))}</strong></div>
+            <div><span>Sets</span><strong>{activeLoggedSets} / {activeTotalSets}</strong></div>
+            <div><span>Exercises</span><strong>{activeLoggedExercises} / {activeWorkoutDetail?.exercises.length ?? 0}</strong></div>
+          </div> : todayRoutine ? <div className="workout-mission-stats is-two">
+            <div><span>Exercises</span><strong>{todayRoutine.items.length}</strong></div>
+            <div><span>Planned sets</span><strong>{plannedSets}</strong></div>
+          </div> : null}
+          <div className="workout-mission-actions">
+            {activeWorkout ? <button className="primary-button" type="button" onClick={() => { playEffect('select'); setView('active') }}>Resume Workout</button> : hasTodayPlan ? <button className="primary-button" type="button" onClick={() => void startToday()}>Start Workout</button> : <button className="primary-button" type="button" onClick={() => void begin(() => startEmptyWorkout())}>Start Open Workout</button>}
+            <button className="secondary-button" type="button" onClick={activeWorkout || hasTodayPlan ? openQuickLaunch : chooseRoutine}>{activeWorkout || hasTodayPlan ? 'Other Options' : 'Choose Routine'}</button>
+          </div>
+        </div>
+        {message ? <p className="workout-feedback" role="status">{message}</p> : null}
+      </section>
+
+      <section className="workout-hub-panel workout-weekly-panel" aria-labelledby="weekly-plan-title">
+        <div className="workout-section-head"><h2 id="weekly-plan-title">Weekly Plan</h2><button type="button" onClick={() => { playEffect('select'); setView('plan') }}>Edit Plan</button></div>
+        <div className="workout-week-grid">{WEEKDAY_IDS.map((day, index) => {
+          const assignment = weeklyPlan.days[day]
+          const dateKey = shiftLocalDateKey(weekStart, index)
+          const snapshot = gamification?.snapshots.find((item) => item.localDate === dateKey)
+          const done = snapshot?.result === 'success'
+          const rest = assignment.type === 'rest_day'
+          return <div className={`workout-day-chip${day === todayId ? ' is-today' : ''}${done ? ' is-done' : ''}${rest ? ' is-rest' : ''}`} key={day}><strong>{WEEKDAY_LABELS[day].slice(0, 3)}</strong><span>{done ? '✓ ' : ''}{weeklyPlanAssignmentLabel(assignment, routines.map((entry) => entry.routine))}</span></div>
+        })}</div>
+      </section>
+
+      <section className="workout-hub-panel" aria-labelledby="saved-routines-title">
+        <div className="workout-section-head"><h2 id="saved-routines-title">Saved Routines</h2>{routines.length > 3 ? <button type="button" aria-expanded={showAllRoutines} onClick={() => { playEffect('select'); setShowAllRoutines((value) => !value) }}>{showAllRoutines ? 'Show Less' : 'View All'}</button> : null}</div>
+        {visibleRoutines.length ? <div className="workout-hub-rows">{visibleRoutines.map(({ routine, items }) => <button type="button" key={routine.id} onClick={() => openRoutine(routine.id)}><span><strong>{routine.name}</strong><small>{items.length} {items.length === 1 ? 'exercise' : 'exercises'} · {items.reduce((sum, item) => sum + item.plannedSets, 0)} planned sets</small></span><ChevronRight size={18} aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="Create a routine, or start an open workout and build as you train." />}
+        {!routines.length ? <button className="secondary-button workout-create-routine" type="button" onClick={() => setView('create')}><Plus size={17} aria-hidden="true" /> Create Routine</button> : null}
+      </section>
+
+      <button className="workout-dex-gateway" type="button" onClick={() => { playEffect('select'); setMessage(''); setView('library') }}><span className="workout-dex-icon"><BookOpen size={20} aria-hidden="true" /></span><span><strong>Exercise Dex</strong><small>804 moves · Browse exercises, favourites and categories</small></span><ChevronRight size={18} aria-hidden="true" /></button>
+
+      <section className="workout-hub-panel" aria-labelledby="recent-workouts-title">
+        <div className="workout-section-head"><h2 id="recent-workouts-title">Recent Workouts</h2>{recentWorkouts.length > 2 ? <button type="button" aria-expanded={showAllHistory} onClick={() => { playEffect('select'); setShowAllHistory((value) => !value) }}>{showAllHistory ? 'Show Less' : 'History'}</button> : null}</div>
+        {visibleHistory.length ? <div className="workout-hub-rows recent-workout-list">{visibleHistory.map((summary) => <div className="recent-workout-row" key={summary.workout.id}><button className="recent-workout-view" type="button" onClick={() => { playEffect('select'); setHistoryWorkoutId(summary.workout.id); setView('history') }}><span><strong>{summary.workout.nameSnapshot}</strong><small>{new Date(summary.workout.completedAt ?? summary.workout.startedAt).toLocaleDateString()} · {summary.exerciseCount} exercises · {summary.completedSetCount} sets · {formatDuration(summary.workout.durationSeconds ?? 0)}</small></span><ChevronRight size={18} aria-hidden="true" /></button><button className="recent-workout-delete" type="button" aria-label={`Delete ${summary.workout.nameSnapshot} workout`} onClick={() => { playEffect('select'); setDeleteWorkoutSummary(summary) }}><Trash2 size={18} aria-hidden="true" /></button></div>)}</div> : <WorkoutEmpty title="No completed workouts yet" body="Finish a workout and it will appear here." />}
+      </section>
+    </main>}
+
+    {quickLaunchOpen ? <div className="workout-hub-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setQuickLaunchOpen(false) }}><section className="workout-quick-sheet" role="dialog" aria-modal="true" aria-labelledby="workout-options-title">
+      <header><div><p className="eyebrow">{activeWorkout ? 'Active session' : 'Quick launch'}</p><h2 id="workout-options-title">{activeWorkout ? 'Session Options' : 'Start Workout'}</h2></div><button type="button" aria-label="Close workout options" onClick={() => setQuickLaunchOpen(false)}><X aria-hidden="true" /></button></header>
+      <div className="workout-quick-options">{activeWorkout ? <>
+        <p>Current Workout</p>
+        <button type="button" onClick={() => { playEffect('select'); setQuickLaunchOpen(false); setView('active') }}><span><strong>Resume Workout</strong><small>{activeWorkout.nameSnapshot} · {hubTimerPaused ? 'Paused' : 'In progress'}</small></span><ChevronRight aria-hidden="true" /></button>
+        <button type="button" onClick={() => void toggleHubTimer()}><span><strong>{hubTimerPaused ? 'Resume Workout Timer' : 'Pause Workout Timer'}</strong><small>{hubTimerPaused ? `Timer paused at ${formatDuration(getWorkoutDuration(activeWorkout, hubNow))} · Session safe` : 'Pause timer without ending session'}</small></span><ChevronRight aria-hidden="true" /></button>
+        <p className="is-danger">Start Something Else</p>
+        <button className="is-destructive" type="button" onClick={() => requestReplacement({ type: 'choose-routine' })}><span><strong>Discard Current &amp; Choose Routine</strong><small>Abandons active session and opens routine picker</small></span><ChevronRight aria-hidden="true" /></button>
+        <button className="is-destructive" type="button" onClick={() => requestReplacement({ type: 'open' })}><span><strong>Discard Current &amp; Open Workout</strong><small>Abandons active session and starts empty workout</small></span><ChevronRight aria-hidden="true" /></button>
+      </> : <>
+        {hasTodayPlan ? <button type="button" onClick={() => { setQuickLaunchOpen(false); void startToday() }}><span><strong>Today's Plan</strong><small>{todayRoutine?.routine.name ?? 'Workout Day'}{todayRoutine ? ` · ${todayRoutine.items.length} exercises` : ''}</small></span><ChevronRight aria-hidden="true" /></button> : null}
+        <button type="button" onClick={chooseRoutine}><span><strong>Choose Routine</strong><small>Start from {routines.length} saved {routines.length === 1 ? 'routine' : 'routines'}</small></span><ChevronRight aria-hidden="true" /></button>
+        <button type="button" onClick={() => { setQuickLaunchOpen(false); void begin(() => startEmptyWorkout()) }}><span><strong>Open Workout</strong><small>Build session as you train</small></span><ChevronRight aria-hidden="true" /></button>
+      </>}</div>
+    </section></div> : null}
+
+    {routineChooserOpen ? <div className="workout-hub-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setRoutineChooserOpen(false) }}><section className="workout-quick-sheet" role="dialog" aria-modal="true" aria-labelledby="routine-chooser-title">
+      <header><div><p className="eyebrow">Quick launch</p><h2 id="routine-chooser-title">Choose Routine</h2></div><button type="button" aria-label="Close routine chooser" onClick={() => setRoutineChooserOpen(false)}><X aria-hidden="true" /></button></header>
+      {routines.length ? <div className="workout-quick-options">{routines.map(({ routine, items }) => <button type="button" key={routine.id} onClick={() => { setRoutineChooserOpen(false); if (activeWorkoutId) requestReplacement({ type: 'routine', routineId: routine.id, routineName: routine.name }); else void begin(() => startWorkoutFromRoutine(routine.id)) }}><span><strong>{routine.name}</strong><small>{items.length} exercises · {items.reduce((sum, item) => sum + item.plannedSets, 0)} planned sets</small></span><ChevronRight aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="Create a routine first, or start an open workout." />}
+    </section></div> : null}
+
+    {replacementIntent ? <div className="workout-hub-backdrop" role="presentation"><section className="workout-replace-dialog" role="alertdialog" aria-modal="true" aria-labelledby="replace-workout-title">
+      <p className="eyebrow">Discard active workout?</p><h2 id="replace-workout-title">Start Something Else</h2><p>Discard “{activeWorkout?.nameSnapshot}”? In-progress sets and duration will be lost. This cannot be undone.</p>
+      <div><button className="secondary-button" type="button" autoFocus onClick={() => setReplacementIntent(undefined)}>Keep Current Workout</button><button className="danger-button" type="button" onClick={() => void confirmReplacement()}>Discard &amp; {replacementIntent.type === 'choose-routine' ? 'Choose Routine' : replacementIntent.type === 'open' ? 'Start Open Workout' : replacementIntent.type === 'today' ? "Start Today's Plan" : `Start ${replacementIntent.routineName}`}</button></div>
+    </section></div> : null}
+
+    {deleteWorkoutSummary ? <WorkoutDeleteDialog workoutId={deleteWorkoutSummary.workout.id} workoutName={deleteWorkoutSummary.workout.nameSnapshot} onCancel={() => setDeleteWorkoutSummary(undefined)} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== deleteWorkoutSummary.workout.id)); setDeleteWorkoutSummary(undefined); void refresh() }} /> : null}
+    {tutorialOpen ? <GuideDialog eyebrow="How Workouts Work" steps={workoutTutorialSteps} onClose={closeTutorial} /> : null}
+  </div>
 }
 
 function FlowHeading({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <div className="workout-flow-heading"><button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Workout</p><h2>{title}</h2></div></div> }
