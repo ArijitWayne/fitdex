@@ -7,7 +7,7 @@ const food = fs.readFileSync('src/pages/FoodPage.tsx', 'utf8')
 const repository = fs.readFileSync('src/features/nutritionTargets/nutritionTargetRepository.ts', 'utf8')
 const gamification = fs.readFileSync('src/features/gamification/gamificationRepository.ts', 'utf8')
 const achievements = fs.readFileSync('src/features/gamification/achievementCatalog.ts', 'utf8')
-const dailyTargetsCard = food.slice(food.indexOf('function DailyTargetsCard'), food.indexOf('function TargetMetric'))
+const dailyTargetsCard = food.slice(food.indexOf('function DailyTargetsCard'), food.indexOf('function TargetsOffCard'))
 
 assert.match(settings, /Nutrition Targets/)
 assert.match(settings, /Nutrition Targets/)
