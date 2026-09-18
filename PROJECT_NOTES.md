@@ -693,3 +693,21 @@ Sound effects and background selection are independent properties on the existin
 Semantic `select.mp3` coverage is attached to navigation and harmless choice changes rather than a global click listener. It includes primary navigation, Settings and help navigation, Field Guide controls, Progress tabs/periods, Home shortcuts, and relevant Workout, Food, and Exercise Dex subviews. Data-changing actions retain their specific add/progress/achievement effects, and centralized priority/coalescing prevents a lower-priority click from masking a meaningful completion.
 
 Top-level destinations use a small in-memory history whose root is Home and which ignores consecutive duplicate destinations. The official Capacitor App `backButton` listener is installed only on native platforms. Registered subviews close deepest-first by explicit priority; otherwise Back pops top-level history, and `exitApp()` is called only when no handler remains at Home. Visual back controls route through the same navigation contract where appropriate, so one semantic select effect is requested per back action. This implements Android system Back and the platform back gesture without inventing a custom edge-swipe recognizer or introducing a routing dependency.
+
+## 39. Settings & Loadout V2 (Phase 7 Implementation)
+
+Phase 7 standardizes Settings around the locked **V2 — Profile / Loadout** architecture. The Settings hub is structured as an authoritative loadout panel rather than a generic utility list:
+
+1. **Player Profile Hero**: Sits prominently at the top of the hub, displaying the user's active champion avatar (`AvatarPortrait` with 72px pixel-art rendering), required local `displayName`, archetype label, and direct `Change` trigger. All 6 canonical avatars (Spartans: Aster, Leonidas, Brasidas; Amazonians: Artemis, Athena, Hippolyta) are supported.
+2. **3-Column Status Grid**: Positioned above category cards, providing live at-a-glance summaries:
+   - `Theme`: Active theme family + brightness (e.g. `Spartan · Dark`).
+   - `Units`: Active measurement system (e.g. `Metric · kg, km` or `Imperial · lb, mi`).
+   - `Targets`: Daily nutrition targets (e.g. `1,800 kcal · Protein off` or `Disabled`).
+3. **Structured Category Cards**:
+   - `Personalize`: Display Name & Avatar, Appearance (Theme Family and Brightness).
+   - `Your System`: Measurement Units (persisted in `SettingsRecord.units`), Audio (Sound Effects and Background Music), and Nutrition Targets.
+   - `Data & Help`: Exercise Media (Android only), Backup & Restore (portable `.fitdex` export and safe replace restore), Field Guide, Gamification Guide, and About FitDex.
+4. **Nutrition Targets Integrity**:
+   - Preserves Mifflin–St Jeor calculation, activity multipliers (1.20–1.90), goal adjustments, 1,000 kcal recommendation floor, and zero-state protein ("Protein target unavailable / not set").
+   - Clear visual separation between active saved target badges and in-progress calculation/manual draft inputs.
+   - All previously identified product decisions remain deferred without silent semantic changes: no historical target snapshots, no XP revocation, no schema migrations, and no cloud/account functionality.

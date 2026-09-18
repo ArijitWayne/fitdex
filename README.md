@@ -114,10 +114,10 @@ FitDex development follows a phased product architecture. For detailed architect
 - **Phase 4 (Progress & Analytics)**: **Complete / Locked** — Progress metrics, volume/training charts, all-time PRs, body measurements integration.
 - **Phase 5 (Journal & Activity Log)**: **Implemented / Physical QA Pending** — V3 Field Notes, read-only derived activity ledger, symmetric 2-dimension status, empty-meal suppression.
 - **Phase 6 (Exercise Dex Standalone Refinement)**: **Implemented / Physical QA Pending** — Locked V3 RPG Codex direction: selected avatar field archive hero, Index / Favorites modes, theme-family anatomy, compact result rows, reordered Exercise Record (Media → Metadata → Instructions), protected remote media & Phase 2 picker.
+- **Phase 7 (Settings & Loadout)**: **Implemented / Physical QA Pending** — Locked V2 Profile / Loadout direction: Player profile hero with active champion avatar, 3-stat status grid (Theme, Units, Targets), grouped category rows (Personalize, Your System, Data & Help), Units subview, unified Audio controls, Nutrition Targets draft clarity, and preserved backup/restore replacement semantics.
 
 **Planned / upcoming**
 
-- Phase 7 Settings
 - Phase 8 Secondary / supporting surfaces
 - Phase 9 Final cross-app consistency
 - Deferred: Body tracking & measurements (schema exists, tracking deferred outside Phase 1–9)

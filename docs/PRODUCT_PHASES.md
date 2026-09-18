@@ -13,6 +13,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 | **Phase 3** | Food & Nutrition | **COMPLETE / LOCKED** | Goal-First (3A) + Compact (3B) | Daily Food Hub, compact meal cards, Recent/Frequent repository suggestions, Quick Log, custom categories, target guards. |
 | **Phase 5** | Journal & Activity Log | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 Field Notes | Read-only derived activity ledger (workouts + food), symmetric 2-dimension status, empty-meal suppression, chevron actions. |
 | **Phase 6** | Exercise Dex Standalone | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 RPG Codex | RPG Codex hero with selected character avatar, permanent search field, Index/Favorites tabs, theme-family anatomy cards, compact results, Exercise Record reordered (media → facts → How to Perform). |
+| **Phase 7** | Settings | **IMPLEMENTED / PHYSICAL QA PENDING** | V2 — Profile / Loadout | Profile/Avatar hero, 3-column status grid (Theme, Units, Targets), grouped rows (Personalize, Your System, Data & Help), Units subview, unified Audio, Nutrition Targets with drafts, Android Media management, Backup & Restore replacement semantics, Field Guide replay, About. |
 
 ---
 
@@ -258,9 +259,48 @@ The Exercise Record uses the reference-first RPG Codex layout:
 
 ---
 
-## 9. Future Roadmap (Phases 7–9) & Deferred Work
+## 9. Phase 7 — Settings (IMPLEMENTED / PHYSICAL QA PENDING)
 
-- **Phase 7 — Settings**: Full Settings surface modernization, nutrition target refinement, and data management.
+### 9.1 Design Character & Hierarchy
+- **Locked Design**: **V2 — Profile / Loadout**.
+- **Player Profile Hero**: Sits at the top of the Settings Utility Hub, displaying the user's active champion avatar (`AvatarPortrait` with 72px pixel art rendering), required local `displayName`, archetype label, and direct `Change` action.
+- **3-Stat Status Grid**: At-a-glance summary cards above the setting categories:
+  1. `Theme`: Active theme family & brightness mode (e.g. `Spartan · Dark`).
+  2. `Units`: Measurement system (e.g. `Metric · kg, km` or `Imperial · lb, mi`).
+  3. `Targets`: Nutrition target summary (e.g. `1,800 kcal · Protein off` or `Disabled`).
+- **Grouped Category Rows**:
+  1. **Personalize**:
+     - `Display Name & Avatar`: Local identity for this device (no account required). All 6 canonical avatars (Spartans: Aster, Leonidas, Brasidas; Amazonians: Artemis, Athena, Hippolyta).
+     - `Appearance`: Theme family (Spartans / Amazonians) and Brightness (Dark / Light / System).
+  2. **Your System**:
+     - `Units`: Canonical Metric (`kg · km`) vs. Imperial (`lb · mi`) preference backed by `SettingsRecord.units` in Dexie.
+     - `Audio`: Sound Effects toggle (`select.mp3`, `add.mp3`, `achievements_unlock.mp3`, `progress_complete.mp3`) and Background Music track selection (`Warrior`, `Hardened`, `Villain`, `None`).
+     - `Nutrition Targets`: Full daily goal and calculation profile management.
+  3. **Data & Help**:
+     - `Exercise Media` (conditional): Native Android offline video demonstration management.
+     - `Backup & Restore`: Portable `.fitdex` export and safe replacement restore.
+     - `Field Guide`: Replayable 7-topic tutorial.
+     - `Gamification Guide`: XP rules, Levels, Ranks, and Streak semantics.
+     - `About FitDex`: Version, developer credit, local-first data guarantee.
+
+### 9.2 Nutrition Targets Semantics & Boundaries Preserved
+- **Mifflin–St Jeor Calculation**: Preserves standard RMR and activity multipliers (1.20 to 1.90).
+- **Goal Adjustments**: Lose Weight (−500 kcal default or −750 kcal), Maintain (TDEE), Gain (+250 kcal).
+- **Floor Protection**: Suggested calorie floor at 1,000 kcal.
+- **Protein State**: Protein target = 0 treated as unavailable/disabled; explicit copy "Protein target unavailable / not set".
+- **Draft State vs. Saved State**: Visual distinction between current saved target badge and in-progress form draft inputs.
+- **Deferred Nutrition Decisions**: No silent changes made to:
+  - Historical target snapshots (food days display against current targets).
+  - Target-history versioning / schema tables.
+  - XP revocation on target deletion/edits.
+  - Macro target inputs (carbs/fat/fiber).
+  - Cloud account sync.
+  - Automatic historical XP reconciliation.
+
+---
+
+## 10. Future Roadmap (Phases 8–9) & Deferred Work
+
 - **Phase 8 — Secondary / Supporting Surfaces**: Guides, tutorial overlays, modals, and auxiliary tool polish.
 - **Phase 9 — Final Cross-App Consistency**: Final visual and ergonomic harmonization across all surfaces.
 

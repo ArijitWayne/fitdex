@@ -117,3 +117,13 @@ Prototypes in `prototypes/` are temporary exploratory sandboxes. Once user-teste
   4. "How to perform" canonical instructions.
   5. "How it helps" physiological development.
 - **Picker Protection**: Contextual workout exercise picker remains strictly Phase 2 locked with fast Add/Added actions and duplicate prevention.
+
+### 4.6 Settings & Preferences (V2 Profile / Loadout)
+- **Player Profile Hero**: Prominently renders the user's active champion avatar (`AvatarPortrait` with pixel art rendering), required local `displayName`, archetype label, and direct `Change` trigger at the top of the Settings Hub.
+- **3-Column Status Grid**: At-a-glance summary cards above setting categories: `Theme` (family + brightness), `Units` (Metric/Imperial), and `Targets` (Daily kcal + protein summary).
+- **Grouped Category Cards**: Organized into `Personalize` (Display Name & Avatar, Appearance), `Your System` (Units, Audio, Nutrition Targets), and `Data & Help` (Exercise Media, Backup & Restore, Field Guide, Gamification Guide, About FitDex).
+- **Inline Summary Badges**: Display verified current state inline in navigation rows (`Arijit · Leonidas`, `Spartan · Dark`, `Metric`, `SFX On · Warrior`, `1,800 kcal · Protein off`).
+- **Unified Audio Entry**: Sound Effects switch and Background Music track options (`Warrior`, `Hardened`, `Villain`, `None`) consolidated in a dedicated subview.
+- **Units Management**: Direct selection between Metric (`kg · km`) and Imperial (`lb · mi`) backed by `SettingsRecord.units` in Dexie.
+- **Nutrition Targets Draft Clarity**: Form clearly demarcates current saved targets from in-progress draft inputs; handles 0g protein as "Protein target unavailable / not set".
+- **Replacement-Only Restore**: Full `.fitdex` restore communicates literal replace-not-merge semantics with optional safety backup.
