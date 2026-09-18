@@ -1,0 +1,1423 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FitDex Phase 8 — Retro Controls & Mission Brief</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0b0f0f;
+      color: #e8e8e2;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Production-Authentic Semantic Theme Tokens */
+    .theme-spartans-dark {
+      --proto-bg: #121616;
+      --proto-app-surface: #181d1d;
+      --proto-surface: #1f2524;
+      --proto-surface-raised: #282f2e;
+      --proto-surface-subtle: #303635;
+      --proto-border: #606a66;
+      --proto-border-strong: #7e8984;
+      --proto-text: #e8e8e2;
+      --proto-text-muted: #a7aeaa;
+      --proto-primary: #2e9895;
+      --proto-primary-strong: #14706f;
+      --proto-primary-text: #58b4af;
+      --proto-primary-muted: #213331;
+      --proto-on-primary: #101716;
+      --proto-xp: #cb9435;
+      --proto-danger: #d66a66;
+      --proto-overlay: rgba(5, 8, 8, 0.82);
+    }
+
+    .theme-spartans-light {
+      --proto-bg: #f0e6d6;
+      --proto-app-surface: #f4ebdd;
+      --proto-surface: #eae2d5;
+      --proto-surface-raised: #f8efe2;
+      --proto-surface-subtle: #ddd9ce;
+      --proto-border: #979b92;
+      --proto-border-strong: #6f7771;
+      --proto-text: #2e3230;
+      --proto-text-muted: #656b67;
+      --proto-primary: #1f8582;
+      --proto-primary-strong: #176864;
+      --proto-primary-text: #176864;
+      --proto-primary-muted: #d1ded9;
+      --proto-on-primary: #ffffff;
+      --proto-xp: #bd862c;
+      --proto-danger: #a74343;
+      --proto-overlay: rgba(18, 20, 19, 0.76);
+    }
+
+    .theme-amazonians-dark {
+      --proto-bg: #1f171e;
+      --proto-app-surface: #281c27;
+      --proto-surface: #31232f;
+      --proto-surface-raised: #3a2937;
+      --proto-surface-subtle: #44323f;
+      --proto-border: #79616f;
+      --proto-border-strong: #967887;
+      --proto-text: #eee5df;
+      --proto-text-muted: #b2a3aa;
+      --proto-primary: #906390;
+      --proto-primary-strong: #71446f;
+      --proto-primary-text: #bd91b7;
+      --proto-primary-muted: #493246;
+      --proto-on-primary: #21151f;
+      --proto-xp: #d0a03f;
+      --proto-danger: #d86f74;
+      --proto-overlay: rgba(12, 7, 11, 0.82);
+    }
+
+    .theme-amazonians-light {
+      --proto-bg: #f0e4d4;
+      --proto-app-surface: #f4e9db;
+      --proto-surface: #ebe1d8;
+      --proto-surface-raised: #f7ede0;
+      --proto-surface-subtle: #ddd0d1;
+      --proto-border: #9f898e;
+      --proto-border-strong: #806c73;
+      --proto-text: #352b31;
+      --proto-text-muted: #746a6e;
+      --proto-primary: #785178;
+      --proto-primary-strong: #654061;
+      --proto-primary-text: #654061;
+      --proto-primary-muted: #e2d3dc;
+      --proto-on-primary: #ffffff;
+      --proto-xp: #c99032;
+      --proto-danger: #a44449;
+      --proto-overlay: rgba(31, 22, 27, 0.77);
+    }
+
+    :root {
+      --font-body: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --font-display: "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 68px 16px 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0b0f0f;
+    }
+
+    .frame {
+      width: min(100%, var(--frame, 390px));
+      margin: 0 auto;
+      min-height: 680px;
+      border: 2px solid var(--proto-border-strong);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--proto-bg);
+      color: var(--proto-text);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 3px 3px 0 rgba(0,0,0,0.4);
+      position: relative;
+    }
+
+    /* Shared Canonical Top Bar */
+    .topbar {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      border-bottom: 2px solid var(--proto-border);
+      background: var(--proto-app-surface);
+    }
+    .brand-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-emblem {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--proto-border-strong);
+      border-radius: 2px;
+      background: var(--proto-primary);
+      color: var(--proto-on-primary);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .brand-wordmark {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--proto-text);
+    }
+    .header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Page Navigation & Shell */
+    .page-nav {
+      display: flex;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--proto-border);
+      color: var(--proto-text-muted);
+      font-family: var(--font-display);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--proto-surface);
+    }
+    .page-nav .active {
+      color: var(--proto-primary-text);
+      font-weight: 800;
+    }
+    .page-content {
+      padding: 16px 14px;
+    }
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .page-head h1 {
+      font-family: var(--font-display);
+      font-size: 19px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 0;
+      color: var(--proto-text);
+    }
+    .page-head p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--proto-text-muted);
+    }
+    .status-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 8px 12px;
+      border-radius: 2px;
+      border: 1px solid var(--proto-border);
+      background: var(--proto-surface);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--proto-text-muted);
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--proto-primary);
+    }
+    .cards-grid {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .context-card {
+      padding: 12px;
+      border: 1px solid var(--proto-border);
+      border-radius: 2px;
+      background: var(--proto-surface);
+    }
+    .context-card small {
+      font-family: var(--font-display);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--proto-primary-text);
+      font-weight: 800;
+    }
+    .context-card strong {
+      display: block;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .context-card p {
+      margin: 4px 0 0;
+      color: var(--proto-text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Modal Backdrop & Guide Shell */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: var(--proto-overlay);
+      display: grid;
+      place-items: center;
+      padding: 12px;
+    }
+    .guide-modal {
+      width: min(100%, var(--frame, 390px));
+      max-height: min(740px, calc(100vh - 24px));
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      border: 2px solid var(--proto-border-strong);
+      border-radius: 4px;
+      background: var(--proto-surface);
+      color: var(--proto-text);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7), 4px 4px 0 rgba(0,0,0,0.5);
+      overflow: hidden;
+      animation: guide-pop 140ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes guide-pop {
+      from { opacity: 0; transform: scale(0.97) translateY(4px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Guide Header */
+    .guide-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+      padding: 0 14px;
+      border-bottom: 2px solid var(--proto-border);
+      background: var(--proto-surface-subtle);
+    }
+    .guide-top-tag {
+      font-family: var(--font-display);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      color: var(--proto-primary-text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Progress Segmented Cartridge Rail */
+    .guide-progress {
+      padding: 8px 14px 10px;
+      border-bottom: 1px solid var(--proto-border);
+      background: var(--proto-surface);
+    }
+    .step-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--proto-text-muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .step-rail {
+      display: flex;
+      gap: 3px;
+    }
+    .step-rail button {
+      flex: 1;
+      height: 6px;
+      border: 1px solid var(--proto-border);
+      background: var(--proto-surface-subtle);
+      padding: 0;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 100ms ease;
+    }
+    .step-rail button.active {
+      background: var(--proto-primary);
+      border-color: var(--proto-primary-text);
+    }
+    .single .guide-progress {
+      display: none;
+    }
+
+    /* Guide Body */
+    .guide-body {
+      overflow-y: auto;
+      padding: 16px 14px;
+    }
+    .stamp-badge {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--proto-border-strong);
+      border-radius: 2px;
+      background: var(--proto-surface-raised);
+      color: var(--proto-primary-text);
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: 15px;
+    }
+    .guide-title {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 5.5vw, 22px);
+      line-height: 1.15;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin: 10px 0 8px;
+      color: var(--proto-text);
+    }
+    .guide-bodycopy {
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--proto-text-muted);
+      margin: 0;
+    }
+    .path-callout {
+      margin-top: 14px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--proto-primary);
+      border-top: 1px solid var(--proto-border);
+      border-right: 1px solid var(--proto-border);
+      border-bottom: 1px solid var(--proto-border);
+      border-radius: 0 2px 2px 0;
+      background: var(--proto-surface-raised);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--proto-primary-text);
+      letter-spacing: 0.04em;
+    }
+    .sections-stack {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .section-card {
+      border: 1px solid var(--proto-border);
+      border-radius: 2px;
+      padding: 10px 12px;
+      background: var(--proto-surface-raised);
+    }
+    .section-card b {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--proto-primary-text);
+      margin-bottom: 4px;
+    }
+    .section-card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--proto-text-muted);
+      line-height: 1.45;
+    }
+    .section-card ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13px;
+      color: var(--proto-text-muted);
+      line-height: 1.45;
+    }
+    .persona-box {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--proto-border);
+      border-radius: 2px;
+      background: var(--proto-surface-raised);
+    }
+    .persona-box small {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--proto-primary-text);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .chips-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .xp-table {
+      display: grid;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .xp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border: 1px solid var(--proto-border);
+      border-radius: 2px;
+      background: var(--proto-surface-subtle);
+      font-size: 12px;
+    }
+    .xp-row span {
+      color: var(--proto-text);
+    }
+    .xp-row b {
+      font-family: var(--font-mono);
+      color: var(--proto-xp);
+      font-weight: 700;
+    }
+
+    /* Guide Footer Command Bar */
+    .guide-foot {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 2px solid var(--proto-border);
+      background: var(--proto-surface-subtle);
+    }
+
+    /* Variant 2: Mission Brief Banner */
+    .variant-mission .objective-strip {
+      margin: -16px -14px 14px;
+      padding: 14px;
+      border-bottom: 2px solid var(--proto-border);
+      border-left: 4px solid var(--proto-primary);
+      background: var(--proto-surface-subtle);
+    }
+    .variant-mission .objective-strip small {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--proto-primary-text);
+    }
+    .variant-mission .objective-strip h2 {
+      margin: 6px 0 0;
+      font-family: var(--font-display);
+      font-size: 19px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: var(--proto-text);
+    }
+    .variant-mission .objective-strip p {
+      margin: 6px 0 0;
+      font-size: 12.5px;
+      color: var(--proto-text-muted);
+      line-height: 1.4;
+    }
+
+    /* Variant 1: Manual */
+    .variant-manual .guide-top-tag::before {
+      content: "MANUAL // ";
+      opacity: 0.65;
+    }
+
+    /* Variant 3: Codex */
+    .variant-codex .guide-body {
+      background-size: 100% 28px;
+      background-image: linear-gradient(var(--proto-surface-subtle) 1px, transparent 1px);
+    }
+    .variant-codex .record-index {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--proto-primary-text);
+      margin-bottom: 4px;
+    }
+
+    /* ========================================================= */
+    /* RETRO CONTROL SYSTEMS: THREE DISTINCT STYLES (A / B / C)  */
+    /* ========================================================= */
+
+    /* Universal Base Control Typography & Ergonomics */
+    .cmd-btn, .cmd-icon-btn, .cmd-chip, .cmd-tab {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 70ms ease, box-shadow 70ms ease, background 100ms ease;
+    }
+
+    .cmd-btn {
+      min-height: 44px;
+      padding: 0 16px;
+      font-size: 13.5px;
+    }
+    .cmd-btn.primary {
+      margin-left: auto;
+      background: var(--proto-primary);
+      color: var(--proto-on-primary);
+    }
+    .cmd-btn.secondary {
+      background: var(--proto-surface-raised);
+      color: var(--proto-text);
+    }
+    .cmd-btn.compact {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 11px;
+    }
+    .cmd-btn[disabled] {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .cmd-icon-btn {
+      width: 42px;
+      height: 42px;
+      font-size: 16px;
+      background: var(--proto-surface-raised);
+      color: var(--proto-primary-text);
+    }
+
+    /* Style A: HANDHELD BEVEL (2px border, inset top-highlight, 2px shadow) */
+    .ctrl-bevel .cmd-btn,
+    .ctrl-bevel .cmd-icon-btn,
+    .ctrl-bevel .cmd-chip,
+    .ctrl-bevel .cmd-input,
+    .ctrl-bevel .cmd-select {
+      border: 2px solid var(--proto-border-strong);
+      border-radius: 3px;
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.18), inset -1px -1px 0 rgba(0,0,0,0.35), 2px 2px 0 var(--proto-border-strong);
+    }
+    .ctrl-bevel .cmd-btn.primary {
+      border-color: var(--proto-primary-text);
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.25), inset -1px -1px 0 rgba(0,0,0,0.4), 2px 2px 0 #000;
+    }
+    .ctrl-bevel .cmd-btn:not([disabled]):active,
+    .ctrl-bevel .cmd-icon-btn:not([disabled]):active,
+    .ctrl-bevel .cmd-chip:not([disabled]):active {
+      transform: translate(1px, 1px);
+      box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5), 1px 1px 0 var(--proto-border-strong);
+    }
+
+    /* Style B: PIXEL COMMAND (0px radius, sharp frame, 3px hard block shadow) */
+    .ctrl-pixel .cmd-btn,
+    .ctrl-pixel .cmd-icon-btn,
+    .ctrl-pixel .cmd-chip,
+    .ctrl-pixel .cmd-input,
+    .ctrl-pixel .cmd-select {
+      border: 2px solid var(--proto-border-strong);
+      border-radius: 0;
+      box-shadow: 3px 3px 0 var(--proto-border-strong);
+    }
+    .ctrl-pixel .cmd-btn.primary {
+      border-color: var(--proto-primary-text);
+      box-shadow: 3px 3px 0 #000;
+    }
+    .ctrl-pixel .cmd-btn:not([disabled]):active,
+    .ctrl-pixel .cmd-icon-btn:not([disabled]):active,
+    .ctrl-pixel .cmd-chip:not([disabled]):active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--proto-border-strong);
+    }
+    .ctrl-pixel .cmd-btn.primary:not([disabled]):active {
+      box-shadow: 1px 1px 0 #000;
+    }
+
+    /* Style C: CARTRIDGE PANEL (4px radius, double-frame inset, compact shadow) */
+    .ctrl-cartridge .cmd-btn,
+    .ctrl-cartridge .cmd-icon-btn,
+    .ctrl-cartridge .cmd-chip,
+    .ctrl-cartridge .cmd-input,
+    .ctrl-cartridge .cmd-select {
+      border: 1px solid var(--proto-border-strong);
+      border-radius: 4px;
+      box-shadow: 0 0 0 1px var(--proto-surface) inset, 2px 2px 0 var(--proto-border);
+    }
+    .ctrl-cartridge .cmd-btn.primary {
+      border-color: var(--proto-primary-text);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.2) inset, 2px 2px 0 rgba(0,0,0,0.5);
+    }
+    .ctrl-cartridge .cmd-btn:not([disabled]):active,
+    .ctrl-cartridge .cmd-icon-btn:not([disabled]):active,
+    .ctrl-cartridge .cmd-chip:not([disabled]):active {
+      transform: translate(1px, 1px);
+      box-shadow: 0 0 0 1px var(--proto-surface) inset, 1px 1px 0 var(--proto-border);
+    }
+
+    /* Control Lab Widgets Styling */
+    .control-lab-grid {
+      display: grid;
+      gap: 14px;
+      padding: 4px 0;
+    }
+    .widget-group {
+      border: 1px solid var(--proto-border);
+      border-radius: 2px;
+      padding: 12px;
+      background: var(--proto-surface-raised);
+    }
+    .widget-group legend {
+      font-family: var(--font-display);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      color: var(--proto-primary-text);
+      padding: 0 6px;
+    }
+    .widget-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .cmd-segmented {
+      display: inline-flex;
+      border: 2px solid var(--proto-border-strong);
+      background: var(--proto-surface-subtle);
+    }
+    .ctrl-pixel .cmd-segmented { border-radius: 0; box-shadow: 2px 2px 0 var(--proto-border-strong); }
+    .ctrl-bevel .cmd-segmented { border-radius: 3px; box-shadow: 2px 2px 0 var(--proto-border-strong); }
+    .ctrl-cartridge .cmd-segmented { border-radius: 4px; box-shadow: 2px 2px 0 var(--proto-border); }
+
+    .cmd-tab {
+      padding: 8px 14px;
+      border: 0;
+      background: transparent;
+      color: var(--proto-text-muted);
+      font-size: 12px;
+    }
+    .cmd-tab.active {
+      background: var(--proto-primary);
+      color: var(--proto-on-primary);
+    }
+
+    .cmd-chip {
+      padding: 6px 12px;
+      background: var(--proto-surface-subtle);
+      color: var(--proto-text);
+      font-size: 11.5px;
+    }
+    .cmd-chip.selected {
+      background: var(--proto-primary);
+      color: var(--proto-on-primary);
+      border-color: var(--proto-primary-text);
+    }
+
+    .cmd-checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .cmd-checkbox {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--proto-border-strong);
+      background: var(--proto-surface-subtle);
+      color: var(--proto-on-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .cmd-checkbox.checked {
+      background: var(--proto-primary);
+      border-color: var(--proto-primary-text);
+    }
+
+    .cmd-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .cmd-toggle-box {
+      display: inline-flex;
+      border: 2px solid var(--proto-border-strong);
+      background: var(--proto-surface-subtle);
+    }
+    .cmd-toggle-opt {
+      padding: 4px 8px;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--proto-text-muted);
+    }
+    .cmd-toggle-opt.active {
+      background: var(--proto-primary);
+      color: var(--proto-on-primary);
+    }
+
+    .cmd-radio-list {
+      display: grid;
+      gap: 4px;
+      width: 100%;
+    }
+    .cmd-radio-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--proto-border);
+      background: var(--proto-surface-subtle);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .cmd-radio-row.selected {
+      border-color: var(--proto-primary-text);
+      background: var(--proto-surface-raised);
+      color: var(--proto-text);
+    }
+    .cmd-radio-row.selected::before {
+      content: ">";
+      color: var(--proto-primary-text);
+      font-family: var(--font-mono);
+      font-weight: 900;
+    }
+
+    .cmd-input {
+      min-height: 42px;
+      padding: 0 12px;
+      background: var(--proto-surface-subtle);
+      color: var(--proto-text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      width: 100%;
+      max-width: 220px;
+    }
+    .cmd-input:focus {
+      outline: 2px solid var(--proto-primary);
+      border-color: var(--proto-primary-text);
+    }
+
+    .cmd-select {
+      min-height: 42px;
+      padding: 0 12px;
+      background: var(--proto-surface-subtle);
+      color: var(--proto-text);
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      width: 100%;
+      max-width: 220px;
+      cursor: pointer;
+    }
+
+    /* Floating Developer Harness */
+    .harness {
+      position: fixed;
+      z-index: 60;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: calc(100vw - 20px);
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      background: rgba(12, 16, 18, 0.94);
+      color: #e8e8e2;
+      font-family: Inter, system-ui;
+      font-size: 11px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .harness strong {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #58b4af;
+      white-space: nowrap;
+    }
+    .harness select, .harness button {
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 2px;
+      background: #1f2524;
+      color: #e8e8e2;
+      padding: 4px 6px;
+      font-family: inherit;
+      font-size: 11px;
+    }
+    .harness button {
+      cursor: pointer;
+      font-weight: 700;
+      background: #2e9895;
+      color: #101716;
+      border-color: #58b4af;
+    }
+    @media (max-width: 720px) {
+      .harness {
+        flex-wrap: wrap;
+        top: 6px;
+        left: 6px;
+        right: 6px;
+      }
+      .app {
+        padding-top: 130px;
+      }
+    }
+
+    /* Prototype Picker Chrome */
+    .proto-picker {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(10,10,10,0.88);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.1) inset, 0 8px 24px rgba(0,0,0,0.4);
+      font-family: var(--font-display);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      user-select: none;
+    }
+    .proto-picker-highlight {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      will-change: transform;
+    }
+    .proto-picker[data-ready] .proto-picker-highlight {
+      transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1), width 220ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .proto-picker-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      font: inherit;
+      cursor: pointer;
+      transition: color 140ms ease-out;
+    }
+    .proto-picker-item:hover { color: #fff; }
+    .proto-picker-item[data-active] { color: #fff; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .guide-modal { animation: none; }
+      .cmd-btn, .cmd-icon-btn, .cmd-chip { transition: none; }
+      .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+  <nav class="proto-picker" aria-label="Prototype variants">
+    <span class="proto-picker-highlight" aria-hidden="true"></span>
+    <button class="proto-picker-item">Manual</button>
+    <button class="proto-picker-item" data-active aria-current="true">Mission</button>
+    <button class="proto-picker-item">Codex</button>
+  </nav>
+
+  <script>
+    // Exact Production Content Data Arrays
+    const field = [
+      ['Home', 'Your Local Fitness Quest', '✦', 'Home connects today’s training, nutrition, plan, XP and recent progress without an account.', 'HOME → TODAY → QUICK ACCESS'],
+      ['Personalization', 'Choose Your Profile', '◐', 'Pick a theme and cosmetic champion. Both stay local and can be changed whenever you like.', 'SETTINGS → PROFILE → APPEARANCE', 'persona'],
+      ['Training', 'Build Your Training', '⌁', 'Create reusable routines or start an empty workout, then record tracking-specific sets and finish to save history.', 'WORKOUT → ROUTINES → ADD EXERCISE'],
+      ['Exercise Dex', 'Explore 804 Exercises', '▤', 'Browse categories, instructions and demonstrations. Android can selectively download exercise media for offline use.', 'WORKOUT → EXERCISE DEX'],
+      ['Nutrition', 'Track Your Fuel', '◒', 'Log food into Breakfast, Lunch, Supper and Dinner. Daily totals and nutrition trends derive from those entries.', 'FOOD → MEAL → ADD FOOD'],
+      ['Progress & XP', 'Level Up With Facts', '⌁', 'Completed activity powers Progress, personal records, XP and achievements from your real training and food records.', 'PROGRESS → RECORDS → ACHIEVEMENTS'],
+      ['Offline & Settings', 'Keep Your Data Yours', '♙', 'Your data stays local, works offline and can be moved with a .fitdex backup. Android can selectively download exercise media.', 'SETTINGS → BACKUP → EXERCISE MEDIA']
+    ];
+
+    const workout = [
+      ['Welcome to Workouts', [['', 'Start workouts, create reusable routines, plan your training week, browse Exercise Dex, and view completed workouts.']]],
+      ['Routines Are Optional', [['', 'A routine is a reusable workout template, such as Push Day, Pull Day, or Leg Day.'], ['', 'You do not need a routine to train. Start an empty workout anytime and add exercises as you go.']]],
+      ['Plan Your Week', [['Workout Day', 'Train without a fixed routine.'], ['Routine', 'Follow one saved routine.'], ['Rest Day', 'A planned recovery day.'], ['No Plan', 'Nothing scheduled.']]],
+      ['Starting a Workout', [['', 'Start from today’s scheduled routine, any saved routine, or an empty workout.'], ['', 'During training you can add, remove, or reorder exercises and add or delete sets.']]],
+      ['Logging Sets', [['', 'Enter the required values, such as Weight + Reps or Duration. When every required value is valid, the set logs automatically—there is no Complete button.'], ['', 'For example, entering Set 1 changes 0/3 logged sets to 1/3.']]],
+      ['Previous Performance', [['', 'When available, FitDex shows your previous completed performance for the exercise to help you decide what to attempt next.']]],
+      ['Rest Timer', [['', 'A logged set has an optional Rest action. Logging never starts Rest automatically; you can Skip or Reset the countdown.']]],
+      ['Workout Timer', [['', 'The timer tracks active training time. Pause stops counting temporarily; Resume continues. You can Finish while paused, and paused time is excluded from final duration.']]],
+      ['Finishing a Workout', [['', 'Every remaining exercise needs a set, and every remaining set must be valid. Fill or delete empty sets and remove unused exercises. FitDex identifies anything that still needs attention.']]],
+      ['Workout History', [['', 'Completed workouts appear under Recent Workouts. Review exercises, sets, and duration, or delete a session.'], ['', 'Deleting a completed workout automatically updates Journal, Progress, and Personal Records.']]],
+      ['Exercise Dex', [['', 'Browse 804 exercises using search, categories, demonstrations, instructions, and Favorites. Tap ★ to keep an exercise in your shortlist.']]],
+      ['Workouts on Home', [['No Plan', 'Start empty or create a routine.'], ['Workout Day', 'Train and choose exercises as you go.'], ['Routine Day', 'Start today’s assigned routine.'], ['Rest Day', 'Home shows planned recovery.'], ['Completed', 'Home shows today’s completed activity.'], ['', 'Your workout data automatically feeds Home, Journal and Progress.']]]
+    ];
+
+    const food = [
+      ['Welcome to Food', [['', 'Log Breakfast, Lunch, Supper, and Dinner.'], ['Core values', 'Calories, Protein, Carbs, and Fat.'], ['Optional nutrients', 'Fiber, Sugar, Saturated Fat, and Sodium.']]],
+      ['Logging Food', [['', 'Choose a meal, add a food, and enter values for what you actually consumed. FitDex needs no online food database—you control the logged values.']]],
+      ['Food Memory', [['', 'Logged foods are remembered locally so you can choose a suggestion next time. Remembered values are defaults; changing today’s entry does not automatically change that template.']]],
+      ['Food Categories', [['', 'Use predefined categories such as Chicken, Eggs, Fish & Seafood, Fruits, Vegetables, and Supplements, or create your own custom category.']]],
+      ['Past Days', [['', 'Use the date controls to review or log another day. Food history is stored as snapshots, so changing remembered defaults later never rewrites old meals.']]],
+      ['Nutrition Breakdown', [['Macros', 'Protein × 4 kcal/g, Carbs × 4 kcal/g, and Fat × 9 kcal/g.'], ['Meals', 'Actual logged calories split across Breakfast, Lunch, Supper, and Dinner.'], ['', 'Your entered calorie total may not match the macro-derived total. FitDex keeps both instead of changing your entries.']]],
+      ['Nutrition Targets', [['', 'Calories and Protein can have daily targets and can be edited from Settings. Calorie needs are estimates, not medical advice.'], ['', 'Carbs, Fat, and Fiber are tracked for awareness. Fiber remains optional and is not a gamified target.'], ['', 'Lose Weight suggestions use an estimated deficit. Eating farther below your target never earns more rewards; only eligible calorie-target days count.']]],
+      ['Where Your Food Data Goes', [['Home', 'Shows today’s nutrition and meal progress.'], ['Journal', 'Shows logged meals for the selected day.'], ['Progress', 'Uses Food history for nutrition averages and trends.'], ['', 'You do not need to enter the same data again elsewhere.']]]
+    ];
+
+    const single = {
+      progress: ['How Progress Works', [
+        ['', 'Progress is calculated automatically from completed workouts and Food history. There is nothing extra to log here.'],
+        ['Workout data', 'Workout count\nTraining time\nResistance Volume\nPersonal Records'],
+        ['Food data', 'Average calories\nAverage protein\nNutrition trends'],
+        ['Resistance Volume', 'Weight × reps across logged weight-based resistance sets. It is a workload measure, not a universal score of training quality.']
+      ]],
+      journal: ['How Journal Works', [
+        ['', 'Journal is your read-only daily history. You do not create Journal entries manually.'],
+        ['Workout', 'Completed sessions appear automatically.'],
+        ['Food', 'FoodLogEntry meal history appears automatically.'],
+        ['', 'Use the date controls to review previous days. Journal derives this view without owning duplicate records.']
+      ]],
+      gamification: ['How Gamification Works', [
+        ['XP, Levels & Ranks', 'Fitness milestones earn Lifetime XP. Levels run from 1–100 across nine ranks from Recruit to Radiant. Level 100 is Radiant, and Lifetime XP continues to grow beyond Level 100.'],
+        ['Achievements', 'Permanent milestone rewards. A new unlock awards +50 XP once; it never repeats.'],
+        ['Plan Streak', 'Only successful planned training days increase it. Rest and No Plan preserve it.'],
+        ['Protection', 'Streak Freeze protects one missed planned day. Travel/Sickness Pause can preserve up to 7 days, but earns no XP or progress.'],
+        ['Plan commitment', 'Initial plan is free. One material Weekly Plan change in a rolling 12 months preserves streak; later confirmation resets it.'],
+        ['Daily Quests', 'Today’s plan supplies contextual quest.']
+      ]]
+    };
+
+    const rewards = [
+      ['Planned Routine', '+30 XP'],
+      ['Workout Day', '+30 XP'],
+      ['Unplanned Workout', '+20 XP'],
+      ['New Personal Record', '+15 XP'],
+      ['Full Food Log', '+5 XP'],
+      ['Calorie Target', '+5 XP'],
+      ['Protein Target', '+5 XP'],
+      ['Achievement Unlocked', '+50 XP']
+    ];
+
+    // State
+    let state = {
+      variant: 1, // Default selected: V2 — Mission Brief
+      controlStyle: 'pixel', // 'bevel' (A), 'pixel' (B), 'cartridge' (C)
+      guide: 'field',
+      step: 0,
+      mode: 'replay',
+      theme: 'spartans-dark',
+      width: '390',
+      open: true,
+      context: 'home',
+      // Control Lab test states
+      labTab: 0,
+      labCheck: true,
+      labToggle: true,
+      labMusic: 'warrior'
+    };
+
+    function guideData() {
+      if (state.guide === 'lab') {
+        return { section: 'Retro Control Lab', title: 'Interactive Widget Matrix', total: 1 };
+      }
+      if (state.guide === 'field') {
+        let s = field[state.step];
+        return { section: s[0], title: s[1], icon: s[2], text: s[3], path: s[4], persona: s[5], total: 7 };
+      }
+      if (state.guide === 'workout' || state.guide === 'food') {
+        let list = state.guide === 'workout' ? workout : food;
+        let s = list[state.step];
+        return { section: state.guide === 'workout' ? 'Workout Directive' : 'Nutrition Directive', title: s[0], parts: s[1], total: list.length };
+      }
+      let s = single[state.guide];
+      return {
+        section: state.guide === 'gamification' ? 'Gamification Codex' : state.guide === 'progress' ? 'Progress Reference' : 'Journal Reference',
+        title: s[0],
+        parts: s[1],
+        total: 1
+      };
+    }
+
+    function esc(v) {
+      return String(v).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    }
+
+    function renderParts(items) {
+      return `<div class="sections-stack">${items.map(([label, text]) => `
+        <div class="section-card">
+          ${label ? `<b>${esc(label)}</b>` : ''}
+          ${text.includes('\n') ? `<ul>${text.split('\n').map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : `<p>${esc(text)}</p>`}
+        </div>
+      `).join('')}</div>`;
+    }
+
+    function renderControlLab() {
+      return `
+        <div class="control-lab-grid">
+          <fieldset class="widget-group">
+            <legend>Command Buttons</legend>
+            <div class="widget-row">
+              <button class="cmd-btn primary">NEXT ›</button>
+              <button class="cmd-btn secondary">BACK</button>
+              <button class="cmd-btn secondary compact">CLOSE</button>
+              <button class="cmd-icon-btn" aria-label="Help">?</button>
+              <button class="cmd-icon-btn" aria-label="Settings">⚙</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="widget-group">
+            <legend>Segmented Mode Selectors</legend>
+            <div class="cmd-segmented" role="tablist">
+              <button class="cmd-tab ${state.labTab === 0 ? 'active' : ''}" onclick="state.labTab=0;render()">INDEX</button>
+              <button class="cmd-tab ${state.labTab === 1 ? 'active' : ''}" onclick="state.labTab=1;render()">FAVORITES</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="widget-group">
+            <legend>Tactile Checkbox & Toggle</legend>
+            <div class="widget-row" style="justify-content: space-between;">
+              <label class="cmd-checkbox-label" onclick="state.labCheck=!state.labCheck;render()">
+                <span class="cmd-checkbox ${state.labCheck ? 'checked' : ''}">${state.labCheck ? '✓' : ''}</span>
+                <span>Sound Effects</span>
+              </label>
+
+              <div class="cmd-toggle-wrap">
+                <span>SFX</span>
+                <div class="cmd-toggle-box">
+                  <span class="cmd-toggle-opt ${state.labToggle ? 'active' : ''}" onclick="state.labToggle=true;render()">ON</span>
+                  <span class="cmd-toggle-opt ${!state.labToggle ? 'active' : ''}" onclick="state.labToggle=false;render()">OFF</span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="widget-group">
+            <legend>RPG Option Rows (Battle Music)</legend>
+            <div class="cmd-radio-list">
+              ${['warrior', 'hardened', 'villain', 'none'].map(track => `
+                <div class="cmd-radio-row ${state.labMusic === track ? 'selected' : ''}" onclick="state.labMusic='${track}';render()">
+                  <span>${track.toUpperCase()}</span>
+                </div>
+              `).join('')}
+            </div>
+          </fieldset>
+
+          <fieldset class="widget-group">
+            <legend>Terminal Entry Field & Selector</legend>
+            <div class="widget-row">
+              <input type="text" class="cmd-input" value="2374 kcal" aria-label="Calories entry" readonly>
+              <select class="cmd-select" aria-label="Units select">
+                <option>Metric (kg)</option>
+                <option>Imperial (lb)</option>
+              </select>
+            </div>
+          </fieldset>
+        </div>
+      `;
+    }
+
+    function page() {
+      let pageTitle = { home: 'Home', workout: 'Workout', food: 'Food', progress: 'Progress', journal: 'Journal', gamification: 'Settings', lab: 'Control Lab' }[state.context];
+      let targetName = { home: 'Field Guide', workout: 'Workout Directive', food: 'Food Directive', progress: 'Progress Help', journal: 'Journal Help', gamification: 'Gamification Guide', lab: 'Control Lab' }[state.context];
+
+      return `
+        <main class="app theme-${state.theme} ctrl-${state.controlStyle}" style="--frame:${state.width}px">
+          <section class="frame">
+            <header class="topbar">
+              <div class="brand-group">
+                <span class="brand-emblem">F</span>
+                <strong class="brand-wordmark">FITDEX</strong>
+              </div>
+              <div class="header-actions">
+                <button class="cmd-icon-btn" style="width:34px;height:34px;font-size:13px;" title="Toggle theme (demo)">☀</button>
+                <button class="cmd-icon-btn" style="width:34px;height:34px;font-size:13px;" title="Settings">⚙</button>
+              </div>
+            </header>
+            <nav class="page-nav">
+              <span class="${state.context === 'home' ? 'active' : ''}">Home</span>
+              <span class="${state.context === 'workout' ? 'active' : ''}">Workout</span>
+              <span class="${state.context === 'food' ? 'active' : ''}">Food</span>
+              <span class="${state.context === 'progress' ? 'active' : ''}">Progress</span>
+              <span class="${state.context === 'journal' ? 'active' : ''}">Journal</span>
+            </nav>
+            <section class="page-content">
+              <div class="page-head">
+                <div>
+                  <h1>${pageTitle}</h1>
+                  <p>${targetName} entry surface</p>
+                </div>
+                <button class="cmd-icon-btn" data-open aria-label="Open ${targetName}">?</button>
+              </div>
+              <div class="status-strip">
+                <i class="status-dot"></i> LOCAL-FIRST · RETRO RPG SYSTEM
+              </div>
+              <div class="cards-grid">
+                <article class="context-card">
+                  <small>${pageTitle} / Status</small>
+                  <strong>${state.context === 'home' ? 'Spartan Routine Ready' : state.context === 'workout' ? 'Active Training Session' : state.context === 'food' ? 'Breakfast Logged' : state.context === 'progress' ? 'Activity Metrics & PRs' : state.context === 'journal' ? 'Daily History Snapshot' : 'Retro Widget Laboratory'}</strong>
+                  <p>Comparing <strong>Style ${state.controlStyle.toUpperCase()}</strong> buttons and controls. Phone-first 320–480px.</p>
+                </article>
+              </div>
+            </section>
+          </section>
+
+          ${state.open ? dialog() : ''}
+          ${harness()}
+        </main>
+      `;
+    }
+
+    function dialog() {
+      let d = guideData();
+      let isSingle = d.total === 1;
+      let isLab = state.guide === 'lab';
+      let variantClass = ['variant-manual', 'variant-mission', 'variant-codex'][state.variant];
+      let exitLabel = isSingle ? 'Close' : (state.mode === 'first' ? 'Skip' : 'Close');
+      let finalLabel = state.guide === 'field' ? (state.mode === 'first' ? 'Enter FitDex' : 'Done') : 'Done';
+
+      let bodyHtml = '';
+
+      if (isLab) {
+        bodyHtml = renderControlLab();
+      } else if (state.variant === 1) {
+        // V2: Mission Brief
+        bodyHtml = `
+          <div class="objective-strip">
+            <small>${state.guide === 'field' ? 'FIELD OBJECTIVE' : state.guide === 'workout' ? 'TRAINING DIRECTIVE' : state.guide === 'food' ? 'NUTRITION DIRECTIVE' : 'SYSTEM DIRECTIVE'}</small>
+            <h2>${esc(d.title)}</h2>
+            <p>${d.text ? esc(d.text) : 'Review tactical parameters before executing your plan.'}</p>
+          </div>
+          ${d.text ? `
+            ${d.path ? `<div class="path-callout">CMD: ${esc(d.path)}</div>` : ''}
+            ${d.persona ? `
+              <div class="persona-box">
+                <small>Faction Allegiance</small>
+                <div class="chips-row">
+                  <button class="cmd-chip selected">Spartans</button>
+                  <button class="cmd-chip">Amazonians</button>
+                  <button class="cmd-chip">Champion</button>
+                </div>
+              </div>
+            ` : ''}
+          ` : renderParts(d.parts)}
+          ${state.guide === 'gamification' ? `
+            <div class="sections-stack">
+              <div class="section-card">
+                <b>XP Reward Matrix</b>
+                <div class="xp-table">
+                  ${rewards.map(([n, x]) => `<div class="xp-row"><span>${n}</span><b>${x}</b></div>`).join('')}
+                </div>
+              </div>
+            </div>
+          ` : ''}
+        `;
+      } else {
+        // V1 (Manual) & V3 (Codex)
+        bodyHtml = `
+          ${state.variant === 2 ? `<div class="record-index">REC // ${String(state.step + 1).padStart(2, '0')} OF ${String(d.total).padStart(2, '0')}</div>` : ''}
+          <div class="stamp-badge">${d.icon || (state.guide === 'gamification' ? 'XP' : '✦')}</div>
+          <h2 class="guide-title">${esc(d.title)}</h2>
+          ${d.text ? `<p class="guide-bodycopy">${esc(d.text)}</p>` : ''}
+          ${d.parts ? renderParts(d.parts) : ''}
+          ${d.path ? `<div class="path-callout">ROUTE: ${esc(d.path)}</div>` : ''}
+          ${d.persona ? `
+            <div class="persona-box">
+              <small>Live Faction Preview</small>
+              <div class="chips-row">
+                <button class="cmd-chip selected">Spartans</button>
+                <button class="cmd-chip">Amazonians</button>
+                <button class="cmd-chip">Champion</button>
+              </div>
+            </div>
+          ` : ''}
+          ${state.guide === 'gamification' ? `
+            <div class="sections-stack">
+              <div class="section-card">
+                <b>XP Reward Matrix</b>
+                <div class="xp-table">
+                  ${rewards.map(([n, x]) => `<div class="xp-row"><span>${n}</span><b>${x}</b></div>`).join('')}
+                </div>
+              </div>
+            </div>
+          ` : ''}
+        `;
+      }
+
+      return `
+        <div class="backdrop">
+          <section class="guide-modal ${variantClass} ${isSingle ? 'single' : ''}" role="dialog" aria-label="${esc(d.title)}">
+            <header class="guide-top">
+              <div class="guide-top-tag">
+                <span>${esc(d.section)}</span>
+              </div>
+              <button class="cmd-btn secondary compact" data-close>${exitLabel}</button>
+            </header>
+
+            ${isSingle ? '' : `
+              <div class="guide-progress">
+                <div class="step-meta">
+                  <span>Step ${state.step + 1} / ${d.total}</span>
+                  <span>${esc(d.section)}</span>
+                </div>
+                <div class="step-rail">
+                  ${Array.from({ length: d.total }, (_, i) => `
+                    <button data-step="${i}" class="${i === state.step ? 'active' : ''}" aria-label="Step ${i + 1}" aria-current="${i === state.step ? 'step' : 'false'}"></button>
+                  `).join('')}
+                </div>
+              </div>
+            `}
+
+            <div class="guide-body">
+              ${bodyHtml}
+            </div>
+
+            <footer class="guide-foot">
+              ${isSingle ? `
+                <button class="cmd-btn primary" data-close>Close</button>
+              ` : `
+                <button class="cmd-btn secondary" data-prev ${state.step === 0 ? 'disabled' : ''}>Back</button>
+                <button class="cmd-btn primary" data-next>${state.step === d.total - 1 ? finalLabel : 'Next ›'}</button>
+              `}
+            </footer>
+          </section>
+        </div>
+      `;
+    }
+
+    function harness() {
+      let opts = [
+        ['field', 'Field Guide (7)'],
+        ['workout', 'Workout (12)'],
+        ['food', 'Food (8)'],
+        ['progress', 'Progress (1)'],
+        ['journal', 'Journal (1)'],
+        ['gamification', 'Gamification (1)'],
+        ['lab', '★ Control Lab (Widgets)']
+      ];
+      let ctrlStyles = [
+        ['pixel', 'Style B: Pixel Command (Hard Shadow)'],
+        ['bevel', 'Style A: Handheld Bevel (Tactile Inset)'],
+        ['cartridge', 'Style C: Cartridge Panel (Double Frame)']
+      ];
+      let total = guideData().total;
+
+      return `
+        <aside class="harness" aria-label="Prototype controls">
+          <strong>Harness</strong>
+          <select data-set="controlStyle" aria-label="Control Style" style="border-color:#58b4af;font-weight:700;">
+            ${ctrlStyles.map(([v, n]) => `<option value="${v}" ${state.controlStyle === v ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+          <select data-set="guide" aria-label="Guide">
+            ${opts.map(([v, n]) => `<option value="${v}" ${state.guide === v ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+          ${state.guide !== 'lab' && total > 1 ? `
+            <select data-set="step" aria-label="Step">
+              ${Array.from({ length: total }, (_, i) => `<option value="${i}" ${state.step === i ? 'selected' : ''}>Step ${i + 1} / ${total}</option>`).join('')}
+            </select>
+          ` : ''}
+          <select data-set="theme" aria-label="Theme">
+            <option value="spartans-dark" ${state.theme === 'spartans-dark' ? 'selected' : ''}>Spartan Dark</option>
+            <option value="spartans-light" ${state.theme === 'spartans-light' ? 'selected' : ''}>Spartan Light</option>
+            <option value="amazonians-dark" ${state.theme === 'amazonians-dark' ? 'selected' : ''}>Amazonian Dark</option>
+            <option value="amazonians-light" ${state.theme === 'amazonians-light' ? 'selected' : ''}>Amazonian Light</option>
+          </select>
+          <select data-set="width" aria-label="Width">
+            ${[320, 340, 360, 375, 390, 412, 430, 480].map(n => `<option value="${n}" ${state.width == n ? 'selected' : ''}>${n}px</option>`).join('')}
+          </select>
+          <button data-open>Open</button>
+        </aside>
+      `;
+    }
+
+    function render() {
+      document.getElementById('stage').innerHTML = page();
+      bind();
+    }
+
+    function bind() {
+      document.querySelectorAll('[data-set]').forEach(x => {
+        x.onchange = () => {
+          state[x.dataset.set] = x.value;
+          if (x.dataset.set === 'guide') {
+            state.step = 0;
+            state.context = x.value === 'field' ? 'home' : (x.value === 'gamification' ? 'gamification' : (x.value === 'lab' ? 'lab' : x.value));
+          }
+          render();
+        };
+      });
+
+      document.querySelectorAll('[data-open]').forEach(x => x.onclick = () => { state.open = true; render(); });
+      document.querySelectorAll('[data-close]').forEach(x => x.onclick = () => { state.open = false; render(); });
+      document.querySelectorAll('[data-step]').forEach(x => x.onclick = () => { state.step = +x.dataset.step; render(); });
+
+      let p = document.querySelector('[data-prev]');
+      if (p) p.onclick = () => { state.step = Math.max(0, state.step - 1); render(); };
+
+      let n = document.querySelector('[data-next]');
+      if (n) n.onclick = () => {
+        if (state.step >= guideData().total - 1) state.open = false;
+        else state.step++;
+        render();
+      };
+    }
+
+    // Prototype Picker Wiring (V1 Manual, V2 Mission, V3 Codex)
+    const picker = document.querySelector('.proto-picker');
+    const highlight = picker.querySelector('.proto-picker-highlight');
+    const items = [...picker.querySelectorAll('.proto-picker-item')];
+
+    function moveHighlight() {
+      let el = items[state.variant];
+      if (el) {
+        highlight.style.width = el.offsetWidth + 'px';
+        highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+      }
+    }
+
+    function setActive(i) {
+      if (i < 0 || i > 2) return;
+      state.variant = i;
+      let u = new URL(location);
+      u.searchParams.set('v', i + 1);
+      history.replaceState(null, '', u);
+      items.forEach((el, j) => {
+        el.toggleAttribute('data-active', j === i);
+        if (j === i) el.setAttribute('aria-current', 'true');
+        else el.removeAttribute('aria-current');
+      });
+      moveHighlight();
+      render();
+    }
+
+    items.forEach((el, i) => el.onclick = () => setActive(i));
+    window.addEventListener('resize', moveHighlight);
+
+    document.addEventListener('keydown', e => {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable || e.metaKey || e.ctrlKey || e.altKey) return;
+      let n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 3) setActive(n - 1);
+      else if (e.key === 'ArrowRight') setActive((state.variant + 1) % 3);
+      else if (e.key === 'ArrowLeft') setActive((state.variant + 2) % 3);
+    });
+
+    setActive((parseInt(new URLSearchParams(location.search).get('v'), 10) || 2) - 1);
+    requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+  </script>
+</body>
+</html>

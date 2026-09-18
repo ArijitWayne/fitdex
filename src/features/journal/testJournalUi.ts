@@ -65,7 +65,7 @@ assert.doesNotMatch(database, /journalDays|journalEntries|journalSummary/)
 
 // CSS Architecture & Theme Tokens
 assert.match(css, /\.journal-summary-grid \{[^}]*grid-template-columns: repeat\(2,/s)
-assert.match(css, /@media \(max-width: 374px\)[\s\S]*\.journal-summary-grid \{ grid-template-columns: 1fr; \}/)
+assert.match(css, /@media\s*\(max-width:\s*374px\)[\s\S]*\.journal-summary-grid\s*\{[^}]*grid-template-columns:\s*1fr;\s*\}/s)
 assert.match(css, /\.journal-ledger \{[^}]*var\(--color-border\)/s)
 assert.match(css, /\.journal-ledger-entry \{[^}]*var\(--color-surface\)/s)
 assert.match(css, /\.journal-ledger-hero \{[^}]*var\(--color-rpg-accent\)/s)

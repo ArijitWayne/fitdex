@@ -14,6 +14,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 | **Phase 5** | Journal & Activity Log | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 Field Notes | Read-only derived activity ledger (workouts + food), symmetric 2-dimension status, empty-meal suppression, chevron actions. |
 | **Phase 6** | Exercise Dex Standalone | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 RPG Codex | RPG Codex hero with selected character avatar, permanent search field, Index/Favorites tabs, theme-family anatomy cards, compact results, Exercise Record reordered (media → facts → How to Perform). |
 | **Phase 7** | Settings | **IMPLEMENTED / PHYSICAL QA PENDING** | V2 — Profile / Loadout | Profile/Avatar hero, 3-column status grid (Theme, Units, Targets), grouped rows (Personalize, Your System, Data & Help), Units subview, unified Audio, Nutrition Targets with drafts, Android Media management, Backup & Restore replacement semantics, Field Guide replay, About. |
+| **Phase 8** | Guides & Tutorials | **IMPLEMENTED / PHYSICAL QA PENDING** | V2 — Mission Brief + Style B Pixel Command | Field Guide (7 steps with replay mode + Home help button), Workout tutorial (12 steps), Food tutorial (8 steps), Progress help (1 step), Journal help (1 step), Gamification guide (+50 XP achievement reward), and Pixel Command retro tactile controls. |
 
 ---
 
@@ -31,6 +32,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 10. **Centralized Android Back Contract**: Android hardware back and gesture navigation are managed centrally by `useAppBackButton` and the Capacitor App plugin. Subviews close deepest-first; top-level history pops to Home; Back exits only at the Home root.
 11. **Scroll Stability**: In-page filter, tab, period, or view-state changes must preserve viewport scroll position without teleporting the user to the top. Only full subview transitions reset scroll.
 12. **Disposable Prototype Lifecycle**: Prototype HTML and AUDIT files are scratchpads. Once decisions are approved, they are transferred into durable production Markdown and production code, rendering prototypes safe to delete.
+13. **FitDex Design Doctrine Compliance**: All UI modernization phases, screens, and prototypes must strictly follow the canonical **FitDex Design Doctrine** defined in [docs/FITDEX_UI_UX_STANDARD.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/FITDEX_UI_UX_STANDARD.md#11-the-permanent-fitdex-design-doctrine). Every design must embody the retro handheld / 90s pixel-era fitness RPG identity using authoritative production semantic tokens, crisp framing, and authentic game-menu character without drifting into generic SaaS or mobile card tropes.
 
 ---
 
@@ -40,7 +42,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **Retro RPG Handheld Identity**: Evokes a focused, tactile game device rather than a generic fitness utility or a direct Pokédex clone. Crisp geometry, restrained RPG cues, and purposeful accents.
 - **Phone-First Canvas**: Main mobile content spans full width with consistent edge insets. Mobile treatments apply at or below 700px; desktop layout expands with intentional desktop navigation at 980px.
 - **AppShell Components**:
-  - **Header**: Responsive header displaying theme-family branding (compact emblem on mobile, full logo on desktop), live offline pill when disconnected (`navigator.onLine === false`), and right-hand shortcuts.
+  - **Header**: Canonical shared top bar displaying theme-family branding (`fitdex-icon-*.png` emblem + `FITDEX` wordmark on left), live offline pill when disconnected (`navigator.onLine === false`), Light/Dark quick shortcut, and Settings gear action on right. Faction selection lives strictly in Settings → Appearance.
   - **Bottom Navigation**: Five permanent destinations with distinct Lucide icons:
     - `House` → Home
     - `Dumbbell` → Workout
@@ -154,7 +156,7 @@ This document is the permanent source of truth for FitDex product phase statuses
      - `weight_distance`: Heaviest weight and longest distance.
      - `duration_reps`: Longest duration and highest reps.
 7. **Gamification & Achievements Access**:
-   - Access to Rank Journey (progression ladder) and 52 permanent achievements categorized by Workout, Consistency, Performance, Exercise Dex, Nutrition, and Progression.
+   - Access to Rank Journey (progression ladder) and 52 permanent achievements categorized by Workout, Consistency, Performance, Exercise Dex, Nutrition, and Progression. Each newly unlocked achievement awards +50 XP once via forward-only idempotent reconciliation.
 
 ### 6.3 Explicit Exclusions & Deferred Scope
 - **NO Estimated 1RM**: FitDex records genuine accomplished lifts, not theoretical formulas.
@@ -283,28 +285,54 @@ The Exercise Record uses the reference-first RPG Codex layout:
      - `Gamification Guide`: XP rules, Levels, Ranks, and Streak semantics.
      - `About FitDex`: Version, developer credit, local-first data guarantee.
 
-### 9.2 Nutrition Targets Semantics & Boundaries Preserved
-- **Mifflin–St Jeor Calculation**: Preserves standard RMR and activity multipliers (1.20 to 1.90).
-- **Goal Adjustments**: Lose Weight (−500 kcal default or −750 kcal), Maintain (TDEE), Gain (+250 kcal).
-- **Floor Protection**: Suggested calorie floor at 1,000 kcal.
-- **Protein State**: Protein target = 0 treated as unavailable/disabled; explicit copy "Protein target unavailable / not set".
-- **Draft State vs. Saved State**: Visual distinction between current saved target badge and in-progress form draft inputs.
-- **Deferred Nutrition Decisions**: No silent changes made to:
-  - Historical target snapshots (food days display against current targets).
-  - Target-history versioning / schema tables.
-  - XP revocation on target deletion/edits.
-  - Macro target inputs (carbs/fat/fiber).
-  - Cloud account sync.
-  - Automatic historical XP reconciliation.
+### 9.2 Nutrition Targets — V3 Nutrition Codex & Evidence-Based Protein Model
+- **Layout Direction**: **V3 — Nutrition Codex**. Clean, authoritative retro ledger hierarchy:
+  1. `Codex System · Calculation Profile` header bar with Style B Pixel Command `[ ENABLED ] [ DISABLED ]` toggle.
+  2. `Baseline Parameters` (clean fields: Objective Directive `[ Lose | Maintain | Gain ]`, Age, Biological Sex, Height, Weight, Activity Index with concise description). No decorative numbered record stamps (`RECORD 01`).
+  3. `Energy Accounting` (telemetrics card: RMR, TDEE, Goal Calorie Recommendation, and Calculated Protein Allocation). No `RECORD 02`.
+  4. `Daily Targets` (Calorie target stepper, Protein target stepper with `CALCULATED`/`MANUAL`/`NOT SET` badges, protein sub-meta line `g/day · g/kg · kcal · % of calories`, and explicit `[ RECALCULATE ]` / `[ + Set Target ]` / `[ Unset ]` actions). No `RECORD 03`.
+  5. `Save Targets` (Style B primary command action).
+- **Activity Dropdown Cleaned**: Internal TDEE factors (`1.2`–`1.9`) strictly hidden from user-facing select options; clear descriptive helper text shown below.
+- **Evidence-Based Protein Target Model**:
+  - Primary formula: $\text{proteinTargetGrams} = \text{round}(\text{weightKg} \times \text{proteinMultiplier})$.
+  - Proposed FitDex activity mapping: Sedentary $= 0.8\text{ g/kg}$, Lightly Active $= 1.2\text{ g/kg}$, Moderately Active $= 1.4\text{ g/kg}$, Very Active $= 1.6\text{ g/kg}$, Extremely Active $= 1.8\text{ g/kg}$.
+  - Derived metrics: $\text{proteinCalories} = \text{grams} \times 4\text{ kcal}$, $\text{proteinPercentOfCalories} = \text{round}((\text{proteinCalories} / \text{calorieTarget}) \times 100)$.
+  - Zero/Unavailable state renders as `PROTEIN TARGET: NOT SET` rather than a literal `0 g` target.
+  - Manual overrides preserve their value without being silently overwritten when the profile changes; explicit recalculation command restores the calculated target.
+- **Calorie Formulas & Boundaries Preserved**:
+  - Mifflin–St Jeor calculation and internal TDEE factors (`1.20`–`1.90`) 100% preserved.
+  - Goal adjustments (Lose $-500$/$-750$, Maintain TDEE, Gain $+250$) and $1,000\text{ kcal}$ safety floor preserved.
+  - XP rules (+5 XP for calories, +5 XP for protein when target $> 0$) and forward-only eligibility boundaries (`nutritionTargetsInitializedAt`, `nutritionTargetsEligibleFrom`) preserved.
+  - **Zero database schema changes** (`DATABASE_SCHEMA_VERSION = 7` intact); backup format 100% compatible.
 
 ---
 
-## 10. Future Roadmap (Phases 8–9) & Deferred Work
+---
 
-- **Phase 8 — Secondary / Supporting Surfaces**: Guides, tutorial overlays, modals, and auxiliary tool polish.
-- **Phase 9 — Final Cross-App Consistency**: Final visual and ergonomic harmonization across all surfaces.
+## 10. Phase 8 — Guides & Tutorials (IMPLEMENTED / PHYSICAL QA PENDING)
+
+### 10.1 Design Selection & Control System
+- **Selected Layout Direction**: **V2 — Mission Brief**. Compact tactical mission brief presentation with objective strip, primary theme accent rail, technical path callouts (`PATH // SETTINGS → ...`), and segmented cartridge progress rail.
+- **Selected Control System**: **Style B — Pixel Command**. Permanent FitDex command control style: 0px border-radius, 2px solid semantic border, 3px solid block offset shadow (no blur), 70ms tactile press translation `translate(2px, 2px)` with 1px shadow, uppercase condensed typography, and minimum 44px touch targets.
+
+### 10.2 Guide Flows Preserved
+1. **Field Guide (7 steps)**:
+   - First-run onboarding: `Skip` / `Enter FitDex` with Display Name prompt.
+   - Replay mode (Settings → Field Guide & Home `?` action): `Close` / `Done` buttons, safe idempotent completion.
+   - Stale navigation paths audited and corrected to current IA (`SETTINGS → PERSONALIZE → APPEARANCE`, `PROGRESS → ACHIEVEMENTS`, `SETTINGS → DATA & HELP → BACKUP`).
+2. **Workout Tutorial (12 steps)**: Contextual help from Workout page opening 12-step structured tutorial with compact 12-segment progress rail.
+3. **Food Tutorial (8 steps)**: Contextual help from Food page opening 8-step structured nutrition tutorial.
+4. **Progress Help (1 step)**: Contextual help from Progress page with single-panel Mission Brief layout, progress rail omitted, single `Close` button.
+5. **Journal Help (1 step)**: Contextual help from Journal page with single-panel Mission Brief layout, progress rail omitted, single `Close` button.
+6. **Gamification Guide (1 structured step)**: Comprehensive single-guide covering Levels (1–100), 9 Ranks (Recruit to Radiant), XP sources, Plan Streak rules, Freeze/Pause protections, and the +50 XP achievement reward rule.
+7. **Page Contextual Help Entry**: Home page now includes `?` button in hero action bar opening Field Guide in replay mode. Workout, Food, Progress, and Journal maintain their respective help buttons. Exercise Dex omits empty guide action.
+
+---
+
+## 11. Phase 9 — In Progress / Cross-App Consistency
+
+- **Primary Page Frame**: Home's retro handheld enclosure is now shared by Workout, Food, Progress, Journal, Settings, and Nutrition Targets. Global header and bottom navigation remain outside it. Phase 9 remains in progress.
 
 ### Deferred Product Work
 - **Body Tracking & Measurements**: `BodyMeasurement` exists in schema/backup contracts, but UI tracking remains deferred future product work and is outside the current Phase 1–9 UI modernization roadmap unless explicitly introduced later.
 - **Native Polish**: Deep physical-device QA for Capacitor Android and iOS PWA, native share sheet backup export, and hardware audio focus management.
-

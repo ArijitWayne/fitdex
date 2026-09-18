@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, ChevronRight, CircleHelp, Dumbbell, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
+import { PageFrame } from '../components/layout/PageFrame'
 import type { Exercise, RoutineExercise, WorkoutRoutine } from '../data/models'
 import { ExerciseDex } from '../features/exerciseDex/ExerciseDex'
 import { ensureBuiltInExercises } from '../features/exerciseDex/seedExercises'
@@ -205,13 +206,13 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const visibleRoutines = showAllRoutines ? routines : routines.slice(0, 3)
   const visibleHistory = showAllHistory ? recentWorkouts : recentWorkouts.slice(0, 2)
 
-  return <div className="workout-page workout-hub" data-variant="mission-stack">
+  return <PageFrame className="workout-page workout-hub" data-variant="mission-stack">
     <header className="workout-hub-header">
       <div><p className="eyebrow">Training</p><h1>Workout Hub</h1></div>
       <div className="workout-hub-header-meta">
         {gamification ? <span className="workout-level-badge">Level {gamification.progression.level}</span> : null}
         <time dateTime={todayKey}>{headerDate.toLocaleDateString(undefined, { weekday: 'short' })}<br />{headerDate.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}</time>
-        <button className="workout-hub-help" type="button" aria-label="How Workouts Work" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
+        <button className="workout-hub-help cmd-icon-btn page-help-btn" type="button" aria-label="How Workouts Work" title="How Workouts Work" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
       </div>
     </header>
 
@@ -296,7 +297,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
     {deleteWorkoutSummary ? <WorkoutDeleteDialog workoutId={deleteWorkoutSummary.workout.id} workoutName={deleteWorkoutSummary.workout.nameSnapshot} onCancel={() => setDeleteWorkoutSummary(undefined)} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== deleteWorkoutSummary.workout.id)); setDeleteWorkoutSummary(undefined); void refresh() }} /> : null}
     {tutorialOpen ? <GuideDialog eyebrow="How Workouts Work" steps={workoutTutorialSteps} onClose={closeTutorial} /> : null}
-  </div>
+  </PageFrame>
 }
 
 function FlowHeading({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <div className="workout-flow-heading"><button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Workout</p><h2>{title}</h2></div></div> }

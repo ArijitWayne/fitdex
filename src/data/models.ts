@@ -348,7 +348,7 @@ export interface XpHistoryEntry extends EntityRecord {
   occurredAt: string
 }
 
-export type XpEventType = 'planned_routine' | 'planned_workout' | 'unplanned_workout' | 'personal_record' | 'calorie_target' | 'protein_target' | 'full_food_log'
+export type XpEventType = 'planned_routine' | 'planned_workout' | 'unplanned_workout' | 'personal_record' | 'calorie_target' | 'protein_target' | 'full_food_log' | 'achievement_unlock'
 
 export interface XpEvent extends EntityRecord {
   type: XpEventType

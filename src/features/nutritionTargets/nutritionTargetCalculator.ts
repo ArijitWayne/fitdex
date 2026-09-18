@@ -43,3 +43,24 @@ export function evaluateProteinDay(proteinTargetGrams: number, loggedProteinGram
   if (!Number.isFinite(proteinTargetGrams) || proteinTargetGrams < 0 || !Number.isFinite(loggedProteinGrams) || loggedProteinGrams < 0) throw new Error('Protein values must be non-negative.')
   return { achievementEligible: proteinTargetGrams > 0 && loggedProteinGrams >= proteinTargetGrams, targetGrams: proteinTargetGrams, loggedGrams: loggedProteinGrams }
 }
+
+export const PROTEIN_MULTIPLIERS: Record<NutritionActivityLevel, number> = {
+  sedentary: 0.8,
+  light: 1.2,
+  moderate: 1.4,
+  very: 1.6,
+  extreme: 1.8,
+}
+
+export function calculateSuggestedProteinTarget(weightKg: number, activityLevel: NutritionActivityLevel) {
+  if (!Number.isFinite(weightKg) || weightKg <= 0) throw new Error('A positive weight is required.')
+  return Math.round(weightKg * PROTEIN_MULTIPLIERS[activityLevel])
+}
+
+export function calculateProteinDerivedMetrics(proteinTargetGrams: number, calorieTarget: number) {
+  const proteinCalories = Math.max(0, Math.round(proteinTargetGrams * 4))
+  const proteinPercentOfCalories = calorieTarget > 0 && proteinCalories > 0
+    ? Math.round((proteinCalories / calorieTarget) * 100)
+    : 0
+  return { proteinCalories, proteinPercentOfCalories }
+}

@@ -14,7 +14,7 @@ import { ExerciseMediaSettings } from '../exerciseMedia/ExerciseMediaSettings'
 import { listDownloadedExerciseMedia, supportsNativeExerciseMedia } from '../exerciseMedia/exerciseMediaStore'
 import { GamificationHelpButton } from '../gamification/GamificationViews'
 import { useBackNavigation } from '../navigation/useBackNavigation'
-import { calculateRmr, calculateSuggestedCalorieTargets, calculateTdee } from '../nutritionTargets/nutritionTargetCalculator'
+import { calculateProteinDerivedMetrics, calculateRmr, calculateSuggestedCalorieTargets, calculateSuggestedProteinTarget, calculateTdee, PROTEIN_MULTIPLIERS } from '../nutritionTargets/nutritionTargetCalculator'
 import { loadNutritionTargets, saveNutritionTargets } from '../nutritionTargets/nutritionTargetRepository'
 import { displayNameLength, isValidDisplayName, limitDisplayNameInput, MAX_DISPLAY_NAME_LENGTH } from '../profile/displayNameModel'
 import { useProfile } from '../profile/useProfile'
@@ -89,7 +89,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (choosingAvatar) {
     return (
-      <div className="page-stack avatar-selection-page">
+      <div className="fitdex-page-frame page-stack avatar-selection-page">
         <SettingsSubheader eyebrow="Settings / Profile" title="Choose your champion" description="Your champion is cosmetic and can be changed at any time." onBack={backToHub} />
         <AvatarSelector />
       </div>
@@ -98,7 +98,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'profile') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
         <SettingsSubheader eyebrow="Settings / Personalize" title="Display Name & Avatar" description="Local identity for this device. No account required." onBack={backToHub} />
         <section className="settings-detail-card">
           <DisplayNameForm key={profileReady ? 'profile-ready' : 'profile-loading'} displayName={displayName} ready={profileReady} onSave={saveDisplayName} />
@@ -119,11 +119,11 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'appearance') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
-        <SettingsSubheader eyebrow="Settings / Personalize" title="Appearance" description="Theme family and brightness for FitDex." onBack={backToHub} />
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+        <SettingsSubheader eyebrow="Settings / Personalize" title="Appearance" description="Faction and brightness for FitDex." onBack={backToHub} />
         <section className="settings-detail-card">
           <fieldset className="settings-fieldset">
-            <legend>Theme Family</legend>
+            <legend>Faction</legend>
             <div className="settings-segmented">
               {familyOptions.map((option) => (
                 <button type="button" key={option.value} aria-pressed={family === option.value} onClick={() => { playEffect('select'); setFamily(option.value) }}>
@@ -142,7 +142,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
               ))}
             </div>
           </fieldset>
-          <p className="appearance-note">Theme family changes branding. Avatar remains your independent choice. “System” brightness follows the device setting.</p>
+          <p className="appearance-note">Faction changes visual identity and branding. Avatar remains your independent choice. “System” brightness follows the device setting.</p>
         </section>
       </div>
     )
@@ -150,7 +150,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'units') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
         <SettingsSubheader eyebrow="Settings / Your System" title="Units" description="Measurement system for workouts and logging." onBack={backToHub} />
         <section className="settings-detail-card">
           <fieldset className="settings-fieldset">
@@ -173,7 +173,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'audio') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
         <SettingsSubheader eyebrow="Settings / Your System" title="Audio" description="Sound effects and background music." onBack={backToHub} />
         <AudioSettings
           ready={audioReady}
@@ -189,8 +189,8 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'nutrition') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
-        <SettingsSubheader eyebrow="Settings / Your System" title="Nutrition Targets" description="Set daily targets using your goal and calculation profile." onBack={backToHub} />
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+        <SettingsSubheader eyebrow="Settings / Your System" title="Nutrition Targets" description="Set daily targets using your goal and Calculation Profile." onBack={backToHub} />
         <NutritionTargetsSettings onLoaded={setNutritionSummary} />
       </div>
     )
@@ -198,7 +198,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'media') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
         <SettingsSubheader eyebrow="Settings / Data & Offline" title="Exercise Media" description="Manage exercise demonstrations saved for offline use." onBack={backToHub} />
         <div className="settings-detail">
           <ExerciseMediaSettings />
@@ -214,7 +214,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
   if (view === 'backup') {
     return (
-      <div className="page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
         <SettingsSubheader eyebrow="Settings / Data & Offline" title="Backup & Restore" description="Protect or restore your local FitDex data." onBack={backToHub} />
         <div className="settings-detail"><BackupSettings /></div>
       </div>
@@ -226,7 +226,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
   }
 
   return (
-    <div className="page-stack settings-page settings-hub">
+    <div className="fitdex-page-frame page-stack settings-page settings-hub">
       <header className="page-header settings-header">
         <button className="back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back to FitDex">
           <ArrowLeft size={21} strokeWidth={2} aria-hidden="true" />
@@ -249,7 +249,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 
       <div className="settings-status-stack">
         <div className="settings-status-card">
-          <small>Theme</small>
+          <small>Faction</small>
           <strong>{family === 'spartans' ? 'Spartans' : 'Amazonians'}</strong>
         </div>
         <div className="settings-status-card">
@@ -272,7 +272,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
           />
           <SettingsRow
             title="Appearance"
-            description="Theme family and brightness"
+            description="Faction and brightness"
             value={`${family === 'spartans' ? 'Spartans' : 'Amazonians'} · ${brightness}`}
             onClick={() => openView('appearance')}
           />
@@ -342,8 +342,8 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
 function SettingsSubheader({ eyebrow, title, description, onBack }: { eyebrow: string; title: string; description: string; onBack: () => void }) {
   return (
     <header className="page-header settings-header settings-subheader">
-      <button className="back-button" type="button" onClick={onBack} aria-label="Back to Settings">
-        <ArrowLeft size={21} strokeWidth={2} aria-hidden="true" />
+      <button className="settings-hub-button" type="button" onClick={onBack} aria-label="Back to Settings Hub">
+        ‹ HUB
       </button>
       <div>
         <p className="eyebrow">{eyebrow}</p>
@@ -381,7 +381,7 @@ function SettingsRow({ title, description, value, onClick }: { title: string; de
 function AboutSettings({ family, onBack }: { family: ThemeFamily; onBack: () => void }) {
   const branding = brandingForTheme(family)
   return (
-    <div className="page-stack settings-page settings-detail-page">
+    <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
       <SettingsSubheader eyebrow="Settings / Data & Help" title="About FitDex" description="Retro RPG fitness tracking. Local by design." onBack={onBack} />
       <section className="settings-detail-card">
         <div className="about-row">
@@ -507,9 +507,19 @@ const draftFromTargets = (targets: Omit<NutritionTargets, 'updatedAt'>): Nutriti
   proteinTargetGrams: String(targets.proteinTargetGrams),
 })
 
+const ACTIVITY_INFO: Record<NutritionActivityLevel, { label: string; desc: string }> = {
+  sedentary: { label: 'Sedentary', desc: 'Desk job, little to no regular exercise' },
+  light: { label: 'Lightly Active', desc: 'Light training or walking 1–3 days per week' },
+  moderate: { label: 'Moderately Active', desc: 'Moderate training or exercise 3–5 days per week' },
+  very: { label: 'Very Active', desc: 'Hard training or sports 6–7 days per week' },
+  extreme: { label: 'Extremely Active', desc: 'Intense daily training, athlete schedule, or physical job' },
+}
+
 function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<NutritionTargets, 'updatedAt'>) => void }) {
+  const { playEffect } = useAudio()
   const [targets, setTargets] = useState<Omit<NutritionTargets, 'updatedAt'>>(targetDefaults)
   const [draft, setDraft] = useState<NutritionTargetDraft>(() => draftFromTargets(targetDefaults))
+  const [proteinSource, setProteinSource] = useState<'calculated' | 'manual'>('calculated')
   const [ready, setReady] = useState(false)
   const [status, setStatus] = useState('')
 
@@ -520,6 +530,10 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
         setTargets(rest)
         setDraft(draftFromTargets(rest))
         onLoaded(rest)
+        if (rest.proteinTargetGrams > 0) {
+          const autoCalc = calculateSuggestedProteinTarget(rest.weightKg, rest.activityLevel)
+          setProteinSource(rest.proteinTargetGrams === autoCalc ? 'calculated' : 'manual')
+        }
       }
       setReady(true)
     })
@@ -530,6 +544,16 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
   const tdee = rmr ? calculateTdee(rmr, targets.activityLevel) : 0
   const suggestions = tdee ? calculateSuggestedCalorieTargets(tdee, targets.goal) : undefined
 
+  const weightNum = Number(draft.weightKg)
+  const suggestedProtein = Number.isFinite(weightNum) && weightNum > 0
+    ? calculateSuggestedProteinTarget(weightNum, targets.activityLevel)
+    : 0
+  const proteinMultiplier = PROTEIN_MULTIPLIERS[targets.activityLevel]
+  const currentProteinGrams = Number(draft.proteinTargetGrams) || 0
+  const isProteinUnset = !draft.proteinTargetGrams || draft.proteinTargetGrams === '0' || currentProteinGrams === 0
+  const currentCalorieTarget = Number(draft.calorieTarget) || 0
+  const derived = calculateProteinDerivedMetrics(currentProteinGrams, currentCalorieTarget)
+
   const update = <K extends keyof Omit<NutritionTargets, 'updatedAt'>>(key: K, value: Omit<NutritionTargets, 'updatedAt'>[K]) =>
     setTargets((current) => ({ ...current, [key]: value }))
   const setNumber = (key: keyof NutritionTargetDraft, value: string) =>
@@ -537,6 +561,21 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
   const applyCalorie = (value: number, source: 'calculated' | 'manual') => {
     setNumber('calorieTarget', String(value))
     update('calorieTargetSource', source)
+  }
+
+  const stepCalorie = (delta: number) => {
+    playEffect('select')
+    const current = Number(draft.calorieTarget) || 1800
+    const next = Math.max(1000, current + delta)
+    applyCalorie(next, 'manual')
+  }
+
+  const stepProtein = (delta: number) => {
+    playEffect('select')
+    const current = Number(draft.proteinTargetGrams) || 0
+    const next = Math.max(0, current + delta)
+    setNumber('proteinTargetGrams', String(next))
+    setProteinSource('manual')
   }
 
   const save = async () => {
@@ -548,117 +587,363 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
       await saveNutritionTargets({ ...targets, ...parsed })
       const saved = { ...targets, ...parsed }
       onLoaded(saved)
+      playEffect('add')
       setStatus('Nutrition targets saved. Food updates live.')
     } catch (reason) {
       setStatus(reason instanceof Error ? reason.message : 'Nutrition targets could not be saved.')
     }
   }
 
-  if (!ready) return <section className="settings-detail-card"><p aria-live="polite">Loading targets…</p></section>
+  if (!ready) return <section className="nutrition-codex-container"><p aria-live="polite">Loading targets…</p></section>
 
   return (
-    <section className="settings-detail-card nutrition-target-settings">
-      <label className="settings-switch-row">
-        <span><strong>Nutrition Targets</strong><small>Use targets for daily guidance and target XP</small></span>
-        <input type="checkbox" role="switch" checked={targets.enabled} onChange={(event) => update('enabled', event.target.checked)} />
-        <i aria-hidden="true" />
-      </label>
-      {!targets.enabled ? (
-        <p className="appearance-note">Targets are off. Re-enabling begins a new eligibility boundary; prior XP remains.</p>
-      ) : null}
-      <fieldset className="settings-fieldset">
-        <legend>Goal</legend>
-        <div className="settings-segmented settings-segmented-three">
-          {(['lose', 'maintain', 'gain'] as NutritionGoal[]).map((goal) => (
-            <button type="button" key={goal} aria-pressed={targets.goal === goal} onClick={() => update('goal', goal)}>
-              {goal === 'lose' ? 'Lose' : goal === 'gain' ? 'Gain' : 'Maintain'}
-            </button>
-          ))}
+    <section className="nutrition-codex-container">
+      <div className="codex-header-bar">
+        <div>
+          <div className="codex-header-system">Codex System · Calculation Profile</div>
+          <strong className="codex-header-title">Nutrition Targets Codex</strong>
         </div>
-      </fieldset>
-      <fieldset className="target-form">
-        <legend>Daily targets</legend>
-        <NumericTargetInput
-          label="Daily calorie target"
-          value={draft.calorieTarget}
-          onChange={(value) => { setNumber('calorieTarget', value); update('calorieTargetSource', 'manual') }}
-          min={1}
-        />
-        <NumericTargetInput
-          label="Daily protein target (g)"
-          value={draft.proteinTargetGrams}
-          onChange={(value) => setNumber('proteinTargetGrams', value)}
-          min={0}
-          step="0.1"
-          decimal
-        />
-        {Number(draft.proteinTargetGrams) === 0 ? (
-          <p className="appearance-note">0 g means protein target is unavailable and no protein target XP is awarded.</p>
-        ) : null}
-      </fieldset>
-      {suggestions ? (
-        <section className="target-recommendation">
-          <p className="eyebrow">Recommendation</p>
-          <strong>Estimated maintenance ≈ {tdee} kcal/day</strong>
-          <small>Estimated via Mifflin–St Jeor.</small>
-          <div className="target-recommendation-actions">
-            {targets.goal === 'lose' ? (
-              <>
-                <button type="button" className="text-button" onClick={() => applyCalorie(suggestions.moderate, 'calculated')}>
-                  Moderate · {suggestions.moderate} kcal
+        <div className="cmd-binary-toggle" role="group" aria-label="Target Status">
+          <button
+            type="button"
+            className={`cmd-binary-btn ${targets.enabled ? 'active-on' : ''}`}
+            onClick={() => { playEffect('select'); update('enabled', true) }}
+            aria-pressed={targets.enabled}
+          >
+            ENABLED
+          </button>
+          <button
+            type="button"
+            className={`cmd-binary-btn ${!targets.enabled ? 'active-off' : ''}`}
+            onClick={() => { playEffect('select'); update('enabled', false) }}
+            aria-pressed={!targets.enabled}
+          >
+            DISABLED
+          </button>
+        </div>
+      </div>
+
+      {!targets.enabled ? (
+        <p className="appearance-note">Targets are disabled. Re-enabling begins a new eligibility boundary; prior XP remains.</p>
+      ) : null}
+
+      {/* BASELINE PARAMETERS */}
+      <div className="v3-ledger">
+        <div className="v3-ledger-header">
+          <span>Baseline Parameters</span>
+          <span style={{ color: 'var(--color-primary-text)' }}>Mifflin–St Jeor</span>
+        </div>
+        <div className="v3-ledger-body">
+          <div className="v3-row">
+            <span className="v3-row-label">Objective Directive</span>
+            <div className="cmd-segment-group" role="group" aria-label="Objective Directive">
+              {(['lose', 'maintain', 'gain'] as NutritionGoal[]).map((goal) => (
+                <button
+                  type="button"
+                  key={goal}
+                  className={`cmd-segment-btn ${targets.goal === goal ? 'active' : ''}`}
+                  aria-pressed={targets.goal === goal}
+                  onClick={() => { playEffect('select'); update('goal', goal) }}
+                >
+                  {goal === 'lose' ? 'Lose' : goal === 'gain' ? 'Gain' : 'Maintain'}
                 </button>
-                <button type="button" className="text-button" onClick={() => applyCalorie(suggestions.higher, 'calculated')}>
-                  Higher · {suggestions.higher} kcal
-                </button>
-              </>
-            ) : (
-              <button type="button" className="text-button" onClick={() => applyCalorie(suggestions.defaultTarget, 'calculated')}>
-                Use {suggestions.defaultTarget} kcal
+              ))}
+            </div>
+          </div>
+
+          <NumericTargetInput
+            label="Subject Age"
+            id="nutrition-age"
+            value={draft.age}
+            onChange={(value) => setNumber('age', value)}
+            min={18}
+            max={120}
+          />
+
+          <div className="v3-row">
+            <label className="v3-row-label" htmlFor="nutrition-sex">Biological Sex</label>
+            <div className="terminal-select-wrapper" style={{ width: '120px' }}>
+              <select
+                id="nutrition-sex"
+                className="terminal-select"
+                value={targets.sex}
+                onChange={(event) => {
+                  playEffect('select')
+                  update('sex', event.target.value as NutritionSex)
+                }}
+              >
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+              </select>
+              <span className="terminal-select-arrow" aria-hidden="true">▼</span>
+            </div>
+          </div>
+
+          <NumericTargetInput
+            label="Stature (cm)"
+            id="nutrition-height"
+            value={draft.heightCm}
+            onChange={(value) => setNumber('heightCm', value)}
+            min={1}
+          />
+
+          <NumericTargetInput
+            label="Body Mass (kg)"
+            id="nutrition-weight"
+            value={draft.weightKg}
+            onChange={(value) => {
+              setNumber('weightKg', value)
+              const n = Number(value)
+              if (proteinSource === 'calculated' && Number.isFinite(n) && n > 0 && !isProteinUnset) {
+                setNumber('proteinTargetGrams', String(calculateSuggestedProteinTarget(n, targets.activityLevel)))
+              }
+            }}
+            min={1}
+            step="0.1"
+            decimal
+          />
+
+          <div style={{ paddingTop: '8px' }}>
+            <label className="v3-row-label" htmlFor="nutrition-activity" style={{ display: 'block', marginBottom: '4px' }}>Activity Index</label>
+            <div className="terminal-select-wrapper">
+              <select
+                id="nutrition-activity"
+                className="terminal-select"
+                value={targets.activityLevel}
+                onChange={(event) => {
+                  playEffect('select')
+                  const act = event.target.value as NutritionActivityLevel
+                  update('activityLevel', act)
+                  const n = Number(draft.weightKg)
+                  if (proteinSource === 'calculated' && Number.isFinite(n) && n > 0 && !isProteinUnset) {
+                    setNumber('proteinTargetGrams', String(calculateSuggestedProteinTarget(n, act)))
+                  }
+                }}
+              >
+                {(Object.keys(ACTIVITY_INFO) as NutritionActivityLevel[]).map((level) => (
+                  <option key={level} value={level}>{ACTIVITY_INFO[level].label}</option>
+                ))}
+              </select>
+              <span className="terminal-select-arrow" aria-hidden="true">▼</span>
+            </div>
+            <div className="field-help" style={{ marginTop: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+              {ACTIVITY_INFO[targets.activityLevel].desc}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ENERGY ACCOUNTING */}
+      <div className="v3-ledger">
+        <div className="v3-ledger-header">
+          <span>Energy Accounting</span>
+          <span>Telemetrics</span>
+        </div>
+        <div className="v3-ledger-body">
+          <div className="v3-row">
+            <span className="v3-row-label">Basal Energy (RMR)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{rmr} kcal</strong>
+          </div>
+          <div className="v3-row">
+            <span className="v3-row-label">Estimated Maintenance (TDEE)</span>
+            <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-primary-text)' }}>{tdee} kcal</strong>
+          </div>
+          {suggestions ? (
+            <div className="v3-row">
+              <span className="v3-row-label">Goal Calorie Recommendation</span>
+              <button
+                type="button"
+                className="recom-chip"
+                style={{ margin: 0 }}
+                onClick={() => {
+                  playEffect('select')
+                  applyCalorie(suggestions.defaultTarget, 'calculated')
+                }}
+              >
+                Apply {suggestions.defaultTarget} kcal
               </button>
+            </div>
+          ) : null}
+          <div className="v3-row">
+            <span className="v3-row-label">Calculated Protein Allocation</span>
+            <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+              {suggestedProtein} g ({proteinMultiplier} g/kg)
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      {/* DAILY TARGETS */}
+      <div className="v3-ledger">
+        <div className="v3-ledger-header">
+          <span>Daily Targets</span>
+          <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+            <span className={`proto-badge ${targets.calorieTargetSource === 'calculated' ? 'source-calc' : 'source-manual'}`}>
+              CAL: {targets.calorieTargetSource.toUpperCase()}
+            </span>
+            <span className={`proto-badge ${isProteinUnset ? 'protein-unset' : proteinSource === 'calculated' ? 'source-calc' : 'source-manual'}`}>
+              PRO: {isProteinUnset ? 'NOT SET' : proteinSource.toUpperCase()}
+            </span>
+          </div>
+        </div>
+        <div className="v3-ledger-body">
+          <div style={{ marginBottom: '14px' }}>
+            <span className="v3-row-label" style={{ display: 'block', marginBottom: '4px' }}>Daily Calorie Target</span>
+            <div className="terminal-stepper">
+              <button type="button" className="stepper-btn" aria-label="Decrease calorie target" onClick={() => stepCalorie(-50)}>−</button>
+              <input
+                type="number"
+                className="stepper-input"
+                aria-label="Daily calorie target"
+                value={draft.calorieTarget}
+                min={1}
+                onChange={(event) => {
+                  setNumber('calorieTarget', event.target.value)
+                  update('calorieTargetSource', 'manual')
+                }}
+              />
+              <button type="button" className="stepper-btn" aria-label="Increase calorie target" onClick={() => stepCalorie(50)}>+</button>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', gap: '6px' }}>
+              <span className="v3-row-label">Daily Protein Target</span>
+              {!isProteinUnset && proteinSource === 'manual' ? (
+                <button
+                  type="button"
+                  className="cmd-btn compact secondary"
+                  onClick={() => {
+                    playEffect('select')
+                    setNumber('proteinTargetGrams', String(suggestedProtein))
+                    setProteinSource('calculated')
+                  }}
+                >
+                  ⚡ Recalculate ({suggestedProtein}g)
+                </button>
+              ) : !isProteinUnset ? (
+                <button
+                  type="button"
+                  className="cmd-btn compact secondary"
+                  onClick={() => {
+                    playEffect('select')
+                    setNumber('proteinTargetGrams', '0')
+                    setProteinSource('manual')
+                  }}
+                >
+                  Unset
+                </button>
+              ) : null}
+            </div>
+
+            {isProteinUnset ? (
+              <div className="codex-unset-card">
+                <div>
+                  <strong style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+                    Protein Target: Not Set
+                  </strong>
+                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    Complete profile to generate target. No protein-target XP awarded while unset.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="cmd-btn compact primary"
+                  onClick={() => {
+                    playEffect('select')
+                    setNumber('proteinTargetGrams', String(suggestedProtein))
+                    setProteinSource('calculated')
+                  }}
+                >
+                  + Set Target ({suggestedProtein}g)
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="terminal-stepper">
+                  <button type="button" className="stepper-btn" aria-label="Decrease protein target" onClick={() => stepProtein(-5)}>−</button>
+                  <input
+                    type="number"
+                    className="stepper-input"
+                    aria-label="Daily protein target"
+                    value={draft.proteinTargetGrams}
+                    min={0}
+                    step="0.1"
+                    onChange={(event) => {
+                      setNumber('proteinTargetGrams', event.target.value)
+                      setProteinSource('manual')
+                    }}
+                  />
+                  <button type="button" className="stepper-btn" aria-label="Increase protein target" onClick={() => stepProtein(5)}>+</button>
+                </div>
+                <div className="nutrition-sub-meta">
+                  <span><strong>{currentProteinGrams} g / day</strong></span>
+                  <span>·</span>
+                  <span>{(currentProteinGrams / (Number(draft.weightKg) || 1)).toFixed(1)} g/kg</span>
+                  <span>·</span>
+                  <span>{derived.proteinCalories} kcal</span>
+                  <span>·</span>
+                  <span>{derived.proteinPercentOfCalories}% of calories</span>
+                </div>
+              </>
             )}
           </div>
-        </section>
+        </div>
+      </div>
+
+      <p className="proto-disclaimer" style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
+        Estimates are for healthy adults and not medical prescriptions. FitDex is not medical advice.
+      </p>
+      <button className="cmd-btn primary settings-save" type="button" onClick={() => void save()}>
+        Save Targets
+      </button>
+      {status ? (
+        <p className={status.includes('could') || status.includes('Enter') ? 'form-error' : 'display-name-status'} role="status">
+          {status}
+        </p>
       ) : null}
-      <details className="settings-disclosure"><summary>Calculation Profile</summary>
-        <fieldset className="target-form">
-          <legend>My details</legend>
-          <NumericTargetInput label="Age" value={draft.age} onChange={(value) => setNumber('age', value)} min={18} max={120} />
-          <label>
-            Sex
-            <select value={targets.sex} onChange={(event) => update('sex', event.target.value as NutritionSex)}>
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-            </select>
-          </label>
-          <NumericTargetInput label="Height (cm)" value={draft.heightCm} onChange={(value) => setNumber('heightCm', value)} min={1} />
-          <NumericTargetInput label="Weight (kg)" value={draft.weightKg} onChange={(value) => setNumber('weightKg', value)} min={1} step="0.1" decimal />
-          <label>
-            Activity
-            <select value={targets.activityLevel} onChange={(event) => update('activityLevel', event.target.value as NutritionActivityLevel)}>
-              <option value="sedentary">Sedentary · 1.2</option>
-              <option value="light">Lightly Active · 1.375</option>
-              <option value="moderate">Moderately Active · 1.55</option>
-              <option value="very">Very Active · 1.725</option>
-              <option value="extreme">Extremely Active · 1.9</option>
-            </select>
-          </label>
-        </fieldset>
-      </details>
-      <p className="appearance-note">Calorie needs are estimates. FitDex is not medical advice.</p>
-      <button className="primary-button settings-save" type="button" onClick={() => void save()}>Save Targets</button>
-      {status ? <p className={status.includes('could') || status.includes('Enter') ? 'form-error' : 'display-name-status'} role="status">{status}</p> : null}
     </section>
   )
 }
 
-function NumericTargetInput({ label, value, onChange, min, max, step = '1', decimal = false }: { label: string; value: string; onChange: (value: string) => void; min: number; max?: number; step?: string; decimal?: boolean }) {
+function NumericTargetInput({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = '1',
+  decimal = false,
+  id,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  min: number
+  max?: number
+  step?: string
+  decimal?: boolean
+  id?: string
+}) {
   return (
-    <label>
-      {label}
-      <input type="number" inputMode={decimal ? 'decimal' : 'numeric'} min={min} max={max} step={step} value={value} onChange={(event) => onChange(event.target.value)} />
-    </label>
+    <div className="v3-row">
+      <label className="v3-row-label" htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        className="terminal-field"
+        type="number"
+        inputMode={decimal ? 'decimal' : 'numeric'}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{ width: '90px', textAlign: 'center' }}
+      />
+    </div>
   )
 }
+
 
 function parseNutritionTargetDraft(draft: NutritionTargetDraft) {
   const age = Number(draft.age)

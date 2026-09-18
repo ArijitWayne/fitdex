@@ -4,7 +4,7 @@ This document is the living source of truth for FitDex product decisions, archit
 
 ## 1. Project identity
 
-FitDex is a mobile-first personal fitness tracker with a retro RPG and pixel-game visual identity. Serious fitness tracking sits underneath a restrained gamification layer.
+FitDex is an all-in-one fitness and calorie tracker pairing serious local-first utility with a gamified retro 90s handheld / pixel-era RPG experience. Serious fitness tracking sits underneath an authentic retro game-manual and codex framing.
 
 Core principles:
 
@@ -13,6 +13,9 @@ Core principles:
 - Mobile-first, with responsive desktop support
 - No required cloud account and no FitDex cloud sync
 - First-party Android packaging through Capacitor
+
+**Durable Design Identity & Token Authority Decision**:
+FitDex design identity is retro handheld / 90s pixel-era fitness RPG. Production semantic theme tokens from `src/index.css` are authoritative. Future prototypes and screens must not invent independent palettes or generic SaaS visual systems. Interactive controls must resemble tactile retro game command widgets (rectangular, framed, hard offset shadows, 0–4px radii) rather than modern soft/pill SaaS controls. Canonical standard: `docs/FITDEX_UI_UX_STANDARD.md`.
 
 Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers are secondary targets for convenience and testing.
 
@@ -31,11 +34,15 @@ Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers a
 
 The architecture shares one React application between the browser/PWA and a first-party Capacitor Android shell.
 
+Phase 9 cross-app consistency uses Home's retro handheld enclosure as the shared primary page frame for Workout, Food, Progress, Journal, Settings, and Nutrition Targets. Global header and bottom navigation remain outside the frame; normal page scrolling remains authoritative.
+
 ## 2.1 Theme-aware FitDex branding
 
 The approved local branding assets are `public/branding/fitdex-logo-spartan.png`, `public/branding/fitdex-logo-amazonian.png`, `public/branding/fitdex-icon-spartan.png`, and `public/branding/fitdex-icon-amazonian.png`. The existing theme family is the sole branding source: Spartans Dark and Light use Spartan branding, while Amazonians Dark and Light use Amazonian branding. Brightness never changes the chosen art.
 
 Desktop/larger headers use the full family logo where space permits; compact mobile headers use the family emblem. The browser favicon is updated at runtime when the family changes. The installed PWA intentionally uses the Spartan icon as a stable default because installed-web-app launcher replacement is platform-dependent.
+
+The global top bar is shared uniformly across all primary views (Home, Workout, Food, Progress, Journal, Exercise Dex, Settings): left emblem/wordmark, live connectivity pill when offline, Light/Dark quick toggle, and right Settings gear. Faction selection (Spartans / Amazonians) is housed exclusively in Settings → Appearance.
 
 Android uses two launcher activity aliases targeting the same `com.fitdex.app` activity. A tiny local Capacitor `LauncherBranding` helper enables the requested Spartan/Amazonian alias before disabling the other, preserving one launchable app entry and all local data. Derived adaptive launcher foregrounds are safely padded around the supplied final crest art, with deep charcoal Spartan and deep plum Amazonian backgrounds. Some launchers may refresh the icon with a short delay. No second package, installation, branding setting, backup field, backend, or cloud media is introduced. Branding remains bundled static media; exercise videos remain remote/on-demand and audio remains local.
 
@@ -606,9 +613,9 @@ Gamification is a local-first secondary layer over authoritative Workout, Food, 
 
 ### XP, Levels, and Ranks
 
-XP source keys make reconciliation repeat-safe: `workout:<workoutId>`, `pr:<workoutId>:<exerciseId>:<metric>`, `full-food-log:<localDate>`, and the calorie/protein target keys. Rewards are +30 for the first workout satisfying a planned Routine Day, +30 for the first workout satisfying a generic Workout Day, +20 for an unplanned or additional workout, +15 per genuine distinct PR metric, +5 for all four meals, and +5 for each eligible calorie or protein target. Deleting later source history never removes earned XP.
+XP source keys make reconciliation repeat-safe: `workout:<workoutId>`, `pr:<workoutId>:<exerciseId>:<metric>`, `full-food-log:<localDate>`, `calorie-target:<localDate>`, `protein-target:<localDate>`, and `achievement:<achievementId>`. Rewards are +30 for the first workout satisfying a planned Routine Day, +30 for the first workout satisfying a generic Workout Day, +20 for an unplanned or additional workout, +15 per genuine distinct PR metric, +5 for all four meals, +5 for each eligible calorie or protein target, and +50 for each newly unlocked achievement. Deleting later source history never removes earned XP.
 
-XP activates going forward at `gamificationInitializedAt`; older history is not silently back-awarded. Factual achievements may unlock from trustworthy existing history, using detection/initialization time where an exact unlock instant cannot be safely reconstructed. The deterministic 100-entry nonlinear threshold table is centrally generated from audited cumulative anchors: Level 1 = 0, Level 10 = 2,000, Level 25 = 12,000, Level 50 = 27,000, Level 75 = 70,000, and Level 100 = 140,000 XP. Level 100 is the display maximum; Lifetime XP continues.
+XP activates going forward at `gamificationInitializedAt`; older history is not silently back-awarded. Each newly unlocked achievement awards +50 XP once via an idempotent `achievement:<id>` ledger entry; previously unlocked achievements stay unlocked without retroactive windfall. The deterministic 100-entry nonlinear threshold table is centrally generated from audited cumulative anchors: Level 1 = 0, Level 10 = 2,000, Level 25 = 12,000, Level 50 = 27,000, Level 75 = 70,000, and Level 100 = 140,000 XP. Level 100 is the display maximum; Lifetime XP continues.
 
 Rank mapping has no divisions: Recruit 1–6, Regular 7–15, Hardened 16–27, Veteran 28–42, Warrior 43–57, Ascendant 58–72, Immortal 73–87, Legend 88–99, and Radiant 100. Final shared rank artwork is resolved explicitly from the nine files at `/gamification/ranks/<rank>.webp`. The reusable badge component attempts the final asset and falls back without layout shift to semantic CSS/Lucide emblems if an asset is unavailable; there are no temporary raster artworks, theme variants, locked variants, or I/II/III assets.
 
@@ -707,7 +714,10 @@ Phase 7 standardizes Settings around the locked **V2 — Profile / Loadout** arc
    - `Personalize`: Display Name & Avatar, Appearance (Theme Family and Brightness).
    - `Your System`: Measurement Units (persisted in `SettingsRecord.units`), Audio (Sound Effects and Background Music), and Nutrition Targets.
    - `Data & Help`: Exercise Media (Android only), Backup & Restore (portable `.fitdex` export and safe replace restore), Field Guide, Gamification Guide, and About FitDex.
-4. **Nutrition Targets Integrity**:
-   - Preserves Mifflin–St Jeor calculation, activity multipliers (1.20–1.90), goal adjustments, 1,000 kcal recommendation floor, and zero-state protein ("Protein target unavailable / not set").
-   - Clear visual separation between active saved target badges and in-progress calculation/manual draft inputs.
+4. **Nutrition Targets Integrity & V3 Nutrition Codex**:
+   - Upgraded to locked V3 Nutrition Codex layout with Style B Pixel Command controls.
+   - Preserves Mifflin–St Jeor calculation, internal TDEE activity multipliers (1.20–1.90), goal adjustments, 1,000 kcal recommendation floor, and zero-state protein ("Protein Target: Not Set").
+   - Activity dropdown options cleaned to hide calculation multipliers (`1.2`–`1.9`) and present only clean labels with helper descriptions below.
+   - Automatic bodyweight-based protein target calculation implemented: $\text{round}(\text{weightKg} \times \text{proteinMultiplier})$ using proposed FitDex activity mapping (Sedentary: 0.8, Light: 1.2, Moderate: 1.4, Very: 1.6, Extreme: 1.8 g/kg) with derived kcal and % contribution.
+   - Clear visual separation between active saved target badges and in-progress calculation/manual draft inputs with explicit recalculation action.
    - All previously identified product decisions remain deferred without silent semantic changes: no historical target snapshots, no XP revocation, no schema migrations, and no cloud/account functionality.

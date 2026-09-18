@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { ACTIVITY_FACTORS, CALORIE_SAFETY_FLOOR, calculateRmr, calculateSuggestedCalorieTargets, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from './nutritionTargetCalculator.ts'
+import { ACTIVITY_FACTORS, CALORIE_SAFETY_FLOOR, PROTEIN_MULTIPLIERS, calculateProteinDerivedMetrics, calculateRmr, calculateSuggestedCalorieTargets, calculateSuggestedProteinTarget, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from './nutritionTargetCalculator.ts'
 
 assert.equal(calculateRmr({ age: 30, sex: 'male', heightCm: 180, weightKg: 80 }), 1780)
 assert.equal(calculateRmr({ age: 30, sex: 'female', heightCm: 165, weightKg: 60 }), 1320)
@@ -28,4 +28,29 @@ assert.equal(evaluateProteinDay(130, 130).achievementEligible, true)
 assert.equal(evaluateProteinDay(130, 145).achievementEligible, true)
 assert.equal(evaluateProteinDay(130, 129).achievementEligible, false)
 assert.equal(CALORIE_SAFETY_FLOOR, 1000)
+
+// Protein multipliers and calculations
+assert.deepEqual(PROTEIN_MULTIPLIERS, {
+  sedentary: 0.8,
+  light: 1.2,
+  moderate: 1.4,
+  very: 1.6,
+  extreme: 1.8,
+})
+
+assert.equal(calculateSuggestedProteinTarget(65, 'moderate'), 91) // 65 * 1.4 = 91
+assert.equal(calculateSuggestedProteinTarget(65, 'sedentary'), 52) // 65 * 0.8 = 52
+assert.equal(calculateSuggestedProteinTarget(80, 'very'), 128) // 80 * 1.6 = 128
+assert.equal(calculateSuggestedProteinTarget(75, 'light'), 90) // 75 * 1.2 = 90
+assert.equal(calculateSuggestedProteinTarget(100, 'extreme'), 180) // 100 * 1.8 = 180
+
+// Derived metrics
+const metrics = calculateProteinDerivedMetrics(91, 1800)
+assert.equal(metrics.proteinCalories, 364) // 91 * 4 = 364
+assert.equal(metrics.proteinPercentOfCalories, 20) // round((364 / 1800) * 100) = 20
+
+const zeroMetrics = calculateProteinDerivedMetrics(0, 1800)
+assert.equal(zeroMetrics.proteinCalories, 0)
+assert.equal(zeroMetrics.proteinPercentOfCalories, 0)
+
 console.log('Nutrition target calculator tests passed: Mifflin–St Jeor, recommendations, safety-first calorie zones, and protein targets')

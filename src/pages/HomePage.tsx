@@ -1,4 +1,4 @@
-import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, Dumbbell, Flame, Music, NotebookTabs, Pause, Play, SkipBack, SkipForward, Utensils, Volume2, VolumeX } from 'lucide-react'
+import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, CircleHelp, Dumbbell, Flame, Music, NotebookTabs, Pause, Play, SkipBack, SkipForward, Utensils, Volume2, VolumeX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { AvatarPortrait } from '../features/avatar/AvatarPortrait'
@@ -24,7 +24,7 @@ import { useBackNavigation } from '../features/navigation/useBackNavigation'
 
 export type HomeWorkoutEntry = 'hub' | 'active' | 'start' | 'library' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'
 
-export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void }) {
+export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpenFieldGuide }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void; onOpenFieldGuide?: () => void }) {
   const { selectedAvatar } = useAvatar()
   const { displayName } = useProfile()
   const { playEffect } = useAudio()
@@ -65,8 +65,24 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements }: { on
         </div>
       </section>
 
-      <section className="home-hero home-mobile-hero home-command-home">
-        <header className="home-command-status"><span>FitDex // Field Unit</span><time dateTime={todayDateKey}>{formatCommandDate(now)}</time></header>
+      <section className="home-hero home-mobile-hero home-command-home fitdex-page-frame">
+        <header className="home-command-status">
+          <span>FitDex</span>
+          <div className="home-command-status-actions" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <time dateTime={todayDateKey}>{formatCommandDate(now)}</time>
+            {onOpenFieldGuide ? (
+              <button
+                className="cmd-icon-btn page-help-btn home-help-btn"
+                type="button"
+                onClick={() => { playEffect('select'); onOpenFieldGuide() }}
+                aria-label="FitDex Field Guide"
+                title="FitDex Field Guide"
+              >
+                <CircleHelp size={16} aria-hidden="true" />
+              </button>
+            ) : null}
+          </div>
+        </header>
         <div className="home-hero-player home-command-player">
           <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
           <div className="home-hero-player-copy">

@@ -5,7 +5,7 @@ import type { PlanDaySnapshot } from '../../data/models.ts'
 import { dateFromLocalDateKey, getLocalDateKey, shiftLocalDateKey } from '../../utils/localDate.ts'
 import { GuideDialog } from '../help/GuideDialog.tsx'
 import { ACHIEVEMENT_CATEGORIES, achievementById, type AchievementCategory } from './achievementCatalog.ts'
-import { achievementAssetPath, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, RANKS, rankAssetPath } from './gamificationConfig.ts'
+import { achievementAssetPath, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, RANKS, rankAssetPath, XP_REWARDS } from './gamificationConfig.ts'
 import { GamificationBadge } from './GamificationBadge.tsx'
 import { loadGamificationDashboard, loadPendingGamificationNotifications, markGamificationNotificationsSeen, planStreakPause, type GamificationDashboard } from './gamificationRepository.ts'
 import { gamificationHelpSteps } from './gamificationHelp.ts'
@@ -25,11 +25,11 @@ export function RankDetailView({ data, onBack }: { data: GamificationDashboard; 
   return <div className="page-stack gamification-detail"><Subheader title="Level & Rank" onBack={onBack} /><Panel eyebrow="Your progress"><LevelProgress data={data} /></Panel><Panel eyebrow="Rank journey" title="Nine ranks · No divisions"><ol className="rank-journey">{RANKS.map((rank) => <li className={rank.id === data.progression.rank.id ? 'is-current' : ''} key={rank.id} aria-current={rank.id === data.progression.rank.id ? 'step' : undefined}><GamificationBadge kind="rank" src={rankAssetPath(rank)} label={`${rank.name} emblem`} size="small" locked={data.progression.level < rank.minLevel} /><span><strong>{rank.name}</strong><small>{rank.minLevel === rank.maxLevel ? `Level ${rank.minLevel}` : `Levels ${rank.minLevel}–${rank.maxLevel}`}</small></span>{rank.id === data.progression.rank.id ? <em>Current</em> : null}</li>)}</ol></Panel><XpRules /><RecentXp data={data} /></div>
 }
 
-export function XpRules() { return <Panel eyebrow="How you earn XP"><dl className="xp-rules"><div><dt>Planned Routine</dt><dd>+30</dd></div><div><dt>Workout Day</dt><dd>+30</dd></div><div><dt>Unplanned Workout</dt><dd>+20</dd></div><div><dt>New Personal Record</dt><dd>+15</dd></div><div><dt>Full Food Log</dt><dd>+5</dd></div><div className="is-dormant"><dt>Calorie Target</dt><dd>+5 · target setting required</dd></div><div className="is-dormant"><dt>Protein Target</dt><dd>+5 · target setting required</dd></div></dl></Panel> }
+export function XpRules() { return <Panel eyebrow="How you earn XP"><dl className="xp-rules"><div><dt>Planned Routine</dt><dd>+30</dd></div><div><dt>Workout Day</dt><dd>+30</dd></div><div><dt>Unplanned Workout</dt><dd>+20</dd></div><div><dt>New Personal Record</dt><dd>+15</dd></div><div><dt>Full Food Log</dt><dd>+5</dd></div><div><dt>Calorie Target</dt><dd>+5</dd></div><div><dt>Protein Target</dt><dd>+5</dd></div><div><dt>Achievement Unlocked</dt><dd>+50</dd></div></dl></Panel> }
 
 function RecentXp({ data }: { data: GamificationDashboard }) { return <Panel eyebrow="Recent XP">{data.xpEvents.length ? <ul className="recent-xp">{data.xpEvents.slice(0, 10).map((event) => <li key={event.id}><span><strong>{xpEventLabel(event)}</strong><small>{new Date(event.occurredAt).toLocaleString()}</small></span><b>+{event.amount}</b></li>)}</ul> : <p>No XP earned yet.</p>}</Panel> }
 
-function xpEventLabel(event: GamificationDashboard['xpEvents'][number]) { if (event.type === 'personal_record') return `${event.metadata?.exerciseName ?? 'Exercise'} PR`; if (event.type === 'full_food_log') return 'All four meals logged'; return String(event.metadata?.name ?? event.type.replaceAll('_', ' ')) }
+function xpEventLabel(event: GamificationDashboard['xpEvents'][number]) { if (event.type === 'personal_record') return `${event.metadata?.exerciseName ?? 'Exercise'} PR`; if (event.type === 'full_food_log') return 'All four meals logged'; if (event.type === 'achievement_unlock') return `Achievement: ${event.metadata?.name ?? 'Unlocked'}`; return String(event.metadata?.name ?? event.type.replaceAll('_', ' ')) }
 
 export function StreakDetailView({ data, onBack, onChanged }: { data: GamificationDashboard; onBack: () => void; onChanged: (data: GamificationDashboard) => void }) {
   const [pauseOpen, setPauseOpen] = useState(false)
@@ -91,15 +91,15 @@ function levelMilestoneAchievementId(beforeLevel: number, afterLevel: number) {
 function AchievementNotification({ unlocks }: { unlocks: Awaited<ReturnType<typeof loadPendingGamificationNotifications>>['unlocks'] }) {
   const unlock = unlocks[0]
   const achievement = unlock ? achievementById.get(unlock.achievementId) : undefined
-  if (!unlock || !achievement || unlocks.length !== 1) return <><p className="eyebrow">Achievements</p><h2 id="gamification-notification-title">{unlocks.length} Achievements Unlocked</h2><AchievementUnlockList unlocks={unlocks} /></>
-  return <><GamificationBadge kind="achievement" src={achievementAssetPath(achievement.id)} label={`${achievement.name} achievement badge`} size="large" /><p className="eyebrow">Achievement Unlocked</p><h2 id="gamification-notification-title">{achievement.name}</h2></>
+  if (!unlock || !achievement || unlocks.length !== 1) return <><p className="eyebrow">Achievements</p><h2 id="gamification-notification-title">{unlocks.length} Achievements Unlocked</h2><p>+{unlocks.length * XP_REWARDS.achievement} XP</p><AchievementUnlockList unlocks={unlocks} /></>
+  return <><GamificationBadge kind="achievement" src={achievementAssetPath(achievement.id)} label={`${achievement.name} achievement badge`} size="large" /><p className="eyebrow">Achievement Unlocked · +{XP_REWARDS.achievement} XP</p><h2 id="gamification-notification-title">{achievement.name}</h2></>
 }
 
 function AchievementUnlockList({ unlocks }: { unlocks: Awaited<ReturnType<typeof loadPendingGamificationNotifications>>['unlocks'] }) {
   return <ul className="gamification-notification-unlocks">{unlocks.map((unlock) => {
     const achievement = achievementById.get(unlock.achievementId)
     const name = achievement?.name ?? 'Unknown achievement'
-    return <li key={unlock.id}><GamificationBadge kind="achievement" src={achievementAssetPath(unlock.achievementId)} label={`${name} achievement badge`} size="small" /><span>{name}</span></li>
+    return <li key={unlock.id}><GamificationBadge kind="achievement" src={achievementAssetPath(unlock.achievementId)} label={`${name} achievement badge`} size="small" /><span>{name}</span><b style={{ color: 'var(--color-primary)' }}>+{XP_REWARDS.achievement} XP</b></li>
   })}</ul>
 }
 

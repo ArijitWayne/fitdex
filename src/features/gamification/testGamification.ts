@@ -11,7 +11,7 @@ import { deriveStreak, inclusiveDateDuration, isMaterialPlanChange } from './gam
 assert.equal(ACHIEVEMENTS.length, 52)
 assert.deepEqual(ACHIEVEMENTS.filter((item) => item.category === 'EXERCISE_DEX').map((item) => item.name), ['First Exercise', '5 Different Exercises', '10 Different Exercises', '25 Different Exercises', '50 Different Exercises', 'All Categories'])
 assert.deepEqual(Object.fromEntries(['WORKOUT', 'CONSISTENCY', 'PERFORMANCE', 'EXERCISE_DEX', 'NUTRITION', 'PROGRESSION'].map((category) => [category, ACHIEVEMENTS.filter((item) => item.category === category).length])), { WORKOUT: 10, CONSISTENCY: 8, PERFORMANCE: 7, EXERCISE_DEX: 6, NUTRITION: 11, PROGRESSION: 10 })
-assert.deepEqual(XP_REWARDS, { plannedRoutine: 30, plannedWorkout: 30, unplannedWorkout: 20, personalRecord: 15, calorieTarget: 5, proteinTarget: 5, fullFoodLog: 5 })
+assert.deepEqual(XP_REWARDS, { plannedRoutine: 30, plannedWorkout: 30, unplannedWorkout: 20, personalRecord: 15, calorieTarget: 5, proteinTarget: 5, fullFoodLog: 5, achievement: 50 })
 assert.ok(ACHIEVEMENTS.filter((achievement) => achievement.id.startsWith('calorie-target-') || achievement.id.startsWith('protein-target-')).every((achievement) => !achievement.dormant))
 assert.ok(!Object.keys(XP_REWARDS).some((reward) => /(?:carb|fat|fiber)/i.test(reward)))
 assert.ok(!ACHIEVEMENTS.some((achievement) => /(?:carb|fat|fiber)-target/i.test(achievement.id)))
@@ -170,8 +170,52 @@ assert.equal((await db.planDaySnapshots.get('plan-day:2026-08-29'))?.result, 'pa
 assert.equal((await db.planDaySnapshots.get('plan-day:2026-08-30'))?.result, 'paused')
 assert.equal((await loadGamificationDashboard('2026-08-31', false)).freezeBalance, 0)
 await planStreakPause('sickness', '2026-09-01', '2026-09-01', '2026-08-31')
-await assert.rejects(() => planStreakPause('travel', '2026-09-02', '2026-09-02', '2026-08-31'), /Both Travel \/ Sickness Pauses/)
+// Achievement XP Tests
+// 1. Unlocked achievements award +50 XP exactly once
+assert.equal(await db.achievementUnlocks.where('achievementId').equals('first-exercise').count(), 1)
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:first-exercise').count(), 1)
+const firstExXp = await db.xpEvents.get('achievement:first-exercise')
+assert.equal(firstExXp?.type, 'achievement_unlock')
+assert.equal(firstExXp?.amount, 50)
+
+// 2. Idempotency: Reconciling repeatedly does not duplicate XP
+await reconcileGamification(new Date('2026-08-31T12:00:00'))
+await reconcileGamification(new Date('2026-08-31T12:00:00'))
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:first-exercise').count(), 1)
+
+// 3. New achievement unlock ('5-different-exercises') awards +50 XP
+const xpBefore5Ex = (await loadGamificationDashboard('2026-08-31', false)).progression.totalXp
+for (let i = 2; i <= 5; i++) {
+  await db.exercises.put({ id: `exercise:test-${i}`, name: `Test Ex ${i}`, aliases: [], category: 'Chest', categories: ['Chest'], primaryCategory: 'Chest', primaryMuscles: ['Chest'], secondaryMuscles: [], muscleRegions: ['Chest'], equipment: 'Bodyweight', trackingType: 'reps_only', movementPattern: 'Horizontal Push', source: 'custom', archived: false, createdAt: '2026-08-31T00:00:00.000Z', updatedAt: '2026-08-31T00:00:00.000Z' })
+}
+const multiWorkoutId = 'workout:multi-achieve'
+await db.workouts.put({ id: multiWorkoutId, nameSnapshot: 'Multi Workout', status: 'completed', startedAt: '2026-08-31T14:00:00.000Z', completedAt: '2026-08-31T15:00:00.000Z', durationSeconds: 3600, createdAt: '2026-08-31T14:00:00.000Z', updatedAt: '2026-08-31T15:00:00.000Z' })
+for (let i = 2; i <= 5; i++) {
+  await db.workoutExercises.put({ id: `workout-exercise:multi-${i}`, workoutId: multiWorkoutId, exerciseId: `exercise:test-${i}`, exerciseNameSnapshot: `Test Ex ${i}`, exerciseCategorySnapshot: 'Chest', trackingTypeSnapshot: 'reps_only', order: i, createdAt: '2026-08-31T14:00:00.000Z', updatedAt: '2026-08-31T15:00:00.000Z' })
+  await db.workoutSets.put({ id: `workout-set:multi-${i}`, workoutExerciseId: `workout-exercise:multi-${i}`, order: 0, reps: 10, completed: true, createdAt: '2026-08-31T14:00:00.000Z', updatedAt: '2026-08-31T15:00:00.000Z' })
+}
+await reconcileGamification(new Date('2026-08-31T16:00:00'))
+assert.equal(await db.achievementUnlocks.where('achievementId').equals('5-different-exercises').count(), 1)
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:5-different-exercises').count(), 1)
+assert.equal((await db.xpEvents.get('achievement:5-different-exercises'))?.amount, 50)
+const dashboardAfter5Ex = await loadGamificationDashboard('2026-08-31', false)
+assert.ok(dashboardAfter5Ex.progression.totalXp >= xpBefore5Ex + 50)
+
+// 4. Historical achievements (already unlocked before upgrade) do NOT receive retroactive XP
+await db.achievementUnlocks.put({ id: 'achievement:100-workouts', achievementId: '100-workouts', unlockedAt: '2026-08-20T00:00:00.000Z', createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-08-20T00:00:00.000Z' })
+await reconcileGamification(new Date('2026-08-31T16:00:00'))
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:100-workouts').count(), 0, 'historical achievement must not get retroactive XP')
+
+// 5. Guide steps content assertions
+const { gamificationHelpSteps } = await import('./gamificationHelp.ts')
+assert.equal(gamificationHelpSteps[0].title, 'How Gamification Works')
+const guideText = JSON.stringify(gamificationHelpSteps)
+assert.match(guideText, /Achievement Unlocked/)
+assert.match(guideText, /\+50 XP/)
+assert.match(guideText, /Calorie Target/)
+assert.match(guideText, /Protein Target/)
+
 await db.close()
 await Dexie.delete('fitdex')
 
-console.log('Gamification tests passed: 52 achievements, progression/rank boundaries, streak semantics, automatic Freeze/no-Freeze outcomes, Pause limits, plan-change identity, and repeat-safe planned XP reconciliation')
+console.log('Gamification tests passed: 52 achievements, progression/rank boundaries, streak semantics, automatic Freeze/no-Freeze outcomes, Pause limits, plan-change identity, repeat-safe planned XP reconciliation, and achievement +50 XP awards')

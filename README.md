@@ -1,8 +1,8 @@
 # FitDex
 
-> A local-first fitness companion for workouts, nutrition logging, and a retro RPG-inspired interface.
+> An all-in-one local-first fitness + calorie tracker with a retro 90s handheld / pixel-era fitness RPG experience.
 
-FitDex is a mobile-first Progressive Web App for building routines, logging real workouts, and tracking food on your own device. It pairs practical fitness tools with original pixel-art styling—without requiring an account or storing personal workout or nutrition history in a FitDex cloud database.
+FitDex is a mobile-first Progressive Web App for building routines, logging real workouts, and tracking food on your own device. It pairs serious fitness utility with an authentic retro game-manual and codex design language—without requiring an account or storing personal workout or nutrition history in a cloud database. Design standards: [docs/FITDEX_UI_UX_STANDARD.md](docs/FITDEX_UI_UX_STANDARD.md).
 
 ## Features
 
@@ -32,11 +32,12 @@ FitDex is a mobile-first Progressive Web App for building routines, logging real
 - Switch one daily nutrition donut between macro-derived calorie contribution and actual logged calories by meal.
 - Reuse remembered foods with their saved category and default nutrition values.
 - Choose fixed pixel-art categories or create a custom category through Other with a personal accent color and one recolorable generic pixel icon.
+- Configure daily targets via Settings using the V3 Nutrition Codex: Mifflin–St Jeor energy accounting, evidence-based bodyweight protein calculation, clean activity index, and Style B Pixel Command controls.
 - Learn each workflow through replayable Workout/Food guides and lightweight Journal/Progress help.
 
 ### Gamification
 
-- Earn idempotent XP from completed training, genuine Personal Records, and fully logged nutrition days.
+- Earn idempotent XP from completed training, genuine Personal Records, fully logged nutrition days, and newly unlocked achievements (+50 XP).
 - Progress through 100 Levels and nine named Ranks while Lifetime XP remains local to the device.
 - Build a plan-based streak with automatic Streak Freezes, Travel/Sickness Pauses, protected Weekly Plan changes, and 52 permanent Achievements.
 

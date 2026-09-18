@@ -20,12 +20,14 @@ interface AppShellProps {
   destination: AppDestination
   onNavigate: (destination: AppDestination) => void
   onOpenSettings: () => void
+  onToggleSettings?: () => void
   settingsOpen: boolean
 }
 
-export function AppShell({ children, destination, onNavigate, onOpenSettings, settingsOpen }: AppShellProps) {
+export function AppShell({ children, destination, onNavigate, onOpenSettings, onToggleSettings, settingsOpen }: AppShellProps) {
   const { playEffect } = useAudio()
-  const { family } = useTheme()
+  const { family, setBrightness } = useTheme()
+  const resolvedBrightness = useResolvedBrightness()
   const branding = brandingForTheme(family)
   const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine)
   useEffect(() => {
@@ -45,16 +47,32 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
           <span className="wordmark-mobile-name">FitDex</span>
         </button>
         {!online ? <div className="connectivity-status" role="status" aria-live="polite"><span aria-hidden="true">●</span> Offline</div> : null}
-        {destination === 'home' && !settingsOpen ? <MobileHomeThemeControls /> : null}
-        <button
-          className={`icon-button ${settingsOpen ? 'is-active' : ''}`}
-          type="button"
-          aria-label="Open settings"
-          aria-pressed={settingsOpen}
-          onClick={() => { playEffect('select'); onOpenSettings() }}
-        >
-          <Settings size={21} strokeWidth={2} aria-hidden="true" />
-        </button>
+        <div className="header-actions">
+          <button
+            className="icon-button"
+            type="button"
+            aria-label={resolvedBrightness === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={() => {
+              playEffect('select')
+              setBrightness(resolvedBrightness === 'dark' ? 'light' : 'dark')
+            }}
+          >
+            {resolvedBrightness === 'dark' ? <Sun size={20} strokeWidth={2} aria-hidden="true" /> : <Moon size={20} strokeWidth={2} aria-hidden="true" />}
+          </button>
+          <button
+            className={`icon-button ${settingsOpen ? 'is-active' : ''}`}
+            type="button"
+            aria-label="Open settings"
+            aria-pressed={settingsOpen}
+            onClick={() => {
+              playEffect('select')
+              if (onToggleSettings) onToggleSettings()
+              else onOpenSettings()
+            }}
+          >
+            <Settings size={21} strokeWidth={2} aria-hidden="true" />
+          </button>
+        </div>
       </header>
 
       <div className="app-layout">
@@ -76,28 +94,4 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, se
       </div>
     </div>
   )
-}
-
-function MobileHomeThemeControls() {
-  const { family, setFamily, setBrightness } = useTheme()
-  const brightness = useResolvedBrightness()
-  const { playEffect } = useAudio()
-  const chooseFamily = (nextFamily: 'spartans' | 'amazonians') => {
-    playEffect('select')
-    setFamily(nextFamily)
-  }
-  const toggleBrightness = () => {
-    playEffect('select')
-    setBrightness(brightness === 'dark' ? 'light' : 'dark')
-  }
-  return <div className="mobile-home-theme-controls" role="group" aria-label="Home theme controls">
-    <label className="mobile-home-faction">
-      <span>Faction</span>
-      <select aria-label="Faction" value={family} onChange={(event) => chooseFamily(event.target.value as 'spartans' | 'amazonians')}>
-        <option value="spartans">Spartans</option>
-        <option value="amazonians">Amazonians</option>
-      </select>
-    </label>
-    <button type="button" aria-label={`Switch to ${brightness === 'dark' ? 'light' : 'dark'} mode`} onClick={toggleBrightness}>{brightness === 'dark' ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}</button>
-  </div>
 }

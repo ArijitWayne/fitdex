@@ -1,6 +1,7 @@
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Dumbbell, NotebookTabs, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
+import { PageFrame } from '../components/layout/PageFrame'
 import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type PredefinedFoodCategoryId } from '../data/models'
 import { FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
 import { FOOD_MEAL_LABELS, nutritionTotals } from '../features/food/foodModel'
@@ -90,7 +91,7 @@ export function JournalPage() {
   const isEmpty = isLoaded && sessionCount === 0 && foodItemCount === 0
 
   return (
-    <div className="page-stack journal-page">
+    <PageFrame className="page-stack journal-page">
       <PageHeader eyebrow="Daily record" title="Journal" description="Your daily fitness history" action={<button className="page-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }}><CircleHelp size={18} aria-hidden="true" /> How Journal Works</button>} />
 
       <header className="journal-date-header">
@@ -213,7 +214,7 @@ export function JournalPage() {
       ) : null}
 
       {helpOpen ? <GuideDialog eyebrow="Connected history" steps={journalHelpSteps} onClose={() => setHelpOpen(false)} /> : null}
-    </div>
+    </PageFrame>
   )
 }
 

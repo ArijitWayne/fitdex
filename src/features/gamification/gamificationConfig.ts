@@ -6,6 +6,7 @@ export const XP_REWARDS = {
   calorieTarget: 5,
   proteinTarget: 5,
   fullFoodLog: 5,
+  achievement: 50,
 } as const
 
 export const MAX_LEVEL = 100

@@ -1,6 +1,7 @@
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
+import { PageFrame } from '../components/layout/PageFrame'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
@@ -164,14 +165,14 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   if (view.kind === 'add') return <FoodEditor date={date} meal={view.meal} editing={view.editing} onBack={() => { playEffect('select'); setView({ kind: 'meal', meal: view.meal }) }} onSaved={async (notice) => { await refresh(); setView({ kind: 'meal', meal: view.meal, notice }) }} />
   if (view.kind === 'meal') return <MealDetail date={date} meal={view.meal} entries={entries.filter((entry) => entry.meal === view.meal)} notice={view.notice} onBack={() => { playEffect('select'); setView({ kind: 'overview' }) }} onAdd={() => openAdd(view.meal)} onEdit={(editing) => { playEffect('select'); setView({ kind: 'add', meal: view.meal, editing }) }} onChanged={refresh} />
 
-  return <div className="page-stack food-page" data-food-design="goal-first">
+  return <PageFrame className="page-stack food-page" data-food-design="goal-first">
     <header className="food-header">
       <div className="food-header-title">
         <div><p className="eyebrow">Nutrition hub</p><h1>Food</h1></div>
         <div className="food-header-meta">
           {gamification ? <span className="workout-level-badge">Level {gamification.progression.level}</span> : null}
           <button className="food-today-button" type="button" disabled={isLocalToday(date)} onClick={() => navigateDate(normalizeDate(new Date()))}>Today</button>
-          <button className="workout-hub-help" type="button" aria-label="How Food Works" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
+          <button className="workout-hub-help cmd-icon-btn page-help-btn" type="button" aria-label="How Food Works" title="How Food Works" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
         </div>
       </div>
       <div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><span><strong>{formatDate(date)}</strong><small>{isLocalToday(date) ? 'Today' : 'Selected day'}</small></span><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>
@@ -182,7 +183,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
       <section className="food-nutrition-details"><button className="food-nutrition-toggle" type="button" aria-expanded={nutritionOpen} onClick={() => setNutritionOpen((open) => !open)}><span><strong>Nutrition Details</strong><small>Carbs · Fat · Fiber · Sugar · Sat. fat · Sodium</small></span>{nutritionOpen ? <ChevronUp /> : <ChevronDown />}</button>{nutritionOpen ? <div className="food-nutrition-content"><MacroStrip nutrition={totals} secondary /><NutritionBreakdownCard key={date} entries={entries} totals={totals} /></div> : null}</section>
     </>}
     {tutorialOpen ? <GuideDialog eyebrow="How Food Works" steps={foodTutorialSteps} onClose={() => { setTutorialOpen(false); void markTutorialSeen('food') }} /> : null}
-  </div>
+  </PageFrame>
 }
 
 function MealDetail({ date, meal, entries, notice, onBack, onAdd, onEdit, onChanged }: { date: string; meal: FoodMeal; entries: FoodLogEntry[]; notice?: string; onBack: () => void; onAdd: () => void; onEdit: (entry: FoodLogEntry) => void; onChanged: () => Promise<void> }) {

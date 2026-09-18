@@ -284,7 +284,16 @@ async function reconcileAchievements(snapshots: readonly PlanDaySnapshot[]) {
   const existingIds = new Set(existing.map((unlock) => unlock.achievementId))
   const timestamp = iso()
   const rows = ACHIEVEMENTS.filter((definition) => !definition.dormant && stats[definition.progressKey] >= definition.target && !existingIds.has(definition.id)).map((definition): AchievementUnlock => ({ id: `achievement:${definition.id}`, achievementId: definition.id, unlockedAt: timestamp, createdAt: timestamp, updatedAt: timestamp }))
-  if (rows.length) await db.achievementUnlocks.bulkAdd(rows)
+  if (rows.length) {
+    await db.achievementUnlocks.bulkAdd(rows)
+    for (const row of rows) {
+      const definition = ACHIEVEMENTS.find((d) => d.id === row.achievementId)
+      await addXpEvent('achievement_unlock', XP_REWARDS.achievement, `achievement:${row.achievementId}`, timestamp, {
+        achievementId: row.achievementId,
+        name: definition?.name ?? row.achievementId,
+      })
+    }
+  }
 }
 
 export async function reconcileGamification(now = new Date()) {

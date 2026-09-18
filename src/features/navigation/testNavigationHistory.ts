@@ -20,3 +20,5 @@ assert.match(provider, /listener\.remove\(\)/)
 assert.match(provider, /playEffect\('select'\)/)
 
 console.log('Navigation history tests passed: meaningful pushes, duplicate suppression, pop-without-push, root behavior, and Capacitor Back integration')
+
+import './testSettingsNavigation.ts'
