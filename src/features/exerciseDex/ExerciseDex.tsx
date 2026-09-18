@@ -5,6 +5,8 @@ import { db } from '../../data/database'
 import type { Exercise, ExerciseCategory } from '../../data/models'
 import { useTheme } from '../../theme/useTheme'
 import { useResolvedBrightness } from '../../theme/useResolvedBrightness'
+import { AvatarPortrait } from '../avatar/AvatarPortrait'
+import { useAvatar } from '../avatar/useAvatar'
 import {
   CATEGORY_SUBFILTERS,
   EXERCISE_CATEGORIES,
@@ -41,6 +43,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
 } = {}) {
   const { family } = useTheme()
   const { playEffect } = useAudio()
+  const { selectedAvatar } = useAvatar()
   const resolvedBrightness = useResolvedBrightness()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [favourites, setFavourites] = useState<Set<string>>(new Set())
@@ -173,15 +176,40 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
 
   return (
     <Panel className={picker ? 'exercise-dex-panel is-picker' : 'exercise-dex-panel'}>
-      {picker ? <div className="exercise-picker-contextbar"><button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label={`Back to ${picker.targetLabel}`}><ArrowLeft size={20} aria-hidden="true" /></button><strong>Back to {picker.targetLabel}</strong></div> : null}
-      <div className="exercise-dex-heading">
-        {category ? <button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label="Back to Exercise Dex categories"><ArrowLeft size={20} aria-hidden="true" /></button> : null}
-        <div>
-          <p className="eyebrow">{picker ? 'Exercise picker' : 'Exercise Dex'}</p>
-          <h2>{category ?? picker?.title ?? 'Exercise library'}</h2>
-          <p>{category ? `${categoryExercises.length} exercises` : `${exercises.length} universal exercises`}</p>
+      {picker ? (
+        <div className="exercise-picker-contextbar">
+          <button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label={`Back to ${picker.targetLabel}`}>
+            <ArrowLeft size={20} aria-hidden="true" />
+          </button>
+          <strong>Back to {picker.targetLabel}</strong>
         </div>
-      </div>
+      ) : null}
+
+      {!picker && !category ? (
+        <div className="exercise-codex-cover">
+          <div className="exercise-codex-avatar-frame">
+            <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
+          </div>
+          <div className="exercise-codex-copy">
+            <p className="eyebrow">FitDex field archive</p>
+            <h1>Exercise Codex</h1>
+            <p>Browse {exercises.length} verified records. Find a movement. Study its form. Carry it into training.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="exercise-dex-heading">
+          {category ? (
+            <button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label="Back to Exercise Dex categories">
+              <ArrowLeft size={20} aria-hidden="true" />
+            </button>
+          ) : null}
+          <div>
+            <p className="eyebrow">{picker ? 'Exercise picker' : 'Exercise Dex'}</p>
+            <h2>{category ?? picker?.title ?? 'Exercise library'}</h2>
+            <p>{category ? `${categoryExercises.length} exercises` : `${exercises.length} universal exercises`}</p>
+          </div>
+        </div>
+      )}
 
       <label className="exercise-search">
         <span className="visually-hidden">{category ? `Search ${category} exercises` : 'Search all exercises'}</span>
@@ -200,9 +228,21 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
       </label>
 
       {!category ? (
-        <div className="exercise-library-scope" role="group" aria-label="Exercise library scope">
-          <button type="button" aria-pressed={libraryScope === 'all'} onClick={() => { playEffect('select'); setLibraryScope('all') }}>All</button>
-          <button type="button" aria-pressed={libraryScope === 'favourites'} onClick={() => { playEffect('select'); setLibraryScope('favourites') }}><Star size={16} aria-hidden="true" /> Favorites</button>
+        <div className="exercise-library-scope exercise-codex-tabs" role="group" aria-label="Exercise library scope">
+          <button
+            type="button"
+            aria-pressed={libraryScope === 'all'}
+            onClick={() => { playEffect('select'); setLibraryScope('all') }}
+          >
+            {picker ? 'All' : 'Index'}
+          </button>
+          <button
+            type="button"
+            aria-pressed={libraryScope === 'favourites'}
+            onClick={() => { playEffect('select'); setLibraryScope('favourites') }}
+          >
+            <Star size={16} aria-hidden="true" /> Favorites
+          </button>
         </div>
       ) : null}
 
@@ -388,23 +428,42 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
   const content = getExerciseContent(exercise.id)
 
   return (
-    <Panel className="exercise-detail-panel">
+    <Panel className="exercise-detail-panel exercise-record-sheet">
       <div className="exercise-detail-header">
         <button className="dex-back-button" type="button" onClick={onBack} aria-label="Back to exercise list"><ArrowLeft size={20} aria-hidden="true" /></button>
-        <div><p className="eyebrow">Exercise record</p><h2>{exercise.name}</h2><p className="exercise-detail-category">{exercise.categories?.join(' · ') ?? exercise.category}</p></div>
+        <div>
+          <p className="eyebrow">Exercise record</p>
+          <h2>{exercise.name}</h2>
+          <p className="exercise-detail-category">
+            {exercise.categories?.join(' · ') ?? exercise.category}
+            {exercise.movementPattern ? ` · ${exercise.movementPattern}` : ''}
+          </p>
+        </div>
         {!picker ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
       </div>
       {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseId={exercise.id} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : null}
+      <dl className="exercise-detail-list">
+        <div><dt>Primary muscle</dt><dd>{exercise.primaryMuscles.join(', ')}</dd></div>
+        <div><dt>Secondary muscles</dt><dd>{exercise.secondaryMuscles.length ? exercise.secondaryMuscles.join(', ') : 'None specified'}</dd></div>
+        <div><dt>Region</dt><dd>{exercise.muscleRegions.join(', ')}</dd></div>
+        <div><dt>Equipment</dt><dd>{exercise.equipmentOptions?.join(', ') ?? exercise.equipment}</dd></div>
+        <div><dt>Tracking method</dt><dd>{TRACKING_TYPE_LABELS[exercise.trackingType]}</dd></div>
+        {exercise.movementPattern ? <div><dt>Movement pattern</dt><dd>{exercise.movementPattern}</dd></div> : null}
+        {exercise.cardioSubtype ? <div><dt>Cardio type</dt><dd>{exercise.cardioSubtype}</dd></div> : null}
+        {exercise.instructions ? <div className="exercise-detail-wide"><dt>Notes</dt><dd>{exercise.instructions}</dd></div> : null}
+      </dl>
       {content ? (
         <div className="exercise-detail-content">
           <section>
             <h3>How to perform</h3>
             <p>{content.howToPerform}</p>
           </section>
-          <section>
-            <h3>How it helps</h3>
-            <p>{content.howItHelps}</p>
-          </section>
+          {content.howItHelps ? (
+            <section>
+              <h3>How it helps</h3>
+              <p>{content.howItHelps}</p>
+            </section>
+          ) : null}
         </div>
       ) : null}
       {picker ? (
@@ -416,16 +475,6 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
       ) : onAddToRoutine ? (
         <div className="exercise-detail-action"><button className="primary-button" type="button" onClick={() => onAddToRoutine(exercise)}>Add to routine</button></div>
       ) : null}
-      <dl className="exercise-detail-list">
-        <div><dt>Primary muscle</dt><dd>{exercise.primaryMuscles.join(', ')}</dd></div>
-        <div><dt>Secondary muscles</dt><dd>{exercise.secondaryMuscles.length ? exercise.secondaryMuscles.join(', ') : 'None specified'}</dd></div>
-        <div><dt>Region</dt><dd>{exercise.muscleRegions.join(', ')}</dd></div>
-        <div><dt>Equipment</dt><dd>{exercise.equipmentOptions?.join(', ') ?? exercise.equipment}</dd></div>
-        <div><dt>Tracking method</dt><dd>{TRACKING_TYPE_LABELS[exercise.trackingType]}</dd></div>
-        {exercise.movementPattern ? <div><dt>Movement pattern</dt><dd>{exercise.movementPattern}</dd></div> : null}
-        {exercise.cardioSubtype ? <div><dt>Cardio type</dt><dd>{exercise.cardioSubtype}</dd></div> : null}
-        {exercise.instructions ? <div className="exercise-detail-wide"><dt>Notes</dt><dd>{exercise.instructions}</dd></div> : null}
-      </dl>
     </Panel>
   )
 }
@@ -452,7 +501,18 @@ function ExerciseMedia({ exerciseId, exerciseName, mediaPath, mediaType }: { exe
   }
   const remove = () => { void removeDownloadedExerciseMedia(exerciseId).then(() => { setStatus('Download removed.'); refresh() }).catch(() => setStatus('Download could not be removed.')) }
 
-  if (loading || playback.kind === 'unavailable') {
+  if (loading) {
+    return (
+      <figure className="exercise-detail-media exercise-detail-media-loading">
+        <div className="exercise-media-loading-state">
+          <span className="exercise-media-spinner" aria-hidden="true" />
+          <p role="status">Loading exercise media…</p>
+        </div>
+      </figure>
+    )
+  }
+
+  if (playback.kind === 'unavailable') {
     return <figure className="exercise-detail-media exercise-detail-media-unavailable"><p role="status">Exercise demonstration unavailable.</p></figure>
   }
 

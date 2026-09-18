@@ -101,24 +101,26 @@ Personal workout and nutrition data stays on the device.
 
 ## Current status
 
-**Implemented**
+FitDex development follows a phased product architecture. For detailed architectural specifications, locked design decisions, and data derivations, see:
 
-- Exercise Dex: dataset version 4, 804 active built-ins, 804 verified demonstrations, and written exercise content
-- Routine building, active workout logging, autosave, rest timer, previous performance, and completed-workout history
-- Food / Nutrition V1 with local food memory, date navigation, totals, categories, and custom categories
-- Journal V1 with local-date navigation, completed-workout history, and four-meal Food history
-- Progress + Personal Records V1 with local period trends, derived training volume, nutrition averages, and tracking-aware all-time PRs
-- Home Dashboard V1 with real active/completed workout state, daily nutrition and activity, recent progress, and direct shortcuts
-- Required, editable, device-local Display Name with a personalized time-aware Home greeting and optimized priority loading for the selected Home avatar
-- Local-first XP, 100 Levels, nine Ranks, Plan Streak protection, and 52 Achievements
-- Portable `.fitdex` Backup & Restore V1 with validation, replace-not-merge semantics, and transactional IndexedDB restore
-- FitDex Field Guide, semantic interface audio, Home music controls, and Android-aware in-app back history
-- Theme-aware Spartan/Amazonian branding across the polished responsive header, browser favicon, PWA default, and Android launcher aliases; Android adaptive icons use family-specific dark backgrounds and safely framed crests
-- Dexie/IndexedDB persistence, PWA support, Cloudflare Workers Static Assets deployment, and four themes
+- [docs/PRODUCT_PHASES.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/PRODUCT_PHASES.md) — Comprehensive status, design specifications, and deferred scope across Phases 1–5.
+- [docs/FITDEX_UI_UX_STANDARD.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/FITDEX_UI_UX_STANDARD.md) — Canonical UI/UX design rules, responsive hierarchy, and theme contracts.
+
+**Phase Status Overview**
+
+- **Phase 1 (Home & Global Shell)**: **Complete / Locked** — AppShell, responsive header, 4 themes, bottom nav, centralized Android Back, Display Name, local audio.
+- **Phase 2 (Workout & Exercise Dex)**: **Complete / Locked** — Active workout logging, 804 built-in exercise Dex v4, anatomy cards, routines, Weekly Plan, compact picker hierarchy.
+- **Phase 3 (Food & Nutrition)**: **Complete / Locked** — Goal-First (3A) + Compact (3B) design, daily hub, recent/frequent suggestions, Quick Log, custom categories, target safety guards.
+- **Phase 4 (Progress & Analytics)**: **Complete / Locked** — Progress metrics, volume/training charts, all-time PRs, body measurements integration.
+- **Phase 5 (Journal & Activity Log)**: **Implemented / Physical QA Pending** — V3 Field Notes, read-only derived activity ledger, symmetric 2-dimension status, empty-meal suppression.
+- **Phase 6 (Exercise Dex Standalone Refinement)**: **Implemented / Physical QA Pending** — Locked V3 RPG Codex direction: selected avatar field archive hero, Index / Favorites modes, theme-family anatomy, compact result rows, reordered Exercise Record (Media → Metadata → Instructions), protected remote media & Phase 2 picker.
 
 **Planned / upcoming**
 
-- Body tracking and measurements
+- Phase 7 Settings
+- Phase 8 Secondary / supporting surfaces
+- Phase 9 Final cross-app consistency
+- Deferred: Body tracking & measurements (schema exists, tracking deferred outside Phase 1–9)
 - Broader real-device Android/iOS audio, navigation, file-flow, and responsive QA
 
 ## Screenshots

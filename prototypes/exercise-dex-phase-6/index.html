@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en" data-theme-family="spartans" data-brightness="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <title>FitDex Phase 6 — Exercise Dex Prototype</title>
+  <style>
+    :root {
+      --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-display: "Arial Narrow", "Roboto Condensed", Impact, ui-sans-serif, system-ui, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --bg: #f0e6d6; --app: #f4ebdd; --surface: #eae2d5; --raised: #f8efe2; --subtle: #ddd9ce;
+      --border: #979b92; --strong: #6f7771; --text: #2e3230; --muted: #656b67;
+      --primary: #1f8582; --primary-strong: #176864; --primary-text: #176864; --primary-muted: #d1ded9;
+      --warm: #b67e26; --xp: #bd862c; --success: #53794f; --danger: #a74343; --shadow: rgba(47,51,48,.16); --on-primary: #fff;
+      color: var(--text); background: var(--bg); font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+    }
+    :root[data-theme-family="spartans"][data-brightness="dark"] {
+      --bg: #121616; --app: #181d1d; --surface: #1f2524; --raised: #282f2e; --subtle: #303635;
+      --border: #606a66; --strong: #7e8984; --text: #e8e8e2; --muted: #a7aeaa;
+      --primary: #2e9895; --primary-strong: #14706f; --primary-text: #58b4af; --primary-muted: #213331;
+      --warm: #b77f2f; --xp: #cb9435; --success: #6f9565; --danger: #d66a66; --shadow: rgba(0,0,0,.24); --on-primary: #101716;
+    }
+    :root[data-theme-family="amazonians"][data-brightness="light"] {
+      --bg: #f0e4d4; --app: #f4e9db; --surface: #ebe1d8; --raised: #f7ede0; --subtle: #ddd0d1;
+      --border: #9f898e; --strong: #806c73; --text: #352b31; --muted: #746a6e;
+      --primary: #785178; --primary-strong: #654061; --primary-text: #654061; --primary-muted: #e2d3dc;
+      --warm: #b96f49; --xp: #c99032; --success: #647b58; --danger: #a44449; --shadow: rgba(62,45,54,.16); --on-primary: #fff;
+    }
+    :root[data-theme-family="amazonians"][data-brightness="dark"] {
+      --bg: #1f171e; --app: #281c27; --surface: #31232f; --raised: #3a2937; --subtle: #44323f;
+      --border: #79616f; --strong: #967887; --text: #eee5df; --muted: #b2a3aa;
+      --primary: #906390; --primary-strong: #71446f; --primary-text: #bd91b7; --primary-muted: #493246;
+      --warm: #bc7247; --xp: #d0a03f; --success: #7d936d; --danger: #d86f74; --shadow: rgba(0,0,0,.25); --on-primary: #21151f;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-width: 0; min-height: 100%; margin: 0; }
+    body { min-height: 100dvh; overflow-x: hidden; background: var(--bg); }
+    button, input, select { color: inherit; font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+    h1, h2, h3, p, strong, small, dd { overflow-wrap: anywhere; }
+    svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .harness { min-height: 100dvh; padding: 68px 8px 18px; }
+    .harness-tools { display: flex; width: min(100%, 900px); min-width: 0; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 auto 10px; }
+    .harness-tools label { display: inline-flex; min-height: 36px; align-items: center; gap: 5px; padding: 3px 7px; border: 1px solid var(--border); background: var(--raised); color: var(--muted); font-family: var(--font-mono); font-size: .58rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+    .harness-tools select { height: 28px; max-width: 156px; border: 0; background: var(--surface); font-size: .68rem; }
+    #stage { display: flex; min-width: 0; justify-content: center; }
+
+    .app-shell { position: relative; display: grid; width: min(100%, var(--preview-width, 100%)); max-width: 480px; height: clamp(620px, calc(100dvh - 132px), 880px); min-width: 0; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; border: 1px solid var(--strong); background: var(--app); box-shadow: 0 12px 38px var(--shadow), 3px 3px 0 var(--strong); container: dex-proto / inline-size; }
+    .topbar { display: flex; min-width: 0; min-height: calc(52px + env(safe-area-inset-top)); align-items: flex-end; gap: 9px; padding: calc(7px + env(safe-area-inset-top)) 12px 7px; border-bottom: 1px solid var(--strong); background: var(--raised); }
+    .wordmark { display: inline-flex; min-width: 0; min-height: 38px; align-items: center; gap: 7px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+    .wordmark img { display: block; width: 38px; height: 38px; object-fit: contain; }
+    .wordmark strong { font-family: var(--font-display); font-size: 1rem; letter-spacing: .05em; text-transform: uppercase; }
+    .settings, .icon-button, .back-button, .star-button { display: grid; width: 44px; min-width: 44px; height: 44px; place-items: center; padding: 0; border: 1px solid var(--border); background: var(--surface); color: var(--primary-text); cursor: pointer; }
+    .settings { margin-left: auto; }
+    .star-button { color: var(--muted); }
+    .star-button[aria-pressed="true"] { color: var(--xp); border-color: var(--xp); }
+    .screen-scroll { min-width: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+    .page { display: grid; min-width: 0; gap: 11px; padding: 14px clamp(9px, 3cqi, 14px) 28px; }
+    .eyebrow { margin: 0; color: var(--primary-text); font-family: var(--font-mono); font-size: .56rem; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }
+    .page-title { margin: 2px 0 3px; font-family: var(--font-display); font-size: clamp(1.7rem, 8.5cqi, 2.2rem); line-height: .98; letter-spacing: .01em; text-transform: uppercase; }
+    .lede { margin: 0; color: var(--muted); font-size: .68rem; line-height: 1.4; }
+    .page-head { display: flex; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 9px; }
+    .page-head > div { min-width: 0; }
+    .panel { position: relative; display: grid; min-width: 0; gap: 10px; padding: clamp(10px, 3cqi, 14px); border: 1px solid var(--border); background: var(--raised); box-shadow: 2px 2px 0 var(--shadow); }
+    .panel::before { position: absolute; top: -1px; left: 12px; width: 30px; height: 3px; background: var(--warm); content: ""; }
+    .section-head { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; }
+    .section-head h2, .section-head h3 { margin: 0; font-family: var(--font-display); font-size: .88rem; letter-spacing: .04em; text-transform: uppercase; }
+    .section-head small { color: var(--muted); font-size: .56rem; font-weight: 800; text-transform: uppercase; }
+    .action { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 6px; padding: 7px 10px; border: 1px solid var(--strong); background: var(--surface); font-size: .64rem; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: transform 140ms cubic-bezier(.23,1,.32,1), background-color 140ms ease; }
+    .action.primary { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
+    .action:active, .icon-button:active, .back-button:active, .star-button:active, .row-main:active, .row-nav:active, .nav-item:active, .category-card:active { transform: scale(.97); }
+
+    .search { display: grid; min-width: 0; min-height: 48px; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 0 11px; border: 2px solid var(--border); background: var(--subtle); color: var(--muted); }
+    .search:focus-within { border-color: var(--primary); }
+    .search input { width: 100%; min-width: 0; height: 44px; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); }
+    .search button { min-width: 40px; min-height: 38px; border: 0; background: transparent; color: var(--primary-text); font-size: .65rem; font-weight: 850; text-decoration: underline; cursor: pointer; }
+    .scope { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--border); }
+    .scope button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 6px; border: 0; background: var(--subtle); color: var(--muted); font-size: .68rem; font-weight: 850; cursor: pointer; }
+    .scope button + button { border-left: 1px solid var(--border); }
+    .scope button[aria-pressed="true"] { background: var(--primary-muted); color: var(--primary-text); box-shadow: inset 0 -3px 0 var(--primary); }
+    .scope svg { width: 16px; height: 16px; }
+    .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .category-card { position: relative; display: grid; min-width: 0; min-height: 118px; grid-template-columns: minmax(0, 1fr) 24px; grid-template-areas: "art nav" "copy nav"; align-items: center; gap: 3px 5px; padding: 8px; overflow: hidden; border: 1px solid var(--border); background: linear-gradient(145deg, var(--raised), var(--subtle)); color: var(--text); text-align: left; box-shadow: 2px 2px 0 var(--shadow); cursor: pointer; }
+    .category-card img { width: min(100%, 82px); height: 68px; grid-area: art; justify-self: center; object-fit: contain; image-rendering: pixelated; }
+    .category-card span { display: grid; min-width: 0; grid-area: copy; gap: 2px; }
+    .category-card strong { font-family: var(--font-display); font-size: .72rem; text-transform: uppercase; }
+    .category-card small { color: var(--muted); font-size: .54rem; }
+    .category-card svg { grid-area: nav; width: 17px; color: var(--primary-text); }
+    .category-card:hover { border-color: var(--primary); background: var(--primary-muted); }
+    .exercise-list { display: grid; min-width: 0; gap: 6px; }
+    .exercise-row { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) 44px 44px; align-items: center; gap: 3px; padding: 7px 7px 7px 10px; border: 1px solid var(--border); background: var(--surface); }
+    .row-main { display: flex; min-width: 0; min-height: 42px; align-items: center; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; }
+    .row-copy { display: grid; min-width: 0; gap: 3px; }
+    .row-copy strong { color: var(--text); font-size: .76rem; line-height: 1.22; }
+    .row-copy small { color: var(--muted); font-size: .58rem; line-height: 1.25; }
+    .row-star, .row-nav { display: grid; width: 44px; height: 44px; place-items: center; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; transition: transform 140ms cubic-bezier(.23,1,.32,1), color 140ms ease; }
+    .row-star[aria-pressed="true"] { color: var(--xp); }
+    .row-star[aria-pressed="true"] svg, .star-button[aria-pressed="true"] svg { fill: currentColor; }
+    .row-nav { color: var(--primary-text); }
+    .row-star svg, .row-nav svg { width: 18px; height: 18px; }
+    .row-star:hover { color: var(--xp); transform: scale(1.12); }
+    .row-nav:hover { transform: translateX(1px); }
+    .empty { min-height: 156px; place-items: center; align-content: center; text-align: center; }
+    .empty svg { width: 34px; height: 34px; color: var(--muted); }
+    .empty h2 { margin: 2px 0 0; font-family: var(--font-display); font-size: 1rem; text-transform: uppercase; }
+    .empty p { max-width: 31ch; margin: 0; color: var(--muted); font-size: .68rem; line-height: 1.45; }
+
+    .detail-head { display: grid; min-width: 0; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: start; gap: 8px; }
+    .detail-title { margin: 3px 0 4px; font-family: var(--font-display); font-size: clamp(1.5rem, 8cqi, 2.2rem); line-height: .93; text-transform: uppercase; }
+    .category-label { margin: 0; color: var(--muted); font-size: .6rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .media-frame { position: relative; display: grid; min-width: 0; min-height: 190px; overflow: hidden; place-items: center; border: 2px solid var(--border); background: #111; box-shadow: 3px 3px 0 var(--shadow); }
+    .media-frame video { display: block; width: 100%; max-height: 310px; aspect-ratio: 16 / 10; object-fit: contain; background: #111; }
+    .media-state { display: grid; min-height: 188px; place-items: center; align-content: center; gap: 8px; padding: 20px; color: #aaa; text-align: center; }
+    .media-state p { margin: 0; font-size: .7rem; font-weight: 800; }
+    .spinner { width: 26px; height: 26px; border: 3px solid #555; border-top-color: var(--primary); border-radius: 50%; animation: spin 700ms linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .instruction { display: grid; gap: 7px; padding: 13px; border: 1px solid var(--border); background: var(--subtle); }
+    .instruction h2 { margin: 0; color: var(--primary-text); font-family: var(--font-display); font-size: .82rem; letter-spacing: .07em; text-transform: uppercase; }
+    .instruction p { max-width: 62ch; margin: 0; font-size: .79rem; line-height: 1.58; }
+    .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border: 1px solid var(--border); }
+    .meta-grid div { min-width: 0; padding: 10px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface); }
+    .meta-grid div:nth-child(even) { border-right: 0; }
+    .meta-grid div:nth-last-child(-n + 2) { border-bottom: 0; }
+    .meta-grid dt { margin-bottom: 3px; color: var(--muted); font-size: .52rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .meta-grid dd { margin: 0; font-size: .69rem; font-weight: 750; line-height: 1.35; }
+    .detail-action { width: 100%; }
+
+    /* Discovery First: query and recent/favorites dominate. */
+    .v-discovery .discovery-hero { display: grid; gap: 10px; padding: 14px; border-left: 4px solid var(--primary); background: var(--raised); }
+    .v-discovery .quick-categories { display: flex; gap: 6px; overflow-x: auto; padding: 1px 1px 6px; scrollbar-width: thin; }
+    .v-discovery .quick-category { display: grid; min-width: 92px; min-height: 86px; place-items: center; gap: 2px; padding: 7px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; }
+    .v-discovery .quick-category img { width: 50px; height: 46px; object-fit: contain; image-rendering: pixelated; }
+    .v-discovery .quick-category strong { font-size: .58rem; text-transform: uppercase; }
+    .v-discovery .detail-quickfacts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+    .v-discovery .detail-quickfacts span { display: grid; gap: 2px; padding: 8px; border: 1px solid var(--border); background: var(--subtle); }
+    .v-discovery .detail-quickfacts small { color: var(--muted); font-size: .5rem; text-transform: uppercase; }
+    .v-discovery .detail-quickfacts strong { font-size: .65rem; }
+
+    /* Training Manual: anatomy and instruction structure dominate. */
+    .v-manual .manual-cover { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) 122px; align-items: center; gap: 8px; padding: 13px; border: 1px solid var(--strong); background: linear-gradient(145deg, var(--raised), var(--primary-muted)); }
+    .v-manual .manual-cover h1 { margin: 3px 0 5px; font-family: var(--font-display); font-size: clamp(1.55rem, 8cqi, 2rem); line-height: .96; text-transform: uppercase; }
+    .v-manual .manual-cover p:last-child { margin: 0; color: var(--muted); font-size: .65rem; line-height: 1.4; }
+    .v-manual .manual-cover img { width: 116px; height: 126px; object-fit: contain; image-rendering: pixelated; }
+    .v-manual .manual-index { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border); }
+    .v-manual .manual-index button { min-width: 0; min-height: 48px; padding: 6px 3px; border: 0; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface); font-size: .58rem; font-weight: 850; text-transform: uppercase; cursor: pointer; }
+    .v-manual .manual-index button:nth-child(3n) { border-right: 0; }
+    .v-manual .manual-index button:nth-last-child(-n + 3) { border-bottom: 0; }
+    .v-manual .manual-index button:hover { background: var(--primary-muted); color: var(--primary-text); }
+    .v-manual .manual-detail-grid { display: grid; min-width: 0; gap: 10px; }
+    .v-manual .instruction.primary-copy { border-left: 4px solid var(--primary); }
+    .v-manual .step-mark { display: inline-grid; width: 22px; height: 22px; place-items: center; margin-right: 5px; background: var(--primary); color: var(--on-primary); font-family: var(--font-mono); font-size: .58rem; }    /* RPG Codex: record identity and index framing dominate without fake attributes. */
+    .v-codex .codex-cover { position: relative; display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 12px; padding: 14px; overflow: hidden; border: 2px solid var(--strong); background: linear-gradient(135deg, color-mix(in srgb, var(--warm) 12%, var(--raised)), var(--raised)); box-shadow: inset 0 0 0 3px var(--surface), 3px 3px 0 var(--shadow); }
+    .v-codex .codex-cover::after { position: absolute; right: -28px; bottom: -38px; width: 120px; height: 120px; border: 1px solid var(--warm); opacity: .18; transform: rotate(45deg); content: ""; }
+    .v-codex .codex-avatar-frame { position: relative; display: grid; width: 88px; height: 108px; place-items: center; overflow: hidden; border: 2px solid var(--border); background: linear-gradient(145deg, var(--surface), var(--subtle)); box-shadow: 2px 2px 0 var(--shadow); }
+    .v-codex .codex-avatar-img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+    .v-codex .codex-cover h1 { margin: 3px 0; color: var(--warm); font-family: var(--font-display); font-size: clamp(1.55rem, 8cqi, 2rem); line-height: .96; text-transform: uppercase; }
+    .v-codex .codex-cover p:last-child { margin: 0; color: var(--muted); font-size: .63rem; line-height: 1.4; }
+    .v-codex .codex-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--border); }
+    .v-codex .codex-tabs button { min-height: 44px; border: 0; border-right: 1px solid var(--border); background: var(--subtle); color: var(--muted); font-size: .6rem; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+    .v-codex .codex-tabs button:last-child { border-right: 0; }
+    .v-codex .codex-tabs button[aria-pressed="true"] { color: var(--warm); box-shadow: inset 0 -3px 0 var(--warm); }
+    .v-codex .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .v-codex .category-card { min-height: 104px; grid-template-columns: 1fr; grid-template-areas: "art" "copy"; justify-items: center; text-align: center; }
+    .v-codex .category-card img { width: 68px; height: 58px; }
+    .v-codex .category-card svg { display: none; }
+    .v-codex .record-sheet { display: grid; gap: 10px; padding: 12px; border: 2px solid var(--strong); background: var(--raised); box-shadow: inset 4px 0 0 var(--warm), 3px 3px 0 var(--shadow); }
+    .v-codex .record-number { color: var(--warm); font-family: var(--font-mono); font-size: .56rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .v-codex .record-seal { display: inline-flex; align-items: center; gap: 5px; color: var(--primary-text); font-size: .56rem; font-weight: 900; text-transform: uppercase; }
+    .v-codex .record-seal::before { width: 8px; height: 8px; background: var(--primary); content: ""; transform: rotate(45deg); }
+
+    .app-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: calc(64px + env(safe-area-inset-bottom)); padding: 2px 4px env(safe-area-inset-bottom); border-top: 1px solid var(--strong); background: color-mix(in srgb, var(--app) 96%, transparent); }
+    .nav-item { position: relative; display: grid; min-width: 0; min-height: 60px; place-items: center; align-content: center; gap: 2px; padding: 6px 2px; border: 0; background: transparent; color: var(--muted); font-size: .55rem; cursor: pointer; }
+    .nav-item svg { width: 21px; height: 21px; }
+    .nav-item.is-active { color: var(--primary-text); }
+    .nav-item.is-active::before { position: absolute; top: 1px; left: 50%; width: 24px; height: 3px; background: var(--primary); content: ""; transform: translateX(-50%); }
+    .toast { position: absolute; right: 10px; bottom: 76px; left: 10px; z-index: 30; padding: 10px; border: 1px solid var(--success); background: var(--raised); color: var(--success); font-size: .7rem; font-weight: 800; animation: toast-in 180ms cubic-bezier(.23,1,.32,1); }
+    .chooser-backdrop { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: 14px; background: color-mix(in srgb, var(--bg) 82%, transparent); }
+    .chooser { display: grid; width: min(100%, 360px); gap: 10px; padding: 14px; border: 2px solid var(--strong); background: var(--raised); box-shadow: 4px 4px 0 var(--shadow); }
+    .chooser h2 { margin: 0; font-family: var(--font-display); font-size: 1.1rem; text-transform: uppercase; }
+    .chooser p { margin: 0; color: var(--muted); font-size: .68rem; line-height: 1.4; }
+    .routine-choice { display: grid; gap: 6px; }
+    .routine-choice button { display: grid; min-height: 48px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); background: var(--surface); text-align: left; cursor: pointer; }
+    .routine-choice span { display: grid; gap: 2px; }
+    .routine-choice strong { font-size: .72rem; }
+    .routine-choice small { color: var(--muted); font-size: .56rem; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+    @container dex-proto (max-width: 350px) {
+      .category-grid { grid-template-columns: 1fr; }
+      .v-codex .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .v-codex .codex-cover { grid-template-columns: 72px minmax(0, 1fr); gap: 8px; padding: 10px; }
+      .v-codex .codex-avatar-frame { width: 72px; height: 88px; }
+      .v-manual .manual-cover { grid-template-columns: minmax(0, 1fr) 96px; }
+      .v-manual .manual-cover img { width: 92px; height: 112px; }
+      .detail-title { font-size: clamp(1.35rem, 8cqi, 1.7rem); }
+      .meta-grid { grid-template-columns: 1fr; }
+      .meta-grid div, .meta-grid div:nth-child(even), .meta-grid div:nth-last-child(-n + 2) { border-right: 0; border-bottom: 1px solid var(--border); }
+      .meta-grid div:last-child { border-bottom: 0; }
+      .v-discovery .detail-quickfacts { grid-template-columns: 1fr; }
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .icon-button:hover, .back-button:hover, .star-button:hover, .action:hover { border-color: var(--primary); background: var(--primary-muted); }
+      .exercise-row:hover { border-color: var(--primary); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner, .toast { animation: none; }
+      .action, .icon-button, .back-button, .star-button, .row-star, .row-nav { transition: none; }
+    }
+
+    .proto-picker {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(10, 10, 10, 0.82);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        0 8px 24px rgba(0, 0, 0, 0.24),
+        0 2px 6px rgba(0, 0, 0, 0.12);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .proto-picker-highlight {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      will-change: transform;
+    }
+
+    /* The slide is enabled only after first paint (data-ready), so load doesn't animate. */
+    .proto-picker[data-ready] .proto-picker-highlight {
+      transition:
+        transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+        width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+    }
+
+    .proto-picker-item {
+      position: relative; /* sits above the highlight */
+      display: flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.55);
+      font: inherit;
+      cursor: pointer;
+      transition: color 150ms ease-out;
+    }
+
+    .proto-picker-item:hover {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .proto-picker-item:active {
+      transform: scale(0.97);
+    }
+
+    .proto-picker-item:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.4);
+      outline-offset: 2px;
+    }
+
+    .proto-picker-item[data-active] {
+      color: #fff;
+    }
+
+    .proto-picker-divider {
+      width: 1px;
+      height: 16px;
+      margin: 0 4px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .proto-picker-replay {
+      padding: 0 10px;
+      font-size: 14px;
+    }
+
+    .proto-picker[data-position="top"] {
+      bottom: auto;
+      top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="proto-picker" data-position="top" aria-label="Prototype variants">
+    <span class="proto-picker-highlight" aria-hidden="true"></span>
+    <button class="proto-picker-item" data-active aria-current="true">Discovery First</button>
+    <button class="proto-picker-item">Training Manual</button>
+    <button class="proto-picker-item">RPG Codex</button>
+  </nav>
+
+  <div class="harness">
+    <div class="harness-tools" aria-label="Prototype state controls">
+      <label>Theme
+        <select id="theme-control">
+          <option value="spartans:dark">Spartan Dark</option>
+          <option value="spartans:light">Spartan Light</option>
+          <option value="amazonians:dark">Amazonian Dark</option>
+          <option value="amazonians:light">Amazonian Light</option>
+        </select>
+      </label>
+      <label>Avatar
+        <select id="avatar-control">
+          <optgroup label="Spartans">
+            <option value="aster" selected>Aster</option>
+            <option value="leonidas">Leonidas</option>
+            <option value="brasidas">Brasidas</option>
+          </optgroup>
+          <optgroup label="Amazonians">
+            <option value="artemis">Artemis</option>
+            <option value="athena">Athena</option>
+            <option value="hippolyta">Hippolyta</option>
+          </optgroup>
+        </select>
+      </label>
+      <label>Width
+        <select id="width-control">
+          <option value="320px">320</option><option value="340px">340</option><option value="360px">360</option>
+          <option value="375px" selected>375</option><option value="390px">390</option><option value="412px">412</option>
+          <option value="430px">430</option><option value="480px">480</option>
+        </select>
+      </label>
+      <label>State
+        <select id="state-control">
+          <option value="landing">Landing</option>
+          <option value="search">Search results</option>
+          <option value="favourites">Favorites populated</option>
+          <option value="favourites-empty">Favorites empty</option>
+          <option value="no-results">No search results</option>
+          <option value="detail">Exercise detail</option>
+          <option value="media-loading">Media loading</option>
+          <option value="media-error">Media unavailable</option>
+        </select>
+      </label>
+    </div>
+    <main id="stage"></main>
+  </div>
+
+  <script>
+    const icons = {
+      search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+      star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.7 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.5 6.3-.9z"/></svg>',
+      chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
+      back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
+      settings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H3v-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3V3h4v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.6 1h.09v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>',
+      home: '<svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v11h14V10M9 21v-6h6v6"/></svg>',
+      dumbbell: '<svg viewBox="0 0 24 24"><path d="m6.5 6.5 11 11M21 21l-1-1M3 3l1 1M18 22l4-4M2 6l4-4M3 10l7-7M14 21l7-7"/></svg>',
+      food: '<svg viewBox="0 0 24 24"><path d="M3 2v7c0 2 1 3 3 3v10M9 2v20M3 6h6M15 2v9a3 3 0 0 0 6 0V2M18 2v20"/></svg>',
+      chart: '<svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>',
+      journal: '<svg viewBox="0 0 24 24"><path d="M5 3h13a2 2 0 0 1 2 2v16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M8 3v4M3 7h5M8 11h8M8 15h8"/></svg>',
+      offline: '<svg viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 8.5A7 7 0 0 1 19 10M5 10a10 10 0 0 1 1.5-1.5M8.5 15.5a5 5 0 0 1 7 0M12 20h.01"/></svg>'
+    };
+
+    const avatars = {
+      aster: { name: 'Aster', family: 'spartans', file: 'aster.png' },
+      leonidas: { name: 'Leonidas', family: 'spartans', file: 'leonidas.png' },
+      brasidas: { name: 'Brasidas', family: 'spartans', file: 'brasidas.png' },
+      artemis: { name: 'Artemis', family: 'amazonians', file: 'artemis.png' },
+      athena: { name: 'Athena', family: 'amazonians', file: 'athena.png' },
+      hippolyta: { name: 'Hippolyta', family: 'amazonians', file: 'hippolyta.png' }
+    };
+    let selectedAvatarId = 'aster';
+
+    function avatarPath() {
+      const avatar = avatars[selectedAvatarId] || avatars.aster;
+      return `/avatars/${avatar.family}/${avatar.file}`;
+    }
+
+    const categories = [
+      ['Chest', 99, 'chest'], ['Back', 100, 'back'], ['Shoulders', 107, 'shoulders'],
+      ['Legs', 190, 'legs'], ['Gluteal', 55, 'gluteal'], ['Biceps', 54, 'biceps'],
+      ['Triceps', 67, 'triceps'], ['Forearms', 29, 'forearms'], ['Abs', 104, 'abs']
+    ];
+    const exercises = [
+      { name: 'Alternate Renegade Row', category: 'Back', equipment: 'Dumbbell', tracking: 'Weight + Reps' },
+      { name: 'One-Arm Cable Row', category: 'Back', equipment: 'Cable', tracking: 'Weight + Reps' },
+      { name: 'Gorilla Row', category: 'Back', equipment: 'Dumbbell', tracking: 'Weight + Reps' },
+      { name: 'Pull-Up', category: 'Back', equipment: 'Pull-Up Bar', tracking: 'Bodyweight Reps' },
+      { name: 'Barbell Pullover', category: 'Chest', equipment: 'Barbell', tracking: 'Weight + Reps' },
+      { name: 'Dumbbell Rear Lunge', category: 'Gluteal', equipment: 'Dumbbell', tracking: 'Bodyweight Reps' },
+      { name: 'L-Sit', category: 'Abs', equipment: 'Other', tracking: 'Bodyweight Reps' },
+      { name: 'Seated Hammer Curl', category: 'Biceps', equipment: 'Dumbbell', tracking: 'Weight + Reps' }
+    ];
+    const favouriteNames = new Set(['Alternate Renegade Row', 'Pull-Up']);
+    let currentState = 'landing';
+    let priorState = 'landing';
+    let searchQuery = '';
+    let activeCategory = '';
+    let chooserOpen = false;
+    let toastTimer;
+
+    function assetPath(slug) {
+      const root = document.documentElement;
+      const family = root.dataset.themeFamily === 'amazonians' ? 'amazonian' : 'spartan';
+      return `/exercise-categories/${family}/${root.dataset.brightness}/${slug}.png`;
+    }
+    function logoPath() {
+      const family = document.documentElement.dataset.themeFamily === 'amazonians' ? 'amazonian' : 'spartan';
+      return `/branding/fitdex-icon-${family}.png`;
+    }
+    function shell(content, variantClass) {
+      return `<section class="app-shell ${variantClass}">
+        <header class="topbar">
+          <button class="wordmark" type="button" data-action="landing"><img src="${logoPath()}" alt=""><strong>FitDex</strong></button>
+          <button class="settings" type="button" data-action="notify" data-message="Settings remains outside this prototype." aria-label="Open settings">${icons.settings}</button>
+        </header>
+        <div class="screen-scroll"><div class="page">${content}</div></div>
+        <nav class="app-nav" aria-label="Primary navigation">
+          ${navItem(icons.home, 'Home')}${navItem(icons.dumbbell, 'Workout', true)}${navItem(icons.food, 'Food')}${navItem(icons.chart, 'Progress')}${navItem(icons.journal, 'Journal')}
+        </nav>
+        ${chooserOpen ? routineChooser() : ''}
+      </section>`;
+    }
+    function navItem(icon, label, active = false) { return `<button class="nav-item${active ? ' is-active' : ''}" type="button" data-action="notify" data-message="${label} navigation stays in production AppShell.">${icon}<span>${label}</span></button>`; }
+    function routineChooser() { return `<div class="chooser-backdrop"><section class="chooser" role="dialog" aria-modal="true" aria-labelledby="routine-chooser-title"><h2 id="routine-chooser-title">Add Alternate Renegade Row to</h2><p>Choose an existing routine. Production prevents duplicate exercise IDs.</p><div class="routine-choice"><button type="button" data-action="choose-routine"><span><strong>Upper Body</strong><small>6 exercises</small></span>${icons.chevron}</button><button type="button" data-action="choose-routine"><span><strong>Full Body A</strong><small>8 exercises</small></span>${icons.chevron}</button></div><button class="action" type="button" data-action="close-chooser">Cancel</button></section></div>`; }
+    function searchField(value = searchQuery) {
+      return `<label class="search"><span>${icons.search}</span><input type="search" value="${value}" placeholder="Search exercises…" aria-label="Search all exercises"><button type="button" data-action="clear-search" ${value ? '' : 'hidden'}>Clear</button></label>`;
+    }
+    function scope(active = 'all') {
+      return `<div class="scope" role="group" aria-label="Exercise library scope"><button type="button" data-action="scope-all" aria-pressed="${active === 'all'}">All</button><button type="button" data-action="scope-favourites" aria-pressed="${active === 'favourites'}">${icons.star} Favorites</button></div>`;
+    }
+    function categoryCard(category) {
+      const [name, count, slug] = category;
+      return `<button class="category-card" type="button" data-action="category" data-category="${name}"><img src="${assetPath(slug)}" alt=""><span><strong>${name}</strong><small>${count} exercises</small></span>${icons.chevron}</button>`;
+    }
+    function compactCategory(category) {
+      const [name, , slug] = category;
+      return `<button class="quick-category" type="button" data-action="category" data-category="${name}"><img src="${assetPath(slug)}" alt=""><strong>${name}</strong></button>`;
+    }
+    function rows(items, title = 'Search Results', countLabel = `${items.length} results`) {
+      return `<section class="exercise-list" aria-live="polite"><div class="section-head"><h2>${title}</h2><small>${countLabel}</small></div>${items.map(row).join('')}</section>`;
+    }
+    function row(exercise) {
+      const favourite = favouriteNames.has(exercise.name);
+      return `<article class="exercise-row"><button class="row-main" type="button" data-action="detail"><span class="row-copy"><strong>${exercise.name}</strong><small>${exercise.category} · ${exercise.equipment} · ${exercise.tracking}</small></span></button><button class="row-star" type="button" data-action="favorite" data-name="${exercise.name}" aria-label="${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites" aria-pressed="${favourite}">${icons.star}</button><button class="row-nav" type="button" data-action="detail" aria-label="View ${exercise.name} details">${icons.chevron}</button></article>`;
+    }
+    function empty(title, body, icon = icons.search) { return `<section class="panel empty">${icon}<h2>${title}</h2><p>${body}</p></section>`; }
+    function stateBody(variant) {
+      if (currentState === 'detail' || currentState === 'media-loading' || currentState === 'media-error') return detail(variant);
+      if (currentState === 'search') {
+        const query = searchQuery || 'one arm';
+        const normalized = query.toLowerCase().replace(/[^a-z0-9]+/g, '');
+        const found = activeCategory
+          ? exercises.filter((item) => item.category === activeCategory)
+          : exercises.filter((item) => `${item.name}${item.category}${item.equipment}`.toLowerCase().replace(/[^a-z0-9]+/g, '').includes(normalized));
+        const pageTitle = activeCategory || 'Search';
+        const sectionTitle = activeCategory ? `${activeCategory} Exercises` : 'Search Results';
+        return resultsPage(variant, found, activeCategory ? '' : query, pageTitle, sectionTitle);
+      }
+      if (currentState === 'no-results') return resultsPage(variant, [], searchQuery || 'dragon press', 'Search', 'Search Results');
+      if (currentState === 'favourites') {
+        const favList = exercises.filter((item) => favouriteNames.has(item.name));
+        const query = searchQuery.trim();
+        if (query) {
+          const normalized = query.toLowerCase().replace(/[^a-z0-9]+/g, '');
+          const filtered = favList.filter((item) => `${item.name}${item.category}${item.equipment}`.toLowerCase().replace(/[^a-z0-9]+/g, '').includes(normalized));
+          return resultsPage(variant, filtered, query, 'Favorites', 'Favorite Exercises', true);
+        }
+        return resultsPage(variant, favList, '', 'Favorites', 'Favorite Exercises', true);
+      }
+      if (currentState === 'favourites-empty') return resultsPage(variant, [], '', 'Favorites', 'Favorite Exercises', true);
+      return landing(variant);
+    }
+    function landing(variant) {
+      if (variant === 0) return `<section class="discovery-hero"><div><p class="eyebrow">Exercise Dex · 804 records</p><h1 class="page-title">Find your exercise</h1><p class="lede">Search by name, muscle, category, or equipment.</p></div>${searchField()}${scope()}</section><div class="section-head"><h2>Browse anatomy</h2><small>9 categories</small></div><div class="quick-categories">${categories.map(compactCategory).join('')}</div>`;
+      if (variant === 1) return `<section class="manual-cover"><div><p class="eyebrow">Training manual · 804 exercises</p><h1>Learn movement by movement</h1><p>Choose anatomy first. Each record pairs form guidance with practical setup, execution, and muscle context.</p></div><img src="${assetPath('back')}" alt=""></section><div class="manual-index">${categories.map(([name]) => `<button type="button" data-action="category" data-category="${name}">${name}</button>`).join('')}</div>${searchField()}${scope()}`;
+      return `<section class="codex-cover"><div class="codex-avatar-frame"><img src="${avatarPath()}" alt="" class="codex-avatar-img"></div><div><p class="eyebrow">FitDex field archive</p><h1>Exercise Codex</h1><p>Browse 804 verified records. Find a movement. Study its form. Carry it into training.</p></div></section>${searchField()}<div class="codex-tabs" role="group" aria-label="Codex scope"><button type="button" data-action="landing" aria-pressed="true">Index</button><button type="button" data-action="scope-favourites" aria-pressed="false">Favorites</button></div><div class="category-grid">${categories.map(categoryCard).join('')}</div>`;
+    }
+    function resultsPage(variant, items, query, pageTitle, sectionTitle, favoriteMode = false) {
+      const emptyBody = favoriteMode ? 'No favorite exercises yet. Tap ☆ on an exercise to add it to favorites.' : 'No exercises match this search and filter.';
+      const countLabel = favoriteMode
+        ? `${items.length} ${items.length === 1 ? 'favorite' : 'favorites'}`
+        : `${items.length} ${items.length === 1 ? 'result' : 'results'}`;
+      return `<header class="page-head"><button class="back-button" type="button" data-action="landing" aria-label="Back to Exercise Dex">${icons.back}</button><div><p class="eyebrow">Exercise Dex</p><h1 class="page-title">${pageTitle}</h1></div></header>${searchField(query)}${scope(favoriteMode ? 'favourites' : 'all')}${items.length ? rows(items, sectionTitle, countLabel) : empty(favoriteMode ? 'No favorites yet' : 'No exercises found', emptyBody, favoriteMode ? icons.star : icons.search)}`;
+    }
+    function media() {
+      if (currentState === 'media-loading') return `<figure class="media-frame"><div class="media-state"><span class="spinner" aria-hidden="true"></span><p role="status">Loading exercise media…</p></div></figure>`;
+      if (currentState === 'media-error') return `<figure class="media-frame"><div class="media-state">${icons.offline}<p role="status">Exercise media unavailable.</p></div></figure>`;
+      return `<figure class="media-frame"><video src="/exercises/alternate-renegade-row.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Alternate Renegade Row exercise media"></video></figure>`;
+    }
+    const howTo = 'Set up for Alternate Renegade Row with dumbbell. Set both sides evenly so you can alternate without changing your base. Lead with the elbows and draw the shoulder blades back, then extend the arms slowly without losing your torso position. Keep the working joints aligned and make the return phase as deliberate as the effort phase.';
+    const howHelp = 'Alternate Renegade Row develops Lats, Rear Delts, with support from Lower Traps, Middle Traps, Infraspinatus through a controlled horizontal pull pattern. It can support repeatable strength, muscular control, or work capacity appropriate to the chosen load and pace.';
+    function detailHeader(extra = '') {
+      const favorite = favouriteNames.has('Alternate Renegade Row');
+      return `<header class="detail-head"><button class="back-button" type="button" data-action="back" aria-label="Back to exercise list">${icons.back}</button><div><p class="eyebrow">Exercise record</p><h1 class="detail-title">Alternate Renegade Row</h1><p class="category-label">Back · ${extra || 'Horizontal Pull'}</p></div><button class="star-button" type="button" data-action="favorite" data-name="Alternate Renegade Row" aria-label="${favorite ? 'Remove Alternate Renegade Row from' : 'Add Alternate Renegade Row to'} favorites" aria-pressed="${favorite}">${icons.star}</button></header>`;
+    }
+    function metadata() {
+      return `<dl class="meta-grid"><div><dt>Primary muscle</dt><dd>Lats, Rear Delts</dd></div><div><dt>Secondary muscles</dt><dd>Lower Traps, Middle Traps, Infraspinatus, Teres Minor, Teres Major</dd></div><div><dt>Region</dt><dd>Back</dd></div><div><dt>Equipment</dt><dd>Dumbbell</dd></div><div><dt>Tracking method</dt><dd>Weight + Reps</dd></div><div><dt>Movement pattern</dt><dd>Horizontal Pull</dd></div></dl>`;
+    }
+    function detail(variant) {
+      if (variant === 0) return `${detailHeader()}${media()}<div class="detail-quickfacts"><span><small>Equipment</small><strong>Dumbbell</strong></span><span><small>Primary</small><strong>Lats · Rear Delts</strong></span><span><small>Track</small><strong>Weight + Reps</strong></span></div><section class="instruction"><h2>How to perform</h2><p>${howTo}</p></section><button class="action primary detail-action" type="button" data-action="add-routine">Add to routine</button><section class="instruction"><h2>How it helps</h2><p>${howHelp}</p></section>${metadata()}`;
+      if (variant === 1) return `${detailHeader('Training Manual')}${media()}<div class="manual-detail-grid"><section class="instruction primary-copy"><h2><span class="step-mark">1</span>How to perform</h2><p>${howTo}</p></section><section class="instruction"><h2><span class="step-mark">2</span>How it helps</h2><p>${howHelp}</p></section></div>${metadata()}<button class="action primary detail-action" type="button" data-action="add-routine">Add to routine</button>`;
+      return `<article class="record-sheet"><span class="record-number">Archive record · Back</span>${detailHeader('Codex Entry')}${media()}<span class="record-seal">Verified technique</span>${metadata()}<section class="instruction"><h2>How to perform</h2><p>${howTo}</p></section><section class="instruction"><h2>How it helps</h2><p>${howHelp}</p></section><button class="action primary detail-action" type="button" data-action="add-routine">Add to routine</button></article>`;
+    }
+    function renderVariant(index) {
+      const classes = ['v-discovery', 'v-manual', 'v-codex'];
+      return shell(stateBody(index), classes[index]);
+    }
+
+    const variants = [() => renderVariant(0), () => renderVariant(1), () => renderVariant(2)];
+    const stage = document.getElementById('stage');
+    const picker = document.querySelector('.proto-picker');
+    const highlight = picker.querySelector('.proto-picker-highlight');
+    const items = [...picker.querySelectorAll('.proto-picker-item:not(.proto-picker-replay)')];
+    let current = 0;
+
+    function moveHighlight() {
+      const el = items[current];
+      highlight.style.width = el.offsetWidth + 'px';
+      highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+    }
+
+    function mount(i) {
+      stage.innerHTML = '';
+      // Clear first, render next frame, so entrance animations re-run.
+      requestAnimationFrame(() => { stage.innerHTML = variants[i](); });
+    }
+
+    function setActive(i) {
+      if (i < 0 || i >= variants.length) return;
+      current = i;
+      items.forEach((el, j) => {
+        el.toggleAttribute('data-active', j === i);
+        if (j === i) el.setAttribute('aria-current', 'true');
+        else el.removeAttribute('aria-current');
+      });
+      moveHighlight();
+      const url = new URL(location);
+      url.searchParams.set('v', i + 1);
+      history.replaceState(null, '', url);
+      mount(i);
+    }
+
+    items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+    window.addEventListener('resize', moveHighlight);
+
+    document.addEventListener('keydown', (e) => {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= variants.length) setActive(num - 1);
+      else if (e.key === 'ArrowRight') setActive((current + 1) % variants.length);
+      else if (e.key === 'ArrowLeft') setActive((current - 1 + variants.length) % variants.length);
+    });
+
+    const requestedVariant = parseInt(new URLSearchParams(location.search).get('v'), 10) || 1;
+    setActive(requestedVariant >= 1 && requestedVariant <= variants.length ? requestedVariant - 1 : 0);
+    // Enable the slide only after first paint, so load doesn't animate.
+    requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+
+    document.getElementById('theme-control').addEventListener('change', (event) => {
+      const [family, brightness] = event.target.value.split(':');
+      document.documentElement.dataset.themeFamily = family;
+      document.documentElement.dataset.brightness = brightness;
+      const curr = avatars[selectedAvatarId];
+      if (curr && curr.family !== family) {
+        selectedAvatarId = family === 'amazonians' ? 'artemis' : 'aster';
+        const avatarCtrl = document.getElementById('avatar-control');
+        if (avatarCtrl) avatarCtrl.value = selectedAvatarId;
+      }
+      mount(current);
+    });
+    document.getElementById('avatar-control')?.addEventListener('change', (event) => {
+      selectedAvatarId = event.target.value;
+      mount(current);
+    });
+    document.getElementById('width-control').addEventListener('change', (event) => {
+      document.documentElement.style.setProperty('--preview-width', event.target.value);
+    });
+    document.getElementById('state-control').addEventListener('change', (event) => {
+      currentState = event.target.value;
+      activeCategory = '';
+      if (currentState === 'search') searchQuery = 'one arm';
+      else if (currentState === 'no-results') searchQuery = 'dragon press';
+      else if (currentState === 'landing') searchQuery = '';
+      if (!currentState.startsWith('detail') && !currentState.startsWith('media')) priorState = currentState;
+      mount(current);
+    });
+    stage.addEventListener('input', (event) => {
+      if (!event.target.matches('input[type="search"]')) return;
+      searchQuery = event.target.value;
+      activeCategory = '';
+      if (currentState === 'favourites' || currentState === 'favourites-empty') {
+        mount(current);
+      } else {
+        priorState = currentState;
+        currentState = searchQuery.trim() ? (searchQuery.toLowerCase().includes('dragon') ? 'no-results' : 'search') : 'landing';
+        document.getElementById('state-control').value = currentState;
+        mount(current);
+      }
+      requestAnimationFrame(() => {
+        const input = stage.querySelector('input[type="search"]');
+        input?.focus();
+        input?.setSelectionRange(searchQuery.length, searchQuery.length);
+      });
+    });
+    stage.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      const action = button.dataset.action;
+      if (action === 'detail') { priorState = currentState; currentState = 'detail'; }
+      else if (action === 'back') currentState = priorState || 'landing';
+      else if (action === 'landing' || action === 'scope-all') { currentState = 'landing'; searchQuery = ''; activeCategory = ''; chooserOpen = false; }
+      else if (action === 'clear-search') {
+        searchQuery = '';
+        if (currentState !== 'favourites' && currentState !== 'favourites-empty') {
+          currentState = 'landing';
+          activeCategory = '';
+        }
+        chooserOpen = false;
+      }
+      else if (action === 'category') { priorState = 'landing'; activeCategory = button.dataset.category; searchQuery = ''; currentState = 'search'; }
+      else if (action === 'scope-favourites') { priorState = 'landing'; searchQuery = ''; activeCategory = ''; currentState = favouriteNames.size ? 'favourites' : 'favourites-empty'; }
+      else if (action === 'favorite') {
+        const name = button.dataset.name;
+        if (favouriteNames.has(name)) favouriteNames.delete(name); else favouriteNames.add(name);
+        if (currentState === 'favourites' && !favouriteNames.size) currentState = 'favourites-empty';
+      } else if (action === 'add-routine') {
+        chooserOpen = true; mount(current); return;
+      } else if (action === 'close-chooser') {
+        chooserOpen = false; mount(current); return;
+      } else if (action === 'choose-routine') {
+        chooserOpen = false;
+        mount(current);
+        requestAnimationFrame(() => showToast('Alternate Renegade Row added.')); return;
+      } else if (action === 'notify') {
+        showToast(button.dataset.message); return;
+      }
+      document.getElementById('state-control').value = currentState;
+      mount(current);
+    });
+    function showToast(message) {
+        clearTimeout(toastTimer);
+        stage.querySelector('.toast')?.remove();
+        const toast = document.createElement('div'); toast.className = 'toast'; toast.setAttribute('role', 'status'); toast.textContent = message;
+        stage.querySelector('.app-shell')?.append(toast); toastTimer = setTimeout(() => toast.remove(), 2200);
+    }
+  </script>
+</body>
+</html>

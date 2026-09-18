@@ -213,7 +213,16 @@ Completed-workout snapshots preserve the routine details and exercise identities
 
 Exercise Dex is one universal library for everyone. There is no male/female classification, beginner/pro split, or duplication by user type. It is a Workout sub-view; the five primary navigation destinations remain unchanged.
 
-Standalone Exercise Dex provides All/Favorites scope plus row and detail star controls. Favorites are local stable exercise IDs stored in the existing `exercisePreferences` records (`favourite: boolean`), preserving notes/tags and leaving Settings untouched; unknown or retired IDs are ignored safely when resolving the current catalog. Favorites search reuses the normalized catalog search. Contextual routine/workout pickers intentionally omit favorites and instead show only their target-specific Add/Added state. This adds no store or migration and keeps Dexie at version 6.
+Standalone Exercise Dex provides All/Favorites scope plus row and detail star controls. Favorites are local stable exercise IDs stored in the existing `exercisePreferences` records (`favourite: boolean`), preserving notes/tags and leaving Settings untouched; unknown or retired IDs are ignored safely when resolving the current catalog. Favorites search reuses the normalized catalog search. Contextual routine/workout pickers intentionally omit favorites and instead show only their target-specific Add/Added state. This adds no store or migration and keeps Dexie at version 7.
+
+### Phase 6 Locked Design: V3 RPG Codex (Implemented — Physical QA Pending)
+The standalone Exercise Dex implements the locked **V3 RPG Codex** visual identity:
+- **Field Archive Hero**: Features the active selected avatar portrait (`AvatarPortrait` via `useAvatar()`) alongside the "FITDEX FIELD ARCHIVE / EXERCISE CODEX" identity.
+- **Search & Filter IA**: Permanent always-visible search input with dedicated `Index` and `Favorites` view modes. No redundant Search tab.
+- **Anatomy & Categories**: 9 muscle categories driven by Theme Family (`Spartan` → Male anatomy, `Amazonian` → Female anatomy).
+- **Result Density**: Preserves the approved Phase 2 compact exercise result row hierarchy.
+- **Exercise Record Ordering**: Structured as Header → Remote Media frame → Exercise Metadata/Facts card (`Primary Muscle`, `Secondary Muscles`, `Region`, `Equipment`, `Tracking Method`, `Movement Pattern`) → How to Perform → How It Helps (when backed by real catalog data) → Add to Routine action.
+- **Strict Protection**: Phase 2 Workout Exercise Picker, remote media streaming architecture, and IndexedDB schema remain strictly untouched.
 
 The current SmartWorkout-derived built-in catalog is dataset version 4 with **804 active canonical exercises** and 805 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
 
@@ -438,13 +447,21 @@ Nutrition averages are calories and protein divided by days containing at least 
 
 ## 23. Journal and history
 
-Journal V1 is implemented as a derived, read-oriented daily history view. It queries completed `Workout` rows by the selected local completion day and reads `FoodLogEntry` rows by their indexed `YYYY-MM-DD` date; it does not create Journal copies or use the retained legacy `journalRecords` table. Dexie remains schema version 6.
+Journal is a derived, read-only daily activity log querying completed `Workout` records by local completion date and `FoodLogEntry` records by local `YYYY-MM-DD` date. It owns no separate write flow, creates no Journal records, and leaves the legacy `journalRecords` table dormant in schema version 7 for `.fitdex` backup compatibility.
 
-The page provides previous/next local-calendar-day navigation, a `Today` badge only for the actual current local date, and daily summaries for completed-session count, persisted workout duration, calories, and protein. Multiple completed workouts on one day are supported. Workout cards use the persisted session name, duration, and workout-exercise snapshot count, and `View Workout` reuses the existing completed-workout detail component.
+The page provides previous/next local-day navigation, a `Today` badge only for the current local date, and daily summaries for completed-session count, persisted workout duration, calories, and protein. Multiple completed workouts on one day are supported. `View Workout` opens the read-only completed-workout detail component, which includes saved workout session notes and an option to permanently delete the session (triggering stat/PR recalculation). Food rows remain read-only inside Journal; food editing and logging remain in Food.
 
-Food history is rendered in the fixed Breakfast, Lunch, Supper, Dinner order. Every meal remains visible, including subdued `No entries` states, and non-empty meals show food-name snapshots plus calorie/protein totals calculated from `FoodLogEntry` snapshot values. Deleted custom-category entries remain readable as Uncategorized without resolving the deleted category record. Food rows are read-only in Journal V1 because Food currently has no app-level route to a specific entry; editing remains in Food.
+### Phase 5 Locked Design: V3 Field Notes (Implemented — Physical QA Pending)
+The finalized Phase 5 design direction is **V3 Field Notes**, replacing initial static meal cards with a compact tactical activity ledger:
+- **Symmetric Status Reporting**: Daily status pill must always report both dimensions:
+  - Workout: `0: No workout logged` / `1: 1 workout logged` / `N: N workouts logged`
+  - Food: `0: No food logged` / `1: 1 food item logged` / `N: N food items logged`
+- **Empty-Meal Suppression**: If `foodItemCount === 0`, all four meal rows are completely suppressed from the activity body. Do not render empty Breakfast/Lunch/Supper/Dinner chrome.
+- **Activity Ledger Structure**: Only genuine activity renders (workout rows and populated meal rows; single neutral empty state if no activity).
+- **Row Architecture (`icon | content | action`)**: Title and metadata must never run together on one line. Workout rows feature the Lucide `Dumbbell` icon and a navigation chevron (`›`) to detail. Meal rows feature meal artwork and a disclosure chevron (`˅` / `˄`) revealing nested food items.
+- **Deferred Scope**: Manual notes, mood/reflection, tags, favorites, pins, attachments, archive search, calendar picker, inline food editing, and AI coaching remain future scope.
 
-An entirely empty day shows honest zero summaries and an explicit no-activity state; food-only and workout-only days render their available source normally. The page uses existing theme tokens, panels, Food category/meal icon renderers, semantic controls, and responsive layouts. Manual notes, mood, photos, charts, measurements, PRs, XP, streaks, and derived day-state classifications remain future scope.
+For authoritative specifications across all phases, see `docs/PRODUCT_PHASES.md` and `docs/FITDEX_UI_UX_STANDARD.md`.
 
 ## 24. Tutorial and onboarding
 
@@ -555,10 +572,11 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 
 Likely next work:
 
-1. Final PWA and real-device visual/device QA
-2. Final rank and achievement artwork using the documented asset contract
-3. Real-device and release-candidate QA
-4. A future decision about separate exercise-media hosting and retired no-media exercises
+1. Physical-phone visual QA for Phase 5 Journal V3 Field Notes implementation (see `docs/PRODUCT_PHASES.md`)
+2. Final PWA and real-device visual/device QA
+3. Final rank and achievement artwork using the documented asset contract
+4. Real-device and release-candidate QA
+5. A future decision about separate exercise-media hosting and retired no-media exercises
 
 This list is direction, not completed work.
 

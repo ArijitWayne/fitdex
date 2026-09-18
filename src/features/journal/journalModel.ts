@@ -36,3 +36,15 @@ export function journalMinutes(seconds: number) {
 export function formatJournalNumber(value: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value)
 }
+
+export function formatWorkoutStatus(count: number): string {
+  if (count === 0) return 'No workout logged'
+  if (count === 1) return '1 workout logged'
+  return `${count} workouts logged`
+}
+
+export function formatFoodStatus(count: number): string {
+  if (count === 0) return 'No food logged'
+  if (count === 1) return '1 food item logged'
+  return `${count} food items logged`
+}
