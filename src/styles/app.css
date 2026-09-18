@@ -1777,6 +1777,36 @@ button.session-hub-link {
 .personal-record-card > p { margin: 0; font-size: .72rem; }
 .progress-records-empty { min-height: 200px; display: grid; place-items: center; align-content: center; text-align: center; }
 
+/* Phase 4 Progress V3: character sheet hierarchy, scoped to Progress only. */
+.progress-page .progress-view-tabs button[aria-selected='true'] { border-color: var(--color-primary); background: var(--color-primary-muted); color: var(--color-primary-text); }
+.progress-character-hero { display: grid; min-width: 0; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 11px; border: 2px solid var(--color-xp); background: linear-gradient(145deg, color-mix(in srgb, var(--color-xp) 12%, var(--color-surface-raised)), var(--color-surface-raised)); }
+.progress-character-hero > .gamification-badge { width: 70px; height: 76px; }
+.progress-character-copy { display: grid; min-width: 0; gap: 4px; }
+.progress-character-copy p, .progress-character-copy h2, .progress-character-copy small { margin: 0; }
+.progress-character-copy h2 { overflow-wrap: anywhere; color: var(--color-xp); font-family: var(--font-display); font-size: clamp(1.25rem, 6vw, 1.75rem); text-transform: uppercase; }
+.progress-character-copy > p:not(.eyebrow), .progress-character-copy small { color: var(--color-text-muted); font-size: .68rem; }
+.progress-character-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.progress-character-actions .secondary-button { min-width: 0; min-height: 44px; padding-inline: 7px; font-size: .68rem; }
+.progress-attributes { gap: 10px; }
+.progress-attribute-list { display: grid; border: 1px solid var(--color-border); }
+.progress-attribute { display: grid; min-width: 0; grid-template-columns: 29px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 9px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-subtle); }
+.progress-attribute:last-child { border-bottom: 0; }
+.progress-attribute > b { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid var(--color-border); color: var(--color-primary-text); font-family: var(--font-mono); font-size: .58rem; }
+.progress-attribute > span { display: grid; min-width: 0; gap: 2px; }
+.progress-attribute strong { font-size: .69rem; text-transform: uppercase; }
+.progress-attribute small { color: var(--color-text-muted); font-size: .59rem; }
+.progress-attribute em { max-width: 10ch; overflow-wrap: anywhere; color: var(--color-text); font-family: var(--font-display); font-size: .9rem; font-style: normal; text-align: right; }
+.progress-evidence { gap: 10px; }
+.progress-trend-switch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.progress-trend-switch button { min-width: 0; min-height: 42px; padding: 6px 4px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); color: var(--color-text-muted); font-size: .62rem; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+.progress-trend-switch button[aria-pressed='true'] { border-color: var(--color-primary); background: var(--color-primary-muted); color: var(--color-primary-text); box-shadow: 2px 2px 0 var(--color-primary); }
+.progress-evidence .progress-chart { height: 150px; }
+.progress-pr-cta { display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: space-between; gap: 9px; padding: 9px 12px; border: 1px solid var(--color-border-strong); background: var(--color-surface-subtle); color: var(--color-text); font-size: .68rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; }
+.progress-pr-cta > span { display: inline-flex; min-width: 0; align-items: center; gap: 8px; }
+.progress-pr-cta svg:first-child { color: var(--color-xp); }
+.progress-pr-cta > svg:last-child { color: var(--color-text-muted); }
+.progress-pr-cta:active, .progress-character-actions button:active, .progress-trend-switch button:active { transform: scale(.97); }
+
 @media (min-width: 700px) {
   .progress-metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .progress-metric { grid-template-columns: 1fr; align-content: center; }
