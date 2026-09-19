@@ -625,7 +625,39 @@ On activation and every startup/resume reconciliation, FitDex materializes missi
 
 A matching routine-ID completion or any completion on a generic Workout Day increments Plan Streak. Rest Day, No Plan, Freeze, and Travel/Sickness Pause preserve but do not increment it. A wrong-routine or missed training obligation automatically consumes one available Freeze; with no Freeze, current streak resets to zero. Freeze history is durable. Balance starts at 2, has no cap, and earns +1 at every 15-successful-planned-training-day milestone. Each newly earned milestone is idempotent and appears in the grouped FitDex reward notification with the updated balance. Frozen days add no successful day, Workout XP, quest completion, or consistency progress.
 
-Travel/Sickness Pauses are 1–7 inclusive local days, may start today or in the future, and are limited to two uses in a rolling 12-month window rather than a calendar year. The Weekly Plan remains underneath. Paused dates preserve but do not increment streak and consume no Freeze. Valid workouts completed after gamification activation still earn their normal idempotent workout/PR XP; nutrition-target and full-day nutrition XP remain suppressed for paused dates. Core correctness never depends on midnight execution or a server.
+### Home Consistency Rail (3-Cell Tactical Console)
+
+The mobile Home dashboard features a dedicated 3-cell tactical console rail positioned directly below the XP bar and above the Active Command card:
+- **Footprint & Geometry**: Fixed 48–52px compact height (`height: 48px`, grid `1.25fr 1fr 1fr 20px`), solid 1px border (`--color-border`), 3px primary accent left border (`--color-primary`), and tactile active press state (`scale(0.985)`).
+- **Cell Hierarchy**:
+  - **Cell 1 (Primary)**: Current Plan Streak (`19 DAYS` / `PLAN STREAK`), tinted with 8% primary color-mix, dominant typography (`--font-mono`, weight 900, `--color-primary-text`).
+  - **Cell 2 (Secondary)**: Available Freezes (`❄ 2` / `FREEZES`), featuring a monochrome vector SVG snowflake glyph with `stroke="currentColor"` inheriting `--color-primary-text`. Zero hardcoded blue or teal hex values; adapts natively across Spartan and Amazonian theme families.
+  - **Cell 3 (Tertiary)**: Best Plan Streak (`19 DAYS` / `BEST`), muted secondary styling (`--color-text-muted`, weight 750).
+  - **Trailing Indicator**: Compact chevron `›` in `--color-primary-text`.
+- **Mobile Access & Navigation**: The entire rail is an accessible interactive control (`type="button"`, ARIA live label) that opens `StreakDetailView` on mobile using standard `select` SFX and centralized back navigation.
+
+### Consistency & Protection Detail View (StreakDetailView / Consistency Deck)
+
+The Consistency Deck matches the approved tactical console prototype structure and omits the redundant "THIS WEEK" Mon–Sun schedule grid (which belongs authoritatively in Workout Hub):
+- **Compact Header**: Left-aligned `‹ Back to Home` button paired in a single row with right-aligned `CONSISTENCY DECK` header and divider border.
+- **Current Plan Streak Hero**: Centered tactical hero card with prominent numerical value, uppercase `CURRENT PLAN STREAK` eyebrow, and `BEST STREAK · {N} DAYS` secondary meta.
+- **Freeze Protection & Scalability**:
+  - **Scalable Representation**: Freeze balance is uncapped; the UI uses a scalable numeric format (`❄ {N} AVAILABLE`), never generating N individual cards/tokens per freeze. Scales cleanly from 0 to 25+ Freezes.
+  - **Automatic Consumption**: Clearly explains: *"Freezes are applied automatically when a planned workout day is missed. Balance is unlimited and never expires."* There is strictly no manual "Use Freeze" button.
+- **Next Freeze Progress**:
+  - Distinct bordered module with real-time derived progress toward the next Freeze milestone (`{count % 15} / 15 successful planned training days toward next Freeze`).
+  - Explains: *"+1 Freeze is earned every 15 successful planned training days."*
+- **Travel / Sickness Pause**:
+  - Direct mobile access via `PLAN A PAUSE ›` button opening the Android-compatible date-selection dialog.
+  - Supported reasons: Travel, Sickness (1–7 consecutive days).
+  - Date picker triggers native calendar via direct click/focus `showPicker()` handlers with minimum 48px touch targets and constrained date validation (`min={today}`, `min={startDate}`, `max={startDate + 6 days}`).
+  - Enforces the 2 uses per rolling 12-month window constraint. Past dates, >7-day durations, and overlapping pauses are rejected.
+  - Surfaces active pause status banner (`TRAVEL PAUSE ACTIVE` / `SICKNESS PAUSE ACTIVE`) with start/end date range. Pauses remain immutable after creation (no edit/cancel controls in V1).
+- **Weekly Plan Protection**:
+  - Distinct bordered module accurately communicating the rolling 12-month rule: *"1 material Weekly Plan change per rolling 12 months is protected. Later material changes require confirmation and reset the current Plan Streak."*
+  - Shows `✓ 1 PROTECTED CHANGE AVAILABLE` or `PROTECTED CHANGE USED` with next available date. Never claims a "weekly" allowance.
+
+### Weekly Plan and Plan Change Protections
 
 Weekly Plan is saved as one commitment. Initial setup is free. The first material structural change in a rolling 12-month period records a protected change and retains streak; later material changes require an explicit warning and record a current-streak reset. Changing a day type, routine identity, adding/removing training days, or clearing the plan is material. Routine rename/content/order/set/note edits are not. Deleting a scheduled routine warns and passes through the same protected-change/reset flow. A streak reset never touches XP, Level, Rank, achievements, workout/PR/Food history, or historical plan snapshots.
 
@@ -669,13 +701,13 @@ Settings contains no automatic-backup placeholder in V1. There is no scheduler, 
 
 FitDex has a first-party Capacitor Android shell using Capacitor 8.5.0. Its permanent identity is `com.fitdex.app` / `FitDex`, and `capacitor.config.ts` packages the Vite `dist` output with no development-server URL. Android treats this as a different application from pre-release builds created under `com.arijitbhaduri.fitdex`; no package-ID data migration is required during pre-release development. Browser and installed-PWA behavior remains supported. Workbox registration is manual and limited to non-native platforms: the browser still receives the service worker and offline app shell, while Android loads the packaged bundle without a browser service-worker cache layer.
 
-The Android module uses the generated baseline of min SDK 24, target/compile SDK 36, version code 2, and `versionName` dynamically derived from root `package.json` (version 1.0.0). The application does not lock orientation. It uses the official Capacitor App plugin for system Back, plus Filesystem and File Transfer for selective exercise-media downloads; it does not add StatusBar, Splash Screen, Network, Share, notification, or reminder plugins and relies on existing CSS safe-area handling. Android 8+ adaptive launcher icons reuse the approved FitDex PWA mark as an Android vector; the standard Capacitor splash remains deliberately minimal.
+The Android module uses the generated baseline of min SDK 24, target/compile SDK 36, version code 2, and `versionName` dynamically derived from root `package.json` (version 1.0.0). The application does not lock orientation. It uses the official Capacitor App plugin for system Back, plus Filesystem and File Transfer for selective exercise-media downloads and native backup exports; it does not add StatusBar, Splash Screen, Network, Share, notification, or reminder plugins and relies on existing CSS safe-area handling. Android 8+ adaptive launcher icons reuse the approved FitDex PWA mark as an Android vector; the standard Capacitor splash remains deliberately minimal.
 
 The WebView continues to use browser-compatible IndexedDB/Dexie and local storage, so authoritative FitDex records remain local to that installation. Android OS auto backup/device-transfer backup is disabled with `android:allowBackup="false"`; `.fitdex` export/import is the explicit portable path. Normal Android updates are expected to retain app data, while uninstalling the app removes its local WebView storage unless the user has exported it first.
 
 To keep Android APKs practical, `npm run android:sync` builds the normal browser/PWA `dist`, then runs `prepare:android-dist` before Capacitor copies assets. That build-only step removes only `.mp4` files below `dist/exercises`; it never changes `public/exercises`, exercise metadata, instructions, category art, or other non-video assets. The normal `npm run build` continues to include the local demos for browser/PWA use, and Workbox continues not to precache MP4s. Android resolves a demonstration from a verified private selective download, then a configured remote media base URL, then the neutral “Exercise demonstration unavailable.” state. All exercise detail content remains usable, and the original source files remain available for media-host provisioning.
 
-`.fitdex` restore uses the existing file input, which should use the Android WebView/system document picker but still needs real-device verification. Backup export currently uses the browser Blob/download-anchor flow; a WebView may not offer a predictable user-visible save location. Until a future deliberate Filesystem/Share integration is approved, users should verify that an exported file is accessible before relying on it. No cloud, device-transfer, or automatic backup claim is made. `navigator.onLine` remains the existing connectivity signal; no native network plugin was introduced.
+`.fitdex` restore uses the system document picker with Android `*/*` MIME compatibility. Backup export uses a platform-aware export engine: Web/PWA triggers direct browser `.fitdex` downloads via Object URL and anchor clicks, while Android native uses `@capacitor/filesystem` to write the `.fitdex` file directly into user-accessible `Documents/FitDex/<filename>` (`Directory.Documents`). The resulting backup is immediately visible and manageable in Android Files and can be re-imported anytime. No cloud, device-transfer, or automatic backup claim is made. `navigator.onLine` remains the existing connectivity signal; no native network plugin was introduced.
 
 Use `npm run android:sync` to build the web bundle and copy it into Android, and `npm run android:build` for a debug APK once Android Studio/SDK and a compatible JDK are installed. This repository's environment did not have a usable JDK, Android SDK, or Android Studio, so Gradle assembly requires local developer tooling. Future Android work should test persistence across force-close/reopen, the implemented system-back stack on physical devices, orientation/safe areas, offline launch after installation, file import/export behavior, upgrade retention, and notification delivery only when notifications are explicitly implemented.
 

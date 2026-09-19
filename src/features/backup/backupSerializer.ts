@@ -1,6 +1,17 @@
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import { FITDEX_BACKUP_MIME_TYPE, type BackupSummary, type FitDexBackup } from './backupTypes.ts'
+import { isAndroidNativePlatform } from './backupValidation.ts'
 
 const pad = (value: number) => String(value).padStart(2, '0')
+
+export const FITDEX_BACKUP_DOCUMENTS_DIR = 'FitDex'
+
+export interface BackupExportResult {
+  success: boolean
+  filename: string
+  savedPath?: string
+  uri?: string
+}
 
 export function serializeFitDexBackup(backup: FitDexBackup) {
   return JSON.stringify(backup, null, 2)
@@ -22,7 +33,38 @@ export function downloadFitDexBackup(backup: FitDexBackup, createdAt = new Date(
   document.body.append(link)
   link.click()
   link.remove()
-  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+}
+
+export async function exportFitDexBackup(
+  backup: FitDexBackup,
+  isAndroid: boolean = isAndroidNativePlatform(),
+  createdAt = new Date(backup.createdAt)
+): Promise<BackupExportResult> {
+  const filename = fitDexBackupFilename(createdAt)
+
+  if (!isAndroid) {
+    downloadFitDexBackup(backup, createdAt)
+    return { success: true, filename }
+  }
+
+  const relativePath = `${FITDEX_BACKUP_DOCUMENTS_DIR}/${filename}`
+  const serialized = serializeFitDexBackup(backup)
+
+  const writeResult = await Filesystem.writeFile({
+    path: relativePath,
+    data: serialized,
+    directory: Directory.Documents,
+    encoding: Encoding.UTF8,
+    recursive: true,
+  })
+
+  return {
+    success: true,
+    filename,
+    savedPath: `Documents/${FITDEX_BACKUP_DOCUMENTS_DIR}/${filename}`,
+    uri: writeResult.uri,
+  }
 }
 
 export function summarizeFitDexBackup(backup: FitDexBackup): BackupSummary {
@@ -33,3 +75,5 @@ export function summarizeFitDexBackup(backup: FitDexBackup): BackupSummary {
     achievementCount: backup.data.achievementUnlocks.length,
   }
 }
+
+

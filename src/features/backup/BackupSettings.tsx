@@ -2,9 +2,9 @@ import { Download, Upload, X } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { APP_VERSION } from '../../appVersion'
 import { createFitDexBackup, restoreFitDexBackup } from './backupRepository'
-import { downloadFitDexBackup, summarizeFitDexBackup } from './backupSerializer'
+import { exportFitDexBackup, summarizeFitDexBackup } from './backupSerializer'
 import { BackupValidationError, type BackupSummary, type ValidatedFitDexBackup } from './backupTypes'
-import { readFitDexBackupFile } from './backupValidation'
+import { isAndroidNativePlatform, readFitDexBackupFile, resolveBackupAccept } from './backupValidation'
 
 type BackupDialogState =
   | { kind: 'create'; returnToRestore: boolean }
@@ -54,12 +54,16 @@ export function BackupSettings() {
     setIsError(false)
     try {
       const backup = await createFitDexBackup(APP_VERSION)
-      downloadFitDexBackup(backup)
-      setStatus('Backup download started. Keep the .fitdex file somewhere you trust.')
+      const exportResult = await exportFitDexBackup(backup)
+      if (isAndroidNativePlatform()) {
+        setStatus(`Backup saved to ${exportResult.savedPath ?? `Documents/FitDex/${exportResult.filename}`}. Your FitDex backup is ready.`)
+      } else {
+        setStatus('Backup download started. Keep the .fitdex file somewhere you trust.')
+      }
       setDialog(returnToRestore && incoming ? { kind: 'confirm' } : undefined)
     } catch (reason) {
       console.error('FitDex backup creation failed', reason)
-      setStatus('Backup could not be created. Your FitDex data was not changed.')
+      setStatus('Backup could not be saved. Your FitDex data is unchanged. Please try again.')
       setIsError(true)
     } finally { setBusy(false) }
   }
@@ -118,7 +122,7 @@ export function BackupSettings() {
   return <section className="settings-section backup-settings" aria-labelledby="storage-heading">
     <div className="settings-section-heading"><span>09</span><div><h2 id="storage-heading">Data &amp; Storage</h2><p>Your device is the source of truth.</p></div></div>
     <section className="backup-action" aria-labelledby="backup-action-heading"><div><p className="eyebrow">Backup</p><h3 id="backup-action-heading">Protect your FitDex data with a portable backup.</h3></div><button ref={createButtonRef} className="secondary-button" type="button" disabled={busy} onClick={() => openCreate()}><Download size={18} aria-hidden="true" /> Create Backup</button></section>
-    <section className="backup-action" aria-labelledby="restore-action-heading"><div><p className="eyebrow">Restore</p><h3 id="restore-action-heading">Restore your data from a FitDex backup.</h3></div><input ref={fileInputRef} className="sr-only" type="file" accept=".fitdex,application/x-fitdex-backup,application/json" aria-label="Choose .fitdex File" onChange={(event) => void readFile(event.target.files?.[0])} /><button ref={chooseButtonRef} className="secondary-button" type="button" disabled={busy} onClick={chooseFile}><Upload size={18} aria-hidden="true" /> {busy ? 'Reading backup…' : 'Choose .fitdex File'}</button></section>
+    <section className="backup-action" aria-labelledby="restore-action-heading"><div><p className="eyebrow">Restore</p><h3 id="restore-action-heading">Restore your data from a FitDex backup.</h3></div><input ref={fileInputRef} className="sr-only" type="file" accept={resolveBackupAccept()} aria-label="Choose .fitdex File" onChange={(event) => void readFile(event.target.files?.[0])} /><button ref={chooseButtonRef} className="secondary-button" type="button" disabled={busy} onClick={chooseFile}><Upload size={18} aria-hidden="true" /> {busy ? 'Reading backup…' : 'Choose .fitdex File'}</button></section>
     <p className="backup-privacy-note">Your data stays on your device unless you choose to save or share the backup elsewhere.</p>
     <p className="backup-security-note">Backup files contain your FitDex data. Store them somewhere you trust.</p>
     {status ? <p className={isError ? 'form-error' : 'display-name-status'} role={isError ? 'alert' : 'status'}>{status}</p> : null}

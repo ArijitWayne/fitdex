@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core'
 import { DATABASE_SCHEMA_VERSION } from '../../data/database.ts'
 import {
   BACKUP_STORE_NAMES,
@@ -12,6 +13,17 @@ import {
   type BackupStoreName,
   type ValidatedFitDexBackup,
 } from './backupTypes.ts'
+
+export const FITDEX_BACKUP_WEB_ACCEPT = '.fitdex,application/x-fitdex-backup,application/json'
+export const FITDEX_BACKUP_ANDROID_ACCEPT = '*/*'
+
+export function isAndroidNativePlatform(): boolean {
+  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android'
+}
+
+export function resolveBackupAccept(isAndroid: boolean = isAndroidNativePlatform()): string {
+  return isAndroid ? FITDEX_BACKUP_ANDROID_ACCEPT : FITDEX_BACKUP_WEB_ACCEPT
+}
 
 const STORE_INTRODUCTION_VERSION: Record<BackupStoreName, number> = {
   settings: 2, exercises: 2, exercisePreferences: 2, customTags: 2, workoutRoutines: 2,

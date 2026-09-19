@@ -10,7 +10,7 @@ import { BRIGHTNESS_STORAGE_KEY, THEME_FAMILY_STORAGE_KEY } from '../../theme/th
 import { SELECTED_AVATAR_STORAGE_KEY } from '../avatar/avatarStorage.ts'
 import { TUTORIAL_COMPLETE_KEY } from '../onboarding/tutorialStorage.ts'
 import { collectBackupData, createFitDexBackup, restoreFitDexBackup } from './backupRepository.ts'
-import { fitDexBackupFilename, serializeFitDexBackup, summarizeFitDexBackup } from './backupSerializer.ts'
+import { exportFitDexBackup, fitDexBackupFilename, serializeFitDexBackup, summarizeFitDexBackup } from './backupSerializer.ts'
 import { BACKUP_STORE_NAMES, BackupValidationError, FITDEX_BACKUP_FORMAT, FITDEX_BACKUP_FORMAT_VERSION, FITDEX_BACKUP_MAX_BYTES, type BackupRecord, type BackupStoreName } from './backupTypes.ts'
 import { parseFitDexBackup, readFitDexBackupFile, validateFitDexBackup } from './backupValidation.ts'
 import { resolveProfileGate } from '../profile/profileGateModel.ts'
@@ -90,6 +90,45 @@ assert.ok(!serialized.includes('.mp4'))
 assert.ok(!serialized.includes('/gamification/achievements/'))
 assert.match(fitDexBackupFilename(new Date(timestamp)), /^fitdex-backup-\d{4}-\d{2}-\d{2}-\d{4}\.fitdex$/)
 assert.deepEqual(summarizeFitDexBackup(backup), { workoutCount: 1, foodLogCount: 1, routineCount: 1, achievementCount: 1 })
+
+// Mock document for download test in Node environment
+const originalDocument = globalThis.document
+let downloadedFilename = ''
+const mockAnchor = {
+  href: '',
+  download: '',
+  hidden: false,
+  click() {
+    downloadedFilename = this.download
+  },
+  remove() {},
+}
+const mockDocument = {
+  createElement(tag: string) {
+    if (tag === 'a') return mockAnchor
+    return {}
+  },
+  body: {
+    append() {},
+  },
+}
+const mockUrl = {
+  createObjectURL(_blob: Blob) {
+    return 'blob:mock-url'
+  },
+  revokeObjectURL() {},
+}
+;(globalThis as unknown as { document: unknown }).document = mockDocument
+;(globalThis as unknown as { URL: unknown }).URL = { ...URL, ...mockUrl }
+
+const expectedFilename = fitDexBackupFilename(new Date(timestamp))
+const webExport = await exportFitDexBackup(backup, false, new Date(timestamp))
+assert.equal(webExport.success, true)
+assert.equal(webExport.filename, expectedFilename)
+assert.equal(downloadedFilename, expectedFilename)
+assert.ok(downloadedFilename.endsWith('.fitdex'))
+
+if (originalDocument) (globalThis as unknown as { document: unknown }).document = originalDocument
 
 const validated = parseFitDexBackup(serialized)
 await db.settings.clear()
