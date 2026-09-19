@@ -196,7 +196,7 @@ Android system Back and gesture navigation are managed centrally via `useAppBack
 In-page state updates, tab switches, period filter changes (e.g., 7D/30D/90D/All in Progress), and category toggles must **never** unexpectedly jump the viewport scroll to the top of the page. Only explicit navigation transitions between distinct subviews may reset scroll position.
 
 ### 2.12 Prototype Lifecycle
-Prototypes in `prototypes/` are temporary exploratory sandboxes. Once user-tested and approved, their design decisions, layout structures, and styling rules are transplanted into production code and documented in production Markdown. Prototypes are disposable and should be deleted cleanly.
+The former `prototypes/` workspace was a temporary exploratory sandbox and has been removed after approved decisions were migrated. Production code and production Markdown now retain the finalized designs, interaction contracts, and styling rules. Any future exploratory work remains disposable and must be migrated before deletion.
 
 ---
 

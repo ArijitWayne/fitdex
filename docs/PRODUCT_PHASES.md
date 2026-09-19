@@ -1,6 +1,6 @@
 # FitDex Product Phases & Architecture Specification
 
-This document is the permanent source of truth for FitDex product phase statuses, finalized UI/UX decisions, production architecture, data derivations, and deferred scope across Phases 1–5. Prototype folders are temporary and disposable; this document preserves all approved designs, interaction contracts, and constraints.
+This document is the permanent source of truth for FitDex product phase statuses, finalized UI/UX decisions, production architecture, data derivations, and deferred scope across Phases 1–9. The former prototype workspace was disposable; this document preserves all approved designs, interaction contracts, and constraints.
 
 ---
 
@@ -31,7 +31,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 9. **Local-First & Privacy**: All personal fitness, nutrition, and gamification history lives strictly in local Dexie/IndexedDB and localStorage. No mandatory account, authentication, analytics tracker, or remote cloud database is used.
 10. **Centralized Android Back Contract**: Android hardware back and gesture navigation are managed centrally by `useAppBackButton` and the Capacitor App plugin. Subviews close deepest-first; top-level history pops to Home; Back exits only at the Home root.
 11. **Scroll Stability**: In-page filter, tab, period, or view-state changes must preserve viewport scroll position without teleporting the user to the top. Only full subview transitions reset scroll.
-12. **Disposable Prototype Lifecycle**: Prototype HTML and AUDIT files are scratchpads. Once decisions are approved, they are transferred into durable production Markdown and production code, rendering prototypes safe to delete.
+12. **Disposable Prototype Lifecycle**: Former prototype HTML and AUDIT files were scratchpads. Approved decisions were transferred into durable production Markdown and production code before the prototype workspace was removed.
 13. **FitDex Design Doctrine Compliance**: All UI modernization phases, screens, and prototypes must strictly follow the canonical **FitDex Design Doctrine** defined in [docs/FITDEX_UI_UX_STANDARD.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/FITDEX_UI_UX_STANDARD.md#11-the-permanent-fitdex-design-doctrine). Every design must embody the retro handheld / 90s pixel-era fitness RPG identity using authoritative production semantic tokens, crisp framing, and authentic game-menu character without drifting into generic SaaS or mobile card tropes.
 
 ---
