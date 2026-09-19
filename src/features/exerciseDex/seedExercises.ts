@@ -6,14 +6,14 @@ import {
   BUILT_IN_EXERCISE_DATASET_METADATA_ID,
   BUILT_IN_EXERCISE_DATASET_VERSION,
   builtInExercises,
-  RETIRED_SMART_WORKOUT_SLUGS,
+  RETIRED_FITDEX_EXERCISE_SLUGS,
 } from './exerciseData'
 
 let seedPromise: Promise<void> | undefined
 
 const activeReferenceMigrationMap: Readonly<Record<string, string | null>> = {
   ...LEGACY_EXERCISE_ID_MAP,
-  ...Object.fromEntries(RETIRED_SMART_WORKOUT_SLUGS.map((slug) => [`builtin-exercise:${slug}`, null])),
+  ...Object.fromEntries(RETIRED_FITDEX_EXERCISE_SLUGS.map((slug) => [`builtin-exercise:${slug}`, null])),
 }
 
 async function seed() {

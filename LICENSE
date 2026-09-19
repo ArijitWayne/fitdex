@@ -1,0 +1,20 @@
+# FitDex Multi-License Notice
+
+This repository uses multiple licenses.
+See [LICENSING.md](LICENSING.md) for the applicable license by path.
+
+## Summary of Licenses
+
+- **Application & Core (`src/**`, `android/**`):**
+  Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSES/PolyForm-Noncommercial-1.0.0.md).
+  Copyright © 2026 Arijit Bhaduri.
+
+- **Public Documentation & Tooling (`docs/**`, `scripts/**`, `.github/**`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, build/dev configuration):**
+  Licensed under the [MIT License](LICENSES/MIT.txt).
+  Copyright (c) 2026 Arijit Bhaduri.
+
+- **Branding, Visual Media & Audio Assets (`public/**`, `src/assets/**`):**
+  Subject to separate asset and media terms. See [ASSETS.md](ASSETS.md).
+  All Rights Reserved unless otherwise stated.
+
+For complete licensing terms, path boundaries, plain-language explanations, and branding policies, refer to [LICENSING.md](LICENSING.md).

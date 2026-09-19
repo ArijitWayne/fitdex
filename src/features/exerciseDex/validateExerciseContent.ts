@@ -2,16 +2,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { EXERCISE_CONTENT } from './exerciseContent.ts'
-import { ACTIVE_SMART_WORKOUT_EXERCISES, builtInExercises } from './exerciseData.ts'
+import { ACTIVE_FITDEX_EXERCISES, builtInExercises } from './exerciseData.ts'
 
 const allowedMediaTypes = new Set(['video/mp4', 'image/gif', 'image/webp'])
 const records = Object.values(EXERCISE_CONTENT)
 const canonicalIds = new Set(builtInExercises.map((exercise) => exercise.id))
-const definitionById = new Map(ACTIVE_SMART_WORKOUT_EXERCISES.map((definition) => [`builtin-exercise:${definition.slug}`, definition]))
+const definitionById = new Map(ACTIVE_FITDEX_EXERCISES.map((definition) => [`builtin-exercise:${definition.slug}`, definition]))
 const errors: string[] = []
 const contentIds = new Set<string>()
 const mediaPaths = new Map<string, string>()
-const sourceAssets = new Map<string, string>()
 const referencedFiles = new Set<string>()
 
 function hasPlayableMp4Structure(buffer: Buffer) {
@@ -46,8 +45,7 @@ for (const record of records) {
   contentIds.add(record.exerciseId)
   const definition = definitionById.get(record.exerciseId)
   if (!definition) continue
-  if (record.sourceSlug !== definition.sourceSlug || record.sourcePage !== definition.sourcePage) errors.push(`Source identity mismatch: ${record.exerciseId}`)
-  if (record.sourceExerciseName !== definition.name || record.matchQuality !== 'Exact') errors.push(`Canonical source mismatch: ${record.exerciseId}`)
+  if (record.matchQuality !== 'Exact') errors.push(`Canonical content match quality mismatch: ${record.exerciseId}`)
 
   const howToWords = record.howToPerform.trim().split(/\s+/).length
   const helpsWords = record.howItHelps.trim().split(/\s+/).length
@@ -58,7 +56,7 @@ for (const record of records) {
   if (record.mediaStatus !== definition.mediaStatus) errors.push(`Media status mismatch: ${record.exerciseId}`)
   if (record.mediaStatus !== 'available') errors.push(`Active record has no verified media: ${record.exerciseId}`)
 
-  if (!record.mediaPath || !record.mediaType || !record.sourceAssetUrl) {
+  if (!record.mediaPath || !record.mediaType) {
     errors.push(`Incomplete available media: ${record.exerciseId}`)
     continue
   }
@@ -66,9 +64,6 @@ for (const record of records) {
   const priorPath = mediaPaths.get(record.mediaPath)
   if (priorPath) errors.push(`Duplicate mediaPath: ${record.mediaPath} (${priorPath}, ${record.exerciseId})`)
   mediaPaths.set(record.mediaPath, record.exerciseId)
-  const priorAsset = sourceAssets.get(record.sourceAssetUrl)
-  if (priorAsset) errors.push(`Duplicate sourceAssetUrl: ${record.sourceAssetUrl} (${priorAsset}, ${record.exerciseId})`)
-  sourceAssets.set(record.sourceAssetUrl, record.exerciseId)
 
   const localFile = path.resolve(process.cwd(), 'public', record.mediaPath.replace(/^\//, ''))
   referencedFiles.add(path.basename(localFile))

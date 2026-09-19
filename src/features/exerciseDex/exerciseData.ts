@@ -6,18 +6,16 @@ import type {
   MovementPattern,
 } from '../../data/models'
 import { LEGACY_EXERCISE_MIGRATIONS } from './legacyExerciseMigration.generated.ts'
-import { SMART_WORKOUT_CRAWLED_AT, SMART_WORKOUT_EXERCISES } from './smartWorkoutExercises.generated.ts'
-import type { SmartWorkoutExerciseDefinition } from './smartWorkoutTypes.ts'
+import { FITDEX_CATALOG_GENERATED_AT, FITDEX_EXERCISES } from './fitDexExercises.generated.ts'
+import type { FitDexExerciseDefinition } from './fitDexExerciseTypes.ts'
 
 export const BUILT_IN_EXERCISE_DATASET_VERSION = 4
 export const BUILT_IN_EXERCISE_DATASET_METADATA_ID = 'built-in-exercise-dataset-version'
 
 /**
- * SmartWorkout pages are retained in the generated source inventory for audit
- * history, but v4 requires a verified demonstration for every active built-in.
- * These page-slug identities are therefore archived during the v3 → v4 seed.
+ * Historical non-demonstrated exercises archived during the v3 → v4 dataset seed.
  */
-export const RETIRED_SMART_WORKOUT_SLUGS = [
+export const RETIRED_FITDEX_EXERCISE_SLUGS = [
   'alternate-biceps-curl',
   'band-russian-twist',
   'bottom-up-rotation',
@@ -29,21 +27,21 @@ export const RETIRED_SMART_WORKOUT_SLUGS = [
   'standing-incline-band-chest-fly',
 ] as const
 
-const retiredSmartWorkoutSlugSet = new Set<string>(RETIRED_SMART_WORKOUT_SLUGS)
-export const ACTIVE_SMART_WORKOUT_EXERCISES = SMART_WORKOUT_EXERCISES.filter(
-  (definition) => !retiredSmartWorkoutSlugSet.has(definition.slug),
+const retiredFitDexExerciseSlugSet = new Set<string>(RETIRED_FITDEX_EXERCISE_SLUGS)
+export const ACTIVE_FITDEX_EXERCISES = FITDEX_EXERCISES.filter(
+  (definition) => !retiredFitDexExerciseSlugSet.has(definition.slug),
 )
 
 function normalizeName(value: string) {
   return value.normalize('NFKD').replace(/[’']/g, '').replace(/[^a-zA-Z0-9]+/g, ' ').trim().toLowerCase()
 }
 
-const canonicalNames = new Set(ACTIVE_SMART_WORKOUT_EXERCISES.map((definition) => normalizeName(definition.name)))
+const canonicalNames = new Set(ACTIVE_FITDEX_EXERCISES.map((definition) => normalizeName(definition.name)))
 const candidateAliases = new Map<string, Set<string>>()
 for (const migration of LEGACY_EXERCISE_MIGRATIONS) {
   if (!migration.successorId) continue
   const normalizedAlias = normalizeName(migration.legacyName)
-  const successor = ACTIVE_SMART_WORKOUT_EXERCISES.find((definition) => `builtin-exercise:${definition.slug}` === migration.successorId)
+  const successor = ACTIVE_FITDEX_EXERCISES.find((definition) => `builtin-exercise:${definition.slug}` === migration.successorId)
   if (!successor || normalizedAlias === normalizeName(successor.name) || canonicalNames.has(normalizedAlias)) continue
   const targets = candidateAliases.get(normalizedAlias) ?? new Set<string>()
   targets.add(migration.successorId)
@@ -58,7 +56,7 @@ for (const migration of LEGACY_EXERCISE_MIGRATIONS) {
   legacyAliasesBySuccessor.set(migration.successorId, aliases)
 }
 
-function trackingTypeFor(definition: SmartWorkoutExerciseDefinition): ExerciseTrackingType {
+function trackingTypeFor(definition: FitDexExerciseDefinition): ExerciseTrackingType {
   const name = definition.name.toLowerCase()
   if (/farmer|walk|carry|sled|prowler/.test(name)) return definition.equipment.includes('Bodyweight') ? 'distance_duration' : 'weight_distance'
   if (/running|treadmill run|rowing machine|walking cardio|elliptical|stair climber|air bike|jump rope/.test(name)) return 'distance_duration'
@@ -68,7 +66,7 @@ function trackingTypeFor(definition: SmartWorkoutExerciseDefinition): ExerciseTr
   return 'weight_reps'
 }
 
-function movementPatternFor(definition: SmartWorkoutExerciseDefinition): MovementPattern {
+function movementPatternFor(definition: FitDexExerciseDefinition): MovementPattern {
   const name = definition.name.toLowerCase()
   if (/stretch|mobility|mobilization|rotation warm|warm-up|dislocate/.test(name) || definition.tags.includes('STRETCHING') || definition.tags.includes('MOBILITY')) return 'Mobility'
   if (/hold|plank|hang|vacuum|vaccum|lean planche/.test(name)) return 'Isometric'
@@ -89,18 +87,18 @@ function movementPatternFor(definition: SmartWorkoutExerciseDefinition): Movemen
   return definition.mechanics === 'ISOLATION' ? 'Flexion' : 'Conditioning'
 }
 
-function cardioMetricsFor(definition: SmartWorkoutExerciseDefinition): CardioMetric[] | undefined {
+function cardioMetricsFor(definition: FitDexExerciseDefinition): CardioMetric[] | undefined {
   if (trackingTypeFor(definition) !== 'distance_duration') return undefined
   return ['duration', 'distance', 'pace', 'heartRate', 'calories']
 }
 
-function lateralityFor(definition: SmartWorkoutExerciseDefinition): Exercise['laterality'] {
+function lateralityFor(definition: FitDexExerciseDefinition): Exercise['laterality'] {
   if (definition.laterality === 'UNILATERAL') return 'unilateral'
   if (/alternat/i.test(definition.name)) return 'alternating'
   return definition.laterality === 'BILATERAL' ? 'bilateral' : undefined
 }
 
-function createExercise(definition: SmartWorkoutExerciseDefinition): Exercise {
+function createExercise(definition: FitDexExerciseDefinition): Exercise {
   const id = `builtin-exercise:${definition.slug}`
   const primaryCategory = definition.categories[0] as ExerciseCategory
   return {
@@ -119,16 +117,13 @@ function createExercise(definition: SmartWorkoutExerciseDefinition): Exercise {
     movementPattern: movementPatternFor(definition),
     source: 'built-in',
     sourceId: definition.slug,
-    sourceSlug: definition.sourceSlug,
-    sourcePage: definition.sourcePage,
-    sourceRecordIds: [...definition.sourceRecordIds],
     mediaStatus: definition.mediaStatus,
     archived: false,
     laterality: lateralityFor(definition),
     supportedCardioMetrics: cardioMetricsFor(definition),
-    createdAt: SMART_WORKOUT_CRAWLED_AT,
-    updatedAt: SMART_WORKOUT_CRAWLED_AT,
+    createdAt: FITDEX_CATALOG_GENERATED_AT,
+    updatedAt: FITDEX_CATALOG_GENERATED_AT,
   }
 }
 
-export const builtInExercises: readonly Exercise[] = ACTIVE_SMART_WORKOUT_EXERCISES.map(createExercise)
+export const builtInExercises: readonly Exercise[] = ACTIVE_FITDEX_EXERCISES.map(createExercise)

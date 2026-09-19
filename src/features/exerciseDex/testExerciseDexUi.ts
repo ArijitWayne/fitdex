@@ -73,12 +73,12 @@ for (const family of spriteFamilies) {
     }
   }
 }
-assert.match(css, /\.exercise-category-grid \{[^}]*grid-template-columns: repeat\(2,/s)
-assert.match(css, /@media \(min-width: 700px\)[\s\S]*\.exercise-category-grid \{ grid-template-columns: repeat\(3,/)
-assert.match(css, /@media \(max-width: 374px\)[\s\S]*\.exercise-category-grid \{ grid-template-columns: 1fr;/)
+assert.match(css, /\.exercise-category-grid \{[^}]*grid-template-columns:\s*repeat\(2,/s)
+assert.match(css, /@media \(min-width: 700px\)[\s\S]*\.exercise-category-grid \{[\s\S]*?grid-template-columns:\s*repeat\(3,/)
+assert.match(css, /@media \(max-width: 374px\)[\s\S]*\.exercise-category-grid \{[\s\S]*?grid-template-columns:\s*1fr;/)
 assert.match(css, /\.exercise-category-sprite \{[^}]*object-fit: contain;[^}]*image-rendering: pixelated;/s)
-assert.match(css, /\.exercise-search:focus-within \{ border-color: var\(--color-focus\); outline: 0; \}/)
-assert.match(css, /\.exercise-search input:focus-visible \{ outline: 0; \}/)
+assert.match(css, /\.exercise-search:focus-within \{[\s\S]*?border-color: var\(--color-focus\);[\s\S]*?outline: 0;/s)
+assert.match(css, /\.exercise-search input:focus-visible \{[\s\S]*?outline: 0;/s)
 assert.match(component, /<video[\s\S]*autoPlay[\s\S]*muted[\s\S]*loop[\s\S]*playsInline[\s\S]*preload="metadata"/)
 assert.match(component, /onError=\{\(\) => setPlayback\(\{ kind: 'unavailable' \}\)\}/)
 assert.match(component, /Exercise demonstration unavailable\./)

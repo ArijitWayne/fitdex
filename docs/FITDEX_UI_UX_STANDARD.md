@@ -2,7 +2,7 @@
 
 This document records the canonical visual and interaction rules for FitDex. It standardizes product language, ergonomics, and behavior across all application features without forcing every screen into an identical layout.
 
-For phase-by-phase implementation statuses, data derivations, and architectural specifications, see [docs/PRODUCT_PHASES.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/PRODUCT_PHASES.md).
+For phase-by-phase implementation statuses, data derivations, and architectural specifications, see [PRODUCT_PHASES.md](PRODUCT_PHASES.md).
 
 ---
 

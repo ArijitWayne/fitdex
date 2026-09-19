@@ -32,7 +32,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 10. **Centralized Android Back Contract**: Android hardware back and gesture navigation are managed centrally by `useAppBackButton` and the Capacitor App plugin. Subviews close deepest-first; top-level history pops to Home; Back exits only at the Home root.
 11. **Scroll Stability**: In-page filter, tab, period, or view-state changes must preserve viewport scroll position without teleporting the user to the top. Only full subview transitions reset scroll.
 12. **Disposable Prototype Lifecycle**: Former prototype HTML and AUDIT files were scratchpads. Approved decisions were transferred into durable production Markdown and production code before the prototype workspace was removed.
-13. **FitDex Design Doctrine Compliance**: All UI modernization phases, screens, and prototypes must strictly follow the canonical **FitDex Design Doctrine** defined in [docs/FITDEX_UI_UX_STANDARD.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/FITDEX_UI_UX_STANDARD.md#11-the-permanent-fitdex-design-doctrine). Every design must embody the retro handheld / 90s pixel-era fitness RPG identity using authoritative production semantic tokens, crisp framing, and authentic game-menu character without drifting into generic SaaS or mobile card tropes.
+13. **FitDex Design Doctrine Compliance**: All UI modernization phases, screens, and prototypes must strictly follow the canonical **FitDex Design Doctrine** defined in [FITDEX_UI_UX_STANDARD.md](FITDEX_UI_UX_STANDARD.md#11-the-permanent-fitdex-design-doctrine). Every design must embody the retro handheld / 90s pixel-era fitness RPG identity using authoritative production semantic tokens, crisp framing, and authentic game-menu character without drifting into generic SaaS or mobile card tropes.
 
 ---
 
@@ -58,6 +58,12 @@ This document is the permanent source of truth for FitDex product phase statuses
 ### 3.3 Audio System
 - **SFX**: Semantic local effects in `public/audio/`: `select.mp3` (navigation/selection), `add.mp3` (creation), `progress_complete.mp3` (workout completion/first food log), `achievements_unlock.mp3` (unlock/level up). Competing effects serialize by priority.
 - **BGM**: 3 looping background tracks (Warrior, Hardened, Villain) plus No Music. Pause is temporary for the active session; Off persists No Music. Controlled via Home or Settings.
+
+### 3.4 Public Repository Foundation & Split Licensing Architecture
+- **Source-Available Classification**: FitDex is classified as source-available software with a three-part coarse split-licensing boundary:
+  - **Core Application (`src/**`, `android/**`)**: Licensed under PolyForm Noncommercial License 1.0.0. Complete local engine, UI components, state management, and persistence are source-available for personal/noncommercial use. Commercial use requires explicit separate permission.
+  - **Documentation & Tooling (`docs/**`, `scripts/**`, `.github/**`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, build/dev configuration)**: Licensed under the permissive MIT License.
+  - **Assets, Visual Branding & Demonstration Media (`public/**`, `src/assets/**`)**: Excluded from software licenses. FitDex logos, Spartan/Amazonian faction art, avatars, and achievement badges are All Rights Reserved (Copyright © 2026 Arijit Bhaduri). Exercise demonstration videos are distributed separately and subject to separate media terms. SFX/BGM audio is classified as rights review pending.
 
 ---
 

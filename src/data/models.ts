@@ -175,9 +175,6 @@ export interface Exercise extends EntityRecord {
   movementPattern?: MovementPattern
   source: 'built-in' | 'custom'
   sourceId?: string
-  sourceSlug?: string
-  sourcePage?: string
-  sourceRecordIds?: string[]
   mediaStatus?: ExerciseMediaStatus
   equipmentOptions?: ExerciseEquipment[]
   archived: boolean

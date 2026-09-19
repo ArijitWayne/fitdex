@@ -1,5 +1,4 @@
-// Generated from the live SmartWorkout category payloads on 2026-08-23T10:32:26.633Z.
-// Do not hand-edit individual records; recrawl and regenerate instead.
+// FitDex legacy exercise catalog migration mapping (v2 -> v4).
 export interface LegacyExerciseMigration {
   legacyId: string
   legacyName: string
@@ -16,7 +15,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:barbell-bench-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/barbell-bench-press"
+    "basis": "verified canonical exercise: barbell-bench-press"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-bench-press",
@@ -24,7 +23,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:dumbbell-bench-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/dumbbell-bench-press"
+    "basis": "verified canonical exercise: dumbbell-bench-press"
   },
   {
     "legacyId": "builtin-exercise:incline-barbell-bench-press",
@@ -32,7 +31,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:incline-barbell-bench-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/incline-barbell-bench-press"
+    "basis": "verified canonical exercise: incline-barbell-bench-press"
   },
   {
     "legacyId": "builtin-exercise:incline-dumbbell-bench-press",
@@ -40,7 +39,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:incline-dumbbell-bench-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/incline-dumbbell-bench-press"
+    "basis": "verified canonical exercise: incline-dumbbell-bench-press"
   },
   {
     "legacyId": "builtin-exercise:decline-barbell-bench-press",
@@ -48,7 +47,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:decline-barbell-bench-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/decline-barbell-bench-press"
+    "basis": "verified canonical exercise: decline-barbell-bench-press"
   },
   {
     "legacyId": "builtin-exercise:decline-dumbbell-bench-press",
@@ -56,7 +55,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:decline-dumbbell-bench-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/decline-dumbbell-bench-press"
+    "basis": "verified canonical exercise: decline-dumbbell-bench-press"
   },
   {
     "legacyId": "builtin-exercise:machine-chest-press",
@@ -64,7 +63,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:machine-chest-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/machine-chest-press"
+    "basis": "verified canonical exercise: machine-chest-press"
   },
   {
     "legacyId": "builtin-exercise:incline-machine-press",
@@ -72,7 +71,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:incline-hammer-chest-press",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:smith-machine-bench-press",
@@ -80,7 +79,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:smith-bench-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/smith-bench-press"
+    "basis": "verified canonical exercise: smith-bench-press"
   },
   {
     "legacyId": "builtin-exercise:smith-machine-incline-press",
@@ -88,7 +87,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:smith-incline-chest-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/smith-incline-chest-press"
+    "basis": "verified canonical exercise: smith-incline-chest-press"
   },
   {
     "legacyId": "builtin-exercise:cable-fly",
@@ -96,7 +95,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:cable-middle-chest-fly",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/cable-middle-chest-fly"
+    "basis": "verified canonical exercise: cable-middle-chest-fly"
   },
   {
     "legacyId": "builtin-exercise:low-to-high-cable-fly",
@@ -104,7 +103,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:low-high-cable-chest-fly",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/low-high-cable-chest-fly"
+    "basis": "verified canonical exercise: low-high-cable-chest-fly"
   },
   {
     "legacyId": "builtin-exercise:high-to-low-cable-fly",
@@ -112,7 +111,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:high-low-cable-chest-fly",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/high-low-cable-chest-fly"
+    "basis": "verified canonical exercise: high-low-cable-chest-fly"
   },
   {
     "legacyId": "builtin-exercise:pec-deck",
@@ -120,7 +119,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:pec-deck-chest-fly",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/pec-deck-chest-fly"
+    "basis": "verified canonical exercise: pec-deck-chest-fly"
   },
   {
     "legacyId": "builtin-exercise:push-up",
@@ -128,7 +127,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/push-up"
+    "basis": "verified canonical exercise: push-up"
   },
   {
     "legacyId": "builtin-exercise:incline-push-up",
@@ -136,7 +135,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:incline-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/incline-push-up"
+    "basis": "verified canonical exercise: incline-push-up"
   },
   {
     "legacyId": "builtin-exercise:decline-push-up",
@@ -144,7 +143,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:decline-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/decline-push-up"
+    "basis": "verified canonical exercise: decline-push-up"
   },
   {
     "legacyId": "builtin-exercise:chest-dip",
@@ -152,7 +151,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:chest-dips",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/chest-dips"
+    "basis": "verified canonical exercise: chest-dips"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-squeeze-press",
@@ -160,7 +159,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:close-grip-dumbbell-press",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:single-arm-cable-chest-press",
@@ -168,7 +167,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:resistance-band-chest-press",
@@ -176,7 +175,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:plate-pinch-press",
@@ -184,7 +183,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:svend-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/svend-press"
+    "basis": "verified canonical exercise: svend-press"
   },
   {
     "legacyId": "builtin-exercise:lat-pulldown",
@@ -192,7 +191,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:cable-lat-pulldown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/cable-lat-pulldown"
+    "basis": "verified canonical exercise: cable-lat-pulldown"
   },
   {
     "legacyId": "builtin-exercise:neutral-grip-lat-pulldown",
@@ -200,7 +199,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:cable-neutral-grip-lat-pulldown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/cable-neutral-grip-lat-pulldown"
+    "basis": "verified canonical exercise: cable-neutral-grip-lat-pulldown"
   },
   {
     "legacyId": "builtin-exercise:wide-grip-lat-pulldown",
@@ -208,7 +207,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:wide-grip-lat-pulldown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/wide-grip-lat-pulldown"
+    "basis": "verified canonical exercise: wide-grip-lat-pulldown"
   },
   {
     "legacyId": "builtin-exercise:reverse-grip-lat-pulldown",
@@ -216,7 +215,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:cable-reverse-grip-pulldown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/cable-reverse-grip-pulldown"
+    "basis": "verified canonical exercise: cable-reverse-grip-pulldown"
   },
   {
     "legacyId": "builtin-exercise:pull-up",
@@ -224,7 +223,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:pull-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/pull-up"
+    "basis": "verified canonical exercise: pull-up"
   },
   {
     "legacyId": "builtin-exercise:chin-up",
@@ -232,7 +231,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:chin-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/chin-up"
+    "basis": "verified canonical exercise: chin-up"
   },
   {
     "legacyId": "builtin-exercise:neutral-grip-pull-up",
@@ -240,7 +239,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:pull-up-neutral-grip",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/pull-up-neutral-grip"
+    "basis": "verified canonical exercise: pull-up-neutral-grip"
   },
   {
     "legacyId": "builtin-exercise:assisted-pull-up",
@@ -248,7 +247,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:assisted-pull-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/assisted-pull-up"
+    "basis": "verified canonical exercise: assisted-pull-up"
   },
   {
     "legacyId": "builtin-exercise:seated-cable-row",
@@ -256,7 +255,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:seated-cable-row",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/seated-cable-row"
+    "basis": "verified canonical exercise: seated-cable-row"
   },
   {
     "legacyId": "builtin-exercise:wide-grip-seated-cable-row",
@@ -264,7 +263,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:seated-cable-wide-grip-row",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/seated-cable-wide-grip-row"
+    "basis": "verified canonical exercise: seated-cable-wide-grip-row"
   },
   {
     "legacyId": "builtin-exercise:chest-supported-dumbbell-row",
@@ -272,7 +271,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:dumbbell-neutral-grip-incline-bench-row",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/dumbbell-neutral-grip-incline-bench-row"
+    "basis": "verified canonical exercise: dumbbell-neutral-grip-incline-bench-row"
   },
   {
     "legacyId": "builtin-exercise:chest-supported-t-bar-row",
@@ -280,7 +279,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:t-bar-chest-suported-row",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/t-bar-chest-suported-row"
+    "basis": "verified canonical exercise: t-bar-chest-suported-row"
   },
   {
     "legacyId": "builtin-exercise:machine-row",
@@ -288,7 +287,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:iso-lateral-machine-row",
@@ -296,7 +295,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-bent-over-row",
@@ -304,7 +303,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:barbell-bent-over-row",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/barbell-bent-over-row"
+    "basis": "verified canonical exercise: barbell-bent-over-row"
   },
   {
     "legacyId": "builtin-exercise:pendlay-row",
@@ -312,7 +311,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:pendlay-row",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/pendlay-row"
+    "basis": "verified canonical exercise: pendlay-row"
   },
   {
     "legacyId": "builtin-exercise:single-arm-dumbbell-row",
@@ -320,7 +319,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:dumbbell-bent-over-row",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/dumbbell-bent-over-row"
+    "basis": "verified canonical exercise: dumbbell-bent-over-row"
   },
   {
     "legacyId": "builtin-exercise:t-bar-row",
@@ -328,7 +327,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:t-bar-bent-over-row",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/t-bar-bent-over-row"
+    "basis": "verified canonical exercise: t-bar-bent-over-row"
   },
   {
     "legacyId": "builtin-exercise:landmine-row",
@@ -336,7 +335,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:close-grip-landmine-row",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:inverted-row",
@@ -344,7 +343,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:inverted-row-australian",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/inverted-row-(australian)"
+    "basis": "verified canonical exercise: inverted-row-(australian)"
   },
   {
     "legacyId": "builtin-exercise:straight-arm-pulldown",
@@ -352,7 +351,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:straight-arm-lat-pulldown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/straight-arm-lat-pulldown"
+    "basis": "verified canonical exercise: straight-arm-lat-pulldown"
   },
   {
     "legacyId": "builtin-exercise:cable-pullover",
@@ -360,7 +359,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-pullover",
@@ -368,7 +367,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:dumbbell-lat-pullover",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/dumbbell-lat-pullover"
+    "basis": "verified canonical exercise: dumbbell-lat-pullover"
   },
   {
     "legacyId": "builtin-exercise:rack-pull",
@@ -376,7 +375,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:barbell-rack-pull",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:45-degree-back-extension",
@@ -384,7 +383,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:back-extension",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:barbell-good-morning",
@@ -392,7 +391,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-good-morning",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:barbell-overhead-press",
@@ -400,7 +399,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:barbell-overhead-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/barbell-overhead-press"
+    "basis": "verified canonical exercise: barbell-overhead-press"
   },
   {
     "legacyId": "builtin-exercise:seated-barbell-shoulder-press",
@@ -408,7 +407,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:seated-barbell-shoulder-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/seated-barbell-shoulder-press"
+    "basis": "verified canonical exercise: seated-barbell-shoulder-press"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-shoulder-press",
@@ -416,7 +415,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:standing-dumbbell-shoulder-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/standing-dumbbell-shoulder-press"
+    "basis": "verified canonical exercise: standing-dumbbell-shoulder-press"
   },
   {
     "legacyId": "builtin-exercise:arnold-press",
@@ -424,7 +423,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:seated-arnold-dumbbell-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/seated-arnold-dumbbell-press"
+    "basis": "verified canonical exercise: seated-arnold-dumbbell-press"
   },
   {
     "legacyId": "builtin-exercise:machine-shoulder-press",
@@ -432,7 +431,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:machine-shoulder-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/machine-shoulder-press"
+    "basis": "verified canonical exercise: machine-shoulder-press"
   },
   {
     "legacyId": "builtin-exercise:smith-machine-shoulder-press",
@@ -440,7 +439,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:smith-shoulder-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/smith-shoulder-press"
+    "basis": "verified canonical exercise: smith-shoulder-press"
   },
   {
     "legacyId": "builtin-exercise:landmine-press",
@@ -448,7 +447,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:landmine-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/landmine-press"
+    "basis": "verified canonical exercise: landmine-press"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-front-raise",
@@ -456,7 +455,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:dumbbell-front-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/dumbbell-front-raise"
+    "basis": "verified canonical exercise: dumbbell-front-raise"
   },
   {
     "legacyId": "builtin-exercise:cable-front-raise",
@@ -464,7 +463,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:cable-front-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/cable-front-raise"
+    "basis": "verified canonical exercise: cable-front-raise"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-lateral-raise",
@@ -472,7 +471,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:dumbbell-lateral-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/dumbbell-lateral-raise"
+    "basis": "verified canonical exercise: dumbbell-lateral-raise"
   },
   {
     "legacyId": "builtin-exercise:cable-lateral-raise",
@@ -480,7 +479,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:cable-lateral-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/cable-lateral-raise"
+    "basis": "verified canonical exercise: cable-lateral-raise"
   },
   {
     "legacyId": "builtin-exercise:machine-lateral-raise",
@@ -488,7 +487,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:machine-lateral-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/machine-lateral-raise"
+    "basis": "verified canonical exercise: machine-lateral-raise"
   },
   {
     "legacyId": "builtin-exercise:lean-away-cable-lateral-raise",
@@ -496,7 +495,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:cable-leaning-lateral-raise",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/cable-leaning-lateral-raise"
+    "basis": "verified canonical exercise: cable-leaning-lateral-raise"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-rear-delt-fly",
@@ -504,7 +503,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:bent-over-dumbbell-lateral-raise",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/bent-over-dumbbell-lateral-raise"
+    "basis": "verified canonical exercise: bent-over-dumbbell-lateral-raise"
   },
   {
     "legacyId": "builtin-exercise:reverse-pec-deck",
@@ -512,7 +511,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:machine-reverse-flyes",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/machine-reverse-flyes"
+    "basis": "verified canonical exercise: machine-reverse-flyes"
   },
   {
     "legacyId": "builtin-exercise:cable-rear-delt-fly",
@@ -520,7 +519,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:cable-rear-delt-fly-reverse-fly",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/cable-rear-delt-fly-(reverse-fly)"
+    "basis": "verified canonical exercise: cable-rear-delt-fly-(reverse-fly)"
   },
   {
     "legacyId": "builtin-exercise:face-pull",
@@ -528,7 +527,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:cable-face-pull",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/cable-face-pull"
+    "basis": "verified canonical exercise: cable-face-pull"
   },
   {
     "legacyId": "builtin-exercise:band-face-pull",
@@ -536,7 +535,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:banded-face-pull",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/banded-face-pull"
+    "basis": "verified canonical exercise: banded-face-pull"
   },
   {
     "legacyId": "builtin-exercise:cable-external-rotation",
@@ -544,7 +543,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:band-external-rotation",
@@ -552,7 +551,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-curl",
@@ -560,7 +559,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:biceps-barbell-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/biceps-barbell-curl"
+    "basis": "verified canonical exercise: biceps-barbell-curl"
   },
   {
     "legacyId": "builtin-exercise:ez-bar-curl",
@@ -568,7 +567,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:ez-bar-biceps-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/ez-bar-biceps-curl"
+    "basis": "verified canonical exercise: ez-bar-biceps-curl"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-curl",
@@ -576,7 +575,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-biceps-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-biceps-curl"
+    "basis": "verified canonical exercise: dumbbell-biceps-curl"
   },
   {
     "legacyId": "builtin-exercise:alternating-dumbbell-curl",
@@ -584,7 +583,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-alternate-supinated-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-alternate-supinated-curl"
+    "basis": "verified canonical exercise: dumbbell-alternate-supinated-curl"
   },
   {
     "legacyId": "builtin-exercise:incline-dumbbell-curl",
@@ -592,7 +591,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:seated-incline-biceps-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/seated-incline-biceps-curl"
+    "basis": "verified canonical exercise: seated-incline-biceps-curl"
   },
   {
     "legacyId": "builtin-exercise:preacher-curl",
@@ -600,7 +599,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:ez-bar-preacher-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/ez-bar-preacher-curl"
+    "basis": "verified canonical exercise: ez-bar-preacher-curl"
   },
   {
     "legacyId": "builtin-exercise:machine-preacher-curl",
@@ -608,7 +607,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:machine-preacher-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/machine-preacher-curl"
+    "basis": "verified canonical exercise: machine-preacher-curl"
   },
   {
     "legacyId": "builtin-exercise:cable-curl",
@@ -616,7 +615,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:bar-cable-biceps-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/bar-cable-biceps-curl"
+    "basis": "verified canonical exercise: bar-cable-biceps-curl"
   },
   {
     "legacyId": "builtin-exercise:bayesian-cable-curl",
@@ -624,7 +623,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:bayesian-cable-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/bayesian-cable-curl"
+    "basis": "verified canonical exercise: bayesian-cable-curl"
   },
   {
     "legacyId": "builtin-exercise:spider-curl",
@@ -632,7 +631,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-spider-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-spider-curl"
+    "basis": "verified canonical exercise: dumbbell-spider-curl"
   },
   {
     "legacyId": "builtin-exercise:concentration-curl",
@@ -640,7 +639,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-concentration-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-concentration-curl"
+    "basis": "verified canonical exercise: dumbbell-concentration-curl"
   },
   {
     "legacyId": "builtin-exercise:hammer-curl",
@@ -648,7 +647,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-hammer-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-hammer-curl"
+    "basis": "verified canonical exercise: dumbbell-hammer-curl"
   },
   {
     "legacyId": "builtin-exercise:cross-body-hammer-curl",
@@ -656,7 +655,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-cross-body-hammer-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-cross-body-hammer-curl"
+    "basis": "verified canonical exercise: dumbbell-cross-body-hammer-curl"
   },
   {
     "legacyId": "builtin-exercise:reverse-curl",
@@ -664,7 +663,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:cable-triceps-pushdown",
@@ -672,7 +671,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:cable-triceps-pushdown",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/cable-triceps-pushdown"
+    "basis": "verified canonical exercise: cable-triceps-pushdown"
   },
   {
     "legacyId": "builtin-exercise:rope-triceps-pushdown",
@@ -680,7 +679,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:rope-triceps-pushdown",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/rope-triceps-pushdown"
+    "basis": "verified canonical exercise: rope-triceps-pushdown"
   },
   {
     "legacyId": "builtin-exercise:overhead-cable-triceps-extension",
@@ -688,7 +687,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:cable-overhead-triceps-extension",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/cable-overhead-triceps-extension"
+    "basis": "verified canonical exercise: cable-overhead-triceps-extension"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-overhead-triceps-extension",
@@ -696,7 +695,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:standing-one-dumbbell-french-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/standing-one-dumbbell-french-press"
+    "basis": "verified canonical exercise: standing-one-dumbbell-french-press"
   },
   {
     "legacyId": "builtin-exercise:ez-bar-skull-crusher",
@@ -704,7 +703,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:lying-ez-bar-triceps-extension",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/lying-ez-bar-triceps-extension"
+    "basis": "verified canonical exercise: lying-ez-bar-triceps-extension"
   },
   {
     "legacyId": "builtin-exercise:close-grip-bench-press",
@@ -712,7 +711,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:diamond-push-up",
@@ -720,7 +719,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:diamond-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/diamond-push-up"
+    "basis": "verified canonical exercise: diamond-push-up"
   },
   {
     "legacyId": "builtin-exercise:bench-dip",
@@ -728,7 +727,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:seated-triceps-bench-dip",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/seated-triceps-bench-dip"
+    "basis": "verified canonical exercise: seated-triceps-bench-dip"
   },
   {
     "legacyId": "builtin-exercise:cable-triceps-kickback",
@@ -736,7 +735,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:triceps-cable-kickback",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/triceps-cable-kickback"
+    "basis": "verified canonical exercise: triceps-cable-kickback"
   },
   {
     "legacyId": "builtin-exercise:single-arm-triceps-pushdown",
@@ -744,7 +743,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:one-arm-triceps-cable-pushdown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/one-arm-triceps-cable-pushdown"
+    "basis": "verified canonical exercise: one-arm-triceps-cable-pushdown"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-wrist-curl",
@@ -752,7 +751,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-standing-wrist-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/forearms/dumbbell-standing-wrist-curl"
+    "basis": "verified canonical exercise: dumbbell-standing-wrist-curl"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-reverse-wrist-curl",
@@ -760,7 +759,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-standing-reverse-wrist-curls",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/forearms/dumbbell-standing-reverse-wrist-curls"
+    "basis": "verified canonical exercise: dumbbell-standing-reverse-wrist-curls"
   },
   {
     "legacyId": "builtin-exercise:barbell-wrist-curl",
@@ -768,7 +767,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:barbell-wrist-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/forearms/barbell-wrist-curl"
+    "basis": "verified canonical exercise: barbell-wrist-curl"
   },
   {
     "legacyId": "builtin-exercise:plate-pinch-hold",
@@ -776,7 +775,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:back-squat",
@@ -784,7 +783,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-squat",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/barbell-squat"
+    "basis": "verified canonical exercise: barbell-squat"
   },
   {
     "legacyId": "builtin-exercise:front-squat",
@@ -792,7 +791,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:front-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/front-squat"
+    "basis": "verified canonical exercise: front-squat"
   },
   {
     "legacyId": "builtin-exercise:goblet-squat",
@@ -800,7 +799,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:goblet-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/goblet-squat"
+    "basis": "verified canonical exercise: goblet-squat"
   },
   {
     "legacyId": "builtin-exercise:hack-squat",
@@ -808,7 +807,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:machine-hack-squat",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/machine-hack-squat"
+    "basis": "verified canonical exercise: machine-hack-squat"
   },
   {
     "legacyId": "builtin-exercise:smith-machine-squat",
@@ -816,7 +815,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:smith-squat",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/smith-squat"
+    "basis": "verified canonical exercise: smith-squat"
   },
   {
     "legacyId": "builtin-exercise:belt-squat",
@@ -824,7 +823,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:machine-belt-squat",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/machine-belt-squat"
+    "basis": "verified canonical exercise: machine-belt-squat"
   },
   {
     "legacyId": "builtin-exercise:leg-press",
@@ -832,7 +831,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:leg-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/leg-press"
+    "basis": "verified canonical exercise: leg-press"
   },
   {
     "legacyId": "builtin-exercise:single-leg-press",
@@ -840,7 +839,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:single-leg-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/single-leg-press"
+    "basis": "verified canonical exercise: single-leg-press"
   },
   {
     "legacyId": "builtin-exercise:leg-extension",
@@ -848,7 +847,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:seated-leg-extension-machine",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/seated-leg-extension-machine"
+    "basis": "verified canonical exercise: seated-leg-extension-machine"
   },
   {
     "legacyId": "builtin-exercise:single-leg-extension",
@@ -856,7 +855,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:single-leg-extension",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/single-leg-extension"
+    "basis": "verified canonical exercise: single-leg-extension"
   },
   {
     "legacyId": "builtin-exercise:sissy-squat",
@@ -864,7 +863,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:sissy-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/sissy-squat"
+    "basis": "verified canonical exercise: sissy-squat"
   },
   {
     "legacyId": "builtin-exercise:wall-sit",
@@ -872,7 +871,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:wall-sit",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/wall-sit"
+    "basis": "verified canonical exercise: wall-sit"
   },
   {
     "legacyId": "builtin-exercise:romanian-deadlift",
@@ -880,7 +879,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:romanian-deadlift",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-romanian-deadlift",
@@ -888,7 +887,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-romanian-deadlift",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/dumbbell-romanian-deadlift"
+    "basis": "verified canonical exercise: dumbbell-romanian-deadlift"
   },
   {
     "legacyId": "builtin-exercise:single-leg-romanian-deadlift",
@@ -896,7 +895,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:single-leg-dumbbell-deadlift",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/single-leg-dumbbell-deadlift"
+    "basis": "verified canonical exercise: single-leg-dumbbell-deadlift"
   },
   {
     "legacyId": "builtin-exercise:seated-leg-curl",
@@ -904,7 +903,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:seated-leg-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/seated-leg-curl"
+    "basis": "verified canonical exercise: seated-leg-curl"
   },
   {
     "legacyId": "builtin-exercise:lying-leg-curl",
@@ -912,7 +911,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:prone-lying-leg-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/prone-lying-leg-curl"
+    "basis": "verified canonical exercise: prone-lying-leg-curl"
   },
   {
     "legacyId": "builtin-exercise:standing-single-leg-curl",
@@ -920,7 +919,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:standing-leg-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/standing-leg-curl"
+    "basis": "verified canonical exercise: standing-leg-curl"
   },
   {
     "legacyId": "builtin-exercise:nordic-hamstring-curl",
@@ -928,7 +927,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:nordic-hamstring-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/nordic-hamstring-curl"
+    "basis": "verified canonical exercise: nordic-hamstring-curl"
   },
   {
     "legacyId": "builtin-exercise:glute-ham-raise",
@@ -936,7 +935,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-hip-thrust",
@@ -952,7 +951,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-hip-thrust",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:glute-bridge",
@@ -960,7 +959,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:glute-bridge",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-pull-through",
@@ -968,7 +967,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:cable-pull-through",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-glute-kickback",
@@ -976,7 +975,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:glute-cable-kickback",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:bulgarian-split-squat",
@@ -984,7 +983,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-bulgarian-squat",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/dumbbell-bulgarian-squat"
+    "basis": "verified canonical exercise: dumbbell-bulgarian-squat"
   },
   {
     "legacyId": "builtin-exercise:walking-lunge",
@@ -992,7 +991,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-walking-lunges",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/dumbbell-walking-lunges"
+    "basis": "verified canonical exercise: dumbbell-walking-lunges"
   },
   {
     "legacyId": "builtin-exercise:reverse-lunge",
@@ -1000,7 +999,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:rear-lunge",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:forward-lunge",
@@ -1008,7 +1007,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-lunges",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/dumbbell-lunges"
+    "basis": "verified canonical exercise: dumbbell-lunges"
   },
   {
     "legacyId": "builtin-exercise:lateral-lunge",
@@ -1016,7 +1015,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-side-lunges",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/dumbbell-side-lunges"
+    "basis": "verified canonical exercise: dumbbell-side-lunges"
   },
   {
     "legacyId": "builtin-exercise:step-up",
@@ -1024,7 +1023,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:machine-hip-abduction",
@@ -1032,7 +1031,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:seated-hip-abduction",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-hip-abduction",
@@ -1040,7 +1039,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:cable-hip-abducction",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:machine-hip-adduction",
@@ -1048,7 +1047,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:seated-hip-adduction",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/seated-hip-adduction"
+    "basis": "verified canonical exercise: seated-hip-adduction"
   },
   {
     "legacyId": "builtin-exercise:standing-calf-raise",
@@ -1056,7 +1055,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:standing-calf-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/standing-calf-raise"
+    "basis": "verified canonical exercise: standing-calf-raise"
   },
   {
     "legacyId": "builtin-exercise:seated-calf-raise",
@@ -1064,7 +1063,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:seated-calf-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/seated-calf-raise"
+    "basis": "verified canonical exercise: seated-calf-raise"
   },
   {
     "legacyId": "builtin-exercise:leg-press-calf-raise",
@@ -1072,7 +1071,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:calf-leg-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/calf-leg-press"
+    "basis": "verified canonical exercise: calf-leg-press"
   },
   {
     "legacyId": "builtin-exercise:single-leg-calf-raise",
@@ -1080,7 +1079,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:single-leg-calf-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/single-leg-calf-raise"
+    "basis": "verified canonical exercise: single-leg-calf-raise"
   },
   {
     "legacyId": "builtin-exercise:crunch",
@@ -1088,7 +1087,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:abdominal-crunches",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/abdominal-crunches"
+    "basis": "verified canonical exercise: abdominal-crunches"
   },
   {
     "legacyId": "builtin-exercise:cable-crunch",
@@ -1096,7 +1095,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:kneeling-cable-abs-crunches",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/kneeling-cable-abs-crunches"
+    "basis": "verified canonical exercise: kneeling-cable-abs-crunches"
   },
   {
     "legacyId": "builtin-exercise:machine-crunch",
@@ -1104,7 +1103,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:machine-abdominal-crunches",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/machine-abdominal-crunches"
+    "basis": "verified canonical exercise: machine-abdominal-crunches"
   },
   {
     "legacyId": "builtin-exercise:reverse-crunch",
@@ -1112,7 +1111,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:reverse-crunches",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/reverse-crunches"
+    "basis": "verified canonical exercise: reverse-crunches"
   },
   {
     "legacyId": "builtin-exercise:sit-up",
@@ -1120,7 +1119,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:sit-up",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/sit-up"
+    "basis": "verified canonical exercise: sit-up"
   },
   {
     "legacyId": "builtin-exercise:hanging-leg-raise",
@@ -1128,7 +1127,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:hanging-straight-leg-raise",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/hanging-straight-leg-raise"
+    "basis": "verified canonical exercise: hanging-straight-leg-raise"
   },
   {
     "legacyId": "builtin-exercise:hanging-knee-raise",
@@ -1136,7 +1135,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:hanging-knee-raises",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/hanging-knee-raises"
+    "basis": "verified canonical exercise: hanging-knee-raises"
   },
   {
     "legacyId": "builtin-exercise:captains-chair-knee-raise",
@@ -1144,7 +1143,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:captains-chair-knee-raises",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/captains-chair-knee-raises"
+    "basis": "verified canonical exercise: captains-chair-knee-raises"
   },
   {
     "legacyId": "builtin-exercise:ab-wheel-rollout",
@@ -1152,7 +1151,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:ab-wheel-rollout",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/ab-wheel-rollout"
+    "basis": "verified canonical exercise: ab-wheel-rollout"
   },
   {
     "legacyId": "builtin-exercise:plank",
@@ -1160,7 +1159,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:plank",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/plank"
+    "basis": "verified canonical exercise: plank"
   },
   {
     "legacyId": "builtin-exercise:side-plank",
@@ -1168,7 +1167,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:side-plank",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/side-plank"
+    "basis": "verified canonical exercise: side-plank"
   },
   {
     "legacyId": "builtin-exercise:dead-bug",
@@ -1176,7 +1175,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:dead-bug",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/dead-bug"
+    "basis": "verified canonical exercise: dead-bug"
   },
   {
     "legacyId": "builtin-exercise:bird-dog",
@@ -1184,7 +1183,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:bird-dog",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:pallof-press",
@@ -1192,7 +1191,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:cable-horizontal-pallof-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/cable-horizontal-pallof-press"
+    "basis": "verified canonical exercise: cable-horizontal-pallof-press"
   },
   {
     "legacyId": "builtin-exercise:band-pallof-press",
@@ -1200,7 +1199,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:band-pallof-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/band-pallof-press"
+    "basis": "verified canonical exercise: band-pallof-press"
   },
   {
     "legacyId": "builtin-exercise:russian-twist",
@@ -1208,7 +1207,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:med-ball-russian-twist",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/med-ball-russian-twist"
+    "basis": "verified canonical exercise: med-ball-russian-twist"
   },
   {
     "legacyId": "builtin-exercise:cable-wood-chop",
@@ -1216,7 +1215,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:landmine-rotation",
@@ -1224,7 +1223,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:landmine-twist",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/landmine-twist"
+    "basis": "verified canonical exercise: landmine-twist"
   },
   {
     "legacyId": "builtin-exercise:bicycle-crunch",
@@ -1232,7 +1231,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:bicycle-crunches",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/bicycle-crunches"
+    "basis": "verified canonical exercise: bicycle-crunches"
   },
   {
     "legacyId": "builtin-exercise:suitcase-carry",
@@ -1240,7 +1239,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:conventional-deadlift",
@@ -1248,7 +1247,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:deadlift",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/deadlift"
+    "basis": "verified canonical exercise: deadlift"
   },
   {
     "legacyId": "builtin-exercise:sumo-deadlift",
@@ -1256,7 +1255,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:sumo-deadlift",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-swing",
@@ -1264,7 +1263,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:kettlebell-swing",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/kettlebell-swing"
+    "basis": "verified canonical exercise: kettlebell-swing"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-clean",
@@ -1272,7 +1271,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:kettelbell-clean",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-clean-and-press",
@@ -1280,7 +1279,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-clean",
@@ -1288,7 +1287,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-thruster",
@@ -1296,7 +1295,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-thruster",
@@ -1304,7 +1303,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:barbell-thruster",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/barbell-thruster"
+    "basis": "verified canonical exercise: barbell-thruster"
   },
   {
     "legacyId": "builtin-exercise:burpee",
@@ -1312,7 +1311,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:burpee",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/burpee"
+    "basis": "verified canonical exercise: burpee"
   },
   {
     "legacyId": "builtin-exercise:devil-press",
@@ -1320,7 +1319,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:farmer-carry",
@@ -1328,7 +1327,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:dumbbell-farmer-carry",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:sled-push",
@@ -1336,7 +1335,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:prowler-sled",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/prowler-sled"
+    "basis": "verified canonical exercise: prowler-sled"
   },
   {
     "legacyId": "builtin-exercise:outdoor-running",
@@ -1344,7 +1343,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:running",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:treadmill-running",
@@ -1352,7 +1351,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:treadmill-run",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:track-running",
@@ -1360,7 +1359,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:running",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:trail-running",
@@ -1368,7 +1367,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:running",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:sprint-intervals",
@@ -1376,7 +1375,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:outdoor-walking",
@@ -1384,7 +1383,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:walking-cardio",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:treadmill-walking",
@@ -1392,7 +1391,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:walking-cardio",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:incline-treadmill-walking",
@@ -1400,7 +1399,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hiking",
@@ -1408,7 +1407,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:outdoor-cycling",
@@ -1416,7 +1415,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:stationary-bike",
@@ -1424,7 +1423,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:stacionary-bike",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:spin-bike",
@@ -1432,7 +1431,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:stacionary-bike",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:air-bike",
@@ -1440,7 +1439,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:air-bike",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:rowing-machine",
@@ -1448,7 +1447,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:rowing-machine",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:elliptical",
@@ -1456,7 +1455,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:elliptical-trainer",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:stair-climber",
@@ -1464,7 +1463,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:stair-climber",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:swimming",
@@ -1472,7 +1471,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:jump-rope",
@@ -1480,7 +1479,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:jump-rope",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:skierg",
@@ -1496,7 +1495,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:punching-bag-boxing",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:band-shoulder-dislocate",
@@ -1504,7 +1503,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:wall-shoulder-slide",
@@ -1512,7 +1511,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:scapular-wall-slide",
@@ -1520,7 +1519,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:thread-the-needle",
@@ -1528,7 +1527,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:open-book-rotation",
@@ -1536,7 +1535,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:half-kneeling-thoracic-rotation",
@@ -1544,7 +1543,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:90-90-hip-switch",
@@ -1552,7 +1551,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hip-car",
@@ -1560,7 +1559,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:adductor-rock-back",
@@ -1568,7 +1567,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:knee-to-wall-ankle-mobilization",
@@ -1576,7 +1575,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:worlds-greatest-stretch",
@@ -1584,7 +1583,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": "builtin-exercise:worlds-greatest-stretch",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:inchworm-to-cobra",
@@ -1592,7 +1591,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:incline-cable-press",
@@ -1600,7 +1599,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:low-cable-incline-bench-press",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:single-arm-dumbbell-bench-press",
@@ -1608,7 +1607,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:one-arm-dumbbell-bench-press",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-floor-press",
@@ -1616,7 +1615,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:floor-dumbbell-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/floor-dumbbell-press"
+    "basis": "verified canonical exercise: floor-dumbbell-press"
   },
   {
     "legacyId": "builtin-exercise:barbell-floor-press",
@@ -1624,7 +1623,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:barbell-floor-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/barbell-floor-press"
+    "basis": "verified canonical exercise: barbell-floor-press"
   },
   {
     "legacyId": "builtin-exercise:plyometric-push-up",
@@ -1632,7 +1631,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:weighted-push-up",
@@ -1640,7 +1639,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:weighted-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/weighted-push-up"
+    "basis": "verified canonical exercise: weighted-push-up"
   },
   {
     "legacyId": "builtin-exercise:archer-push-up",
@@ -1648,7 +1647,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:archer-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/archer-push-up"
+    "basis": "verified canonical exercise: archer-push-up"
   },
   {
     "legacyId": "builtin-exercise:decline-machine-press",
@@ -1656,7 +1655,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:decline-chest-press",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:smith-machine-decline-press",
@@ -1664,7 +1663,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-fly",
@@ -1672,7 +1671,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:dumbbell-chest-fly",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:incline-dumbbell-fly",
@@ -1680,7 +1679,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:incline-dumbbell-chest-fly",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:decline-dumbbell-fly",
@@ -1688,7 +1687,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:decline-dumbbell-fly",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/decline-dumbbell-fly"
+    "basis": "verified canonical exercise: decline-dumbbell-fly"
   },
   {
     "legacyId": "builtin-exercise:cable-chest-press",
@@ -1696,7 +1695,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:seated-cable-chest-press",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/seated-cable-chest-press"
+    "basis": "verified canonical exercise: seated-cable-chest-press"
   },
   {
     "legacyId": "builtin-exercise:suspension-chest-press",
@@ -1704,7 +1703,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:ring-push-up",
@@ -1712,7 +1711,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:ring-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/chest/ring-push-up"
+    "basis": "verified canonical exercise: ring-push-up"
   },
   {
     "legacyId": "builtin-exercise:ring-dip",
@@ -1720,7 +1719,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": "builtin-exercise:ring-dips",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/ring-dips"
+    "basis": "verified canonical exercise: ring-dips"
   },
   {
     "legacyId": "builtin-exercise:deficit-push-up",
@@ -1728,7 +1727,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Chest",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:half-kneeling-single-arm-lat-pulldown",
@@ -1736,7 +1735,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:one-arm-cable-half-kneeling-lat-pulldown",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/one-arm-cable-half-kneeling-lat-pulldown"
+    "basis": "verified canonical exercise: one-arm-cable-half-kneeling-lat-pulldown"
   },
   {
     "legacyId": "builtin-exercise:kneeling-cable-lat-prayer",
@@ -1744,7 +1743,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:seal-row",
@@ -1752,7 +1751,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:seal-row",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/seal-row"
+    "basis": "verified canonical exercise: seal-row"
   },
   {
     "legacyId": "builtin-exercise:meadows-row",
@@ -1760,7 +1759,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-shrug",
@@ -1768,7 +1767,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:barbell-shoulder-shrug",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:scapular-pull-up",
@@ -1776,7 +1775,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:hanging-scapular-retractions",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:weighted-pull-up",
@@ -1784,7 +1783,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:weighted-pull-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/weighted-pull-up"
+    "basis": "verified canonical exercise: weighted-pull-up"
   },
   {
     "legacyId": "builtin-exercise:weighted-chin-up",
@@ -1792,7 +1791,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:weighted-chin-up",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/weighted-chin-up"
+    "basis": "verified canonical exercise: weighted-chin-up"
   },
   {
     "legacyId": "builtin-exercise:band-assisted-pull-up",
@@ -1800,7 +1799,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:band-assisted-pull-up",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/band-assisted-pull-up"
+    "basis": "verified canonical exercise: band-assisted-pull-up"
   },
   {
     "legacyId": "builtin-exercise:machine-pullover",
@@ -1808,7 +1807,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:machine-pullover",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/machine-pullover"
+    "basis": "verified canonical exercise: machine-pullover"
   },
   {
     "legacyId": "builtin-exercise:single-arm-cable-row",
@@ -1816,7 +1815,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:one-arm-cable-row",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:high-row-machine",
@@ -1824,7 +1823,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:lever-high-row",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/lever-high-row"
+    "basis": "verified canonical exercise: lever-high-row"
   },
   {
     "legacyId": "builtin-exercise:suspension-row",
@@ -1832,7 +1831,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:suspension-row",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/suspension-row"
+    "basis": "verified canonical exercise: suspension-row"
   },
   {
     "legacyId": "builtin-exercise:resistance-band-row",
@@ -1840,7 +1839,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:resistance-band-lat-pulldown",
@@ -1848,7 +1847,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:resistance-band-pull-apart",
@@ -1856,7 +1855,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:reverse-hyperextension",
@@ -1864,7 +1863,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-shrug",
@@ -1872,7 +1871,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:dumbbell-shoulder-shrugs",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-shrug",
@@ -1880,7 +1879,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:cable-shrug",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/cable-shrug"
+    "basis": "verified canonical exercise: cable-shrug"
   },
   {
     "legacyId": "builtin-exercise:chest-supported-machine-row",
@@ -1888,7 +1887,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": "builtin-exercise:chest-supported-machine-row",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/back/chest-supported-machine-row"
+    "basis": "verified canonical exercise: chest-supported-machine-row"
   },
   {
     "legacyId": "builtin-exercise:seated-cable-high-row",
@@ -1896,7 +1895,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:barbell-high-pull",
@@ -1904,7 +1903,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Back",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:pike-push-up",
@@ -1912,7 +1911,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:pike-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/pike-push-up"
+    "basis": "verified canonical exercise: pike-push-up"
   },
   {
     "legacyId": "builtin-exercise:handstand-push-up",
@@ -1920,7 +1919,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:handstand-push-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/handstand-push-up"
+    "basis": "verified canonical exercise: handstand-push-up"
   },
   {
     "legacyId": "builtin-exercise:barbell-upright-row",
@@ -1928,7 +1927,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:barbell-shoulder-grip-upright-row",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-y-raise",
@@ -1936,7 +1935,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:cable-y-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/cable-y-raise"
+    "basis": "verified canonical exercise: cable-y-raise"
   },
   {
     "legacyId": "builtin-exercise:single-arm-landmine-press",
@@ -1944,7 +1943,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:seated-dumbbell-shoulder-press",
@@ -1952,7 +1951,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:seated-dumbbell-shoulder-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/shoulders/seated-dumbbell-shoulder-press"
+    "basis": "verified canonical exercise: seated-dumbbell-shoulder-press"
   },
   {
     "legacyId": "builtin-exercise:band-internal-rotation",
@@ -1960,7 +1959,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:cable-internal-rotation",
@@ -1968,7 +1967,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:prone-y-raise",
@@ -1976,7 +1975,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:prone-t-raise",
@@ -1984,7 +1983,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:serratus-push-up",
@@ -1992,7 +1991,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:scapula-push-up",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:leaning-dumbbell-lateral-raise",
@@ -2000,7 +1999,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:single-arm-cable-lateral-raise",
@@ -2008,7 +2007,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Shoulders",
     "successorId": "builtin-exercise:one-arm-cable-lateral-raise",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-preacher-curl",
@@ -2016,7 +2015,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:double-dumbbell-preacher-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/double-dumbbell-preacher-curl"
+    "basis": "verified canonical exercise: double-dumbbell-preacher-curl"
   },
   {
     "legacyId": "builtin-exercise:cable-hammer-curl",
@@ -2024,7 +2023,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:rope-cable-hammer-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/rope-cable-hammer-curl"
+    "basis": "verified canonical exercise: rope-cable-hammer-curl"
   },
   {
     "legacyId": "builtin-exercise:zottman-curl",
@@ -2032,7 +2031,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:zottman-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/zottman-curl"
+    "basis": "verified canonical exercise: zottman-curl"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-skull-crusher",
@@ -2040,7 +2039,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-lying-triceps-extension",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:jm-press",
@@ -2048,7 +2047,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:jm-press",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/jm-press"
+    "basis": "verified canonical exercise: jm-press"
   },
   {
     "legacyId": "builtin-exercise:wrist-roller",
@@ -2056,7 +2055,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:wrist-roller",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/forearms/wrist-roller"
+    "basis": "verified canonical exercise: wrist-roller"
   },
   {
     "legacyId": "builtin-exercise:machine-biceps-curl",
@@ -2064,7 +2063,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:machine-biceps-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/machine-biceps-curl"
+    "basis": "verified canonical exercise: machine-biceps-curl"
   },
   {
     "legacyId": "builtin-exercise:cable-preacher-curl",
@@ -2072,7 +2071,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:cable-preacher-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/cable-preacher-curl"
+    "basis": "verified canonical exercise: cable-preacher-curl"
   },
   {
     "legacyId": "builtin-exercise:suspension-biceps-curl",
@@ -2080,7 +2079,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:incline-hammer-curl",
@@ -2088,7 +2087,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dumbbell-incline-hammer-curl",
     "confidence": "Equivalent",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/biceps/dumbbell-incline-hammer-curl"
+    "basis": "verified canonical exercise: dumbbell-incline-hammer-curl"
   },
   {
     "legacyId": "builtin-exercise:cable-reverse-curl",
@@ -2096,7 +2095,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:reverse-grip-cable-curl",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-skull-crusher",
@@ -2104,7 +2103,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:single-arm-overhead-cable-triceps-extension",
@@ -2112,7 +2111,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:machine-triceps-extension",
@@ -2120,7 +2119,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:machine-triceps-extension",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/machine-triceps-extension"
+    "basis": "verified canonical exercise: machine-triceps-extension"
   },
   {
     "legacyId": "builtin-exercise:machine-dip",
@@ -2128,7 +2127,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:suspension-triceps-extension",
@@ -2136,7 +2135,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:suspension-triceps-extension",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/triceps/suspension-triceps-extension"
+    "basis": "verified canonical exercise: suspension-triceps-extension"
   },
   {
     "legacyId": "builtin-exercise:bodyweight-triceps-extension",
@@ -2144,7 +2143,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dead-hang",
@@ -2152,7 +2151,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:dead-hang",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/forearms/dead-hang"
+    "basis": "verified canonical exercise: dead-hang"
   },
   {
     "legacyId": "builtin-exercise:hand-gripper",
@@ -2160,7 +2159,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": "builtin-exercise:hand-gripper",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/forearms/hand-gripper"
+    "basis": "verified canonical exercise: hand-gripper"
   },
   {
     "legacyId": "builtin-exercise:farmer-hold",
@@ -2168,7 +2167,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Arms",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-goblet-squat",
@@ -2176,7 +2175,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:kettlebell-goblet-squat",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:barbell-step-up",
@@ -2184,7 +2183,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-step-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/barbell-step-up"
+    "basis": "verified canonical exercise: barbell-step-up"
   },
   {
     "legacyId": "builtin-exercise:pistol-squat",
@@ -2192,7 +2191,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:pistol-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/pistol-squat"
+    "basis": "verified canonical exercise: pistol-squat"
   },
   {
     "legacyId": "builtin-exercise:reverse-nordic-curl",
@@ -2200,7 +2199,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:reverse-nordic-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/reverse-nordic-curl"
+    "basis": "verified canonical exercise: reverse-nordic-curl"
   },
   {
     "legacyId": "builtin-exercise:tibialis-raise",
@@ -2208,7 +2207,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:standing-tibialis-raise",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/standing-tibialis-raise"
+    "basis": "verified canonical exercise: standing-tibialis-raise"
   },
   {
     "legacyId": "builtin-exercise:curtsy-lunge",
@@ -2216,7 +2215,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:pendulum-squat",
@@ -2224,7 +2223,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:front-foot-elevated-split-squat",
@@ -2232,7 +2231,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:split-squat-front-foot-elevated",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/split-squat-front-foot-elevated"
+    "basis": "verified canonical exercise: split-squat-front-foot-elevated"
   },
   {
     "legacyId": "builtin-exercise:barbell-reverse-lunge",
@@ -2240,7 +2239,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-reverse-lunges",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/barbell-reverse-lunges"
+    "basis": "verified canonical exercise: barbell-reverse-lunges"
   },
   {
     "legacyId": "builtin-exercise:barbell-walking-lunge",
@@ -2248,7 +2247,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-walking-lunges",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/barbell-walking-lunges"
+    "basis": "verified canonical exercise: barbell-walking-lunges"
   },
   {
     "legacyId": "builtin-exercise:barbell-glute-bridge",
@@ -2256,7 +2255,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-glute-bridge",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:machine-hip-thrust",
@@ -2264,7 +2263,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:machine-hip-thrust",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:machine-glute-kickback",
@@ -2272,7 +2271,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:glute-machine-kickback",
     "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live SmartWorkout inventory"
+    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:frog-pump",
@@ -2280,7 +2279,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:frog-pump",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:b-stance-hip-thrust",
@@ -2288,7 +2287,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:resistance-band-hip-abduction",
@@ -2296,7 +2295,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:side-lying-hip-abduction",
@@ -2304,7 +2303,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:side-lying-hip-abduction",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:clamshell",
@@ -2312,7 +2311,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:cable-hip-adduction",
@@ -2320,7 +2319,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:cable-hip-adduction",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/cable-hip-adduction"
+    "basis": "verified canonical exercise: cable-hip-adduction"
   },
   {
     "legacyId": "builtin-exercise:stiff-leg-deadlift",
@@ -2328,7 +2327,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:trap-bar-deadlift",
@@ -2336,7 +2335,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:trap-bar-deadlift",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/trap-bar-deadlift"
+    "basis": "verified canonical exercise: trap-bar-deadlift"
   },
   {
     "legacyId": "builtin-exercise:landmine-romanian-deadlift",
@@ -2344,7 +2343,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:landmine-squat",
@@ -2352,7 +2351,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:landmine-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/landmine-squat"
+    "basis": "verified canonical exercise: landmine-squat"
   },
   {
     "legacyId": "builtin-exercise:landmine-reverse-lunge",
@@ -2360,7 +2359,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-split-squat",
@@ -2368,7 +2367,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:dumbbell-split-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/dumbbell-split-squat"
+    "basis": "verified canonical exercise: dumbbell-split-squat"
   },
   {
     "legacyId": "builtin-exercise:barbell-bulgarian-split-squat",
@@ -2376,7 +2375,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:barbell-bulgarian-squat",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/barbell-bulgarian-squat"
+    "basis": "verified canonical exercise: barbell-bulgarian-squat"
   },
   {
     "legacyId": "builtin-exercise:single-leg-lying-leg-curl",
@@ -2384,7 +2383,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:single-leg-lying-curl",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/single-leg-lying-curl"
+    "basis": "verified canonical exercise: single-leg-lying-curl"
   },
   {
     "legacyId": "builtin-exercise:single-leg-seated-leg-curl",
@@ -2392,7 +2391,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:slider-hamstring-curl",
@@ -2400,7 +2399,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:suspension-hamstring-curl",
@@ -2408,7 +2407,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:smith-machine-calf-raise",
@@ -2416,7 +2415,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": "builtin-exercise:smith-calf-raises",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:seated-tibialis-raise",
@@ -2424,7 +2423,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Legs",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:lying-leg-raise",
@@ -2432,7 +2431,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hollow-body-hold",
@@ -2440,7 +2439,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:hollow-body-hold",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/hollow-body-hold"
+    "basis": "verified canonical exercise: hollow-body-hold"
   },
   {
     "legacyId": "builtin-exercise:bear-plank",
@@ -2448,7 +2447,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:bear-plank",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/bear-plank"
+    "basis": "verified canonical exercise: bear-plank"
   },
   {
     "legacyId": "builtin-exercise:plank-shoulder-tap",
@@ -2456,7 +2455,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:shoulder-tap",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:weighted-sit-up",
@@ -2464,7 +2463,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:weighted-sit-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/weighted-sit-up"
+    "basis": "verified canonical exercise: weighted-sit-up"
   },
   {
     "legacyId": "builtin-exercise:copenhagen-plank",
@@ -2472,7 +2471,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dragon-flag",
@@ -2480,7 +2479,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:dragon-flag",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/dragon-flag"
+    "basis": "verified canonical exercise: dragon-flag"
   },
   {
     "legacyId": "builtin-exercise:v-up",
@@ -2488,7 +2487,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:v-up",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/v-up"
+    "basis": "verified canonical exercise: v-up"
   },
   {
     "legacyId": "builtin-exercise:toes-to-bar",
@@ -2496,7 +2495,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:toes-to-bar",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/toes-to-bar"
+    "basis": "verified canonical exercise: toes-to-bar"
   },
   {
     "legacyId": "builtin-exercise:body-saw",
@@ -2504,7 +2503,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:saw-plank",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:stability-ball-rollout",
@@ -2512,7 +2511,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:stir-the-pot",
@@ -2520,7 +2519,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:long-lever-plank",
@@ -2528,7 +2527,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:cable-pallof-hold",
@@ -2536,7 +2535,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:half-kneeling-pallof-press",
@@ -2544,7 +2543,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:suitcase-march",
@@ -2552,7 +2551,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:l-sit",
@@ -2560,7 +2559,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:l-sit",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/abs/l-sit"
+    "basis": "verified canonical exercise: l-sit"
   },
   {
     "legacyId": "builtin-exercise:hanging-knee-raise-with-twist",
@@ -2568,7 +2567,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": "builtin-exercise:hanging-oblique-knee-raise",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:cable-reverse-wood-chop",
@@ -2576,7 +2575,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:decline-sit-up",
@@ -2584,7 +2583,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:ghd-sit-up",
@@ -2592,7 +2591,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Core",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:turkish-get-up",
@@ -2600,7 +2599,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:turkish-get-up",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:medicine-ball-slam",
@@ -2608,7 +2607,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:medicine-ball-slam",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:battle-rope-alternating-waves",
@@ -2616,7 +2615,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:bear-crawl",
@@ -2624,7 +2623,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:box-jump",
@@ -2632,7 +2631,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:box-jumps",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/box-jumps"
+    "basis": "verified canonical exercise: box-jumps"
   },
   {
     "legacyId": "builtin-exercise:sandbag-clean",
@@ -2640,7 +2639,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:renegade-row",
@@ -2648,7 +2647,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:alternate-renegade-row",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:power-clean",
@@ -2656,7 +2655,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:power-clean",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/power-clean"
+    "basis": "verified canonical exercise: power-clean"
   },
   {
     "legacyId": "builtin-exercise:barbell-snatch",
@@ -2664,7 +2663,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:snatch",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/snatch"
+    "basis": "verified canonical exercise: snatch"
   },
   {
     "legacyId": "builtin-exercise:power-snatch",
@@ -2672,7 +2671,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:clean-and-jerk",
@@ -2680,7 +2679,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:clean-and-jerk",
     "confidence": "Exact",
-    "basis": "verified Phase 1G source page: https://smartworkout.app/en/exercise-library/legs/clean-and-jerk"
+    "basis": "verified canonical exercise: clean-and-jerk"
   },
   {
     "legacyId": "builtin-exercise:barbell-clean-and-press",
@@ -2688,7 +2687,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-snatch",
@@ -2696,7 +2695,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-deadlift",
@@ -2704,7 +2703,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:kettlebell-deadlift",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-front-rack-carry",
@@ -2712,7 +2711,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-push-press",
@@ -2720,7 +2719,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kettlebell-thruster",
@@ -2728,7 +2727,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-clean",
@@ -2736,7 +2735,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-snatch",
@@ -2744,7 +2743,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:dumbbell-snatch",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:dumbbell-clean-and-press",
@@ -2752,7 +2751,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:trap-bar-carry",
@@ -2760,7 +2759,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:overhead-carry",
@@ -2768,7 +2767,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:front-rack-carry",
@@ -2776,7 +2775,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:zercher-carry",
@@ -2784,7 +2783,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:sandbag-carry",
@@ -2792,7 +2791,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:sled-pull",
@@ -2800,7 +2799,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:muscle-up",
@@ -2808,7 +2807,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Full Body",
     "successorId": "builtin-exercise:muscle-up",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:recumbent-bike",
@@ -2816,7 +2815,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kickboxing",
@@ -2824,7 +2823,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:kickboxing",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:circuit-training",
@@ -2832,7 +2831,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hiit-session",
@@ -2840,7 +2839,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:battle-rope-intervals",
@@ -2848,7 +2847,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:sled-drag-conditioning",
@@ -2856,7 +2855,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hill-running",
@@ -2864,7 +2863,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:running",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:treadmill-incline-running",
@@ -2872,7 +2871,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:rucking",
@@ -2880,7 +2879,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:mountain-biking",
@@ -2888,7 +2887,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:bikeerg",
@@ -2896,7 +2895,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hand-cycle",
@@ -2904,7 +2903,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:outdoor-rowing",
@@ -2912,7 +2911,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:kayaking",
@@ -2920,7 +2919,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:canoeing",
@@ -2928,7 +2927,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:vertical-climber",
@@ -2936,7 +2935,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:stepper",
@@ -2944,7 +2943,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:double-unders",
@@ -2952,7 +2951,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:shadow-boxing",
@@ -2960,7 +2959,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:shuttle-run",
@@ -2968,7 +2967,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:mountain-climbers",
@@ -2976,7 +2975,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:mountain-climber",
     "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live SmartWorkout inventory"
+    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:jumping-jacks",
@@ -2984,7 +2983,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": "builtin-exercise:jumping-jacks",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:freestyle-swimming",
@@ -2992,7 +2991,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:breaststroke-swimming",
@@ -3000,7 +2999,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:backstroke-swimming",
@@ -3008,7 +3007,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:butterfly-swimming",
@@ -3016,7 +3015,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:battle-rope-double-waves",
@@ -3024,7 +3023,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Cardio",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:cat-cow",
@@ -3032,7 +3031,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": "builtin-exercise:cat-cow",
     "confidence": "Exact",
-    "basis": "exact canonical slug/name in live SmartWorkout inventory"
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:deep-squat-pry",
@@ -3040,7 +3039,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:ankle-car",
@@ -3048,7 +3047,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:shoulder-car",
@@ -3056,7 +3055,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:thoracic-extension-on-foam-roller",
@@ -3064,7 +3063,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:cossack-squat-mobility",
@@ -3072,7 +3071,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:scapular-car",
@@ -3080,7 +3079,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:wrist-car",
@@ -3088,7 +3087,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:neck-car",
@@ -3096,7 +3095,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:quadruped-thoracic-rotation",
@@ -3104,7 +3103,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:prone-cobra",
@@ -3112,7 +3111,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:half-kneeling-hip-flexor-mobilization",
@@ -3120,7 +3119,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hip-airplane",
@@ -3128,7 +3127,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:shin-box-transition",
@@ -3136,7 +3135,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:banded-ankle-mobilization",
@@ -3144,7 +3143,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:calf-rock",
@@ -3152,7 +3151,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:hamstring-walkout",
@@ -3160,7 +3159,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:half-kneeling-adductor-mobilization",
@@ -3168,7 +3167,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:sumo-squat-hold",
@@ -3176,7 +3175,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:lateral-squat-shift",
@@ -3184,7 +3183,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:bear-sit-rotation",
@@ -3192,7 +3191,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   },
   {
     "legacyId": "builtin-exercise:standing-hip-car",
@@ -3200,12 +3199,12 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyCategory": "Mobility",
     "successorId": null,
     "confidence": "Removed",
-    "basis": "No exact or high-confidence SmartWorkout successor"
+    "basis": "No exact or high-confidence FitDex successor"
   }
-] as const satisfies readonly LegacyExerciseMigration[]
+] as const;
 
 export const LEGACY_EXERCISE_ID_MAP: Readonly<Record<string, string | null>> = Object.fromEntries(
   LEGACY_EXERCISE_MIGRATIONS.map((migration) => [migration.legacyId, migration.successorId]),
-)
+);
 
-export const LEGACY_RETIRED_EXERCISES = LEGACY_EXERCISE_MIGRATIONS.filter((migration) => !migration.successorId)
+export const LEGACY_RETIRED_EXERCISES = LEGACY_EXERCISE_MIGRATIONS.filter((migration) => !migration.successorId);

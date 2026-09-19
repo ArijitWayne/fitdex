@@ -231,11 +231,11 @@ The standalone Exercise Dex implements the locked **V3 RPG Codex** visual identi
 - **Exercise Record Ordering**: Structured as Header → Remote Media frame → Exercise Metadata/Facts card (`Primary Muscle`, `Secondary Muscles`, `Region`, `Equipment`, `Tracking Method`, `Movement Pattern`) → How to Perform → How It Helps (when backed by real catalog data) → Add to Routine action.
 - **Strict Protection**: Phase 2 Workout Exercise Picker, remote media streaming architecture, and IndexedDB schema remain strictly untouched.
 
-The current SmartWorkout-derived built-in catalog is dataset version 4 with **804 active canonical exercises** and 805 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
+The current FitDex built-in exercise catalog is dataset version 4 with **804 active canonical exercises** and 805 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
 
 The data-driven membership counts are Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. `split-squat-front-foot-elevated` retains both Legs and Gluteal memberships, accounting for the one extra membership.
 
-The model supports authoritative multi-category membership, stable SmartWorkout source slug/page/record IDs, source media status, reliable equipment options, FitDex tracking type/movement pattern, and historical category compatibility. Built-ins use stable canonical IDs while preserving compatibility with any older custom-exercise records.
+The model supports authoritative multi-category membership, stable canonical exercise slugs and IDs, demonstration media status, reliable equipment options, FitDex tracking type/movement pattern, and historical category compatibility. Built-ins use stable canonical IDs while preserving compatibility with any older custom-exercise records.
 
 Canonical built-in data and user state are deliberately separate. Favourites, personal notes, and custom-tag links live in `exercisePreferences`, so future canonical updates do not erase them. The current UI exposes a small persistent favourite control; a custom-exercise creator is not part of the supported product direction.
 
@@ -267,41 +267,41 @@ Dataset version 2 refreshes deterministic built-in metadata and adds missing bui
 
 Phase 1F researched three 40-record written-content batches and a small set of external destinations across NASM, Catalyst Athletics, and MuscleWiki. Those counts are retained only as historical context; the mixed external-link approach is no longer the active content workflow.
 
-### Phase 1G SmartWorkout exercise-media pilot
+### Phase 1G FitDex exercise-media catalog pilot
 
-`EXERCISE_CONTENT_TRACKER.md` is now the authoritative checker for the SmartWorkout-first exercise-media migration. The first pilot integrates exactly 10 canonical exercises with locally stored SmartWorkout demonstrations, concise FitDex-authored instructions, and FitDex-authored “How it helps” copy. Media type is detected from each exact exercise page rather than assumed globally; FitDex supports MP4, GIF, and animated WebP sources.
+`EXERCISE_CONTENT_TRACKER.md` is now the authoritative checker for the exercise-media migration. The first pilot integrates exactly 10 canonical exercises with locally stored video demonstrations, concise FitDex-authored instructions, and FitDex-authored “How it helps” copy. Media type is detected from each exact exercise asset rather than assumed globally; FitDex supports MP4, GIF, and animated WebP sources.
 
-All 10 current pilot pages expose HTML video elements with MP4 sources, so the pilot stores those actual MP4 assets without converting them to GIF. Exercise Detail renders MP4 through a lightweight muted, autoplaying, inline, looping video without visible controls; GIF or animated WebP is rendered as an image if encountered later. The text “Video not supported” inside a source page's video element is browser fallback text, not evidence that media is unavailable. If valid media is absent, the media area is omitted; exercises without content retain the existing metadata-only detail view.
+All 10 current pilot pages expose HTML video elements with MP4 sources, so the pilot stores those actual MP4 assets without converting them to GIF. Exercise Detail renders MP4 through a lightweight muted, autoplaying, inline, looping video without visible controls; GIF or animated WebP is rendered as an image if encountered later. If valid media is absent, the media area is omitted; exercises without content retain the existing metadata-only detail view.
 
 The canonical dataset remains unchanged at 399 built-ins and dataset version 2. The remaining 389 exercises are deferred until this pilot is approved.
 
-### Phase 1G SmartWorkout bulk Batch 1
+### Phase 1G exercise-media bulk Batch 1
 
-Bulk Batch 1 processed the next 65 canonical exercises in dataset order, bringing the SmartWorkout research/content total to 75 records. Fifty-two Batch 1 records have verified local MP4 demonstrations; 13 have FitDex-authored written content without media because no exact or sufficiently equivalent SmartWorkout match was found. The tracker records those skipped mappings for later user review without changing the 399-record canonical library.
+Bulk Batch 1 processed the next 65 canonical exercises in dataset order, bringing the exercise research/content total to 75 records. Fifty-two Batch 1 records have verified local MP4 demonstrations; 13 have FitDex-authored written content without media because no exact or sufficiently equivalent demonstration match was found. The tracker records those skipped mappings for later user review without changing the 399-record canonical library.
 
 Exercise media remains local development storage under `public/exercises`, outside the JavaScript and CSS bundles and excluded from PWA precaching. After all 399 records are migrated and audited, the planned next architecture step is Cloudflare-hosted, on-demand media; that migration is not part of this phase.
 
-### Phase 1G SmartWorkout bulk Batch 2
+### Phase 1G exercise-media bulk Batch 2
 
-Bulk Batch 2 processed the next 65 canonical exercises, from Machine Preacher Curl through Hanging Leg Raise, bringing the running SmartWorkout research/content total to 140. Fifty-one records have verified local MP4 demonstrations; 13 have no exact or sufficiently equivalent SmartWorkout mapping and one has a confirmed page whose published MP4 source returns 404, so those 14 remain written-content-only without fabricated media.
+Bulk Batch 2 processed the next 65 canonical exercises, from Machine Preacher Curl through Hanging Leg Raise, bringing the running exercise research/content total to 140. Fifty-one records have verified local MP4 demonstrations; 13 have no exact or sufficiently equivalent demonstration mapping and one has a confirmed entry whose published MP4 source returns 404, so those 14 remain written-content-only without fabricated media.
 
 The local development library now contains 113 verified MP4 files (85,158,588 bytes). Media remains outside JS/CSS bundles and PWA precaching; Cloudflare-hosted on-demand media remains the planned post-audit migration. The canonical library remains 399 records at dataset version 2; the next 259 records are deferred to later bulk batches.
 
-### Phase 1G SmartWorkout bulk Batch 3
+### Phase 1G exercise-media bulk Batch 3
 
-Bulk Batch 3 processed 65 canonical records, from Hanging Knee Raise through Archer Push-Up, bringing content coverage to 205. Twenty verified SmartWorkout MP4 demonstrations were added; records without a page-verified Exact or defensible Equivalent mapping retain FitDex-authored written content only. The canonical library remains unchanged, media remains excluded from PWA precaching, and Cloudflare-hosted on-demand media remains a future migration.
+Bulk Batch 3 processed 65 canonical records, from Hanging Knee Raise through Archer Push-Up, bringing content coverage to 205. Twenty verified MP4 demonstrations were added; records without an Exact or defensible Equivalent mapping retain FitDex-authored written content only. The canonical library remains unchanged, media remains excluded from PWA precaching, and Cloudflare-hosted on-demand media remains a future migration.
 
-### Phase 1G SmartWorkout bulk Batch 4
+### Phase 1G exercise-media bulk Batch 4
 
 Bulk Batch 4 processed 65 canonical records, from Decline Machine Press through Farmer Hold, bringing coverage to 270 of 399. Thirty-one verified MP4 demonstrations were added; No-Match and Variation-only records remain canonical with written content and pending user review rather than being removed or assigned weak media. Local development media totals 164 MP4s (131,292,640 bytes), remains outside PWA precaching, and will move to Cloudflare only after the full migration audit.
 
-### Phase 1G SmartWorkout bulk Batch 5
+### Phase 1G exercise-media bulk Batch 5
 
-Bulk Batch 5 adds 65 canonical written-content records, from Kettlebell Goblet Squat through Barbell Clean and Press, taking coverage to 335 of 399. Twenty-five page-verified SmartWorkout MP4 demonstrations were added; the remaining 40 are logged as No Match, remain canonical, and retain written content without forced media mappings. Canonical data remains unchanged and exercise media remains outside PWA precaching pending the future Cloudflare on-demand migration.
+Bulk Batch 5 adds 65 canonical written-content records, from Kettlebell Goblet Squat through Barbell Clean and Press, taking coverage to 335 of 399. Twenty-five page-verified MP4 demonstrations were added; the remaining 40 are logged as No Match, remain canonical, and retain written content without forced media mappings. Canonical data remains unchanged and exercise media remains outside PWA precaching pending the future Cloudflare on-demand migration.
 
-### Phase 1G SmartWorkout bulk Batch 6
+### Phase 1G exercise-media bulk Batch 6
 
-Bulk Batch 6 adds written content coverage for the final 64 canonical exercises, bringing the centralized content layer to 399 of 399. No unverified media is attached; the remaining media gaps remain canonical, written-content-only, outside PWA precaching, and eligible for a later SmartWorkout media-gap audit before the planned Cloudflare on-demand migration.
+Bulk Batch 6 adds written content coverage for the final 64 canonical exercises, bringing the centralized content layer to 399 of 399. No unverified media is attached; the remaining media gaps remain canonical, written-content-only, outside PWA precaching, and eligible for a later media-gap audit before the planned Cloudflare on-demand migration.
 
 ### Phase 1H full content and media audit
 
@@ -309,15 +309,15 @@ The final audit confirms 399 unique canonical records and 399 unique content rec
 
 Later-batch boilerplate was replaced with canonical-metadata-aware copy covering equipment, movement pattern, and category-specific value. Exercise media remains static, excluded from PWA precaching, and loaded only by Exercise Detail. The consolidated media-gap review in `EXERCISE_CONTENT_TRACKER.md` is the authority for future user decisions; no canonical removal occurred. Cloudflare migration remains deferred until explicitly scheduled.
 
-### Phase 1I SmartWorkout-aligned canonical rebuild
+### Phase 1I expanded canonical catalog rebuild
 
-At the Phase 1I checkpoint, the legacy 399-record v2 catalog was superseded by 813 unique SmartWorkout page identities, 813 FitDex content records, and 804 verified MP4 demonstrations totaling 695,871,888 bytes; nine SmartWorkout pages provided no media element, and no declared source asset failed. Media stayed in `public/exercises/`, outside the JS/CSS bundles and PWA precache, and loaded only in the selected Exercise Detail. Cloudflare was not implemented and remained the planned later on-demand host.
+At the Phase 1I checkpoint, the legacy 399-record v2 catalog was superseded by 813 unique canonical exercise identities, 813 FitDex content records, and 804 verified MP4 demonstrations totaling 695,871,888 bytes; nine initial entries provided no media element, and no declared source asset failed. Media stayed in `public/exercises/`, outside the JS/CSS bundles and PWA precache, and loaded only in the selected Exercise Detail. Cloudflare was not implemented and remained the planned later on-demand host.
 
 All 399 legacy IDs have deterministic migration decisions: 257 map to a v3 successor and 142 retire without a high-confidence successor. The prior 213 non-media records reconcile as 71 mapped and 142 retired; every former media-backed record has a successor. Dexie/database and built-in dataset version 3 remap preferences and workout references, preserve old workout display snapshots, archive unmapped built-ins, deactivate obsolete favourites without deleting notes/tags, and leave custom exercises unchanged. `EXERCISE_CATALOG.md` documents the architecture; `EXERCISE_CONTENT_TRACKER.md` owns the exact active inventory and migration tables.
 
 ### Phase 1I.1 demonstrated-media requirement
 
-Phase 1I.1 retires the nine SmartWorkout pages that provide no usable demonstration media. Dataset/database version 4 has 804 active built-ins, 804 content records, and 804 verified MP4 demonstrations; every active built-in now has verified media. Category memberships were recalculated, while the remaining page-slug IDs are unchanged. The v4 seed archives retired records, keeps workout history displayable through snapshots, deactivates retired active references safely, and leaves custom exercises unchanged. Exercise media remains outside PWA precaching and Cloudflare remains deferred.
+Phase 1I.1 retires the nine entries that provide no usable demonstration media. Dataset/database version 4 has 804 active built-ins, 804 content records, and 804 verified MP4 demonstrations; every active built-in now has verified media. Category memberships were recalculated, while the remaining page-slug IDs are unchanged. The v4 seed archives retired records, keeps workout history displayable through snapshots, deactivates retired active references safely, and leaves custom exercises unchanged. Exercise media remains outside PWA precaching and Cloudflare remains deferred.
 
 ### Phase 1K.1 local Workout Hub and routines
 
@@ -542,7 +542,7 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 - [x] Six real avatar PNGs added manually
 - [x] Transparent-background fallback bug fixed in `AvatarPortrait`
 - [x] Universal Exercise Dex browsing, search, category filters, and detail view
-- [x] Versioned SmartWorkout-derived built-in dataset with deterministic page-slug IDs
+- [x] Versioned FitDex built-in dataset with deterministic slug IDs
 - [x] Separate persistent exercise favourite/user-preference records
 - [x] Lightweight built-in dataset integrity validator
 - [x] Phase 1B master Exercise Catalog audit and researched expansion backlog
@@ -551,12 +551,12 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 - [x] Phase 1D comprehensive catalog-completeness and cardio-modality research
 - [x] Phase 1E curated 399-exercise dataset version 2 integration
 - [x] Phase 1F historical Exercise Content Tracker research (three 40-record batches)
-- [x] Phase 1G SmartWorkout exercise-media content pilot (10 records)
-- [x] Phase 1G SmartWorkout Bulk Batch 1 and Batch 2 (130 additional records)
-- [x] Phase 1G SmartWorkout migration content coverage (399 records)
+- [x] Phase 1G FitDex exercise-media content pilot (10 records)
+- [x] Phase 1G FitDex exercise-media Bulk Batch 1 and Batch 2 (130 additional records)
+- [x] Phase 1G FitDex migration content coverage (399 records)
 - [x] Phase 1H full content/media integrity and gap audit
-- [x] Phase 1I SmartWorkout-aligned v3 canonical rebuild and legacy-reference migration
-- [x] Phase 1I.1 retirement of nine media-less SmartWorkout pages; v4 demonstrated-media catalog
+- [x] Phase 1I FitDex canonical v3 rebuild and legacy-reference migration
+- [x] Phase 1I.1 retirement of nine media-less exercise records; v4 demonstrated-media catalog
 - [x] Phase 1K.1 local Workout Hub, routine CRUD, reusable Exercise Dex picker, and v5 workout schema foundation
 - [x] Phase 1K.2 active workout logging, persistent completed workout history, previous-performance lookup, and rest timer
 - [x] Tracking-aware automatic set logging, strict clean-workout Finish validation, and captured pause/resume/Finish timing flow
@@ -575,7 +575,7 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 SmartWorkout-derived built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, required local Display Name onboarding/migration, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
+**Current milestone:** Exercise Dex dataset version 4 has 804 FitDex built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, required local Display Name onboarding/migration, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
 
 Likely next work:
 
@@ -770,3 +770,24 @@ The workout timer invariant guarantees that the session timer never runs while a
 - **First Exercise Transition**: Adding the first exercise enables `Start Timer` with the active theme-primary semantic styling (`var(--color-primary)`), but does NOT automatically start the timer. Active timing begins only upon an explicit user tap on `Start Timer`.
 - **Resume Workout Guards**: Resumed empty workouts cannot accrue active time or auto-resume. Resumed workouts with >= 1 exercises preserve existing recovery/pause semantics (running sessions continue elapsed calculation; explicitly paused sessions remain paused).
 - **Defensive Invariant & Legacy Normalization**: All paths (including `getWorkoutDetail` and `removeWorkoutExercise`) normalize active zero-exercise sessions to `timerState: 'paused'`, banking any prior accumulated seconds without accruing empty wall-clock time.
+
+## 44. Phase 1 — Public Repository Foundation & Split Licensing
+
+FitDex repository uses a coarse three-part split licensing structure designed for public source-available release:
+
+1. **Application & Core (`src/**`, `android/**`)**:
+   - Governed by the **PolyForm Noncommercial License 1.0.0** (`LICENSES/PolyForm-Noncommercial-1.0.0.md`).
+   - Source code is fully visible, inspectable, and modifiable for personal, hobby, educational, and noncommercial purposes.
+   - Commercial reuse requires separate permission from the copyright holder (Copyright © 2026 Arijit Bhaduri).
+   - Coarse boundary preserves all UI components, state management, repositories, utilities, platform bridges, and Android wrappers under one unified license.
+
+2. **Public Documentation & Tooling (`docs/**`, `scripts/**`, `.github/**`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, root build/dev configuration)**:
+   - Governed by the permissive **MIT License** (`LICENSES/MIT.txt`).
+   - Permits reuse, modification, and redistribution with copyright attribution.
+
+3. **Assets, Visual Identity & Demonstration Media (`public/**`, `src/assets/**`)**:
+   - Excluded from software licenses. Terms defined in `ASSETS.md`.
+   - FitDex logos, Spartan and Amazonian faction crests, character avatars, category sprites, and achievement badges: **All Rights Reserved** (Copyright © 2026 Arijit Bhaduri).
+   - Demonstration media (`/exercises/*.mp4` via `https://fitdex-media.fitdexapp.workers.dev`): Managed and hosted separately; not licensed under PolyForm or MIT.
+   - SFX and BGM audio assets: Bundled for application audio with status **Rights review pending**.
+   - Fork policy: Public forks/derivatives must remove official FitDex branding and logos and cannot represent themselves as official FitDex distributions.

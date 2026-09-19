@@ -41,9 +41,6 @@ const customExercise: Exercise = {
   aliases: [],
   source: 'custom',
   sourceId: undefined,
-  sourceSlug: undefined,
-  sourcePage: undefined,
-  sourceRecordIds: undefined,
   createdAt: firstTimestamp,
   updatedAt: firstTimestamp,
 }

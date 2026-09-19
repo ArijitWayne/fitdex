@@ -1,5 +1,5 @@
 import type { Exercise } from '../../data/models'
-import type { SmartWorkoutExerciseDefinition } from './smartWorkoutTypes'
+import type { FitDexExerciseDefinition } from './fitDexExerciseTypes'
 
 const executionCue: Record<string, string> = {
   'Horizontal Push': 'Drive the resistance away while keeping the shoulder blades controlled, then return until you reach a comfortable chest stretch.',
@@ -24,7 +24,7 @@ const executionCue: Record<string, string> = {
   Crawl: 'Coordinate opposite limbs while keeping the trunk quiet, travel with short deliberate steps, and stop before the hips begin to sway.',
 }
 
-function setupFor(exercise: Exercise, definition: SmartWorkoutExerciseDefinition) {
+function setupFor(exercise: Exercise, definition: FitDexExerciseDefinition) {
   const equipment = definition.equipment.filter((item) => item !== 'Bodyweight')
   const equipmentText = equipment.length ? ` with ${equipment.join(' and ').toLowerCase()}` : ''
   const stance = exercise.laterality === 'unilateral'
@@ -35,7 +35,7 @@ function setupFor(exercise: Exercise, definition: SmartWorkoutExerciseDefinition
   return `Set up for ${exercise.name}${equipmentText}. ${stance}`
 }
 
-export function createExerciseCopy(exercise: Exercise, definition: SmartWorkoutExerciseDefinition) {
+export function createExerciseCopy(exercise: Exercise, definition: FitDexExerciseDefinition) {
   const pattern = exercise.movementPattern ?? 'Conditioning'
   const primary = exercise.primaryMuscles.join(', ')
   const secondary = exercise.secondaryMuscles.slice(0, 3).join(', ')

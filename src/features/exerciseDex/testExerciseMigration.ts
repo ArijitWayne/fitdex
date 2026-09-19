@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import assert from 'node:assert/strict'
 import type { Exercise, ExercisePreference, WorkoutExercise } from '../../data/models.ts'
-import { builtInExercises, RETIRED_SMART_WORKOUT_SLUGS } from './exerciseData.ts'
+import { builtInExercises, RETIRED_FITDEX_EXERCISE_SLUGS } from './exerciseData.ts'
 import { LEGACY_EXERCISE_ID_MAP, LEGACY_EXERCISE_MIGRATIONS } from './legacyExerciseMigration.generated.ts'
 import { migrateExercisePreferences, migrateWorkoutExerciseReferences } from './exerciseMigration.ts'
 
@@ -23,16 +23,16 @@ const legacyExercise = {
 } satisfies Exercise
 const legacyById = new Map([[legacyExercise.id, legacyExercise]])
 
-const v4RetirementMap = Object.fromEntries(RETIRED_SMART_WORKOUT_SLUGS.map((slug) => [`builtin-exercise:${slug}`, null]))
+const v4RetirementMap = Object.fromEntries(RETIRED_FITDEX_EXERCISE_SLUGS.map((slug) => [`builtin-exercise:${slug}`, null]))
 const v4MigrationMap = { ...LEGACY_EXERCISE_ID_MAP, ...v4RetirementMap }
 
-// A: a fresh v4 install seeds only demonstrated SmartWorkout-derived built-ins.
+// A: a fresh v4 install seeds only demonstrated FitDex built-ins.
 assert.equal(builtInExercises.length, 804)
 assert.ok(builtInExercises.every((exercise) => exercise.source === 'built-in' && !exercise.archived))
 assert.ok(builtInExercises.every((exercise) => exercise.mediaStatus === 'available'))
 
-// B: the former 813-page source inventory is reduced only by the nine v4 retirements.
-assert.equal(builtInExercises.length + RETIRED_SMART_WORKOUT_SLUGS.length, 813)
+// B: the 813-entry inventory is reduced only by the nine v4 retirements.
+assert.equal(builtInExercises.length + RETIRED_FITDEX_EXERCISE_SLUGS.length, 813)
 assert.ok(builtInExercises.every((exercise) => exercise.categories?.length && exercise.primaryCategory === exercise.categories[0]))
 
 // C: a history reference with a successor is remapped and keeps its old snapshot.

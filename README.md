@@ -1,187 +1,358 @@
-# FitDex
+<div align="center">
+  <img src="public/branding/fitdex-logo-spartan.png" alt="FitDex Logo" width="380" />
 
-> An all-in-one local-first fitness + calorie tracker with a retro 90s handheld / pixel-era fitness RPG experience.
+  # FitDex
 
-FitDex is a mobile-first Progressive Web App for building routines, logging real workouts, and tracking food on your own device. It pairs serious fitness utility with an authentic retro game-manual and codex design language—without requiring an account or storing personal workout or nutrition history in a cloud database. Design standards: [docs/FITDEX_UI_UX_STANDARD.md](docs/FITDEX_UI_UX_STANDARD.md).
+  **Train. Track. Level Up.**
 
-## Features
+  A local-first Android fitness tracker built like a retro RPG.
 
-### Exercise Dex
+  [![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](https://github.com/ArijitWayne/fitdex)
+  [![Storage](https://img.shields.io/badge/Storage-Local--First%20(IndexedDB)-1f8582?style=flat-square)](https://github.com/ArijitWayne/fitdex)
+  [![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)](package.json)
+  [![PWA](https://img.shields.io/badge/Web%20App-PWA%20Live-orange?style=flat-square)](https://fitdex.fitdexapp.workers.dev/)
+  [![License](https://img.shields.io/badge/License-Source--Available%20(PolyForm%20%7C%20MIT)-blue?style=flat-square)](LICENSING.md)
 
-- Search **804** active built-in exercises across nine muscle categories.
-- Browse verified demonstrations, FitDex-authored instructions, equipment, and tracking guidance.
-- Use normalized local search for common punctuation and spacing variants.
-- Keep a device-local favorites shortlist, filter it, and search within it.
-- Explore themed category pixel art across all four visual themes.
+  <br />
 
-### Workout & Routines
+  <p align="center">
+    <a href="#why-i-built-fitdex">Why I Built FitDex</a> •
+    <a href="#download">Download</a> •
+    <a href="#preview">Preview</a> •
+    <a href="#core-features">Core Features</a> •
+    <a href="#how-fitdex-works">Architecture</a> •
+    <a href="#installation">Installation</a> •
+    <a href="#data--privacy">Data & Privacy</a> •
+    <a href="#development-setup">Development</a> •
+    <a href="#contributing">Contributing</a> •
+    <a href="#license">License</a>
+  </p>
+</div>
 
-- Create reusable routines and set planned set counts.
-- Plan a recurring week with optional Routine Days, open Workout Days, Rest Days, and No Plan days.
-- Start from a routine or begin an empty workout.
-- Resume or persistently pause one locally autosaved active session at a time; paused time is excluded from the frozen completed duration.
-- Log reps, weight, duration, or distance as appropriate for each exercise.
-- Review previous performance, use the rest timer, and keep completed workout history as read-only snapshots that can be permanently deleted with confirmation.
-- Add or remove exercises from the same routine/workout picker; active set data is protected by confirmation.
+---
 
-### Food & Nutrition
+FitDex pairs serious strength and nutrition tracking with the spirit, progression, and tactile feel of a retro handheld RPG.
 
-- Log foods under Breakfast, Lunch, Supper, or Dinner.
-- Enter calories, protein, carbohydrates, fat, fiber, sugar, saturated fat, and sodium manually.
-- Browse dates, review meal and daily totals, and edit or delete individual entries.
-- Switch one daily nutrition donut between macro-derived calorie contribution and actual logged calories by meal.
-- Reuse remembered foods with their saved category and default nutrition values.
-- Choose fixed pixel-art categories or create a custom category through Other with a personal accent color and one recolorable generic pixel icon.
-- Configure daily targets via Settings using the V3 Nutrition Codex: Mifflin–St Jeor energy accounting, evidence-based bodyweight protein calculation, clean activity index, and Style B Pixel Command controls.
-- Learn each workflow through replayable Workout/Food guides and lightweight Journal/Progress help.
+Log workouts, organize recurring routines, reference exercise mechanics, track daily nutrition targets, and earn XP toward character ranks—all stored directly on your own device with zero account requirements, zero cloud tracking, and complete offline capability.
 
-### Gamification
+---
 
-- Earn idempotent XP from completed training, genuine Personal Records, fully logged nutrition days, and newly unlocked achievements (+50 XP).
-- Progress through 100 Levels and nine named Ranks while Lifetime XP remains local to the device.
-- Build a plan-based streak with automatic Streak Freezes, Travel/Sickness Pauses, protected Weekly Plan changes, and 52 permanent Achievements.
+## Why I Built FitDex
 
-### Local-first PWA
+Fitness and staying healthy shouldn't feel like something you have to keep paying for.
 
-- Personal workout and food history live locally in IndexedDB through Dexie.
-- No account is required and FitDex does not currently run a cloud database for that history.
-- The app is installable and supports offline app-shell use after loading/installation as provided by the PWA.
+There are more fitness trackers, calorie counters, habit apps, and gamified wellness platforms than ever before. Many of them are excellent products, but they often share the same pattern: the features that become most useful as you progress eventually sit behind subscriptions, premium tiers, or recurring payments.
 
-### Themes & Pixel Art
+I wanted something different.
 
-- Original FitDex retro-RPG/pixel-game styling—not a Pokédex clone.
-- Spartans Dark, Spartans Light, Amazonians Dark, and Amazonians Light.
-- Theme-aware exercise category sprites and food icons.
-- Complete Spartan/Amazonian FitDex branding follows the selected theme family: full logo on larger headers, compact emblem on phones, and a live browser-tab favicon. Brightness changes retain the same family art.
-- The installed PWA uses the polished Spartan FitDex icon as its stable default. On Capacitor Android, the real launcher icon switches between Spartan and Amazonian with the theme family; there is no separate App Icon preference.
+FitDex was born from the idea that a complete fitness companion could combine training, nutrition, consistency, progress tracking, and game-like motivation without asking you to subscribe just to keep improving.
 
-### Field Guide, Audio & Navigation
+FitDex is designed to be **free to use**, **local-first**, and controlled by the person whose data matters most: **you**.
 
-- Learn the current product through a replayable seven-topic FitDex Field Guide plus focused Workout, Food, Journal, and Progress help.
-- Set a required, device-local Display Name during first use; edit it later in Settings for a personalized time-aware Home greeting.
-- Use local interface/progress sound effects and three bundled looping background tracks: Warrior, Hardened, and Villain.
-- Control the current track from Home, pause it temporarily, or persist No Music independently from sound effects.
-- On Android, system Back and the platform back gesture move through FitDex subviews and recent top-level destinations before exiting at Home.
+### Your Data Stays on Your Device
 
-## Local-first by design
+Personal fitness data is intimate. In FitDex, your:
+- Workouts, exercises, sets, reps, and logged weights
+- Recurring routines and weekly training plans
+- Food logs, meal history, and custom nutrition targets
+- Personal records (PRs), analytics, and journal entries
+- RPG level, XP progression, rank history, and achievement unlocks
+- Display name, theme selections, and custom preferences
 
-FitDex keeps editable and historical data deliberately separate:
+live directly on your device in local storage (IndexedDB via Dexie). There are no required cloud accounts, no centralized user databases, and no hidden tracking scripts. When you need to move to a new device, you can export and import complete, portable `.fitdex` backup files anytime.
+
+*(Note: While user data is strictly local, exercise demonstration videos are streamed or selectively downloaded on-demand from the remote FitDex media service to keep the initial app package compact.)*
+
+### More Than a Passive Notebook: A Strict Companion
+
+FitDex is designed to behave less like a passive notebook and more like a dedicated training companion that remembers what you committed to and encourages you to keep showing up:
+
+- **Workout Tracking:** Build recurring routines, log variable resistance sets with previous-performance recall, run auto-saving session timers with zero-exercise safeguards, and take advantage of automated rest timers.
+- **Weekly Plan:** Transform good intentions into structured training days.
+- **Plan Streaks:** Track adherence to the workouts you actually scheduled, rather than rewarding meaningless daily app opens.
+- **Streak Freezes:** Earn limited, meaningful protection when life gets in the way, avoiding both harsh discouragement and unlimited artificial forgiveness.
+- **Travel & Sickness Pause:** Pause your active schedule during legitimate breaks without corrupting your training momentum or recording false missed sessions.
+- **Exercise Dex:** Search 804 built-in movements across 9 muscle categories with detailed execution instructions, anatomical target cards, and video demonstrations.
+- **Food & Nutrition Codex:** Track meals, daily calories, and full macronutrient breakdowns with customizable targets—without a premium paywall.
+- **Progress & Personal Records:** Review calculated training volume, resistance workload, weekly consistency, macro adherence, and an all-time PR ledger.
+- **RPG Progression & Audio:** Earn XP, climb through 9 player ranks from Novice to Immortal, unlock 52 milestone achievements, and train with dynamic retro 8-bit sound effects and battle music soundtracks.
+
+The goal isn't to replace discipline with gamification.
+
+The goal is to make discipline easier to maintain.
+
+**Train. Track. Level Up.**
+
+---
+
+## Download
+
+> [!NOTE]
+> Public Android release packaging is currently being prepared under Phase 3 (Signed Android Release System). Official signed APK packages will be downloadable directly from [GitHub Releases](https://github.com/ArijitWayne/fitdex/releases).
+
+Future release packages will follow standard naming:
 
 ```text
-Routines           → editable templates
-Active workouts    → resumable local sessions
-Completed workouts → historical snapshots
-Remembered foods   → reusable local templates
-Food log entries   → historical nutrition snapshots
+fitdex.<version>.apk
+Example: fitdex.1.0.0.apk
 ```
 
-Changing a routine, a remembered food, or a custom category does not rewrite past completed workouts or food logs. Settings → Data & Storage can download that local state as a portable `.fitdex` file and restore it on another FitDex installation after validation and explicit replace confirmation.
+In the interim, you can test the production web shell as an installable Progressive Web App:
 
-## Technology
+- **Live Web App / PWA:** [https://fitdex.fitdexapp.workers.dev/](https://fitdex.fitdexapp.workers.dev/)
 
-| Technology | Purpose |
-| --- | --- |
-| React + TypeScript | Application UI and typed domain model |
-| Vite | Development server and production build |
-| Dexie + IndexedDB | Local persistence for user-owned data |
-| vite-plugin-pwa / Workbox | Installable browser PWA and offline app shell |
-| Capacitor Android | Packaged Android WebView shell |
-| lucide-react | Interface icons and accessible fallbacks |
-| Cloudflare Workers + Wrangler | Static-asset application deployment |
+---
+
+## Preview
+
+<!-- SCREENSHOT_AREA_START -->
+> [!TIP]
+> Production screenshots and visual asset showcase are being prepared in Phase 2 (Screenshot & Brand Asset Pack).
+
+<!-- Planned visual showcases:
+- [Home Screen & Active Routine / Status]
+- [Workout Hub & Active Workout Logger with Rest Timer]
+- [Exercise Dex Catalog & Anatomy Cards]
+- [Daily Food Log & Macro Calorie Donut]
+- [Progress Analytics & Personal Record Ledger]
+- [Weekly Plan & Streak Freeze Protection]
+- [Achievements & RPG Level Progression]
+- [Spartan vs. Amazonian Theme Showcase]
+-->
+
+| Home & Status | Active Workout | Exercise Dex | Food & Macros |
+| :---: | :---: | :---: | :---: |
+| *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* |
+
+| Progress & PRs | Weekly Plan | Achievements | Profile / Loadout |
+| :---: | :---: | :---: | :---: |
+| *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* |
+<!-- SCREENSHOT_AREA_END -->
+
+---
+
+## Core Features
+
+### 🏋️ Workout & Routine Hub
+- **Reusable Routines:** Build multi-day workout templates with planned set counts and target metrics.
+- **Flexible Logging:** Start from a predefined routine or launch an open workout session. Active workouts persist across app restarts.
+- **Workout Timer:** Runs during active training with automatic elapsed-time tracking. Guarded so empty workouts cannot accumulate phantom training time.
+- **Rest Timer:** Dedicated post-set countdown timer with audio chime upon completion.
+- **Performance History:** Review past set weight and repetitions directly within the active logging view. Completed workouts are stored as immutable snapshots.
+
+### 📖 Exercise Dex
+- **804 Built-in Exercises:** Searchable library covering 9 anatomical categories (Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, Abs).
+- **Anatomical Cards & Execution Instructions:** Detailed execution steps, primary/secondary muscle targets, and equipment tags.
+- **Selective Video Demos:** Stream exercise video demonstrations online or selectively download videos to local storage on Android to conserve data.
+- **Favorites & Fast Filtering:** Filter by muscle category, search with normalized punctuation, and maintain local quick-access lists.
+
+### 🥗 Food & Nutrition Codex
+- **Meal Organization:** Log food across Breakfast, Lunch, Supper, and Dinner.
+- **Full Macro Tracking:** Calories, protein, carbohydrates, fats, fiber, sugar, saturated fat, and sodium.
+- **Calorie Donut Breakdown:** Dual-mode visualization displaying calorie contribution by macro or by meal.
+- **Nutrition Targets:** In-app target calculator utilizing Mifflin–St Jeor baseline energy expenditure with adjustable activity and goal modifiers.
+- **Quick-Log & Memory:** Frequently logged items and custom meal templates save locally for rapid entry.
+
+### ⚔️ Progression & RPG System
+- **Player Character Progression:** Earn XP through completed workouts, verified personal records (PRs), fully logged nutrition days, and achievement milestones (+50 XP per unlock).
+- **Ranks & Levels:** Advance from Level 1 to 100 through 9 ascending ranks (Novice, Apprentice, Warrior, Veteran, Centurion, Champion, Warlord, Conqueror, Immortal).
+- **Weekly Schedule & Streak Protection:** Build streaks through your planned training schedule. Includes automatic Streak Freezes (earned every 15 planned days) and a dedicated Travel/Sickness Pause mode.
+- **52 Achievements:** Milestone achievements spanning strength volume, workout consistency, nutrition fidelity, and dex exploration.
+
+### 🎨 Themes, Audio & Aesthetics
+- **Theme Families:** Spartan and Amazonian visual identities, each offering Light and Dark variants.
+- **Adaptive Android Launcher Icons:** Android shell dynamically updates its launcher emblem to match the active faction theme.
+- **Audio Soundscapes:** 4 semantic sound effects (`select`, `add`, `achievements_unlock`, `progress_complete`) and 3 looping retro background tracks (Warrior, Hardened, Villain) with independent volume/mute controls.
+
+---
+
+## How FitDex Works
+
+FitDex separates mutable configuration templates from immutable historical activity logs:
 
 ```text
-Browser / installed PWA
-          ↓
-       React UI
-          ↓
-      Dexie / IndexedDB
-
-Cloudflare Workers Static Assets serve the application and its static assets.
-Personal workout and nutrition data stays on the device.
+┌───────────────────────────┐         ┌───────────────────────────┐
+│     Editable Models       │         │   Historical Snapshots    │
+├───────────────────────────┤         ├───────────────────────────┤
+│ • Routines                │ ──────> │ • Completed Workouts      │
+│ • Weekly Training Plan    │         │ • Personal Records (PRs)  │
+│ • Custom Food Templates   │ ──────> │ • Daily Nutrition Logs    │
+│ • Active Workout (Draft)  │         │ • Journal / Field Notes   │
+└───────────────────────────┘         └───────────────────────────┘
 ```
 
-## Current status
+Modifying or deleting a routine, remembered food, or category template never alters or corrupts historical completed workouts or previous food log entries.
 
-FitDex development follows a phased product architecture. For detailed architectural specifications, locked design decisions, and data derivations, see:
+---
 
-- [docs/PRODUCT_PHASES.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/PRODUCT_PHASES.md) — Comprehensive status, design specifications, and deferred scope across Phases 1–5.
-- [docs/FITDEX_UI_UX_STANDARD.md](file:///Users/arijitbhaduri/Developer/fitdex/docs/FITDEX_UI_UX_STANDARD.md) — Canonical UI/UX design rules, responsive hierarchy, and theme contracts.
+## Installation
 
-**Phase Status Overview**
+### Android (Recommended)
+FitDex is packaged as an Android application via Capacitor.
 
-- **Phase 1 (Home & Global Shell)**: **Complete / Locked** — AppShell, responsive header, 4 themes, bottom nav, centralized Android Back, Display Name, local audio.
-- **Phase 2 (Workout & Exercise Dex)**: **Complete / Locked** — Active workout logging, 804 built-in exercise Dex v4, anatomy cards, routines, Weekly Plan, compact picker hierarchy.
-- **Phase 3 (Food & Nutrition)**: **Complete / Locked** — Goal-First (3A) + Compact (3B) design, daily hub, recent/frequent suggestions, Quick Log, custom categories, target safety guards.
-- **Phase 4 (Progress & Analytics)**: **Complete / Locked** — Progress metrics, volume/training charts, all-time PRs, body measurements integration.
-- **Phase 5 (Journal & Activity Log)**: **Implemented / Physical QA Pending** — V3 Field Notes, read-only derived activity ledger, symmetric 2-dimension status, empty-meal suppression.
-- **Phase 6 (Exercise Dex Standalone Refinement)**: **Implemented / Physical QA Pending** — Locked V3 RPG Codex direction: selected avatar field archive hero, Index / Favorites modes, theme-family anatomy, compact result rows, reordered Exercise Record (Media → Metadata → Instructions), protected remote media & Phase 2 picker.
-- **Phase 7 (Settings & Loadout)**: **Implemented / Physical QA Pending** — Locked V2 Profile / Loadout direction: Player profile hero with active champion avatar, 3-stat status grid (Theme, Units, Targets), grouped category rows (Personalize, Your System, Data & Help), Units subview, unified Audio controls, Nutrition Targets draft clarity, and preserved backup/restore replacement semantics.
+1. Download the latest `fitdex.<version>.apk` from [Releases](https://github.com/ArijitWayne/fitdex/releases).
+2. Open the downloaded APK on your Android device.
+3. When prompted by Android, grant permission to install from your browser or file manager ("Install unknown apps").
+4. Review system installation details and tap **Install**.
+5. Launch **FitDex** from your home screen or app drawer.
 
-**Planned / upcoming**
+> [!NOTE]
+> Because FitDex is distributed directly outside the Google Play Store, Android will display standard security prompts for sideloaded packages.
 
-- Phase 8 Secondary / supporting surfaces
-- Phase 9 Final cross-app consistency
-- Deferred: Body tracking & measurements (schema exists, tracking deferred outside Phase 1–9)
-- Broader real-device Android/iOS audio, navigation, file-flow, and responsive QA
+### Web App (PWA)
+FitDex can also be run in any modern web browser or installed as a standalone Progressive Web App:
 
-## Screenshots
+1. Navigate to [https://fitdex.fitdexapp.workers.dev/](https://fitdex.fitdexapp.workers.dev/).
+2. In Chrome or your browser menu, select **Install FitDex** or **Add to Home Screen**.
 
-> Product screenshots and previews are coming soon.
+---
 
-## Getting started
+## Updating
 
-Requires a current Node.js/npm installation.
+When a new version is released:
 
+1. Download the newer `fitdex.<version>.apk`.
+2. Install it directly over your existing installation. Android will update the application binary while preserving your local database and settings.
+3. *Recommendation:* Before performing major version upgrades, export a `.fitdex` backup via **Settings → Data & Storage**.
+
+---
+
+## Data & Privacy
+
+Privacy is a core design commitment in FitDex:
+
+- **Local Storage:** All workout sessions, food logs, personal notes, and progress metrics are stored strictly on your device using IndexedDB (via Dexie).
+- **Zero Cloud Accounts:** You do not need an email, password, or account to use any feature. FitDex does not operate a centralized user database.
+- **Zero Tracking:** No third-party tracking scripts, advertising trackers, or behavior profiling SDKs are present in the application.
+- **Static Media vs. User Data:**
+  - *User Data:* 100% device-local.
+  - *Static Media:* Exercise demonstration videos may be streamed on-demand or downloaded over HTTPS from a remote content delivery network. Video downloads are stored within private app storage and cleared on uninstallation.
+
+---
+
+## Backup & Restore
+
+You own your data completely. You can export and import your full history at any time:
+
+1. Navigate to **Settings → Loadout & System → Data & Storage**.
+2. Tap **Export Backup** to save a portable `.fitdex` file containing your full database (routines, workout history, food logs, PRs, achievements, settings).
+3. Tap **Import Backup** to restore data onto a new device. Restoring requires explicit confirmation and completely replaces current local state with the verified backup payload.
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend Framework** | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) | Type-safe UI and reactive state modeling |
+| **Build & Tooling** | [Vite](https://vitejs.dev/) + [Oxlint](https://oxc.rs/) | Fast ESM development server, bundling, and linting |
+| **Local Database** | [Dexie.js](https://dexie.org/) (IndexedDB) | Reactive, schema-versioned client-side database |
+| **Native Android Shell** | [Capacitor 8](https://capacitorjs.com/) | Android WebView bridge and native launcher controls |
+| **Styling** | Vanilla CSS Design Tokens | High-performance CSS variables, zero runtime overhead |
+| **Iconography** | [Lucide React](https://lucide.dev/) | Clean interface iconography paired with custom pixel art |
+| **PWA Engine** | [Workbox](https://developer.chrome.com/docs/workbox) | Service worker caching for offline app shell |
+
+---
+
+## Development Setup
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v20+ recommended)
+- `npm` (v10+)
+- For Android builds: [Android Studio](https://developer.android.com/studio), Android SDK Platform 34+, and JDK 17+
+
+### Local Web Development
 ```bash
+# Clone the repository
 git clone https://github.com/ArijitWayne/fitdex.git
 cd fitdex
+
+# Install dependencies
 npm install
+
+# Start local development server
 npm run dev
 ```
 
-## Useful commands
+Visit `http://localhost:5173` in your browser.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Type-check and create a production build |
-| `npm run lint` | Run Oxlint |
-| `npm run test:exercise-dex` | Check Exercise Dex UI/data contracts |
-| `npm run test:exercise-favourites` | Check local Exercise Dex favorites |
-| `npm run test:workout-sessions` | Check workout session behavior |
-| `npm run test:weekly-plan` | Check recurring planning and schedule safety |
-| `npm run test:food` | Check Food V1 repository behavior |
-| `npm run test:food-breakdown` | Check macro and meal nutrition breakdown calculations |
-| `npm run test:journal` | Check Journal daily queries, summaries, and snapshot behavior |
-| `npm run test:progress` | Check Progress periods, aggregates, trends, and nutrition behavior |
-| `npm run test:personal-records` | Check tracking-aware Personal Record rules |
-| `npm run test:home` | Check Home greetings and derived workout, Food, activity, and recent-progress states |
-| `npm run test:home-schedule` | Check schedule-aware Home behavior |
-| `npm run test:guides` | Check tutorial content and seen-state persistence |
-| `npm run test:audio` | Check local audio assets, preferences, priority, and UI wiring |
-| `npm run test:navigation` | Check top-level history and Android back-button contracts |
-| `npm run test:home-ui` | Check Home navigation, profile/avatar integration, responsive contracts, and PWA asset policy |
-| `npm run test:display-name` | Check required local Display Name validation, migration gating, editing, and persistence |
-| `npm run test:capacitor-android` | Check Android shell configuration and native privacy/version contracts |
-| `npm run android:sync` | Build the web bundle and copy it into the Android project |
-| `npm run android:build` | Sync and assemble a debug Android APK (requires Android SDK and JDK) |
+### Building & Verification
+```bash
+# Type check and production web build
+npm run build
 
-## Android
+# Run fast code linting
+npm run lint
 
-FitDex's Android shell is a Capacitor 8 project with package ID `com.fitdex.app`. It packages `dist` locally; it does not use a remote development-server URL. Install Android Studio with its SDK and a compatible JDK, then run `npm run android:build` (or open `android/` in Android Studio). The command performs a clean debug assembly after syncing, so removed packaged assets cannot persist from an older build. Android system Back and the platform back gesture close the deepest open FitDex subview first, then walk recent top-level destinations; Back exits only from the Home root. The Android app keeps the same local Dexie/IndexedDB and local-storage model as the browser; uninstalling it clears that local app data, so export a `.fitdex` backup first when it matters. Android treats this ID as a different app from pre-release builds that used `com.arijitbhaduri.fitdex`; no migration between those package IDs is provided.
+# Run automated test suites
+npm run test:workout-sessions
+npm run test:exercise-dex
+npm run test:food
+npm run test:nutrition-targets
+npm run test:weekly-plan
+npm run test:gamification
+```
 
-Android OS automatic backup/device transfer is disabled. `.fitdex` files remain the explicit portable backup path. Import uses the WebView document picker and needs physical-device verification. Export uses the browser Blob/download flow and may not present a reliable Android save destination yet; confirm an exported file is reachable before depending on it. Browser PWA service-worker support remains enabled, while the packaged Android shell uses its local bundle directly.
+### Android Development
+```bash
+# Sync web assets to the Android Capacitor project
+npm run android:sync
 
-`npm run build` keeps local exercise MP4 demonstrations in the browser/PWA output. Android sync and build commands automatically remove only those copied MP4 files from `dist/exercises` before Capacitor packages it, reducing APK size without changing `public/exercises` source media. Exercise details remain available on Android; playback prefers a verified selective download, then a configured remote stream, then a neutral unavailable state. The seven small audio files remain bundled because interface audio and music must work without downloading exercise media.
+# Assemble a local debug APK
+npm run android:build
+```
+The compiled debug APK will be generated at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-## Remote exercise media
+---
 
-Set `VITE_EXERCISE_MEDIA_BASE_URL` from `.env.example` to a public HTTPS base URL whose root contains the canonical MP4 filenames from `public/exercises/` (for example, `<base-url>/barbell-bench-press.mp4`). FitDex is provider-independent: Cloudflare R2 is the intended initial host, but changing the base URL is the only application change needed if filenames remain stable. Hosts must allow ordinary HTTPS media access; browser/PWA streaming also needs suitable CORS headers and Range support for seeking.
+## Project Status & Roadmap
 
-Android streams configured demos when online and lets users explicitly download individual videos into private app storage. Playback prefers a verified local download, then the configured remote URL, then the neutral unavailable state. Downloads are managed in Settings → Exercise Media, are not in `.fitdex` backups, do not use public Downloads/storage permissions, and are deleted on app uninstall. V1 has no automatic, routine, background, or first-play downloads; remote host provisioning/upload remains separate work.
+FitDex is under active development. Current focus areas:
 
-## Deployment
+- **Current Focus:**
+  - Android release infrastructure and reproducible signed release builds
+  - Screenshot and visual brand showcase
+  - Offline media management polish
+  - Physical phone ergonomic refinement
 
-FitDex is configured for Cloudflare Workers Static Assets via `wrangler.jsonc`. Build with `npm run build`; Wrangler is the deployment tool. This deployment serves the app and its static assets only—FitDex does not store user workout or nutrition records in Cloudflare, and R2 is not configured.
+- **Future Roadmap:**
+  - In-app update notifications for new GitHub Releases
+  - Dedicated documentation and showcase landing site
+  - Enhanced body measurement and trend visualizations
 
-FitDex is under active development. No license file is currently included in this repository.
+---
+
+## Contributing
+
+Contributions from the community are welcome! Please review [CONTRIBUTING.md](CONTRIBUTING.md) for development workflows, coding standards, branch conventions, and testing requirements before opening a pull request.
+
+---
+
+## Security
+
+For security vulnerability reports or responsible disclosure, please review our [Security Policy](SECURITY.md).
+
+---
+
+## License
+
+FitDex is source-available software distributed under a split licensing model.
+
+| Area / Path | License | Summary |
+| :--- | :--- | :--- |
+| **Core Application**<br>`src/**`, `android/**` | [PolyForm Noncommercial 1.0.0](LICENSES/PolyForm-Noncommercial-1.0.0.md) | Source-available for personal, educational, and noncommercial use. |
+| **Public Docs & Tooling**<br>`docs/**`, `scripts/**`, `.github/**`, config | [MIT License](LICENSES/MIT.txt) | Permissive open-source reuse with attribution. |
+| **Branding & Visual Media**<br>`public/**`, `src/assets/**` | [Separate Terms](ASSETS.md) | All Rights Reserved. FitDex logos, avatars, and badges are not licensed for reuse. |
+| **Exercise Media**<br>`/exercises/*.mp4` | [Separate Media Terms](ASSETS.md) | Distributed separately; rights vary by asset. |
+
+Commercial use of PolyForm-covered FitDex code requires separate permission from the copyright holder.
+
+For complete licensing details and boundary definitions, see [LICENSING.md](LICENSING.md) and [ASSETS.md](ASSETS.md).
+
+---
+
+## Community & Links
+
+- **Repository:** [https://github.com/ArijitWayne/fitdex](https://github.com/ArijitWayne/fitdex)
+- **Web Application:** [https://fitdex.fitdexapp.workers.dev/](https://fitdex.fitdexapp.workers.dev/)
+- **Design Guidelines:** [docs/FITDEX_UI_UX_STANDARD.md](docs/FITDEX_UI_UX_STANDARD.md)
