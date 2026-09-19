@@ -1,12 +1,16 @@
 {
   "name": "fitdex",
   "private": true,
-  "version": "0.5.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "version:android-code": "node scripts/bump-android-version-code.mjs",
     "prepare:android-dist": "node scripts/prepare-android-dist.mjs",
     "android:sync": "npm run build && npm run prepare:android-dist && npx cap sync android",
     "android:build": "npm run android:sync && cd android && ./gradlew clean assembleDebug",

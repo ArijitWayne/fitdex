@@ -6,9 +6,9 @@ import { useAudio } from '../audio/useAudio'
 import { useBackNavigation } from '../navigation/useBackNavigation'
 
 export function RequiredDisplayNamePrompt({ initialOnboarding = false, onSaved }: { initialOnboarding?: boolean; onSaved?: () => void }) {
-  const { saveDisplayName } = useProfile()
+  const { displayName, saveDisplayName } = useProfile()
   const { playEffect } = useAudio()
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(displayName || '')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)

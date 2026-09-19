@@ -8,7 +8,7 @@ import { getLocalSettingsRecord, updateLocalSettings } from '../settings/setting
 import { calculateRmr, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from '../nutritionTargets/nutritionTargetCalculator.ts'
 import { isHistoricalWorkoutSetLogged } from '../workout/workoutModel.ts'
 import { ACHIEVEMENTS, type AchievementDefinition, type AchievementProgressKey } from './achievementCatalog.ts'
-import { INITIAL_FREEZE_BALANCE, MAX_FREEZE_BALANCE, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, levelForXp } from './gamificationConfig.ts'
+import { INITIAL_FREEZE_BALANCE, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, levelForXp } from './gamificationConfig.ts'
 import { deriveStreak, inclusiveDateDuration, totalXpFromAmounts } from './gamificationModel.ts'
 
 const recordId = (prefix: string) => `${prefix}:${createId()}`
@@ -78,7 +78,7 @@ function pauseForDate(pauses: readonly StreakPause[], dateKey: string) {
 }
 
 async function freezeBalance() {
-  return Math.max(0, Math.min(MAX_FREEZE_BALANCE, totalXpFromAmounts((await db.streakFreezeEvents.toArray()).map((event) => event.amount))))
+  return Math.max(0, totalXpFromAmounts((await db.streakFreezeEvents.toArray()).map((event) => event.amount)))
 }
 
 async function finalizePastSnapshots(todayDateKey: string) {
@@ -107,8 +107,7 @@ async function finalizePastSnapshots(todayDateKey: string) {
       if (successful > 0 && successful % SUCCESSFUL_DAYS_PER_FREEZE === 0) {
         const sourceKey = `freeze:earned:${successful}`
         if (!await db.streakFreezeEvents.where('sourceKey').equals(sourceKey).first()) {
-          const amount = await freezeBalance() < MAX_FREEZE_BALANCE ? 1 : 0
-          await db.streakFreezeEvents.add({ id: sourceKey, sourceKey, amount, type: 'earned', localDate: snapshot.localDate, occurredAt: timestamp, createdAt: timestamp, updatedAt: timestamp })
+          await db.streakFreezeEvents.add({ id: sourceKey, sourceKey, amount: 1, type: 'earned', localDate: snapshot.localDate, occurredAt: timestamp, createdAt: timestamp, updatedAt: timestamp })
         }
       }
       continue
@@ -127,10 +126,8 @@ async function reconcileFreezeMilestones() {
     const sourceKey = `freeze:earned:${count}`
     if (await db.streakFreezeEvents.where('sourceKey').equals(sourceKey).first()) continue
     const snapshot = successful[count - 1]
-    const events = await db.streakFreezeEvents.toArray()
-    const balanceAtMilestone = Math.max(0, Math.min(MAX_FREEZE_BALANCE, totalXpFromAmounts(events.filter((event) => !event.localDate || event.localDate <= snapshot.localDate).map((event) => event.amount))))
     const timestamp = snapshot.finalizedAt ?? iso()
-    await db.streakFreezeEvents.add({ id: sourceKey, sourceKey, amount: balanceAtMilestone < MAX_FREEZE_BALANCE ? 1 : 0, type: 'earned', localDate: snapshot.localDate, occurredAt: timestamp, createdAt: timestamp, updatedAt: timestamp })
+    await db.streakFreezeEvents.add({ id: sourceKey, sourceKey, amount: 1, type: 'earned', localDate: snapshot.localDate, occurredAt: timestamp, createdAt: timestamp, updatedAt: timestamp })
   }
 }
 
@@ -349,7 +346,7 @@ export async function loadGamificationDashboard(todayDateKey = getLocalDateKey()
   return {
     initializedAt, progression: levelForXp(totalXp), xpEvents, snapshots,
     streak: deriveStreak(snapshots, changes),
-    freezeBalance: Math.max(0, Math.min(MAX_FREEZE_BALANCE, totalXpFromAmounts(freezes.map((event) => event.amount)))),
+    freezeBalance: Math.max(0, totalXpFromAmounts(freezes.map((event) => event.amount))),
     pauseUsesRemaining: Math.max(0, MAX_PAUSES_PER_ROLLING_YEAR - pauseUses),
     activePause: pauses.find((pause) => pause.startDate <= todayDateKey && pause.endDate >= todayDateKey),
     today: snapshots.find((snapshot) => snapshot.localDate === todayDateKey),
@@ -392,22 +389,25 @@ export async function protectedChangesUsed(referenceDateKey = getLocalDateKey())
 export function protectedPlanChangeLimit() { return MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR }
 
 export async function loadPendingGamificationNotifications() {
-  const [events, unlocks] = await Promise.all([
+  const [events, unlocks, freezeRewards, currentFreezeBalance] = await Promise.all([
     db.xpEvents.orderBy('occurredAt').toArray(),
     db.achievementUnlocks.filter((unlock) => !unlock.notificationSeenAt).toArray(),
+    db.streakFreezeEvents.filter((event) => event.type === 'earned' && !event.notificationSeenAt).sortBy('occurredAt'),
+    freezeBalance(),
   ])
   const unseenXp = events.filter((event) => !event.notificationSeenAt)
   const total = totalXpFromAmounts(events.map((event) => event.amount))
   const before = total - totalXpFromAmounts(unseenXp.map((event) => event.amount))
   const beforeProgress = levelForXp(before)
   const afterProgress = levelForXp(total)
-  return { unseenXp, unlocks, beforeProgress, afterProgress, levelUp: afterProgress.level > beforeProgress.level, rankUp: afterProgress.rank.id !== beforeProgress.rank.id }
+  return { unseenXp, unlocks, freezeRewards, currentFreezeBalance, beforeProgress, afterProgress, levelUp: afterProgress.level > beforeProgress.level, rankUp: afterProgress.rank.id !== beforeProgress.rank.id }
 }
 
 export async function markGamificationNotificationsSeen() {
   const timestamp = iso()
-  await db.transaction('rw', [db.xpEvents, db.achievementUnlocks], async () => {
+  await db.transaction('rw', [db.xpEvents, db.achievementUnlocks, db.streakFreezeEvents], async () => {
     await db.xpEvents.filter((event) => !event.notificationSeenAt).modify({ notificationSeenAt: timestamp, updatedAt: timestamp })
     await db.achievementUnlocks.filter((unlock) => !unlock.notificationSeenAt).modify({ notificationSeenAt: timestamp, updatedAt: timestamp })
+    await db.streakFreezeEvents.filter((event) => event.type === 'earned' && !event.notificationSeenAt).modify({ notificationSeenAt: timestamp, updatedAt: timestamp })
   })
 }

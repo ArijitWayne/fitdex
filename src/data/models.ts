@@ -29,6 +29,22 @@ export interface SettingsRecord extends EntityRecord {
   nutritionTargetsInitializedAt?: string
   /** Latest forward-only activation boundary; prevents disabled periods back-awarding. */
   nutritionTargetsEligibleFrom?: string
+  /** Optional, additive acknowledgement state for contextual first-use teaching. */
+  firstUseGuidance?: FirstUseGuidanceState
+}
+
+export interface FirstUseGuidanceState {
+  nutritionSetup?: 'completed' | 'skipped'
+  workoutLanding?: boolean
+  workoutTimer?: boolean
+  workoutRest?: boolean
+  weeklyPlan?: boolean
+  streakProtection?: boolean
+  foodLanding?: boolean
+  firstFoodFeedback?: boolean
+  customFoodCategory?: boolean
+  progress?: boolean
+  journal?: boolean
 }
 
 export type BackgroundMusicPreference = 'warrior' | 'hardened' | 'villain' | 'none'
@@ -380,6 +396,7 @@ export interface StreakFreezeEvent extends EntityRecord {
   type: 'initial' | 'earned' | 'automatic_missed_plan'
   localDate?: string
   occurredAt: string
+  notificationSeenAt?: string
 }
 
 export interface StreakPause extends EntityRecord {

@@ -140,8 +140,8 @@ export function elapsedSeconds(startedAt: string, now = Date.now()) {
   return Number.isFinite(elapsed) ? Math.max(0, Math.floor(elapsed / 1000)) : 0
 }
 
-export function isWorkoutTimerPaused(workout: Pick<Workout, 'status' | 'timerState'>) {
-  return workout.status === 'active' && workout.timerState === 'paused'
+export function isWorkoutTimerPaused(workout: Pick<Workout, 'status' | 'timerState'>, exerciseCount?: number) {
+  return workout.status === 'active' && (workout.timerState === 'paused' || exerciseCount === 0)
 }
 
 function safeStoredSeconds(value: number | undefined) {
@@ -152,10 +152,11 @@ function safeStoredSeconds(value: number | undefined) {
 export function getWorkoutDuration(
   workout: Pick<Workout, 'status' | 'startedAt' | 'timerState' | 'accumulatedActiveSeconds' | 'lastResumedAt' | 'durationSeconds'>,
   now = Date.now(),
+  exerciseCount?: number,
 ) {
   if (workout.status !== 'active') return safeStoredSeconds(workout.durationSeconds)
   const accumulated = safeStoredSeconds(workout.accumulatedActiveSeconds)
-  if (workout.timerState === 'paused') return accumulated
+  if (workout.timerState === 'paused' || exerciseCount === 0) return accumulated
   return accumulated + elapsedSeconds(workout.lastResumedAt ?? workout.startedAt, now)
 }
 
@@ -165,15 +166,16 @@ export function createPausedTimerState(workout: Workout, now = Date.now()): Pick
   return { timerState: 'paused', accumulatedActiveSeconds: getWorkoutDuration(workout, now) }
 }
 
-export function createResumedTimerState(workout: Workout, now = Date.now()): Pick<Workout, 'timerState' | 'lastResumedAt'> {
+export function createResumedTimerState(workout: Workout, now = Date.now(), exerciseCount?: number): Pick<Workout, 'timerState' | 'lastResumedAt'> {
   if (workout.status !== 'active') throw new Error('Only an active workout timer can be resumed.')
+  if (exerciseCount === 0) throw new Error('Add at least one exercise to start your workout timer.')
   if (workout.timerState !== 'paused') throw new Error('Workout timer is already running.')
   return { timerState: 'running', lastResumedAt: new Date(now).toISOString() }
 }
 
-export function getFinalWorkoutDuration(workout: Workout, now = Date.now()) {
+export function getFinalWorkoutDuration(workout: Workout, now = Date.now(), exerciseCount?: number) {
   if (workout.status !== 'active') throw new Error('Only an active workout can be finished.')
-  return getWorkoutDuration(workout, now)
+  return getWorkoutDuration(workout, now, exerciseCount)
 }
 
 export function formatDuration(seconds: number) {

@@ -81,8 +81,8 @@ export async function startWorkoutFromRoutine(routineId: string, now = Date.now(
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), routineId, routineNameSnapshot: routine.name, nameSnapshot: routine.name,
-      status: 'active', startedAt: timestamp, timerState: 'running', accumulatedActiveSeconds: 0,
-      lastResumedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      status: 'active', startedAt: timestamp, timerState: routineItems.length ? 'running' : 'paused', accumulatedActiveSeconds: 0,
+      lastResumedAt: routineItems.length ? timestamp : undefined, createdAt: timestamp, updatedAt: timestamp,
     }
     const exerciseRows: WorkoutExercise[] = routineItems.map((item, order) => {
       const definition = definitionById.get(item.exerciseId)
@@ -112,11 +112,36 @@ export async function startEmptyWorkout(name = 'Workout', now = Date.now()) {
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), nameSnapshot: normalizeWorkoutName(name), status: 'active',
-      startedAt: timestamp, timerState: 'running', accumulatedActiveSeconds: 0,
-      lastResumedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      startedAt: timestamp, timerState: 'paused', accumulatedActiveSeconds: 0,
+      lastResumedAt: undefined, createdAt: timestamp, updatedAt: timestamp,
     }
     await db.workouts.add(workout)
     return { workout, exercises: [] } satisfies WorkoutDetail
+  })
+}
+
+/** Creates the active session only after the user confirms the transient preparation list. */
+export async function startPreparedWorkout(exercises: readonly Exercise[], name = 'Workout', now = Date.now()) {
+  if (!exercises.length) throw new Error('Add at least one exercise before starting.')
+  return db.transaction('rw', [db.workouts, db.workoutExercises, db.workoutSets], async () => {
+    await assertNoActiveWorkout()
+    const timestamp = nowIso(now)
+    const workout: Workout = {
+      id: createRecordId('workout'), nameSnapshot: normalizeWorkoutName(name), status: 'active',
+      startedAt: timestamp, timerState: 'running', accumulatedActiveSeconds: 0,
+      lastResumedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+    }
+    const exerciseRows: WorkoutExercise[] = exercises.map((exercise, order) => ({
+      id: createRecordId('workout-exercise'), workoutId: workout.id, exerciseId: exercise.id,
+      exerciseNameSnapshot: exercise.name, exerciseCategorySnapshot: exercise.category,
+      trackingTypeSnapshot: exercise.trackingType, plannedSetsSnapshot: DEFAULT_AD_HOC_SETS,
+      order, createdAt: timestamp, updatedAt: timestamp,
+    }))
+    const sets = exerciseRows.flatMap((row) => Array.from({ length: DEFAULT_AD_HOC_SETS }, (_, order) => createWorkoutSet(row.id, order, timestamp)))
+    await db.workouts.add(workout)
+    await db.workoutExercises.bulkAdd(exerciseRows)
+    await db.workoutSets.bulkAdd(sets)
+    return getWorkoutDetail(workout.id)
   })
 }
 
@@ -124,6 +149,17 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
   const workout = await db.workouts.get(workoutId)
   if (!workout) throw new Error('Workout not found.')
   const exercises = await db.workoutExercises.where('workoutId').equals(workoutId).sortBy('order')
+  if (workout.status === 'active' && exercises.length === 0 && workout.timerState !== 'paused') {
+    workout.timerState = 'paused'
+    workout.lastResumedAt = undefined
+    workout.accumulatedActiveSeconds = workout.accumulatedActiveSeconds ?? 0
+    await db.workouts.update(workoutId, {
+      timerState: 'paused',
+      lastResumedAt: undefined,
+      accumulatedActiveSeconds: workout.accumulatedActiveSeconds,
+      updatedAt: nowIso(),
+    })
+  }
   const setRows = exercises.length ? await db.workoutSets.where('workoutExerciseId').anyOf(exercises.map((item) => item.id)).toArray() : []
   return {
     workout,
@@ -211,11 +247,18 @@ export async function removeWorkoutExercise(workoutExerciseId: string) {
   const target = await db.workoutExercises.get(workoutExerciseId)
   if (!target) return
   await requireActiveWorkout(target.workoutId)
-  await db.transaction('rw', db.workoutExercises, db.workoutSets, async () => {
+  await db.transaction('rw', [db.workoutExercises, db.workoutSets, db.workouts], async () => {
     await db.workoutSets.where('workoutExerciseId').equals(workoutExerciseId).delete()
     await db.workoutExercises.delete(workoutExerciseId)
     const remaining = await db.workoutExercises.where('workoutId').equals(target.workoutId).sortBy('order')
     await db.workoutExercises.bulkPut(remaining.map((item, order) => ({ ...item, order, updatedAt: nowIso() })))
+    if (remaining.length === 0) {
+      const workout = await db.workouts.get(target.workoutId)
+      if (workout && workout.status === 'active' && workout.timerState !== 'paused') {
+        const pausedState = createPausedTimerState(workout, Date.now())
+        await db.workouts.update(target.workoutId, { ...pausedState, lastResumedAt: undefined, updatedAt: nowIso() })
+      }
+    }
   })
 }
 
@@ -254,7 +297,11 @@ export async function pauseWorkout(workoutId: string, now = Date.now()) {
 
 export async function resumeWorkout(workoutId: string, now = Date.now()) {
   const workout = await requireActiveWorkout(workoutId)
-  await db.workouts.update(workoutId, { ...createResumedTimerState(workout, now), updatedAt: nowIso(now) })
+  const exerciseCount = await db.workoutExercises.where('workoutId').equals(workoutId).count()
+  if (exerciseCount === 0) {
+    throw new Error('Add at least one exercise to start your workout timer.')
+  }
+  await db.workouts.update(workoutId, { ...createResumedTimerState(workout, now, exerciseCount), updatedAt: nowIso(now) })
   return getWorkoutDetail(workoutId)
 }
 

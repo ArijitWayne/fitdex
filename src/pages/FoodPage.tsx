@@ -2,6 +2,7 @@ import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHel
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { PageFrame } from '../components/layout/PageFrame'
+import { ContextRail } from '../components/ui/ContextRail'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
@@ -9,7 +10,7 @@ import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodL
 import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, type NutritionBreakdown } from '../features/food/foodModel'
 import { GuideDialog } from '../features/help/GuideDialog'
 import { foodTutorialSteps } from '../features/help/tutorialSteps'
-import { hasSeenTutorial, markTutorialSeen } from '../features/help/tutorialPreferences'
+import { markTutorialSeen } from '../features/help/tutorialPreferences'
 import { useAudio } from '../features/audio/useAudio'
 import { foodSaveEffect } from '../features/audio/audioModel'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
@@ -17,6 +18,7 @@ import { loadNutritionTargets } from '../features/nutritionTargets/nutritionTarg
 import { calculateRmr, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from '../features/nutritionTargets/nutritionTargetCalculator'
 import { loadGamificationDashboard, type GamificationDashboard } from '../features/gamification/gamificationRepository'
 import { isLocalToday } from '../utils/localDate'
+import { acknowledgeFirstUse, loadFirstUseGuidance } from '../features/help/firstUseGuidance'
 
 type View =
   | { kind: 'overview' }
@@ -95,6 +97,7 @@ function TargetMetric({ label, current, target, unit, difference, status, semant
 }
 
 function DailyTargetsCard({ targets, totals, onEdit, onLog }: { targets: NutritionTargets; totals: FoodNutrition; onEdit: () => void; onLog: () => void }) {
+  const { playEffect } = useAudio()
   const [detailsOpen, setDetailsOpen] = useState(false)
   useBackNavigation('food-target-details', detailsOpen, () => setDetailsOpen(false), 40)
   const calories = totals.kcal ?? 0
@@ -111,15 +114,15 @@ function DailyTargetsCard({ targets, totals, onEdit, onLog }: { targets: Nutriti
 
   return <>
     <section className="panel food-goal-command" aria-labelledby="daily-targets-title">
-      <header><div><p className="eyebrow" id="daily-targets-title">Daily command</p><h2>Calories and protein</h2></div><button className="text-button" type="button" onClick={onEdit}>Edit targets</button></header>
+      <header><div><p className="eyebrow" id="daily-targets-title">Daily command</p><h2>Calories and protein</h2></div><button className="text-button" type="button" onClick={() => { playEffect('select'); onEdit() }}>Edit targets</button></header>
       <div className="food-goal-grid">
-        <TargetMetric label="Calories" current={calories} target={targets.calorieTarget} unit="kcal" difference={calorieDifference} status={statusCopy[calorie.status]} semantic={calorieSemantic} onInfo={() => setDetailsOpen(true)} />
+        <TargetMetric label="Calories" current={calories} target={targets.calorieTarget} unit="kcal" difference={calorieDifference} status={statusCopy[calorie.status]} semantic={calorieSemantic} onInfo={() => { playEffect('select'); setDetailsOpen(true) }} />
         <TargetMetric label="Protein" current={protein} target={targets.proteinTargetGrams} unit="g" difference={proteinDifference} status={proteinStatus} semantic={proteinDay.achievementEligible ? 'success' : undefined} />
       </div>
       <button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={18} aria-hidden="true" /> Log Food</button>
       <p className="food-goal-command-note">{calorie.status === 'above_target' ? 'Daily intake is above calorie target. Review the meal log for context.' : calories === 0 ? 'No food logged yet. Start with any meal.' : 'Calories and protein lead. Full nutrition stays available below.'}</p>
     </section>
-    {detailsOpen ? <div className="food-dialog-backdrop"><section className="food-dialog target-status-dialog" role="dialog" aria-modal="true" aria-labelledby="target-status-title"><header><div><p className="eyebrow">Daily targets</p><h2 id="target-status-title">{statusCopy[calorie.status]}</h2></div><button type="button" aria-label="Close target details" onClick={() => setDetailsOpen(false)}><X /></button></header><dl className="target-detail-list"><div><dt>Your target</dt><dd>{targets.calorieTarget} kcal</dd></div><div><dt>You consumed</dt><dd>{Math.round(calories)} kcal</dd></div><div><dt>Estimated maintenance</dt><dd>≈ {tdee} kcal</dd></div>{targets.goal === 'lose' ? <div><dt>Estimated deficit</dt><dd>≈ {Math.round(calorie.estimatedDeficit)} kcal</dd></div> : null}</dl><p>{calorie.status === 'target_achieved' ? "You're within your planned calorie range for today." : calorie.status === 'below_target_outer' ? "You're below your planned target today. Staying closer to your planned intake is generally more consistent with your target." : calorie.status === 'too_far_below' ? 'Your logged intake is significantly below your estimated energy needs today. FitDex does not count this toward calorie-target progress.' : calorie.status === 'below_safety_floor' ? 'Your logged intake is very low today. FitDex does not count this toward calorie-target progress.' : "You're outside your calorie target range today. This does not count toward calorie-target progress."}</p><p className="muted">Calorie needs are estimates. FitDex is not medical advice.</p><button className="primary-button" type="button" onClick={() => setDetailsOpen(false)}>Continue</button></section></div> : null}
+    {detailsOpen ? <div className="food-dialog-backdrop"><section className="food-dialog target-status-dialog" role="dialog" aria-modal="true" aria-labelledby="target-status-title"><header><div><p className="eyebrow">Daily targets</p><h2 id="target-status-title">{statusCopy[calorie.status]}</h2></div><button type="button" aria-label="Close target details" onClick={() => { playEffect('select'); setDetailsOpen(false) }}><X /></button></header><dl className="target-detail-list"><div><dt>Your target</dt><dd>{targets.calorieTarget} kcal</dd></div><div><dt>You consumed</dt><dd>{Math.round(calories)} kcal</dd></div><div><dt>Estimated maintenance</dt><dd>≈ {tdee} kcal</dd></div>{targets.goal === 'lose' ? <div><dt>Estimated deficit</dt><dd>≈ {Math.round(calorie.estimatedDeficit)} kcal</dd></div> : null}</dl><p>{calorie.status === 'target_achieved' ? "You're within your planned calorie range for today." : calorie.status === 'below_target_outer' ? "You're below your planned target today. Staying closer to your planned intake is generally more consistent with your target." : calorie.status === 'too_far_below' ? 'Your logged intake is significantly below your estimated energy needs today. FitDex does not count this toward calorie-target progress.' : calorie.status === 'below_safety_floor' ? 'Your logged intake is very low today. FitDex does not count this toward calorie-target progress.' : "You're outside your calorie target range today. This does not count toward calorie-target progress."}</p><p className="muted">Calorie needs are estimates. FitDex is not medical advice.</p><button className="primary-button" type="button" onClick={() => { playEffect('select'); setDetailsOpen(false) }}>Continue</button></section></div> : null}
   </>
 }
 
@@ -137,6 +140,8 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [nutritionOpen, setNutritionOpen] = useState(false)
   const [targets, setTargets] = useState<NutritionTargets>()
   const [gamification, setGamification] = useState<GamificationDashboard>()
+  const [showFoodLanding, setShowFoodLanding] = useState(false)
+  const [showFirstFoodFeedback, setShowFirstFoodFeedback] = useState(false)
   useBackNavigation('food-subview', view.kind !== 'overview', () => { if (view.kind === 'add') setView({ kind: 'meal', meal: view.meal }); else if (view.kind === 'meal') setView({ kind: 'overview' }) })
 
   const refresh = useCallback(async () => {
@@ -152,7 +157,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
     })
     return () => { active = false }
   }, [date])
-  useEffect(() => { void hasSeenTutorial('food').then((seen) => { if (!seen) setTutorialOpen(true) }) }, [])
+  useEffect(() => { void loadFirstUseGuidance().then((guidance) => { setShowFoodLanding(!guidance.foodLanding); setShowFirstFoodFeedback(!guidance.firstFoodFeedback) }) }, [])
   useEffect(() => {
     const subscription = liveQuery(loadNutritionTargets).subscribe({ next: setTargets, error: () => setTargets(undefined) })
     return () => subscription.unsubscribe()
@@ -178,6 +183,36 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
       <div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><span><strong>{formatDate(date)}</strong><small>{isLocalToday(date) ? 'Today' : 'Selected day'}</small></span><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>
     </header>
     {entriesLoading ? <section className="panel food-loading" role="status">Loading nutrition…</section> : <>
+      {showFoodLanding ? <ContextRail
+        title={targets?.enabled && targets.calorieTarget > 0 ? 'Log food against your targets' : 'Log food with or without targets'}
+        footnote="Clears after real action, not page visit"
+        actions={targets?.enabled && targets.calorieTarget > 0 ? (
+          <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log First Food</button>
+        ) : (
+          <>
+            <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log Without Targets</button>
+            {onOpenSettings ? <button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); onOpenSettings() }}>Set My Targets</button> : null}
+          </>
+        )}
+      >
+        {targets?.enabled && targets.calorieTarget > 0 ? (
+          <p>Calories and protein lead while full nutrition stays available below. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log to reuse a saved snapshot.</p>
+        ) : (
+          <p>Food remains fully usable without targets. Log Breakfast, Lunch, Supper, or Dinner at any time. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log.</p>
+        )}
+      </ContextRail> : null}
+      {showFirstFoodFeedback && entries.length > 0 ? <ContextRail
+        eyebrow="Logged result"
+        title="Your totals updated from real food data"
+        footnote="Clears after real action, not page visit"
+        actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('firstFoodFeedback'); setShowFirstFoodFeedback(false) }}>Understood</button>}
+      >
+        {targets?.enabled && targets.calorieTarget > 0 ? (
+          <p>{Math.round(totals.kcal ?? 0)} / {Math.round(targets.calorieTarget)} kcal · {Math.round(totals.protein ?? 0)} / {Math.round(targets.proteinTargetGrams)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.</p>
+        ) : (
+          <p>{Math.round(totals.kcal ?? 0)} kcal · {Math.round(totals.protein ?? 0)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.</p>
+        )}
+      </ContextRail> : null}
       {targets?.enabled && targets.calorieTarget > 0 ? <DailyTargetsCard targets={targets} totals={totals} onEdit={() => onOpenSettings?.()} onLog={() => openAdd('breakfast')} /> : <TargetsOffCard totals={totals} onLog={() => openAdd('breakfast')} />}
       <section className="food-meals-section" aria-labelledby="food-meals-title"><header><div><p className="eyebrow">Daily checkpoints</p><h2 id="food-meals-title">Meals</h2></div><span>{entries.length} {entries.length === 1 ? 'item' : 'items'} logged</span></header><div className="food-meal-list">{FOOD_MEALS.map((meal) => { const mealEntries = entries.filter((entry) => entry.meal === meal); const mealTotals = nutritionTotals(mealEntries); return <article className="food-meal-card" key={meal}><button className="food-meal-open" type="button" onClick={() => { playEffect('select'); setView({ kind: 'meal', meal }) }}><MealIcon meal={meal} /><span className="food-meal-title"><strong>{FOOD_MEAL_LABELS[meal]}</strong><small>{mealEntries.length ? `${mealEntries.length} ${mealEntries.length === 1 ? 'item' : 'items'} · ${valueOrDash(mealTotals.kcal, 'kcal')} · ${valueOrDash(mealTotals.protein)}` : 'No food logged'}</small><em className={mealEntries.length ? undefined : 'is-empty'}>{mealEntries.length ? 'Logged' : 'Empty'}</em></span><ChevronRight aria-hidden="true" /></button><button className="food-meal-add" type="button" onClick={() => openAdd(meal)}><Plus size={16} aria-hidden="true" /> Add</button></article> })}</div></section>
       <section className="food-nutrition-details"><button className="food-nutrition-toggle" type="button" aria-expanded={nutritionOpen} onClick={() => setNutritionOpen((open) => !open)}><span><strong>Nutrition Details</strong><small>Carbs · Fat · Fiber · Sugar · Sat. fat · Sodium</small></span>{nutritionOpen ? <ChevronUp /> : <ChevronDown />}</button>{nutritionOpen ? <div className="food-nutrition-content"><MacroStrip nutrition={totals} secondary /><NutritionBreakdownCard key={date} entries={entries} totals={totals} /></div> : null}</section>
@@ -187,6 +222,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
 }
 
 function MealDetail({ date, meal, entries, notice, onBack, onAdd, onEdit, onChanged }: { date: string; meal: FoodMeal; entries: FoodLogEntry[]; notice?: string; onBack: () => void; onAdd: () => void; onEdit: (entry: FoodLogEntry) => void; onChanged: () => Promise<void> }) {
+  const { playEffect } = useAudio()
   const [pendingDelete, setPendingDelete] = useState<FoodLogEntry>()
   useBackNavigation('food-entry-delete', Boolean(pendingDelete), () => setPendingDelete(undefined), 50)
   const totals = nutritionTotals(entries)
@@ -198,10 +234,10 @@ function MealDetail({ date, meal, entries, notice, onBack, onAdd, onEdit, onChan
     <section className="panel food-meal-totals"><p className="eyebrow">Meal totals</p><MacroStrip nutrition={totals} /><div className="food-meal-secondary"><MacroStrip nutrition={totals} secondary /></div></section>
     <section className="food-entry-list" aria-label={`${FOOD_MEAL_LABELS[meal]} entries`}>{entries.length ? entries.map((entry) => {
       const categoryLabel = entry.categoryKind === 'unresolved' ? 'Uncategorized' : entry.categoryName
-      return <article className="food-entry" key={entry.id}><FoodCategoryIcon categoryId={entry.categoryId ?? 'other'} label={categoryLabel} color={entry.customCategoryColor} /><div className="food-entry-copy"><h2>{entry.foodName}</h2><p>{categoryLabel} · {valueOrDash(entry.kcal, 'kcal')} · {valueOrDash(entry.protein)}</p></div><div className="food-entry-actions"><button type="button" aria-label={`Edit ${entry.foodName}`} onClick={() => onEdit(entry)}><Pencil size={18} /></button><button type="button" aria-label={`Delete ${entry.foodName}`} onClick={() => setPendingDelete(entry)}><Trash2 size={18} /></button></div></article>
+      return <article className="food-entry" key={entry.id}><FoodCategoryIcon categoryId={entry.categoryId ?? 'other'} label={categoryLabel} color={entry.customCategoryColor} /><div className="food-entry-copy"><h2>{entry.foodName}</h2><p>{categoryLabel} · {valueOrDash(entry.kcal, 'kcal')} · {valueOrDash(entry.protein)}</p></div><div className="food-entry-actions"><button type="button" aria-label={`Edit ${entry.foodName}`} onClick={() => onEdit(entry)}><Pencil size={18} /></button><button type="button" aria-label={`Delete ${entry.foodName}`} onClick={() => { playEffect('select'); setPendingDelete(entry) }}><Trash2 size={18} /></button></div></article>
     }) : <div className="panel food-detail-empty"><MealIcon meal={meal} /><h2>No Food Logged</h2><p>Start logging your {FOOD_MEAL_LABELS[meal].toLowerCase()}.</p><button className="primary-button" type="button" onClick={onAdd}><Plus size={18} /> Add Food</button></div>}</section>
     {entries.length ? <button className="primary-button food-sticky-add" type="button" onClick={onAdd}><Plus size={18} /> Add Food</button> : null}
-    {pendingDelete ? <div className="food-dialog-backdrop"><section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title"><header><div><p className="eyebrow">{FOOD_MEAL_LABELS[meal]} entry</p><h2 id="delete-food-title">Delete Food Entry?</h2></div></header><p>Remove “{pendingDelete.foodName}” from {FOOD_MEAL_LABELS[meal]}?</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => setPendingDelete(undefined)}>Cancel</button><button className="food-danger-button" type="button" onClick={() => void remove()}>Delete</button></div></section></div> : null}
+    {pendingDelete ? <div className="food-dialog-backdrop"><section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title"><header><div><p className="eyebrow">{FOOD_MEAL_LABELS[meal]} entry</p><h2 id="delete-food-title">Delete Food Entry?</h2></div></header><p>Remove “{pendingDelete.foodName}” from {FOOD_MEAL_LABELS[meal]}?</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section></div> : null}
   </div>
 }
 
@@ -367,10 +403,11 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
   const [color, setColor] = useState<string>(CUSTOM_CATEGORY_COLORS[0])
   const [error, setError] = useState('')
   const [pendingDelete, setPendingDelete] = useState<CustomFoodCategory>()
+  const [showCustomHint, setShowCustomHint] = useState(false)
   useBackNavigation('food-category-delete', Boolean(pendingDelete), () => setPendingDelete(undefined), 70)
   useBackNavigation('food-category-create', creating && !pendingDelete, () => { setCreating(false); setError('') }, 60)
   useBackNavigation('food-category-sheet', !creating && !pendingDelete, onClose, 50)
-  useEffect(() => { void listCustomCategories().then(setCustom) }, [])
+  useEffect(() => { void listCustomCategories().then(setCustom); void loadFirstUseGuidance().then((guidance) => setShowCustomHint(!guidance.customFoodCategory)) }, [])
 
   const create = async () => {
     setError('')
@@ -378,6 +415,7 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
       const beforeIds = new Set((await listCustomCategories()).map((category) => category.id))
       const category = await createCustomCategory(name, color)
       if (!beforeIds.has(category.id)) playEffect('add')
+      await acknowledgeFirstUse('customFoodCategory')
       onSelect('other', category.id, category.name, category.color)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to create category.')
@@ -403,7 +441,8 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
   }
 
   return <div className="food-dialog-backdrop"><section className="food-dialog food-category-dialog" role="dialog" aria-modal="true" aria-labelledby="category-title">
-    <header><div><p className="eyebrow">Food category</p><h2 id="category-title">{creating ? 'Create Category' : 'Select Category'}</h2></div><button type="button" aria-label="Close category picker" onClick={onClose}><X /></button></header>
-    {creating ? <div className="custom-category-form"><button className="text-button" type="button" onClick={() => { setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="primary-button" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { setCreating(false); setError('') }}>Cancel</button></div> : <><section className="food-category-section"><p className="eyebrow">Standard Categories</p><div className="category-grid">{PREDEFINED_FOOD_CATEGORIES.map((category) => <button className={selectedId === category.id && !selectedCustomId ? 'is-selected' : ''} type="button" key={category.id} onClick={() => select(category.id)}><FoodCategoryIcon categoryId={category.id} label={category.name} /><span>{category.name}</span></button>)}</div></section><section className="food-category-section"><p className="eyebrow">Custom Categories</p>{custom.length ? <div className="food-custom-category-list">{custom.map((category) => <div className="custom-category-option" key={category.id}><button className={selectedCustomId === category.id ? 'is-selected' : ''} type="button" onClick={() => select('other', category.id, category.name, category.color)}><FoodCategoryIcon categoryId="other" label={category.name} color={category.color} /><span>{category.name}</span></button><button className="custom-category-delete" type="button" aria-label={`Delete ${category.name} category`} onClick={() => setPendingDelete(category)}><Trash2 size={15} /></button></div>)}</div> : <p className="food-suggestion-empty">No custom categories.</p>}</section>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button" type="button" onClick={() => { setCreating(true); setError('') }}><Plus size={18} /> Create Category</button></>}
-  </section>{pendingDelete ? <section className="food-dialog food-confirm-dialog food-category-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title"><header><div><p className="eyebrow">Custom category</p><h2 id="delete-category-title">Delete Category?</h2></div></header><p>“{pendingDelete.name}” will be removed.</p><p>Remembered foods in this category will also be removed. Historical food logs remain and become Uncategorized.</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => setPendingDelete(undefined)}>Cancel</button><button className="food-danger-button" type="button" onClick={() => void remove()}>Delete</button></div></section> : null}</div>
+    <header><div><p className="eyebrow">Food category</p><h2 id="category-title">{creating ? 'Create Category' : 'Select Category'}</h2></div><button type="button" aria-label="Close category picker" onClick={() => { playEffect('select'); onClose() }}><X /></button></header>
+    {showCustomHint ? <ContextRail title="Custom categories are local labels" footnote="Clears after real action, not page visit" actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('customFoodCategory'); setShowCustomHint(false) }}>Got it</button>}><p>If predefined categories do not fit, create a reusable custom category with its own accent color. It organizes remembered foods; historical log snapshots remain preserved.</p></ContextRail> : null}
+    {creating ? <div className="custom-category-form"><button className="text-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="primary-button" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}>Cancel</button></div> : <><section className="food-category-section"><p className="eyebrow">Standard Categories</p><div className="category-grid">{PREDEFINED_FOOD_CATEGORIES.map((category) => <button className={selectedId === category.id && !selectedCustomId ? 'is-selected' : ''} type="button" key={category.id} onClick={() => select(category.id)}><FoodCategoryIcon categoryId={category.id} label={category.name} /><span>{category.name}</span></button>)}</div></section><section className="food-category-section"><p className="eyebrow">Custom Categories</p>{custom.length ? <div className="food-custom-category-list">{custom.map((category) => <div className="custom-category-option" key={category.id}><button className={selectedCustomId === category.id ? 'is-selected' : ''} type="button" onClick={() => select('other', category.id, category.name, category.color)}><FoodCategoryIcon categoryId="other" label={category.name} color={category.color} /><span>{category.name}</span></button><button className="custom-category-delete" type="button" aria-label={`Delete ${category.name} category`} onClick={() => { playEffect('select'); setPendingDelete(category) }}><Trash2 size={15} /></button></div>)}</div> : <p className="food-suggestion-empty">No custom categories.</p>}</section>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(true); setError('') }}><Plus size={18} /> Create Category</button></>}
+  </section>{pendingDelete ? <section className="food-dialog food-confirm-dialog food-category-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title"><header><div><p className="eyebrow">Custom category</p><h2 id="delete-category-title">Delete Category?</h2></div></header><p>“{pendingDelete.name}” will be removed.</p><p>Remembered foods in this category will also be removed. Historical food logs remain and become Uncategorized.</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section> : null}</div>
 }

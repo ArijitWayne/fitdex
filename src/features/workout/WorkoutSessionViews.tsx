@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowLeft, ArrowUp, MoreHorizontal, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
+import { ContextRail } from '../../components/ui/ContextRail'
 import { db } from '../../data/database'
 import type { Exercise, ExerciseTrackingType, WorkoutSet } from '../../data/models'
 import { displayDistanceFromKm, displayWeightFromKg, getUnitContext, storeDistanceAsKm, storeWeightAsKg, type UnitContext } from '../../utils/units.ts'
@@ -42,6 +43,7 @@ import {
   updateWorkoutNotes,
   updateWorkoutSet,
 } from './workoutRepository'
+import { acknowledgeFirstUse, loadFirstUseGuidance } from '../help/firstUseGuidance'
 
 const metricUnits = getUnitContext('metric')
 type SetDraft = Partial<Record<WorkoutSetMetric, string>>
@@ -90,7 +92,13 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const [confirmExerciseRemovalId, setConfirmExerciseRemovalId] = useState<string>()
   const [showSessionNotes, setShowSessionNotes] = useState(false)
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(() => new Set())
-  const timerIsRunning = detail?.workout.status === 'active' && !isWorkoutTimerPaused(detail.workout)
+  const [timerGuidance, setTimerGuidance] = useState(false)
+  const [restGuidance, setRestGuidance] = useState(false)
+  const [timerNotice, setTimerNotice] = useState(false)
+  const exerciseCount = detail?.exercises.length ?? 0
+  const timerPaused = detail ? isWorkoutTimerPaused(detail.workout, exerciseCount) : true
+  const timerHasStarted = Boolean(detail?.workout.lastResumedAt || (detail?.workout.accumulatedActiveSeconds ?? 0) > 0)
+  const timerIsRunning = detail?.workout.status === 'active' && exerciseCount > 0 && !timerPaused
 
   useBackNavigation('exercise-menu', Boolean(openMenuExerciseId), () => setOpenMenuExerciseId(undefined))
 
@@ -116,6 +124,10 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     void db.settings.toArray().then((settings) => {
       const preference = settings.find((item) => item.units)?.units ?? 'metric'
       setUnits(getUnitContext(preference))
+    })
+    void loadFirstUseGuidance().then((guidance) => {
+      setTimerGuidance(!guidance.workoutTimer)
+      setRestGuidance(!guidance.workoutRest)
     })
   }, [workoutId])
   // oxlint-enable react-hooks/exhaustive-deps, react/set-state-in-effect
@@ -234,7 +246,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
       title: "Add to today's workout",
       targetLabel: 'workout',
       existingExerciseIds,
-      async onAddExercise(exercise: Exercise) { await addExercisesToWorkout(workoutId, [exercise]); playEffect('add'); await refresh() },
+      async onAddExercise(exercise: Exercise) { await addExercisesToWorkout(workoutId, [exercise]); playEffect('add'); setTimerNotice(false); await refresh() },
       async onRemoveExercise(exercise: Exercise) {
         const item = detail.exercises.find((candidate) => candidate.exercise.exerciseId === exercise.id)
         if (!item) return
@@ -251,7 +263,8 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
 
   const allSets = detail.exercises.flatMap((item) => item.sets)
   const loggedSets = detail.exercises.reduce((total, item) => total + item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length, 0)
-  const timerPaused = isWorkoutTimerPaused(detail.workout)
+  const acknowledgeTimer = () => { playEffect('select'); setTimerGuidance(false); void acknowledgeFirstUse('workoutTimer') }
+  const acknowledgeRest = () => { playEffect('select'); setRestGuidance(false); void acknowledgeFirstUse('workoutRest') }
 
   const toggleExerciseNotes = (exerciseId: string) => {
     setExpandedNotes((prev) => {
@@ -312,17 +325,47 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
       <div className="session-stats-bar">
         <div className="stat-duration">
           <span>Time</span>
-          <strong>{formatDuration(getWorkoutDuration(detail.workout, now))}</strong>
+          <strong>{formatDuration(getWorkoutDuration(detail.workout, now, exerciseCount))}</strong>
           <div className="active-workout-top-actions">
-            <button
-              className="pause-toggle-btn secondary-button"
-              type="button"
-              aria-label={timerPaused ? 'Resume workout timer' : 'Pause workout timer'}
-              onClick={() => { playEffect('select'); void run(() => timerPaused ? resumeWorkout(workoutId) : pauseWorkout(workoutId)) }}
-            >
-              {timerPaused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
-              <span>{timerPaused ? 'Resume' : 'Pause'}</span>
-            </button>
+            {!timerHasStarted ? (
+              <button
+                className={`pause-toggle-btn ${exerciseCount > 0 ? 'is-start-ready' : 'is-unavailable'}`}
+                type="button"
+                aria-label={exerciseCount > 0 ? 'Start workout timer' : 'Start workout timer (add an exercise first)'}
+                onClick={() => {
+                  if (exerciseCount === 0) {
+                    playEffect('select')
+                    setTimerNotice(true)
+                    return
+                  }
+                  playEffect('select')
+                  setTimerNotice(false)
+                  void run(() => resumeWorkout(workoutId))
+                }}
+              >
+                <Play size={11} aria-hidden="true" />
+                <span>Start Timer</span>
+              </button>
+            ) : (
+              <button
+                className="pause-toggle-btn secondary-button"
+                type="button"
+                aria-label={timerPaused ? 'Resume workout timer' : 'Pause workout timer'}
+                onClick={() => {
+                  if (timerPaused && exerciseCount === 0) {
+                    playEffect('select')
+                    setTimerNotice(true)
+                    return
+                  }
+                  playEffect('select')
+                  setTimerNotice(false)
+                  void run(() => timerPaused ? resumeWorkout(workoutId) : pauseWorkout(workoutId))
+                }}
+              >
+                {timerPaused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
+                <span>{timerPaused ? 'Resume' : 'Pause'}</span>
+              </button>
+            )}
           </div>
         </div>
         <div className="stat-progress">
@@ -332,6 +375,26 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
         </div>
       </div>
     </header>
+
+    {timerNotice ? (
+      <div className="workout-feedback timer-attempt-feedback" role="alert">
+        <div className="timer-attempt-content">
+          <strong>ADD AN EXERCISE FIRST</strong>
+          <p>Add at least one exercise to start your workout timer.</p>
+        </div>
+        <button
+          type="button"
+          className="text-button timer-attempt-dismiss"
+          aria-label="Dismiss notice"
+          onClick={() => { playEffect('select'); setTimerNotice(false) }}
+        >
+          ✕
+        </button>
+      </div>
+    ) : null}
+
+    {timerGuidance ? <ContextRail eyebrow="Workout Timer" title="Your session timer is live" footnote="Clears after acknowledging timer rules" actions={<button className="secondary-button" type="button" onClick={acknowledgeTimer}>Got it</button>}><p>It began only when you started this workout. Pause only when training itself is interrupted; pause excludes that time from active duration.</p></ContextRail> : null}
+    {restGuidance && loggedSets > 0 ? <ContextRail eyebrow="Rest Timer" title="Rest stays under your control" footnote="Clears after acknowledging rest rules" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>A valid set is logged. Rest runs independently and never pauses the workout timer. Tap the rest action when you need recovery time; FitDex never auto-starts rest.</p></ContextRail> : null}
 
     {detail.exercises.length ? <div className="active-exercise-list workout-feed">{detail.exercises.map((item, index) => {
       const isCurrent = currentExerciseId === item.exercise.id

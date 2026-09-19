@@ -5,13 +5,15 @@ import Dexie from 'dexie'
 import fs from 'node:fs'
 import type { PlanDaySnapshot } from '../../data/models.ts'
 import { ACHIEVEMENTS } from './achievementCatalog.ts'
-import { ACHIEVEMENT_BADGE_ASSET_FILES, LEVEL_XP_THRESHOLDS, MAX_LEVEL, RANK_BADGE_ASSET_FILES, RANKS, XP_REWARDS, achievementAssetPath, levelForXp, rankAssetPath, rankForLevel } from './gamificationConfig.ts'
+import { ACHIEVEMENT_BADGE_ASSET_FILES, INITIAL_FREEZE_BALANCE, LEVEL_XP_THRESHOLDS, MAX_LEVEL, RANK_BADGE_ASSET_FILES, RANKS, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, achievementAssetPath, levelForXp, rankAssetPath, rankForLevel } from './gamificationConfig.ts'
 import { deriveStreak, inclusiveDateDuration, isMaterialPlanChange } from './gamificationModel.ts'
 
 assert.equal(ACHIEVEMENTS.length, 52)
 assert.deepEqual(ACHIEVEMENTS.filter((item) => item.category === 'EXERCISE_DEX').map((item) => item.name), ['First Exercise', '5 Different Exercises', '10 Different Exercises', '25 Different Exercises', '50 Different Exercises', 'All Categories'])
 assert.deepEqual(Object.fromEntries(['WORKOUT', 'CONSISTENCY', 'PERFORMANCE', 'EXERCISE_DEX', 'NUTRITION', 'PROGRESSION'].map((category) => [category, ACHIEVEMENTS.filter((item) => item.category === category).length])), { WORKOUT: 10, CONSISTENCY: 8, PERFORMANCE: 7, EXERCISE_DEX: 6, NUTRITION: 11, PROGRESSION: 10 })
 assert.deepEqual(XP_REWARDS, { plannedRoutine: 30, plannedWorkout: 30, unplannedWorkout: 20, personalRecord: 15, calorieTarget: 5, proteinTarget: 5, fullFoodLog: 5, achievement: 50 })
+assert.equal(INITIAL_FREEZE_BALANCE, 2)
+assert.equal(SUCCESSFUL_DAYS_PER_FREEZE, 15)
 assert.ok(ACHIEVEMENTS.filter((achievement) => achievement.id.startsWith('calorie-target-') || achievement.id.startsWith('protein-target-')).every((achievement) => !achievement.dormant))
 assert.ok(!Object.keys(XP_REWARDS).some((reward) => /(?:carb|fat|fiber)/i.test(reward)))
 assert.ok(!ACHIEVEMENTS.some((achievement) => /(?:carb|fat|fiber)-target/i.test(achievement.id)))
@@ -81,11 +83,14 @@ assert.match(notificationSource, /rankAssetPath\(pending\.afterProgress\.rank\)/
 assert.match(notificationSource, /LEVEL_MILESTONE_ACHIEVEMENT_IDS/)
 assert.doesNotMatch(notificationSource, /Trophy/)
 assert.match(notificationSource, /markGamificationNotificationsSeen\(\)/)
+assert.match(notificationSource, /Updated balance/)
 const gamificationRepositorySource = fs.readFileSync('src/features/gamification/gamificationRepository.ts', 'utf8')
 assert.match(gamificationRepositorySource, /evaluateCalorieDay\(targets, calories, estimatedTdee\)\.achievementEligible/)
 assert.match(gamificationRepositorySource, /evaluateProteinDay\(targets\.proteinTargetGrams, protein\)\.achievementEligible/)
 assert.match(gamificationRepositorySource, /calorie-target:\$\{date\}/)
 assert.match(gamificationRepositorySource, /protein-target:\$\{date\}/)
+assert.doesNotMatch(gamificationRepositorySource, /MAX_FREEZE_BALANCE/)
+assert.match(gamificationRepositorySource, /freezeRewards/)
 
 const row = (localDate: string, plannedType: PlanDaySnapshot['plannedType'], result: PlanDaySnapshot['result']): PlanDaySnapshot => ({ id: localDate, localDate, plannedType, result, createdAt: localDate, updatedAt: localDate })
 assert.deepEqual(deriveStreak([row('2026-01-01', 'routine', 'success'), row('2026-01-02', 'rest_day', 'rest'), row('2026-01-03', 'no_plan', 'no_plan'), row('2026-01-04', 'workout_day', 'frozen'), row('2026-01-05', 'routine', 'paused'), row('2026-01-06', 'routine', 'success')]), { current: 2, best: 2, successfulPlannedDays: 2 })
@@ -98,7 +103,7 @@ assert.equal(isMaterialPlanChange({ type: 'routine', routineId: 'a' }, { type: '
 
 await Dexie.delete('fitdex')
 const { db } = await import('../../data/database.ts')
-const { loadGamificationDashboard, planStreakPause, reconcileGamification } = await import('./gamificationRepository.ts')
+const { loadGamificationDashboard, loadPendingGamificationNotifications, markGamificationNotificationsSeen, planStreakPause, reconcileGamification } = await import('./gamificationRepository.ts')
 const yesterday = '2026-08-25'
 const today = '2026-08-26'
 await db.settings.put({ id: 'settings', weeklyPlanConfigured: true, weeklyPlan: { tuesday: { type: 'workout_day' } }, gamificationInitializedAt: '2026-08-25T00:00:00.000Z', createdAt: '2026-08-25T00:00:00.000Z', updatedAt: '2026-08-25T00:00:00.000Z' })
@@ -214,6 +219,52 @@ assert.match(guideText, /Achievement Unlocked/)
 assert.match(guideText, /\+50 XP/)
 assert.match(guideText, /Calorie Target/)
 assert.match(guideText, /Protein Target/)
+
+// Granular tests: 14 days gives no award; 15 days gives +1 award; rest, paused, frozen, unplanned excluded
+await db.planDaySnapshots.clear()
+await db.streakFreezeEvents.clear()
+const { shiftLocalDateKey } = await import('../../utils/localDate.ts')
+const testStart = '2026-05-01'
+await db.settings.update('settings', { gamificationInitializedAt: `${testStart}T00:00:00.000Z`, weeklyPlan: {}, updatedAt: `${testStart}T00:00:00.000Z` })
+// 14 successful days
+await db.planDaySnapshots.bulkPut(Array.from({ length: 14 }, (_, index) => {
+  const localDate = shiftLocalDateKey(testStart, index)
+  return { id: `m14:${localDate}`, localDate, plannedType: 'workout_day' as const, result: 'success' as const, finalizedAt: `${localDate}T12:00:00.000Z`, createdAt: `${localDate}T12:00:00.000Z`, updatedAt: `${localDate}T12:00:00.000Z` }
+}))
+// Add excluded days: rest_day, no_plan, paused, frozen
+await db.planDaySnapshots.bulkPut([
+  { id: 'ex:rest', localDate: '2026-05-15', plannedType: 'rest_day' as const, result: 'rest' as const, finalizedAt: '2026-05-15T12:00:00.000Z', createdAt: '2026-05-15T12:00:00.000Z', updatedAt: '2026-05-15T12:00:00.000Z' },
+  { id: 'ex:noplan', localDate: '2026-05-16', plannedType: 'no_plan' as const, result: 'no_plan' as const, finalizedAt: '2026-05-16T12:00:00.000Z', createdAt: '2026-05-16T12:00:00.000Z', updatedAt: '2026-05-16T12:00:00.000Z' },
+  { id: 'ex:paused', localDate: '2026-05-17', plannedType: 'routine' as const, result: 'paused' as const, finalizedAt: '2026-05-17T12:00:00.000Z', createdAt: '2026-05-17T12:00:00.000Z', updatedAt: '2026-05-17T12:00:00.000Z' },
+  { id: 'ex:frozen', localDate: '2026-05-18', plannedType: 'workout_day' as const, result: 'frozen' as const, finalizedAt: '2026-05-18T12:00:00.000Z', createdAt: '2026-05-18T12:00:00.000Z', updatedAt: '2026-05-18T12:00:00.000Z' },
+])
+await reconcileGamification(new Date('2026-05-19T12:00:00'))
+assert.equal(await db.streakFreezeEvents.where('type').equals('earned').count(), 0, '14 successful days + non-qualifying days must not earn a freeze')
+assert.equal((await loadGamificationDashboard('2026-05-19', false)).freezeBalance, 2, 'balance remains initial 2')
+
+// 15th successful day earns first Freeze
+await db.planDaySnapshots.put({ id: 'plan-day:2026-05-19', localDate: '2026-05-19', plannedType: 'workout_day', result: 'success', finalizedAt: '2026-05-19T12:00:00.000Z', createdAt: '2026-05-19T12:00:00.000Z', updatedAt: '2026-05-19T12:00:00.000Z' })
+await reconcileGamification(new Date('2026-05-20T12:00:00'))
+assert.equal(await db.streakFreezeEvents.where('type').equals('earned').count(), 1, '15 successful days earns 1 freeze')
+assert.equal((await loadGamificationDashboard('2026-05-20', false)).freezeBalance, 3, 'balance increases to 3')
+
+// Four milestones prove the 15-day cadence, idempotency, grouped reward notice, and uncapped balance.
+await db.planDaySnapshots.clear()
+await db.streakFreezeEvents.clear()
+const milestoneStart = '2026-01-01'
+const { shiftLocalDateKey: shiftKey } = await import('../../utils/localDate.ts')
+await db.settings.update('settings', { gamificationInitializedAt: `${milestoneStart}T00:00:00.000Z`, weeklyPlan: {}, updatedAt: `${milestoneStart}T00:00:00.000Z` })
+await db.planDaySnapshots.bulkPut(Array.from({ length: 60 }, (_, index) => {
+  const localDate = shiftKey(milestoneStart, index)
+  return { id: `milestone:${localDate}`, localDate, plannedType: 'workout_day' as const, result: 'success' as const, finalizedAt: `${localDate}T12:00:00.000Z`, createdAt: `${localDate}T12:00:00.000Z`, updatedAt: `${localDate}T12:00:00.000Z` }
+}))
+await reconcileGamification(new Date('2026-03-02T12:00:00'))
+await reconcileGamification(new Date('2026-03-02T12:00:00'))
+assert.equal(await db.streakFreezeEvents.where('type').equals('earned').count(), 4)
+assert.equal((await loadGamificationDashboard('2026-03-02', false)).freezeBalance, 6)
+assert.equal((await loadPendingGamificationNotifications()).freezeRewards.length, 4)
+await markGamificationNotificationsSeen()
+assert.equal((await loadPendingGamificationNotifications()).freezeRewards.length, 0)
 
 await db.close()
 await Dexie.delete('fitdex')

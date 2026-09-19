@@ -24,6 +24,7 @@ assert.throws(() => normalizeDisplayName('a'.repeat(MAX_DISPLAY_NAME_LENGTH + 1)
 assert.throws(() => normalizeDisplayName('   '), /required/)
 assert.equal(resolveProfileGate('', false), 'onboarding')
 assert.equal(resolveProfileGate('', true), 'migration')
+assert.equal(resolveProfileGate('Arijit', false), 'onboarding')
 assert.equal(resolveProfileGate('Arijit', true), 'none')
 
 const timestamp = '2026-08-25T00:00:00.000Z'

@@ -30,7 +30,7 @@ export const gamificationHelpSteps: readonly GuideStep[] = [{
     },
     {
       label: 'Protection',
-      text: 'A Streak Freeze automatically protects one missed planned training day. A Travel/Sickness Pause protects up to 7 days. Both preserve your streak without adding XP or progress.',
+      text: 'You start with 2 Streak Freezes and earn +1 every 15 successful planned training days, with no balance cap. A Freeze automatically protects one missed planned training day. A Travel/Sickness Pause protects 1–7 days, up to twice per rolling 12 months. Both preserve your streak without adding XP or progress.',
     },
     {
       label: 'Plan commitment',

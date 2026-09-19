@@ -11,8 +11,7 @@ export const XP_REWARDS = {
 
 export const MAX_LEVEL = 100
 export const INITIAL_FREEZE_BALANCE = 2
-export const MAX_FREEZE_BALANCE = 3
-export const SUCCESSFUL_DAYS_PER_FREEZE = 30
+export const SUCCESSFUL_DAYS_PER_FREEZE = 15
 export const MAX_PAUSE_DAYS = 7
 export const MAX_PAUSES_PER_ROLLING_YEAR = 2
 export const MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR = 1

@@ -2,6 +2,7 @@ import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Circle
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { PageFrame } from '../components/layout/PageFrame'
+import { ContextRail } from '../components/ui/ContextRail'
 import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type PredefinedFoodCategoryId } from '../data/models'
 import { FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
 import { FOOD_MEAL_LABELS, nutritionTotals } from '../features/food/foodModel'
@@ -22,6 +23,7 @@ import { PageHeader } from './PageHeader'
 import { GuideDialog, type GuideStep } from '../features/help/GuideDialog'
 import { useAudio } from '../features/audio/useAudio'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
+import { acknowledgeFirstUse, loadFirstUseGuidance } from '../features/help/firstUseGuidance'
 
 const journalHelpSteps: readonly GuideStep[] = [
   {
@@ -50,6 +52,7 @@ export function JournalPage() {
   const [workoutId, setWorkoutId] = useState<string>()
   const [helpOpen, setHelpOpen] = useState(false)
   const [openMeals, setOpenMeals] = useState<Record<string, boolean>>({})
+  const [showFirstUse, setShowFirstUse] = useState(false)
   const { playEffect } = useAudio()
   const navigateBack = useBackNavigation('journal-subview', Boolean(workoutId), () => setWorkoutId(undefined))
 
@@ -60,6 +63,7 @@ export function JournalPage() {
       .catch((reason: unknown) => { if (current) setError(reason instanceof Error ? reason.message : 'Journal history could not be loaded.') })
     return () => { current = false }
   }, [date])
+  useEffect(() => { void loadFirstUseGuidance().then((guidance) => setShowFirstUse(!guidance.journal)) }, [])
 
   const summary = useMemo(() => day ? calculateJournalSummary(day) : undefined, [day])
   const meals = useMemo(() => groupFoodEntriesByMeal(day?.foodEntries ?? []), [day])
@@ -93,6 +97,13 @@ export function JournalPage() {
   return (
     <PageFrame className="page-stack journal-page">
       <PageHeader eyebrow="Daily record" title="Journal" description="Your daily fitness history" action={<button className="page-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }}><CircleHelp size={18} aria-hidden="true" /> How Journal Works</button>} />
+      {showFirstUse ? <ContextRail
+        title="Journal is your read-only daily record"
+        footnote="Clears after real action, not page visit"
+        actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('journal'); setShowFirstUse(false) }}>Understood</button>}
+      >
+        <p>Finished workouts and Food entries appear here automatically. Use the date controls to review history; there is no duplicate Journal entry to maintain.</p>
+      </ContextRail> : null}
 
       <header className="journal-date-header">
         <button

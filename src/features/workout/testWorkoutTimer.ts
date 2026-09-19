@@ -39,8 +39,42 @@ const exercise: Exercise = {
 }
 await db.exercises.add(exercise)
 
+// 1. Start Open Workout with zero exercises: active workout exists, timer NOT running, elapsed active time = 0
+const emptyOpen = await repository.startEmptyWorkout('Open Session', at(0))
+assert.equal(emptyOpen.workout.status, 'active')
+assert.equal(emptyOpen.workout.timerState, 'paused')
+assert.equal(emptyOpen.workout.accumulatedActiveSeconds, 0)
+assert.equal(emptyOpen.workout.lastResumedAt, undefined)
+assert.equal(getWorkoutDuration(emptyOpen.workout, at(10)), 0)
+assert.equal(isWorkoutTimerPaused(emptyOpen.workout, 0), true)
+
+// 2 & 3. Attempting timer start with zero exercises: throws error, no timer transition
+await assert.rejects(
+  () => repository.resumeWorkout(emptyOpen.workout.id, at(10)),
+  /Add at least one exercise to start your workout timer./
+)
+let emptyDetail = await repository.getWorkoutDetail(emptyOpen.workout.id)
+assert.equal(emptyDetail.workout.timerState, 'paused')
+assert.equal(getWorkoutDuration(emptyDetail.workout, at(10)), 0)
+
+// 4 & 5. Adding first exercise: does NOT auto-start timer
+await repository.addExercisesToWorkout(emptyOpen.workout.id, [exercise])
+emptyDetail = await repository.getWorkoutDetail(emptyOpen.workout.id)
+assert.equal(emptyDetail.exercises.length, 1)
+assert.equal(emptyDetail.workout.timerState, 'paused')
+assert.equal(getWorkoutDuration(emptyDetail.workout, at(15)), 0)
+
+// 6. Explicit Start Timer after first exercise: timer begins running
+await repository.resumeWorkout(emptyOpen.workout.id, at(15))
+emptyDetail = await repository.getWorkoutDetail(emptyOpen.workout.id)
+assert.equal(emptyDetail.workout.timerState, 'running')
+assert.equal(getWorkoutDuration(emptyDetail.workout, at(20)), 300)
+await repository.discardWorkout(emptyOpen.workout.id)
+
+// Persistent timer tests with running session
 const runningSession = await repository.startEmptyWorkout('Persistent Timer', at(0))
 await repository.addExercisesToWorkout(runningSession.workout.id, [exercise])
+await repository.resumeWorkout(runningSession.workout.id, at(0))
 let detail = await repository.getWorkoutDetail(runningSession.workout.id)
 for (const set of detail.exercises[0].sets) await repository.updateWorkoutSet(set.id, { reps: 8 })
 await repository.pauseWorkout(runningSession.workout.id, at(5))
@@ -69,6 +103,7 @@ await assert.rejects(() => repository.resumeWorkout(completed.workout.id, at(40)
 
 const pausedFinish = await repository.startEmptyWorkout('Paused Finish', at(0))
 await repository.addExercisesToWorkout(pausedFinish.workout.id, [exercise])
+await repository.resumeWorkout(pausedFinish.workout.id, at(0))
 detail = await repository.getWorkoutDetail(pausedFinish.workout.id)
 await repository.updateWorkoutSet(detail.exercises[0].sets[0].id, { reps: 5 })
 await repository.pauseWorkout(pausedFinish.workout.id, at(5))
@@ -82,6 +117,7 @@ assert.equal(completedWhilePaused.workout.durationSeconds, 300)
 
 const invalidRunning = await repository.startEmptyWorkout('Invalid Running Finish', at(0))
 await repository.addExercisesToWorkout(invalidRunning.workout.id, [exercise])
+await repository.resumeWorkout(invalidRunning.workout.id, at(0))
 detail = await repository.getWorkoutDetail(invalidRunning.workout.id)
 await repository.updateWorkoutSet(detail.exercises[0].sets[0].id, { reps: 5 })
 await assert.rejects(() => repository.finishWorkout(invalidRunning.workout.id, at(5)), repository.IncompleteWorkoutError)
@@ -91,7 +127,19 @@ assert.equal(isWorkoutTimerPaused(detail.workout), false)
 assert.equal(getWorkoutDuration(detail.workout, at(10)), 600, 'a rejected running Finish does not stop or lose active time')
 await repository.discardWorkout(invalidRunning.workout.id)
 
+// 8. Invalid legacy state: zero exercises + timerState running -> safely normalized to non-running, 0 wall time accrued
+const legacyEmpty = await repository.startEmptyWorkout('Legacy Empty', at(0))
+await db.workouts.update(legacyEmpty.workout.id, { timerState: 'running', accumulatedActiveSeconds: 0, lastResumedAt: new Date(at(0)).toISOString() })
+db.close()
+await db.open()
+detail = await repository.getWorkoutDetail(legacyEmpty.workout.id)
+assert.equal(detail.workout.timerState, 'paused')
+assert.equal(getWorkoutDuration(detail.workout, at(7)), 0, 'empty legacy workout accrues no time')
+await repository.discardWorkout(legacyEmpty.workout.id)
+
+// 9. Legacy running workout with exercises preserves recovery elapsed time
 const legacy = await repository.startEmptyWorkout('Legacy Running', at(0))
+await repository.addExercisesToWorkout(legacy.workout.id, [exercise])
 await db.workouts.update(legacy.workout.id, { timerState: undefined, accumulatedActiveSeconds: undefined, lastResumedAt: undefined })
 db.close()
 await db.open()

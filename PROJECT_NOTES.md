@@ -351,7 +351,7 @@ The Workout hub owns one recurring local weekly template with stable Monday-thro
 
 Home remains derived from Settings, routines, active/completed workouts, and Food facts. Active workout is the highest-priority Today state. A Routine Day is satisfied only by a completed workout whose persisted source `routineId` matches; a different completed workout is shown as activity while the assigned routine remains pending. A generic Workout Day is satisfied by any completed workout whose local `startedAt` date is today. Rest Day remains planned recovery even when unplanned activity exists, and No Plan remains distinct from both. Cross-midnight workouts belong to their local start day for plan interpretation. Deleting the only matching completion naturally makes the routine pending again. The weekly plan is only a current recurring template: edits do not reconstruct or snapshot historical schedules, and no history, Journal, or Progress records are rewritten.
 
-Workout provides a replayable 12-step How Workouts Work guide and Food provides a replayable 8-step How Food Works guide. Each auto-opens once when its optional Settings flag (`workoutTutorialSeen` or `foodTutorialSeen`) is absent, while page-level Help controls always allow replay. The shared lightweight dialog supplies modal semantics, focused step headings, Escape, Back/Next, Skip/Done, scroll containment, safe areas, and short-landscape behavior without a new dependency. Journal and Progress expose manual one-screen help only: Journal explains its completed-workout/FoodLogEntry-derived read-only model; Progress explains completed-workout and Food analytics, including Resistance Volume as weight × reps workload. Low-data Home explains that Workout and Food entries automatically feed Home, Journal, and Progress. No XP, streak, backup, notification, date override, or cache store is included.
+Workout provides a replayable 12-step How Workouts Work guide and Food provides a replayable 8-step How Food Works guide through their page Help controls. First-use teaching now stays in context through mobile-native inline Context Rails rather than auto-opening a long modal or imposing a desktop sidebar. The Context Rail uses the full practical content width with a 4px primary left accent rail, clear action buttons, and footnote explaining that guidance clears after real user action rather than mere page visits. Workout preparation uses a transient Build Today flow backed by Exercise Dex; no active Workout record or running timer is created until the deliberate "Start Workout" action. Journal and Progress retain replayable one-screen help and add one-time acknowledged explanations of their derived, read-only models. Every interactive button and action across first-use guidance, onboarding, workout preparation, and dialogs triggers exactly one appropriate semantic SFX (`select`, `add`, `progress_complete`, or `achievements_unlock`).
 
 ### Phase 2B local-first Food V1
 
@@ -623,7 +623,7 @@ Rank mapping has no divisions: Recruit 1–6, Regular 7–15, Hardened 16–27, 
 
 On activation and every startup/resume reconciliation, FitDex materializes missing local calendar dates from the then-current recurring Weekly Plan. Each snapshot preserves Routine/Workout/Rest/No Plan type, stable routine ID, and routine-name snapshot. Past snapshots are immutable when the recurring plan changes. Reconciliation processes unresolved past dates chronologically; the current day remains Pending. Workout ownership uses local `startedAt`, including cross-midnight sessions.
 
-A matching routine-ID completion or any completion on a generic Workout Day increments Plan Streak. Rest Day, No Plan, Freeze, and Travel/Sickness Pause preserve but do not increment it. A wrong-routine or missed training obligation automatically consumes one available Freeze; with no Freeze, current streak resets to zero. Freeze history is durable. Balance starts at 2, caps at 3, and earns one at each 30-successful-planned-training-day milestone when below cap. Frozen days add no successful day, Workout XP, quest completion, or consistency progress.
+A matching routine-ID completion or any completion on a generic Workout Day increments Plan Streak. Rest Day, No Plan, Freeze, and Travel/Sickness Pause preserve but do not increment it. A wrong-routine or missed training obligation automatically consumes one available Freeze; with no Freeze, current streak resets to zero. Freeze history is durable. Balance starts at 2, has no cap, and earns +1 at every 15-successful-planned-training-day milestone. Each newly earned milestone is idempotent and appears in the grouped FitDex reward notification with the updated balance. Frozen days add no successful day, Workout XP, quest completion, or consistency progress.
 
 Travel/Sickness Pauses are 1–7 inclusive local days, may start today or in the future, and are limited to two uses in a rolling 12-month window rather than a calendar year. The Weekly Plan remains underneath. Paused dates preserve but do not increment streak and consume no Freeze. Valid workouts completed after gamification activation still earn their normal idempotent workout/PR XP; nutrition-target and full-day nutrition XP remain suppressed for paused dates. Core correctness never depends on midnight execution or a server.
 
@@ -669,7 +669,7 @@ Settings contains no automatic-backup placeholder in V1. There is no scheduler, 
 
 FitDex has a first-party Capacitor Android shell using Capacitor 8.5.0. Its permanent identity is `com.fitdex.app` / `FitDex`, and `capacitor.config.ts` packages the Vite `dist` output with no development-server URL. Android treats this as a different application from pre-release builds created under `com.arijitbhaduri.fitdex`; no package-ID data migration is required during pre-release development. Browser and installed-PWA behavior remains supported. Workbox registration is manual and limited to non-native platforms: the browser still receives the service worker and offline app shell, while Android loads the packaged bundle without a browser service-worker cache layer.
 
-The Android module uses the generated baseline of min SDK 24, target/compile SDK 36, version code 1, and `versionName` 0.5.0 matching the web package. The application does not lock orientation. It uses the official Capacitor App plugin for system Back, plus Filesystem and File Transfer for selective exercise-media downloads; it does not add StatusBar, Splash Screen, Network, Share, notification, or reminder plugins and relies on existing CSS safe-area handling. Android 8+ adaptive launcher icons reuse the approved FitDex PWA mark as an Android vector; the standard Capacitor splash remains deliberately minimal.
+The Android module uses the generated baseline of min SDK 24, target/compile SDK 36, version code 2, and `versionName` dynamically derived from root `package.json` (version 1.0.0). The application does not lock orientation. It uses the official Capacitor App plugin for system Back, plus Filesystem and File Transfer for selective exercise-media downloads; it does not add StatusBar, Splash Screen, Network, Share, notification, or reminder plugins and relies on existing CSS safe-area handling. Android 8+ adaptive launcher icons reuse the approved FitDex PWA mark as an Android vector; the standard Capacitor splash remains deliberately minimal.
 
 The WebView continues to use browser-compatible IndexedDB/Dexie and local storage, so authoritative FitDex records remain local to that installation. Android OS auto backup/device-transfer backup is disabled with `android:allowBackup="false"`; `.fitdex` export/import is the explicit portable path. Normal Android updates are expected to retain app data, while uninstalling the app removes its local WebView storage unless the user has exported it first.
 
@@ -689,7 +689,7 @@ Browser/PWA retains existing local demo playback and has no native download UI. 
 
 ## 38. Field Guide, Audio, and Navigation Polish
 
-The old tutorial presentation is replaced by the FitDex Field Guide: Home, Personalization, Training, Exercise Dex, Nutrition, Progress & XP, and Offline & Settings. Its retro-RPG panel uses the current theme variables, topic index/direct selectors, progress indicator, Back/Next, Skip/Close, safe areas, short-landscape scrolling, and replay from Settings. Its claims match the current local-first product, including 804 exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. Existing focused Workout, Food, Journal, and Progress guides remain available.
+The old tutorial presentation is replaced by the FitDex Field Guide: Home, Workout, Food, Weekly Plan & Streaks, Progress, Achievements, and Battle Music. Its retro-RPG panel uses the current theme variables, topic index/direct selectors, progress indicator, Back/Next, Skip/Close, safe areas, short-landscape scrolling, and replay from Settings. Its claims match the current local-first product, including 804 exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. Existing focused Workout, Food, Journal, and Progress guides remain available.
 
 Display Name is an optional persisted property only for compatibility with older local records and V1 backups; new product flows require a valid value. The shared validator trims leading/trailing whitespace, rejects an empty result, and permits at most 24 Unicode characters. Settings exposes the same required input, live counter, validation, and persistence path used by the onboarding/migration prompt. Because it is part of the authoritative Settings record, it is included in normal `.fitdex` export/replace restore without a separate backup field. Older backups without it remain valid; after restore, the lightweight required-name prompt appears while all restored data and onboarding state remain intact.
 
@@ -727,3 +727,46 @@ Phase 7 standardizes Settings around the locked **V2 — Profile / Loadout** arc
 The Home-style retro handheld page frame now wraps Workout, Food, Progress, Journal, Settings, and Nutrition Targets while global header and bottom navigation remain outside. Frame height follows content; page scroll remains authoritative; semantic theme tokens cover all four theme variants.
 
 Settings navigation is origin-aware. A deep Settings subview returns to the Settings surface that opened it, including contextual Nutrition Targets entry, while centralized app history and Android Back priority remain authoritative. Nutrition Codex containment and semantic SFX coverage are approved after physical visual review. Full physical phone QA remains the final Phase 9 gate. Future `ios` and `android/main` branches are planned but not created.
+
+## 41. Semantic Versioning and Android Release Policy
+
+FitDex uses Semantic Versioning (`MAJOR.MINOR.PATCH`) for all distributable releases:
+
+- **PATCH** (`1.0.0` → `1.0.1`): Bug fixes, UI corrections, polish, small behavior fixes, documentation/release fixes affecting the shipped app.
+- **MINOR** (`1.0.x` → `1.1.0`): New backwards-compatible user-facing functionality or meaningful feature additions.
+- **MAJOR** (`1.x` → `2.0.0`): Major product generation, fundamental architecture changes, or intentionally incompatible/breaking releases.
+
+### Authoritative Architecture & Synchronization
+
+1. **`package.json` is the canonical semantic-version source**:
+   - Web/PWA build (`vite.config.ts`) injects `__FITDEX_APP_VERSION__` from `package.json`.
+   - Application UI (`src/appVersion.ts` -> `APP_VERSION`) displays `v${APP_VERSION}` in Settings -> About FitDex.
+   - Android Gradle (`android/app/build.gradle`) dynamically reads and parses `package.json` via Groovy `JsonSlurper` at build time to assign `versionName`.
+2. **Android `versionCode`**:
+   - Separate integer that must strictly monotonically increase with every distributable Android release (`versionCode 2` for FitDex v1.0.0).
+   - Never auto-incremented during `npm run dev`, `npm run build`, lint, or automated tests.
+3. **Release Workflow Helpers**:
+   - `npm run version:patch`: Runs `npm version patch --no-git-tag-version` (syncs `package.json` and `package-lock.json` without Git commits/tags).
+   - `npm run version:minor`: Runs `npm version minor --no-git-tag-version`.
+   - `npm run version:major`: Runs `npm version major --no-git-tag-version`.
+   - `npm run version:android-code`: Runs `scripts/bump-android-version-code.mjs` to increment `versionCode` in `android/app/build.gradle`.
+   - Semantic versions and Android release codes are updated intentionally when preparing a distributable release, never on every individual commit or push.
+
+## 42. Guided First Use & Contextual Help (Phase 9 In Progress)
+
+New-user setup now follows the approved Mission Brief sequence: Welcome, required local Display Name, Faction, Mode, Champion, optional Nutrition Targets, the preserved seven-topic Field Guide, then Home. Nutrition setup calls the existing calculation and repository paths; Skip is remembered once and does not nag. Existing completed-onboarding users with a missing name retain the lightweight migration-only name prompt.
+
+Optional `firstUseGuidance` fields live on the existing Settings record, so no table or schema bump is required. Visiting a surface does not count as learning: Workout, Weekly Plan, streak protection, Food, custom categories, Progress, and Journal guidance is acknowledged only through a meaningful action or explicit acknowledgement. Full guides remain replayable.
+
+Workout first use distinguishes **Build Today** from **Create Routine**. Build Today keeps selected Exercise Dex items only in component state; no active `Workout`, set rows, or timer exists until explicit Start Workout. The confirmed repository operation snapshots the selected exercises and their initial sets atomically. Timer guidance appears at the first actual session start; rest guidance appears after the first valid logged set and never starts rest automatically.
+
+Future monetization remains documentation-only. A later product phase may explore paid access or replenishment for Streak Freezes, Travel/Sickness Pauses, or additional protected Weekly Plan structural resets. This implementation adds no purchase, subscription, payment SDK, paywall, entitlement or premium flag, gated feature, account, or remote service. Phase 9 remains in progress pending physical phone QA; Phase 8 remains locked.
+ 
+## 43. Authoritative Workout Timer & Zero-Exercise Invariant (Phase 9 In Progress)
+
+The workout timer invariant guarantees that the session timer never runs while an active workout contains zero exercises:
+- **Empty Open Workout**: An empty active workout may exist (`startEmptyWorkout`), but it initializes in non-running state (`timerState: 'paused'`, `accumulatedActiveSeconds: 0`, `lastResumedAt: undefined`). Zero exercises prevents active duration accumulation.
+- **Start Timer Control**: With zero exercises, `Start Timer` is displayed in a disabled/unavailable tactile state. Attempting to tap it does not start the timer, produces concise inline feedback (`ADD AN EXERCISE FIRST: Add at least one exercise to start your workout timer.`), and triggers a semantic `select` SFX without starting audio.
+- **First Exercise Transition**: Adding the first exercise enables `Start Timer` with the active theme-primary semantic styling (`var(--color-primary)`), but does NOT automatically start the timer. Active timing begins only upon an explicit user tap on `Start Timer`.
+- **Resume Workout Guards**: Resumed empty workouts cannot accrue active time or auto-resume. Resumed workouts with >= 1 exercises preserve existing recovery/pause semantics (running sessions continue elapsed calculation; explicitly paused sessions remain paused).
+- **Defensive Invariant & Legacy Normalization**: All paths (including `getWorkoutDetail` and `removeWorkoutExercise`) normalize active zero-exercise sessions to `timerState: 'paused'`, banking any prior accumulated seconds without accruing empty wall-clock time.

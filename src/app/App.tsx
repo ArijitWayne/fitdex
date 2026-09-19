@@ -38,7 +38,8 @@ function AppContent() {
   const historyRef = useRef(createNavigationHistory(rootLocation))
   const [location, setLocation] = useState(rootLocation)
   const [historyDepth, setHistoryDepth] = useState(0)
-  const [tutorialOpen, setTutorialOpen] = useState(() => !hasCompletedTutorial())
+  const [tutorialCompleted, setTutorialCompleted] = useState(hasCompletedTutorial)
+  const [tutorialOpen, setTutorialOpen] = useState(false)
 
   const settingsOriginRef = useRef<SettingsOrigin | null>(null)
   const pendingScrollRestoreRef = useRef<number | null>(null)
@@ -123,7 +124,7 @@ function AppContent() {
     }
   }, [location])
 
-  const profileGate = profileReady ? resolveProfileGate(displayName, hasCompletedTutorial()) : 'none'
+  const profileGate = profileReady ? resolveProfileGate(displayName, tutorialCompleted) : 'none'
 
   if (!profileReady) return <div className="profile-gate-loading" aria-live="polite">Loading FitDex…</div>
 
@@ -153,7 +154,7 @@ function AppContent() {
           <JournalPage />
         )}
       </AppShell>
-      {profileGate === 'onboarding' ? <Onboarding requiresDisplayName onClose={() => setTutorialOpen(false)} /> : profileGate === 'migration' ? <RequiredDisplayNamePrompt /> : tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}
+      {profileGate === 'onboarding' ? <Onboarding requiresDisplayName onClose={() => { setTutorialCompleted(true); setTutorialOpen(false) }} /> : profileGate === 'migration' ? <RequiredDisplayNamePrompt /> : tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}
       <GamificationNotificationDialog />
     </>
   )

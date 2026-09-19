@@ -198,6 +198,15 @@ In-page state updates, tab switches, period filter changes (e.g., 7D/30D/90D/All
 ### 2.12 Prototype Lifecycle
 The former `prototypes/` workspace was a temporary exploratory sandbox and has been removed after approved decisions were migrated. Production code and production Markdown now retain the finalized designs, interaction contracts, and styling rules. Any future exploratory work remains disposable and must be migrated before deletion.
 
+### 2.13 Guided First Use and Context Rails
+
+- First launch uses a compact Mission Brief for identity and defaults (Welcome → Display Name → Faction → Mode → Avatar → Optional Nutrition Setup → Seven-topic Field Guide → Home).
+- Context Rail must be mobile-native: inline contextual guidance occupying full usable content width with a 4px primary left accent rail, clear action buttons, and a footnote stating that guidance clears after real user actions, not page visits. It must never steal width with a desktop sidebar column, clip content, or cause horizontal page overflow. Guidance remains secondary to the actual task.
+- Page mount, route visit, and scroll exposure never count as learning. Persist acknowledgement only after the user acts.
+- Every interactive button and action introduced or modified in first-use guidance, onboarding, workout preparation, and dialogs must trigger exactly one appropriate semantic SFX (`select`, `add`, `progress_complete`, or `achievements_unlock`). Parallel audio systems and duplicate sound triggers are forbidden.
+- Long-form Help (Field Guide and page guides) remains replayable after contextual teaching disappears.
+- Streak protection uses exact wording "ROLLING 12 MONTHS" (never "calendar year") for Travel/Sickness Pause and protected material plan changes. Freeze economy provides initial balance = 2, +1 Freeze per 15 successful planned training days, unlimited balance, and durable idempotent reward dialogs.
+
 ---
 
 ## 3. UI Hierarchy & Structure
@@ -212,6 +221,7 @@ The former `prototypes/` workspace was a temporary exploratory sandbox and has b
 ## 4. Phase-Specific UI Conventions
 
 ### 4.1 Workout & Exercise Dex
+- **Zero-Exercise Timer Invariant**: An active workout may exist with zero exercises, but its timer must never run while empty. `Start Timer` is displayed in an unavailable state until at least one exercise exists; tapping it gives concise feedback (`ADD AN EXERCISE FIRST`). Adding an exercise enables `Start Timer` with theme-primary styling without auto-starting; the timer requires an explicit user tap. Resumed empty workouts cannot accrue active training time.
 - **Picker Hierarchy**: Compact picker rows with clear primary exercise names, equipment badges, and direct selection toggles.
 - **Anatomy Cards**: Distinctive masculine (Spartan) and feminine (Amazonian) muscle diagrams reflect the active theme family. Anatomy views must remain unflattened and central to the Dex experience.
 - **Active Logging**: Prominent rest timer, clean Finish validation (rejecting zero completed sets), and confirmation dialogs when removing active exercises containing logged data.

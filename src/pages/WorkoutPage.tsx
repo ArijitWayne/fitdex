@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, ChevronRight, CircleHelp, Dumbbell, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
+import { ContextRail } from '../components/ui/ContextRail'
 import { PageFrame } from '../components/layout/PageFrame'
 import type { Exercise, RoutineExercise, WorkoutRoutine } from '../data/models'
 import { ExerciseDex } from '../features/exerciseDex/ExerciseDex'
@@ -9,9 +10,9 @@ import { ActiveWorkoutView, CompletedWorkoutDetail, WorkoutDeleteDialog } from '
 import { addExercisesToRoutine, createRoutine, deleteRoutine, deleteRoutineItem, loadRoutines, renameRoutine, reorderRoutineItem, routineScheduledDays, type RoutineWithItems, updateRoutineItemSets } from '../features/workout/routineRepository'
 import { MAX_PLANNED_SETS, MIN_PLANNED_SETS } from '../features/workout/routineModel'
 import { formatDuration, getWorkoutDuration, getWorkoutSetLogState, isWorkoutTimerPaused } from '../features/workout/workoutModel'
-import { ActiveWorkoutExistsError, discardWorkout, getActiveWorkout, listRecentWorkouts, pauseWorkout, resumeWorkout, startEmptyWorkout, startWorkoutFromRoutine, type WorkoutDetail, type WorkoutSummary } from '../features/workout/workoutRepository'
+import { ActiveWorkoutExistsError, discardWorkout, getActiveWorkout, listRecentWorkouts, pauseWorkout, resumeWorkout, startEmptyWorkout, startPreparedWorkout, startWorkoutFromRoutine, type WorkoutDetail, type WorkoutSummary } from '../features/workout/workoutRepository'
 import { GuideDialog } from '../features/help/GuideDialog'
-import { hasSeenTutorial, markTutorialSeen } from '../features/help/tutorialPreferences'
+import { markTutorialSeen } from '../features/help/tutorialPreferences'
 import { workoutTutorialSteps } from '../features/help/tutorialSteps'
 import { WeeklyPlanEditor } from '../features/workout/WeeklyPlanViews'
 import { emptyWeeklyPlanDays, loadWeeklyPlan, WEEKDAY_LABELS, weekdayIdForLocalDateKey, weeklyPlanAssignmentLabel, type WeeklyPlan } from '../features/workout/weeklyPlan'
@@ -21,8 +22,9 @@ import { useBackNavigation } from '../features/navigation/useBackNavigation'
 import { loadGamificationDashboard, type GamificationDashboard } from '../features/gamification/gamificationRepository'
 import { WEEKDAY_IDS } from '../data/models'
 import { getLocalDateKey, shiftLocalDateKey } from '../utils/localDate'
+import { acknowledgeFirstUse, loadFirstUseGuidance } from '../features/help/firstUseGuidance'
 
-type WorkoutView = 'hub' | 'library' | 'create' | 'routine' | 'picker' | 'start' | 'add-to-routine' | 'active' | 'history' | 'plan' | 'start-empty' | 'start-routine'
+type WorkoutView = 'hub' | 'library' | 'create' | 'routine' | 'picker' | 'prepare' | 'prepare-picker' | 'start' | 'add-to-routine' | 'active' | 'history' | 'plan' | 'start-empty' | 'start-routine'
 export type WorkoutEntryView = Extract<WorkoutView, 'hub' | 'library' | 'start' | 'active' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'>
 type ReplacementIntent = { type: 'choose-routine' } | { type: 'open' } | { type: 'today' } | { type: 'routine'; routineId: string; routineName: string }
 
@@ -48,6 +50,8 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const [replacementIntent, setReplacementIntent] = useState<ReplacementIntent>()
   const [showAllRoutines, setShowAllRoutines] = useState(false)
   const [showAllHistory, setShowAllHistory] = useState(false)
+  const [preparedExercises, setPreparedExercises] = useState<Exercise[]>([])
+  const [showWorkoutLanding, setShowWorkoutLanding] = useState(false)
   const overlayOpen = Boolean(replacementIntent) || routineChooserOpen || quickLaunchOpen
   const navigateBack = useBackNavigation('workout-subview', overlayOpen || view !== 'hub', () => {
     if (replacementIntent) setReplacementIntent(undefined)
@@ -70,7 +74,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   // Initial state is restored from IndexedDB; later mutations call refresh explicitly.
   // oxlint-disable-next-line react-hooks/exhaustive-deps, react/set-state-in-effect
   useEffect(() => { void refresh().catch(() => setLoading(false)) }, [])
-  useEffect(() => { if (initialView === 'hub') void hasSeenTutorial('workout').then((seen) => { if (!seen) setTutorialOpen(true) }) }, [initialView])
+  useEffect(() => { if (initialView === 'hub') void loadFirstUseGuidance().then((guidance) => setShowWorkoutLanding(!guidance.workoutLanding)) }, [initialView])
   const activeWorkout = activeWorkoutDetail?.workout
   const activeWorkoutId = activeWorkout?.id
   useEffect(() => {
@@ -166,9 +170,25 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
     catch (error) { setMessage(error instanceof Error ? error.message : 'Exercise could not be added.') }
   }
 
+  const chooseFirstWorkoutPath = async (next: 'prepare' | 'create') => {
+    await acknowledgeFirstUse('workoutLanding')
+    setShowWorkoutLanding(false)
+    playEffect('select')
+    setView(next)
+  }
+
   if (view === 'active' && activeWorkoutId) return <ActiveWorkoutView workoutId={activeWorkoutId} onExit={() => { void refresh(); setView('hub') }} onCompleted={(workoutId) => { setHistoryWorkoutId(workoutId); setActiveWorkoutDetail(undefined); void refresh(); setView('history') }} />
   if (view === 'history' && historyWorkoutId) return <CompletedWorkoutDetail workoutId={historyWorkoutId} onBack={() => { void navigateBack() }} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== historyWorkoutId)); setHistoryWorkoutId(undefined); setView('hub'); void refresh() }} />
   if (view === 'plan') return <WeeklyPlanEditor plan={weeklyPlan} routines={routines} onChanged={setWeeklyPlan} onBack={() => setView('hub')} onCreateRoutine={() => setView('create')} />
+
+  if (view === 'prepare-picker') return <div className="page-stack workout-page"><ExerciseDex picker={{
+    title: 'Build today’s workout', targetLabel: 'workout preparation', existingExerciseIds: new Set(preparedExercises.map((exercise) => exercise.id)),
+    async onAddExercise(exercise) { setPreparedExercises((current) => [...current, exercise]); playEffect('add') },
+    async onRemoveExercise(exercise) { setPreparedExercises((current) => current.filter((item) => item.id !== exercise.id)); playEffect('select') },
+    onDone() { playEffect('select'); setView('prepare') },
+  }} /></div>
+
+  if (view === 'prepare') return <PreparedWorkout exercises={preparedExercises} onBack={() => setView('hub')} onAdd={() => setView('prepare-picker')} onRemove={(id) => setPreparedExercises((current) => current.filter((exercise) => exercise.id !== id))} onStart={() => void begin(() => startPreparedWorkout(preparedExercises))} />
 
   if (view === 'library') return <div className="page-stack workout-page"><div className="workout-library-toolbar"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setView('hub') }}><ArrowLeft size={18} aria-hidden="true" /> Back to Workout Hub</button></div><ExerciseDex onAddToRoutine={(exercise) => { setPendingExercise(exercise); setMessage(''); setView('add-to-routine') }} />{message ? <p className="workout-feedback" role="status">{message}</p> : null}</div>
 
@@ -217,6 +237,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
     </header>
 
     {loading ? <Panel><p>Loading your local workout data…</p></Panel> : <main className="workout-hub-stack">
+      {showWorkoutLanding ? <ContextRail eyebrow="First workout" title="Choose how you want to train" actions={<><button className="primary-button" type="button" onClick={() => void chooseFirstWorkoutPath('prepare')}>Build Today</button><button className="secondary-button" type="button" onClick={() => void chooseFirstWorkoutPath('create')}>Create Routine</button></>}><p><strong>Build Today</strong> prepares a one-off session without saving a routine. <strong>Create Routine</strong> saves a reusable template. No workout or timer starts until you press Start Workout.</p></ContextRail> : null}
       <section className={`workout-mission-card${activeWorkout ? hubTimerPaused ? ' is-paused' : ' is-active' : ''}`} aria-labelledby="today-mission-title">
         <div className="workout-mission-core">
           <div className="workout-mission-top">
@@ -302,6 +323,11 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
 function FlowHeading({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <div className="workout-flow-heading"><button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Workout</p><h2>{title}</h2></div></div> }
 function WorkoutEmpty({ title, body }: { title: string; body: string }) { return <div className="workout-empty"><strong>{title}</strong><p>{body}</p></div> }
+
+function PreparedWorkout({ exercises, onBack, onAdd, onRemove, onStart }: { exercises: readonly Exercise[]; onBack: () => void; onAdd: () => void; onRemove: (id: string) => void; onStart: () => void }) {
+  const { playEffect } = useAudio()
+  return <div className="page-stack workout-page"><Panel className="workout-flow-panel"><FlowHeading title="Build Today" onBack={onBack} /><p>Prepare a one-off session. This list is temporary until you explicitly start the workout.</p>{exercises.length ? <ol className="routine-exercise-list">{exercises.map((exercise) => <li key={exercise.id}><div className="routine-exercise-copy"><strong>{exercise.name}</strong><small>{exercise.category} · 3 starting sets</small></div><button className="secondary-button" type="button" onClick={() => { playEffect('select'); onRemove(exercise.id) }} aria-label={`Remove ${exercise.name}`}><Trash2 size={16} aria-hidden="true" /></button></li>)}</ol> : <WorkoutEmpty title="No exercises selected" body="Open Exercise Dex and choose the movements for today." />}<button className="secondary-button" type="button" onClick={() => { playEffect('select'); onAdd() }}><Plus size={17} aria-hidden="true" /> Add from Exercise Dex</button><button className="primary-button" type="button" disabled={!exercises.length} onClick={onStart}><Dumbbell size={17} aria-hidden="true" /> Start Workout</button></Panel></div>
+}
 
 function StartWorkoutSelection({ routines, onBack, onStartRoutine, onStartEmpty }: { routines: readonly RoutineWithItems[]; onBack: () => void; onStartRoutine: (id: string) => void; onStartEmpty: () => void }) {
   return <div className="page-stack workout-page"><Panel className="workout-flow-panel"><FlowHeading title="Start workout" onBack={onBack} /><p className="eyebrow">From a routine</p>{routines.length ? <div className="routine-choice-list">{routines.map((entry) => <button type="button" key={entry.routine.id} onClick={() => onStartRoutine(entry.routine.id)}><span><strong>{entry.routine.name}</strong><small>{entry.items.length} exercises · {entry.items.reduce((sum, item) => sum + item.plannedSets, 0)} planned sets</small></span><ChevronRight size={18} aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="You can still start an empty workout and add exercises as you train." />}<button className="primary-button" type="button" onClick={onStartEmpty}>Start empty workout</button></Panel></div>

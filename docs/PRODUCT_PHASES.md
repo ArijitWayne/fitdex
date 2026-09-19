@@ -317,7 +317,7 @@ The Exercise Record uses the reference-first RPG Codex layout:
 
 ### 10.2 Guide Flows Preserved
 1. **Field Guide (7 steps)**:
-   - First-run onboarding: `Skip` / `Enter FitDex` with Display Name prompt.
+   - First-run onboarding: Mission Brief setup (Welcome, Display Name, Faction, Mode, Avatar, optional Nutrition Targets), followed by the preserved Field Guide and Home.
    - Replay mode (Settings → Field Guide & Home `?` action): `Close` / `Done` buttons, safe idempotent completion.
    - Stale navigation paths audited and corrected to current IA (`SETTINGS → PERSONALIZE → APPEARANCE`, `PROGRESS → ACHIEVEMENTS`, `SETTINGS → DATA & HELP → BACKUP`).
 2. **Workout Tutorial (12 steps)**: Contextual help from Workout page opening 12-step structured tutorial with compact 12-segment progress rail.
@@ -335,7 +335,12 @@ The Exercise Record uses the reference-first RPG Codex layout:
 - **Settings Navigation Contract**: Settings subviews preserve their entry origin and return to the originating Settings surface, including contextual Nutrition Targets and other deep links; no app-shell history is bypassed.
 - **Nutrition Codex Polish**: Nutrition Targets V3 retains Style B Pixel Command controls, semantic containment, and SFX coverage. These fixes passed physical visual review; broader physical phone QA remains the final gate for Phase 9.
 - **QA Gate**: Automated validation and desktop checks do not replace physical-device review across supported phone widths and all four theme variants.
+- **Guided First Use**: Acknowledged mobile-native inline Context Rails teach Workout choices/timer/rest, Weekly Plan and protection rules, Food discovery/targets/results/categories, and the derived Progress/Journal surfaces without stealing width with a desktop sidebar or causing horizontal overflow. Merely visiting does not persist learning. Every interactive control triggers semantic SFX (`select`, `add`, `progress_complete`, or `achievements_unlock`).
+- **Workout Preparation Contract**: Build Today is transient component state backed by Exercise Dex. Only explicit Start Workout creates an active session, exercise snapshots, initial sets, and a running timer.
+- **Freeze Economy Revision**: Initial balance remains 2; every 15 successful planned training days earns +1 with no cap. Rewards are durable, idempotent, and use the grouped FitDex notification and achievement SFX architecture.
+- **Locked Boundaries**: Phase 8 and the seven-topic Field Guide remain intact. Travel/Sickness Pause (1-7 days, max 2 uses per rolling 12 months) and protected Plan Change semantics are unchanged. Monetization remains future documentation only.
 
 ### Deferred Product Work
+- **Monetization Idea — Documentation Only**: A future phase may explore paid access or replenishment for Streak Freezes, Travel/Sickness Pauses, or additional protected Weekly Plan structural resets. No purchases, subscriptions, payment SDK, entitlement logic, premium flags, gates, or fake locked UI exist in the current product.
 - **Body Tracking & Measurements**: `BodyMeasurement` exists in schema/backup contracts, but UI tracking remains deferred future product work and is outside the current Phase 1–9 UI modernization roadmap unless explicitly introduced later.
 - **Native Polish**: Deep physical-device QA for Capacitor Android and iOS PWA, native share sheet backup export, and hardware audio focus management.
