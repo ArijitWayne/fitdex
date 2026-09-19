@@ -18,7 +18,7 @@
   <p align="center">
     <a href="#why-i-built-fitdex">Why I Built FitDex</a> •
     <a href="#download">Download</a> •
-    <a href="#preview">Preview</a> •
+    <a href="#screenshots">Screenshots</a> •
     <a href="#core-features">Core Features</a> •
     <a href="#how-fitdex-works">Architecture</a> •
     <a href="#installation">Installation</a> •
@@ -103,31 +103,42 @@ In the interim, you can test the production web shell as an installable Progress
 
 ---
 
-## Preview
+## Screenshots
 
-<!-- SCREENSHOT_AREA_START -->
-> [!TIP]
-> Production screenshots and visual asset showcase are being prepared in Phase 2 (Screenshot & Brand Asset Pack).
+FitDex pairs high-density training and nutrition tracking with the tactile feel of a retro handheld RPG:
 
-<!-- Planned visual showcases:
-- [Home Screen & Active Routine / Status]
-- [Workout Hub & Active Workout Logger with Rest Timer]
-- [Exercise Dex Catalog & Anatomy Cards]
-- [Daily Food Log & Macro Calorie Donut]
-- [Progress Analytics & Personal Record Ledger]
-- [Weekly Plan & Streak Freeze Protection]
-- [Achievements & RPG Level Progression]
-- [Spartan vs. Amazonian Theme Showcase]
--->
-
-| Home & Status | Active Workout | Exercise Dex | Food & Macros |
-| :---: | :---: | :---: | :---: |
-| *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* |
-
-| Progress & PRs | Weekly Plan | Achievements | Profile / Loadout |
-| :---: | :---: | :---: | :---: |
-| *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* | *(Coming in Phase 2)* |
-<!-- SCREENSHOT_AREA_END -->
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <strong>Home</strong><br /><br />
+      <img src="public/screenshots/home.png" alt="FitDex Home Screen" width="320" />
+    </td>
+    <td align="center" width="50%">
+      <strong>Workout Hub</strong><br /><br />
+      <img src="public/screenshots/workout-hub.png" alt="FitDex Workout Hub" width="320" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Active Workout</strong><br /><br />
+      <img src="public/screenshots/active-workout.png" alt="FitDex Active Workout Logger" width="320" />
+    </td>
+    <td align="center" width="50%">
+      <strong>Exercise Dex</strong><br /><br />
+      <img src="public/screenshots/exercise-dex.png" alt="FitDex Exercise Dex" width="320" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Nutrition</strong><br /><br />
+      <img src="public/screenshots/food.png" alt="FitDex Nutrition & Food Log" width="320" />
+    </td>
+    <td align="center" width="50%">
+      <strong>Progress</strong><br /><br />
+      <img src="public/screenshots/progress-records.png" alt="FitDex Progress & Personal Records" width="320" />
+    </td>
+  </tr>
+</table>
 
 ---
 

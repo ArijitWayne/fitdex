@@ -362,3 +362,18 @@ The Exercise Record uses the reference-first RPG Codex layout:
 - **Monetization Idea — Documentation Only**: A future phase may explore paid access or replenishment for Streak Freezes, Travel/Sickness Pauses, or additional protected Weekly Plan structural resets. No purchases, subscriptions, payment SDK, entitlement logic, premium flags, gates, or fake locked UI exist in the current product.
 - **Body Tracking & Measurements**: `BodyMeasurement` exists in schema/backup contracts, but UI tracking remains deferred future product work and is outside the current Phase 1–9 UI modernization roadmap unless explicitly introduced later.
 - **Native Polish**: Deep physical-device QA for Capacitor Android and iOS PWA, native share sheet backup export, and hardware audio focus management.
+
+---
+
+## 12. Public Release Phases
+
+### Phase 1 — Public Repository Foundation & Split Licensing (COMPLETE / LOCKED)
+- Source-available split licensing model (PolyForm Noncommercial 1.0.0 for core app/Android, MIT for docs/tooling, All Rights Reserved for branding/assets).
+- Comprehensive public documentation, security policy, contribution guide, and developer workflows.
+
+### Phase 2 — Screenshot & Brand Asset Pack (COMPLETE / LOCKED)
+- Nine approved production screenshots captured on a physical Android device in Spartan Dark mode stored in `public/screenshots/`.
+- Primary `README.md` showcase presents six core screenshots (Home, Workout Hub, Active Workout, Exercise Dex, Nutrition, Progress) in a 2-column layout.
+- Three secondary screenshots (`progress-overview.png`, `journal.png`, `achievements.png`) retained for future gallery/documentation surfaces.
+- GitHub social preview configured manually via GitHub repository settings.
+

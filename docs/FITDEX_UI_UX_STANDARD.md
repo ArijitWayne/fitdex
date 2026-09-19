@@ -277,3 +277,11 @@ The former `prototypes/` workspace was a temporary exploratory sandbox and has b
 - **Shell Separation**: Global header and bottom navigation remain outside the page frame.
 - **Scroll Ownership**: The frame grows with content and must not introduce fixed-height or nested-scroll containers.
 - **Theme Fidelity**: Border, background, and shadow use semantic theme tokens across Spartan and Amazonian light/dark modes.
+
+### 4.8 Public Screenshot & Brand Asset Pack
+- **Authoritative Pack**: Nine approved physical-device Android screenshots stored in `public/screenshots/` (`home.png`, `workout-hub.png`, `active-workout.png`, `exercise-dex.png`, `food.png`, `journal.png`, `progress-overview.png`, `progress-records.png`, `achievements.png`).
+- **Showcase Theme**: Captured in Spartan Dark mode from real production Android hardware (no prototypes or mockups).
+- **Primary Showcase**: Six core screenshots embedded in `README.md` (Home, Workout Hub, Active Workout, Exercise Dex, Nutrition, Progress).
+- **Secondary Gallery**: Three additional views (Progress Overview, Journal, Achievements) retained in repository for future website/gallery use.
+- **Social Preview**: Configured manually in GitHub Repository Settings (intentionally not stored as an in-repo file).
+

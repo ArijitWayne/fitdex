@@ -823,3 +823,12 @@ FitDex repository uses a coarse three-part split licensing structure designed fo
    - Demonstration media (`/exercises/*.mp4` via `https://fitdex-media.fitdexapp.workers.dev`): Managed and hosted separately; not licensed under PolyForm or MIT.
    - SFX and BGM audio assets: Bundled for application audio with status **Rights review pending**.
    - Fork policy: Public forks/derivatives must remove official FitDex branding and logos and cannot represent themselves as official FitDex distributions.
+
+## 45. Phase 2 — Screenshot & Brand Asset Pack (Completed)
+
+The public screenshot and brand showcase is completed and verified:
+- **Canonical Screenshot Directory**: `public/screenshots/` contains 9 approved physical Android device captures (`home.png`, `workout-hub.png`, `active-workout.png`, `exercise-dex.png`, `food.png`, `journal.png`, `progress-overview.png`, `progress-records.png`, `achievements.png`).
+- **Showcase Theme**: Spartan Dark is the primary showcase theme. All captures reflect real production software running on physical Android hardware (no prototypes or mockups).
+- **README Showcase**: Primary `README.md` showcase presents 6 core screenshots in a compact 2-column layout (`home.png`, `workout-hub.png`, `active-workout.png`, `exercise-dex.png`, `food.png`, `progress-records.png`).
+- **Secondary Retained Assets**: `progress-overview.png`, `journal.png`, and `achievements.png` remain stored in the repository for future gallery / landing site usage.
+- **GitHub Social Preview**: Configured manually in GitHub Repository Settings (General → Social preview) and is intentionally not tracked as a repository asset.
