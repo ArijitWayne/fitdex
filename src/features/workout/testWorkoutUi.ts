@@ -17,6 +17,18 @@ assert.ok(todayIndex >= 0 && todayIndex < weeklyIndex && weeklyIndex < routinesI
 
 assert.match(page, /No routines yet/)
 assert.match(page, /No completed workouts yet/)
+
+// Saved Routines section contract: create routine action is always visible (0, 1, 2, 3, 5+ routines)
+const savedRoutinesMatch = page.match(/<section className="workout-hub-panel" aria-labelledby="saved-routines-title">([\s\S]*?)<\/section>/)
+assert.ok(savedRoutinesMatch, 'Saved Routines section must exist')
+const savedRoutinesSection = savedRoutinesMatch[1]
+assert.match(savedRoutinesSection, /className="secondary-button workout-create-routine"/)
+assert.match(savedRoutinesSection, /<Plus size=\{17\} aria-hidden="true" \/> Create Routine/)
+assert.doesNotMatch(savedRoutinesSection, /!routines\.length\s*\?/, 'Create Routine button must NOT be hidden when routines exist')
+assert.doesNotMatch(savedRoutinesSection, /routines\.length\s*<=\s*2|routines\.length\s*===\s*0\s*\?/, 'No artificial limit or conditional hiding on routine creation')
+assert.match(page, /visibleRoutines\s*=\s*showAllRoutines\s*\?\s*routines\s*:\s*routines\.slice\(0,\s*3\)/)
+assert.match(css, /\.workout-create-routine\s*\{[^}]*display:\s*inline-flex;[^}]*width:\s*100%/s)
+
 assert.match(page, /data-variant="mission-stack"/)
 assert.match(page, /WEEKDAY_IDS\.map/)
 assert.match(page, /is-today/)

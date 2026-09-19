@@ -65,6 +65,18 @@ This document is the permanent source of truth for FitDex product phase statuses
   - **Documentation & Tooling (`docs/**`, `scripts/**`, `.github/**`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, build/dev configuration)**: Licensed under the permissive MIT License.
   - **Assets, Visual Branding & Demonstration Media (`public/**`, `src/assets/**`)**: Excluded from software licenses. FitDex logos, Spartan/Amazonian faction art, avatars, and achievement badges are All Rights Reserved (Copyright © 2026 Arijit Bhaduri). Exercise demonstration videos are distributed separately and subject to separate media terms. SFX/BGM audio is classified as rights review pending.
 
+### 3.5 Home Consistency Rail & Consistency Deck UX
+- **3-Cell Tactical Console Layout**: Positioned directly below the XP bar and above Active Command on mobile Home. Fixed 48–52px footprint (`height: 48px`, grid `1.25fr 1fr 1fr 20px`).
+  - **Cell 1 (Primary)**: Current Plan Streak (`19 DAYS` / `PLAN STREAK`), tinted 8% primary background, bold accent text (`--color-primary-text`).
+  - **Cell 2 (Secondary)**: Available Freezes (`❄ 2` / `FREEZES`), featuring a monochrome vector SVG snowflake with `stroke="currentColor"` inheriting `--color-primary-text` across all 4 themes.
+  - **Cell 3 (Tertiary)**: Best Plan Streak (`19 DAYS` / `BEST`), muted text (`--color-text-muted`).
+  - **Trailing Indicator**: Subtle chevron `›`.
+- **Mobile Consistency Navigation**: Tapping the rail opens `StreakDetailView` (Consistency Deck) directly on mobile with compact header (`‹ Back to Home` / `CONSISTENCY DECK`).
+- **Deck Structure & Parity**: Matches approved prototype structure. Redundant "THIS WEEK" schedule block is omitted from Consistency Deck (retained authoritatively in Workout Hub).
+- **Freeze UX & Scalability**: Uncapped balance represented quantitatively (`❄ {N} AVAILABLE`), never generating N DOM cards per freeze. Automatic consumption on missed planned training days without manual action buttons. Real-time progress to next Freeze milestone (`{count % 15} / 15 successful planned training days toward next Freeze`).
+- **Travel / Sickness Pause**: 1–7 days, maximum 2 uses per rolling 12 months. Surfaced active pause status with date range (`TRAVEL PAUSE ACTIVE` / `SICKNESS PAUSE ACTIVE`). Native date picker wired with direct `showPicker()` touch handlers and 48px targets on Android/mobile.
+- **Weekly Plan Protection**: Communicates accurate rolling 12-month rule (first material plan modification is protected; subsequent warns and resets streak). Shows available/used status without claiming a "weekly" allowance.
+
 ---
 
 ## 4. Phase 2 — Workout & Exercise Dex (COMPLETE / LOCKED)

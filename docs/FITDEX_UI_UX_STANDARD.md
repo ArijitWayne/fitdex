@@ -123,6 +123,8 @@ FitDex interactive controls must feel like **tactile, rectangular, framed, game-
     - Rectangular bordered fields with console-menu arrow glyph (`▼`).
 11. **Modal Action Bars**:
     - Rigid bottom command bars (`BACK` left, `NEXT ›` right) with high-density spacing and rectangular buttons.
+12. **Tactical Console Rails** (e.g., Home Consistency Rail):
+    - Multi-cell shallow horizontal status consoles (48–52px height) with hairline vertical dividers (`--color-border`), dominant primary cell with subtle tint, secondary icon+metric cells with theme-safe vector glyphs (e.g. monochrome SVG snowflake), and trailing chevron indicator. Entire rail functions as a tactile interactive button opening deep-dive detail views.
 
 #### III. Sound, Motion & Accessibility
 - **SFX Pairing**: Visual press duration (60–120ms) matches the audio timing of bundled sound effects (`select.mp3`, `add.mp3`).
@@ -206,6 +208,8 @@ The former `prototypes/` workspace was a temporary exploratory sandbox and has b
 - Every interactive button and action introduced or modified in first-use guidance, onboarding, workout preparation, and dialogs must trigger exactly one appropriate semantic SFX (`select`, `add`, `progress_complete`, or `achievements_unlock`). Parallel audio systems and duplicate sound triggers are forbidden.
 - Long-form Help (Field Guide and page guides) remains replayable after contextual teaching disappears.
 - Streak protection uses exact wording "ROLLING 12 MONTHS" (never "calendar year") for Travel/Sickness Pause and protected material plan changes. Freeze economy provides initial balance = 2, +1 Freeze per 15 successful planned training days, unlimited balance, and durable idempotent reward dialogs.
+- Consistency Deck (`StreakDetailView`) matches the approved tactical console prototype structure, omitting the redundant "THIS WEEK" schedule grid (which is housed in Workout Hub). All modules follow hard rectangular borders, compact console hierarchy, theme-adaptive vector icons, and direct native date controls with >=44px touch targets.
+
 
 ---
 

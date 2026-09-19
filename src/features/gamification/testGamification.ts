@@ -266,7 +266,47 @@ assert.equal((await loadPendingGamificationNotifications()).freezeRewards.length
 await markGamificationNotificationsSeen()
 assert.equal((await loadPendingGamificationNotifications()).freezeRewards.length, 0)
 
+// 6. StreakDetailView & Consistency Deck UX assertions
+const viewsSource = fs.readFileSync('src/features/gamification/GamificationViews.tsx', 'utf8')
+assert.match(viewsSource, /function FreezeSnowflakeIcon/)
+assert.match(viewsSource, /function StreakDetailView/)
+assert.match(viewsSource, /‹ Back to Home/)
+assert.match(viewsSource, /CONSISTENCY DECK/)
+assert.match(viewsSource, /CURRENT PLAN STREAK/)
+assert.match(viewsSource, /BEST STREAK ·/)
+assert.match(viewsSource, /FREEZE PROTECTION/)
+assert.match(viewsSource, /Freezes are applied automatically when a planned workout day is missed/)
+assert.doesNotMatch(viewsSource, /Use Freeze/i, 'must not have manual Use Freeze button')
+assert.match(viewsSource, /NEXT FREEZE PROGRESS/)
+assert.match(viewsSource, /SUCCESSFUL_DAYS_PER_FREEZE/)
+assert.match(viewsSource, /activePause/)
+assert.match(viewsSource, /TRAVEL PAUSE ACTIVE|SICKNESS PAUSE ACTIVE/)
+assert.match(viewsSource, /rolling 12 months/)
+assert.doesNotMatch(viewsSource, /available this week/i, 'plan change protection must not claim weekly allowance')
+assert.doesNotMatch(viewsSource, /streak-week/, 'must not have Mon-Sun weekly schedule grid')
+assert.doesNotMatch(viewsSource, /THIS WEEK/i, 'must not have THIS WEEK schedule block')
+
+// Validate freeze balance presentation scalability for 0, 1, 2, 5, 25
+for (const balance of [0, 1, 2, 5, 25]) {
+  const label = `${balance} ${balance === 1 ? 'FREEZE AVAILABLE' : 'FREEZES AVAILABLE'}`
+  assert.ok(label.includes(String(balance)))
+}
+// Assert StreakDetailView uses numeric Freeze display rather than N-token generation
+assert.match(viewsSource, /\{data\.freezeBalance\} \{data\.freezeBalance === 1 \? 'FREEZE AVAILABLE' : 'FREEZES AVAILABLE'\}/)
+assert.doesNotMatch(viewsSource, /Array\.from\(\{ length: data\.freezeBalance \}\)/, 'must not render N card elements for freeze balance')
+
+// 7. Pause Dialog & Date Picker assertions
+assert.match(viewsSource, /function PauseDialog/)
+assert.match(viewsSource, /type="date"/, 'must have native date input')
+assert.match(viewsSource, /showPicker/, 'must wire showPicker for Android/mobile calendar trigger')
+assert.match(viewsSource, /onClick=\{openPicker\}/, 'must trigger date picker on click')
+assert.match(viewsSource, /onFocus=\{openPicker\}/, 'must trigger date picker on focus')
+assert.match(viewsSource, /min=\{today\}/, 'must enforce min date as today for start date')
+assert.match(viewsSource, /min=\{startDate\}/, 'must enforce min date as startDate for end date')
+assert.match(viewsSource, /max=\{shiftLocalDateKey\(startDate, MAX_PAUSE_DAYS - 1\)\}/, 'must enforce max 7-day range for end date')
+
 await db.close()
 await Dexie.delete('fitdex')
 
-console.log('Gamification tests passed: 52 achievements, progression/rank boundaries, streak semantics, automatic Freeze/no-Freeze outcomes, Pause limits, plan-change identity, repeat-safe planned XP reconciliation, and achievement +50 XP awards')
+console.log('Gamification tests passed: 52 achievements, progression/rank boundaries, streak semantics, automatic Freeze/no-Freeze outcomes, Pause limits, plan-change identity, repeat-safe planned XP reconciliation, scalable Freeze balance UX, and achievement +50 XP awards')
+

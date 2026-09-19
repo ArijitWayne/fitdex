@@ -16,7 +16,7 @@ import { displayWeightFromKg } from '../utils/units'
 import { WEEKDAY_IDS } from '../data/models'
 import { WEEKDAY_LABELS, weeklyPlanAssignmentLabel } from '../features/workout/weeklyPlan'
 import { GamificationBadge } from '../features/gamification/GamificationBadge'
-import { LevelProgress, RankDetailView, StreakDetailView } from '../features/gamification/GamificationViews'
+import { FreezeSnowflakeIcon, LevelProgress, RankDetailView, StreakDetailView } from '../features/gamification/GamificationViews'
 import { achievementAssetPath, rankAssetPath } from '../features/gamification/gamificationConfig'
 import { useAudio } from '../features/audio/useAudio'
 import { BACKGROUND_TRACK_ORDER, cycleBackgroundTrack } from '../features/audio/audioModel'
@@ -93,6 +93,17 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
           {progression ? <button className="home-command-rank" type="button" onClick={() => { playEffect('select'); setGamificationView('rank') }} aria-label={`Open ${progression.rank.name} rank details`}><GamificationBadge kind="rank" size="small" src={rankAssetPath(progression.rank)} label={`${progression.rank.name} rank emblem`} /><small>{progression.rank.name}</small></button> : <div className="home-command-rank is-loading" aria-hidden="true">—</div>}
         </div>
         <div className="home-command-xp"><span>XP</span><div className="home-hero-xp" role="progressbar" aria-label={progression?.maxLevel ? 'Maximum level reached' : progression ? `Level ${progression.level} XP progress` : 'Loading XP progress'} aria-valuemin={0} aria-valuemax={progression?.maxLevel ? 100 : progression?.xpRequiredForNextLevel ?? 100} aria-valuenow={progression?.maxLevel ? 100 : progression?.xpIntoLevel ?? 0}><i style={{ width: `${levelProgress}%` }} /></div><strong>{progression?.totalXp.toLocaleString() ?? '—'}</strong></div>
+
+        {data ? (
+          <HomeConsistencyRail data={data} onOpenStreak={() => { playEffect('select'); setGamificationView('streak') }} />
+        ) : (
+          <div className="home-consistency-rail-3cell is-loading" aria-hidden="true" style={{ opacity: 0.6 }}>
+            <div className="rail-cell cell-primary"><span className="cell-value">—</span><span className="cell-label">Plan Streak</span></div>
+            <div className="rail-cell cell-freeze"><span className="cell-value">—</span><span className="cell-label">Freezes</span></div>
+            <div className="rail-cell cell-best"><span className="cell-value">—</span><span className="cell-label">Best</span></div>
+            <div className="rail-chev" />
+          </div>
+        )}
 
         {data ? <TodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} /> : <section className="home-hero-quest is-loading" aria-live="polite"><p className="eyebrow">Today's Quest</p><h2>Loading mission…</h2></section>}
 
@@ -201,9 +212,12 @@ function MobileHomeSupport({ data, onNavigate, onOpenWorkout, onOpenAchievements
       : data.last7WorkoutCount
         ? `${data.last7WorkoutCount} ${data.last7WorkoutCount === 1 ? 'workout' : 'workouts'} in last 7 days`
         : 'No recent progress yet'
+  const unlockedCount = data.gamification.unlocks.length
   const achievementSummary = data.gamification.latestAchievement
     ? `${data.gamification.latestAchievement.definition.name} · latest unlock`
-    : `${data.gamification.streak.current}-day streak · ${data.gamification.freezeBalance} ${data.gamification.freezeBalance === 1 ? 'freeze' : 'freezes'}`
+    : unlockedCount
+      ? `${unlockedCount} of 52 unlocked`
+      : '52 badges to unlock'
   const mission = mobileMissionCommand(data)
   const journalEmpty = !data.completedToday.length && !data.food.itemCount
   const journalSummary = journalEmpty
@@ -297,3 +311,39 @@ function ActivityMetric({ value, label }: { value: string; label: string }) { re
 function formatNumber(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value) }
 function formatCommandDate(value: Date) { return new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(value).toUpperCase() }
 function formatActiveTime(seconds: number, paused = false) { const minutes = Math.floor(seconds / 60); const hours = Math.floor(minutes / 60); const duration = hours ? `${hours}h ${minutes % 60}m` : `${minutes} min`; return `${duration} ${paused ? 'active · timer paused' : 'elapsed'}` }
+
+function HomeConsistencyRail({ data, onOpenStreak }: { data: HomeDashboardData; onOpenStreak: () => void }) {
+  const currentStreak = data.gamification.streak.current
+  const bestStreak = data.gamification.streak.best
+  const freezeBalance = data.gamification.freezeBalance
+  const activePause = data.gamification.activePause
+
+  return (
+    <button
+      className={`home-consistency-rail-3cell${activePause ? ' is-paused' : ''}`}
+      type="button"
+      onClick={onOpenStreak}
+      aria-label={`Plan Streak: ${currentStreak} ${currentStreak === 1 ? 'day' : 'days'}, ${freezeBalance} ${freezeBalance === 1 ? 'freeze' : 'freezes'} available, Best streak: ${bestStreak} ${bestStreak === 1 ? 'day' : 'days'}${activePause ? ' (Active Pause)' : ''}. Open streak details.`}
+    >
+      <div className="rail-cell cell-primary">
+        <span className="cell-value">{currentStreak} {currentStreak === 1 ? 'DAY' : 'DAYS'}</span>
+        <span className="cell-label">Plan Streak</span>
+      </div>
+      <div className="rail-cell cell-freeze">
+        <span className="cell-value">
+          <FreezeSnowflakeIcon className="freeze-snowflake-icon" />
+          <span>{freezeBalance}</span>
+        </span>
+        <span className="cell-label">{freezeBalance === 1 ? 'Freeze' : 'Freezes'}</span>
+      </div>
+      <div className="rail-cell cell-best">
+        <span className="cell-value">{bestStreak} {bestStreak === 1 ? 'DAY' : 'DAYS'}</span>
+        <span className="cell-label">Best</span>
+      </div>
+      <div className="rail-chev" aria-hidden="true">
+        <ChevronRight size={14} />
+      </div>
+    </button>
+  )
+}
+
