@@ -11,6 +11,32 @@ if (!appVersionName) {
     throw new GradleException("Could not read 'version' from package.json at ${packageJsonFile.canonicalPath}")
 }
 
+def releaseSigningProperties = new Properties()
+def releaseSigningPropertiesFile = rootProject.file('../release-signing.properties')
+if (releaseSigningPropertiesFile.exists()) {
+    releaseSigningPropertiesFile.withInputStream { releaseSigningProperties.load(it) }
+}
+
+def signingValue = { String propertyName, String environmentName ->
+    def environmentValue = System.getenv(environmentName)
+    return environmentValue?.trim() ? environmentValue.trim() : releaseSigningProperties.getProperty(propertyName)?.trim()
+}
+
+def releaseStoreFile = signingValue('storeFile', 'FITDEX_KEYSTORE_PATH')
+def releaseStorePassword = signingValue('storePassword', 'FITDEX_KEYSTORE_PASSWORD')
+def releaseKeyAlias = signingValue('keyAlias', 'FITDEX_KEY_ALIAS')
+def releaseKeyPassword = signingValue('keyPassword', 'FITDEX_KEY_PASSWORD')
+def releaseSigningReady = releaseStoreFile && new File(releaseStoreFile).isFile() && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def releaseRequested = taskGraph.allTasks.any { task ->
+        task.path.startsWith(':app:') && task.name.toLowerCase().contains('release')
+    }
+    if (releaseRequested && !releaseSigningReady) {
+        throw new GradleException('Release signing credentials are required. Add ignored release-signing.properties or set FITDEX_KEYSTORE_PATH, FITDEX_KEYSTORE_PASSWORD, FITDEX_KEY_ALIAS, and FITDEX_KEY_PASSWORD. Release builds never use debug signing.')
+    }
+}
+
 android {
     namespace = "com.fitdex.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -27,10 +53,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseSigningReady) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (releaseSigningReady) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

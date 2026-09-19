@@ -34,6 +34,16 @@ This document is the permanent source of truth for FitDex product phase statuses
 12. **Disposable Prototype Lifecycle**: Former prototype HTML and AUDIT files were scratchpads. Approved decisions were transferred into durable production Markdown and production code before the prototype workspace was removed.
 13. **FitDex Design Doctrine Compliance**: All UI modernization phases, screens, and prototypes must strictly follow the canonical **FitDex Design Doctrine** defined in [FITDEX_UI_UX_STANDARD.md](FITDEX_UI_UX_STANDARD.md#11-the-permanent-fitdex-design-doctrine). Every design must embody the retro handheld / 90s pixel-era fitness RPG identity using authoritative production semantic tokens, crisp framing, and authentic game-menu character without drifting into generic SaaS or mobile card tropes.
 
+### Android Release Signing — Phase 3 Complete
+
+- **Secret Boundary**: Real signing material remains outside Git. Root `.gitignore` excludes keystores, PEM/key files, `release-signing.properties`, and generated `release-artifacts/`. `release-signing.properties.example` contains placeholders only.
+- **Signing Sources**: Release signing reads ignored local properties or future-CI environment variables: `FITDEX_KEYSTORE_PATH`, `FITDEX_KEYSTORE_PASSWORD`, `FITDEX_KEY_ALIAS`, and `FITDEX_KEY_PASSWORD`.
+- **Fail-Closed Release Build**: `assembleRelease` fails with a clear message if valid signing credentials are unavailable. Release never silently uses debug signing. Debug builds retain normal debug signing.
+- **Artifact Contract**: `npm run android:release` performs existing sync, signed release assembly, and deterministic packaging into `release-artifacts/fitdex.<package.json version>.apk` with matching `.sha256` checksum.
+- **Version Boundary**: This infrastructure phase keeps `versionName` from `package.json` at `1.0.0` and Android `versionCode` at `2`. Neither changes until deliberate release preparation.
+- **Private Validation**: Local `npm run android:release` generated signed `fitdex.1.0.0.apk` and matching checksum. `apksigner` verified the FitDex release signer, and independent SHA-256 verification matched. No artifact is published or tracked.
+- **Physical-Device QA**: Release installation, startup, backup/restore, Home, Workout, Food, Progress, Settings, Backup & Restore, close/reopen, and reboot relaunch passed. Preserve keystore and credentials in two trusted secure locations. Phase 3 is complete; no public `1.0.0` release, Git tag, or GitHub Release exists.
+
 ---
 
 ## 3. Phase 1 — Home & Global Shell (COMPLETE / LOCKED)
@@ -376,4 +386,3 @@ The Exercise Record uses the reference-first RPG Codex layout:
 - Primary `README.md` showcase presents six core screenshots (Home, Workout Hub, Active Workout, Exercise Dex, Nutrition, Progress) in a 2-column layout.
 - Three secondary screenshots (`progress-overview.png`, `journal.png`, `achievements.png`) retained for future gallery/documentation surfaces.
 - GitHub social preview configured manually via GitHub repository settings.
-

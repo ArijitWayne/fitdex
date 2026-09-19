@@ -832,3 +832,17 @@ The public screenshot and brand showcase is completed and verified:
 - **README Showcase**: Primary `README.md` showcase presents 6 core screenshots in a compact 2-column layout (`home.png`, `workout-hub.png`, `active-workout.png`, `exercise-dex.png`, `food.png`, `progress-records.png`).
 - **Secondary Retained Assets**: `progress-overview.png`, `journal.png`, and `achievements.png` remain stored in the repository for future gallery / landing site usage.
 - **GitHub Social Preview**: Configured manually in GitHub Repository Settings (General → Social preview) and is intentionally not tracked as a repository asset.
+
+## 46. Android Release Signing System — Phase 3 Complete
+
+FitDex release signing uses a local private `release-signing.properties` file at the repository root or CI environment variables. The local file is ignored and is never committed. It contains only `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`; `release-signing.properties.example` provides placeholders only. The real keystore must live outside the repository, for example in a user-private signing directory. No keystore, password, local signing path, signed APK, checksum, or secret environment file belongs in Git.
+
+`android/app/build.gradle` reads `versionName` from root `package.json` and keeps `versionCode 2`. Release signing accepts either local properties or `FITDEX_KEYSTORE_PATH`, `FITDEX_KEYSTORE_PASSWORD`, `FITDEX_KEY_ALIAS`, and `FITDEX_KEY_PASSWORD` for future CI. Release task configuration fails closed when credentials are absent or invalid. A release build never falls back to the Android debug key. Debug builds continue to use normal debug signing.
+
+Run `npm run android:release` only after configuring a valid private signing key. It runs the existing Android sync sequence, assembles the signed release APK, and creates ignored `release-artifacts/fitdex.<version>.apk` plus `release-artifacts/fitdex.<version>.apk.sha256`. The helper reads the version from `package.json`, copies the exact Gradle APK, and writes its SHA-256 digest in standard checksum-file form. `npm run release:artifact` can rerun artifact packaging after a successful release assemble.
+
+The release keystore is Android update identity. Preserve the keystore file, keystore password, key alias, and key password in at least two separate trusted secure locations. Future FitDex updates must use the same key. Never commit the key or passwords.
+
+Debug and release APKs with `com.fitdex.app` have different signatures. Before uninstalling any debug FitDex build for release-device testing, create a `.fitdex` backup, verify its file exists in `Documents/FitDex`, and verify FitDex can read it. Only then uninstall debug, install signed release APK, launch FitDex, restore backup if needed, and validate startup and data restore. Do not increment semantic version or Android `versionCode` merely because signing infrastructure changes. Actual release numbering happens during deliberate release preparation.
+
+Private validation generated `release-artifacts/fitdex.1.0.0.apk` and matching `.sha256` locally. `apksigner` verified its non-debug FitDex signer, and an independent SHA-256 calculation matched the checksum file. Physical-device QA passed: installation, startup, backup/restore, core surfaces, close/reopen, and reboot relaunch. These artifacts remain ignored and private. Phase 3 is complete. No public `1.0.0` release, Git tag, or GitHub Release exists yet.

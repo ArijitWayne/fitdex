@@ -24,4 +24,11 @@ dist-ssr
 *.sw?
 graphify-out/
 *.apk
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+release-signing.properties
+release-artifacts/
 .temp-prototypes/

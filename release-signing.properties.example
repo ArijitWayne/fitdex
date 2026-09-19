@@ -1,0 +1,5 @@
+# Copy to release-signing.properties. Keep the copied file outside Git.
+storeFile=/absolute/path/to/fitdex-release.jks
+storePassword=CHANGE_ME
+keyAlias=fitdex
+keyPassword=CHANGE_ME
