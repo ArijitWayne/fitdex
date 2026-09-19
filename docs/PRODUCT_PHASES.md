@@ -44,6 +44,16 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **Private Validation**: Local `npm run android:release` generated signed `fitdex.1.0.0.apk` and matching checksum. `apksigner` verified the FitDex release signer, and independent SHA-256 verification matched. No artifact is published or tracked.
 - **Physical-Device QA**: Release installation, startup, backup/restore, Home, Workout, Food, Progress, Settings, Backup & Restore, close/reopen, and reboot relaunch passed. Preserve keystore and credentials in two trusted secure locations. Phase 3 is complete; no public `1.0.0` release, Git tag, or GitHub Release exists.
 
+### GitHub Release Automation — Phase 4 COMPLETE / LOCKED
+
+- **Deliberate Prepare Commands**: `npm run release:prepare:patch`, `release:prepare:minor`, and `release:prepare:major` choose SemVer explicitly. Their `release:patch`, `release:minor`, and `release:major` aliases prepare only; none publish implicitly.
+- **First Public Release**: `npm run release:prepare:first` preserves `1.0.0` and increments Android `versionCode` only when deliberately preparing first distribution. Use `--dry-run` during Phase 4 validation; it does not change tracked files or create artifacts, tags, releases, commits, pushes, or uploads.
+- **Prepare Boundary**: Non-dry prepare requires clean `dev`, updates package/lockfile and Gradle code, runs lint/build/Capacitor Android checks, invokes existing signed APK flow, then writes ignored local metadata and draft notes. It rejects wrong branch, dirty state, existing local tag, bad versions, missing signing material, unexpected APK names, and checksum mismatch.
+- **Publish Boundary**: `npm run release:publish` separately validates prepared metadata and artifacts, checks local/remote tag absence and authenticated GitHub CLI, then commits, tags, pushes, releases, uploads APK/checksum, and verifies release. `npm run release:publish -- --dry-run` does not mutate state.
+- **Consumer Contract**: ignored `release-artifacts/release.json` has `version`, `versionCode`, `tag`, `apk`, `apkDownloadUrl`, `checksum`, `sha256`, `releaseNotes`, and `publishedAt`. URLs and timestamps remain `null` before public release. `release-notes.md` is a reviewed template, never automated commit prose.
+- **CI Compatibility**: Same scripts use existing `FITDEX_KEYSTORE_PATH`, `FITDEX_KEYSTORE_PASSWORD`, `FITDEX_KEY_ALIAS`, and `FITDEX_KEY_PASSWORD`; local and CI release logic do not diverge. No GitHub Actions release workflow exists or publishes on push.
+- **Current Boundary**: Phase 4 dry-run and static validation complete. Public FitDex `v1.0.0` remains unpublished. Repository version remains `1.0.0`; Android `versionCode` remains `2`.
+
 ---
 
 ## 3. Phase 1 — Home & Global Shell (COMPLETE / LOCKED)
