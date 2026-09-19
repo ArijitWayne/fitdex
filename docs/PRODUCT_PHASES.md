@@ -332,6 +332,9 @@ The Exercise Record uses the reference-first RPG Codex layout:
 ## 11. Phase 9 — In Progress / Cross-App Consistency
 
 - **Primary Page Frame**: Home's retro handheld enclosure is now shared by Workout, Food, Progress, Journal, Settings, and Nutrition Targets. Global header and bottom navigation remain outside it. Phase 9 remains in progress.
+- **Settings Navigation Contract**: Settings subviews preserve their entry origin and return to the originating Settings surface, including contextual Nutrition Targets and other deep links; no app-shell history is bypassed.
+- **Nutrition Codex Polish**: Nutrition Targets V3 retains Style B Pixel Command controls, semantic containment, and SFX coverage. These fixes passed physical visual review; broader physical phone QA remains the final gate for Phase 9.
+- **QA Gate**: Automated validation and desktop checks do not replace physical-device review across supported phone widths and all four theme variants.
 
 ### Deferred Product Work
 - **Body Tracking & Measurements**: `BodyMeasurement` exists in schema/backup contracts, but UI tracking remains deferred future product work and is outside the current Phase 1–9 UI modernization roadmap unless explicitly introduced later.
