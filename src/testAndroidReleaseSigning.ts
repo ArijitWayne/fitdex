@@ -26,6 +26,6 @@ assert.match(template, /storePassword=CHANGE_ME/)
 assert.match(template, /keyAlias=fitdex/)
 assert.match(template, /keyPassword=CHANGE_ME/)
 assert.equal(packageJson.version, '1.0.0')
-assert.match(gradle, /versionCode 2/)
+assert.match(gradle, /versionCode 3/)
 
 console.log('Android release-signing static tests passed: ignored secrets, local/CI configuration, fail-closed release signing, deterministic artifact naming, checksum, and version source.')
