@@ -2,7 +2,11 @@ import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { BackgroundMusicPreference, NutritionActivityLevel, NutritionGoal, NutritionSex, NutritionTargets } from '../../data/models'
 import { brandingForTheme } from '../../branding/branding'
-import { APP_VERSION } from '../../appVersion'
+import { supportsNativeAndroidLauncherBranding } from '../../branding/nativeBranding'
+import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion'
+import { useUpdater } from '../updater/useUpdater'
+import { UpdateDetailsModal } from '../updater/UpdateDetailsModal'
+import { ReleaseNotesModal } from '../updater/ReleaseNotesModal'
 import type { BrightnessPreference, ThemeFamily } from '../../theme/theme'
 import { useTheme } from '../../theme/useTheme'
 import { AvatarPortrait } from '../avatar/AvatarPortrait'
@@ -35,6 +39,11 @@ const targetDefaults: Omit<NutritionTargets, 'updatedAt'> = { enabled: true, goa
 type SettingsView = 'hub' | 'profile' | 'appearance' | 'units' | 'audio' | 'nutrition' | 'media' | 'backup' | 'about'
 type NutritionTargetDraft = Record<'age' | 'heightCm' | 'weightKg' | 'calorieTarget' | 'proteinTargetGrams', string>
 
+function FactionChangeDialog({ family, onCancel, onConfirm }: { family: ThemeFamily; onCancel: () => void; onConfirm: () => void }) {
+  const destination = family === 'amazonians' ? 'AMAZONIAN' : 'SPARTAN'
+  return <div className="guide-backdrop faction-change-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel() }}><section className="faction-change-dialog" role="alertdialog" aria-modal="true" aria-labelledby="faction-change-title" aria-describedby="faction-change-description"><p className="eyebrow">FACTION CHANGE</p><h2 id="faction-change-title">SWITCH TO {destination} THEME?</h2><p id="faction-change-description">Changing faction will update your launcher icon.<br />FitDex will briefly relaunch to apply the change.</p><div className="faction-change-actions"><button className="secondary-button" type="button" onClick={onCancel}>CANCEL</button><button className="primary-button" type="button" onClick={onConfirm}>SWITCH &amp; RELAUNCH</button></div></section></div>
+}
+
 export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void; onReplayTutorial: () => void }) {
   const { family, brightness, setFamily, setBrightness } = useTheme()
   const { selectedAvatar } = useAvatar()
@@ -45,6 +54,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
   const [choosingAvatar, setChoosingAvatar] = useState(false)
   const [nutritionSummary, setNutritionSummary] = useState<Omit<NutritionTargets, 'updatedAt'>>(targetDefaults)
   const [downloadCount, setDownloadCount] = useState<number>()
+  const [pendingFaction, setPendingFaction] = useState<ThemeFamily>()
 
   useEffect(() => {
     void getLocalSettingsRecord().then((record) => {
@@ -80,6 +90,24 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
     playEffect('select')
     setView(next)
   }
+
+  const requestFactionChange = (nextFamily: ThemeFamily) => {
+    if (nextFamily === family) return
+    playEffect('select')
+    if (supportsNativeAndroidLauncherBranding()) {
+      setPendingFaction(nextFamily)
+      return
+    }
+    setFamily(nextFamily)
+  }
+
+  const confirmFactionChange = () => {
+    if (!pendingFaction) return
+    setFamily(pendingFaction, { relaunchNative: true })
+    setPendingFaction(undefined)
+  }
+
+  useBackNavigation('faction-change-dialog', Boolean(pendingFaction), () => setPendingFaction(undefined))
 
   const handleSetUnits = async (nextUnits: UnitPreference) => {
     playEffect('select')
@@ -126,7 +154,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
             <legend>Faction</legend>
             <div className="settings-segmented">
               {familyOptions.map((option) => (
-                <button type="button" key={option.value} aria-pressed={family === option.value} onClick={() => { playEffect('select'); setFamily(option.value) }}>
+                <button type="button" key={option.value} aria-pressed={family === option.value} onClick={() => requestFactionChange(option.value)}>
                   {option.label}
                 </button>
               ))}
@@ -144,6 +172,7 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
           </fieldset>
           <p className="appearance-note">Faction changes visual identity and branding. Avatar remains your independent choice. “System” brightness follows the device setting.</p>
         </section>
+        {pendingFaction ? <FactionChangeDialog family={pendingFaction} onCancel={() => setPendingFaction(undefined)} onConfirm={confirmFactionChange} /> : null}
       </div>
     )
   }
@@ -380,6 +409,26 @@ function SettingsRow({ title, description, value, onClick }: { title: string; de
 
 function AboutSettings({ family, onBack }: { family: ThemeFamily; onBack: () => void }) {
   const branding = brandingForTheme(family)
+  const { status, release, checking, check, openDetails, detailsOpen, closeDetails } = useUpdater(false)
+  const [notesOpen, setNotesOpen] = useState(false)
+  const [manualMessage, setManualMessage] = useState<string | null>(null)
+
+  const handleCheckUpdates = async () => {
+    setManualMessage('Checking for updates...')
+    const result = await check(true)
+    if (result.status === 'up-to-date') {
+      setManualMessage(`FitDex is up to date (v${APP_VERSION}).`)
+    } else if (result.status === 'no-release') {
+      setManualMessage(`NO UPDATE AVAILABLE\n\nYou're running FitDex v${APP_VERSION}.`)
+    } else if (result.status === 'update-available') {
+      setManualMessage(`Update v${result.release?.version} available!`)
+    } else if (result.status === 'offline') {
+      setManualMessage('Device is offline. Connect to check for updates.')
+    } else if (result.status === 'error') {
+      setManualMessage(result.error || 'Could not reach update server. Retry later.')
+    }
+  }
+
   return (
     <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
       <SettingsSubheader eyebrow="Settings / Data & Help" title="About FitDex" description="Retro RPG fitness tracking. Local by design." onBack={onBack} />
@@ -388,17 +437,85 @@ function AboutSettings({ family, onBack }: { family: ThemeFamily; onBack: () => 
           <img className="about-app-icon" src={branding.icon} alt="FitDex" />
           <div>
             <strong>FitDex</strong>
-            <small>Version {APP_VERSION}</small>
+            <small>Version {APP_VERSION} · Build {APP_BUILD_NUMBER}</small>
           </div>
         </div>
         <section className="about-copy" aria-label="About FitDex">
           <p>FitDex is a local-first fitness tracker for workouts, nutrition, progress tracking, and RPG-style progression.</p>
+
+          <h3>System &amp; Updates</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '8px 0 16px' }}>
+            <div className="update-settings-actions">
+              <button
+                type="button"
+                className="cmd-btn primary compact"
+                onClick={handleCheckUpdates}
+                disabled={checking}
+              >
+                {checking ? 'CHECKING...' : 'CHECK FOR UPDATES'}
+              </button>
+              <button
+                type="button"
+                className="cmd-btn secondary compact"
+                onClick={() => setNotesOpen(true)}
+              >
+                RELEASE NOTES
+              </button>
+            </div>
+
+            {manualMessage && (
+              <div
+                style={{
+                  font: '700 0.68rem var(--font-mono)',
+                  color:
+                    status === 'update-available'
+                      ? 'var(--color-primary-text)'
+                      : status === 'error'
+                        ? '#ff8a80'
+                        : 'var(--color-text-muted)',
+                  background: 'var(--color-surface-subtle)',
+                  padding: '6px 8px',
+                  border: '1px solid var(--color-border)',
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {manualMessage}
+                {status === 'update-available' && release && (
+                  <button
+                    type="button"
+                    style={{
+                      display: 'block',
+                      marginTop: '4px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-primary-text)',
+                      textDecoration: 'underline',
+                      font: 'inherit',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                    onClick={openDetails}
+                  >
+                    View details &amp; download
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
           <h3>Developed by</h3>
           <p>Arijit Bhaduri</p>
           <h3>Privacy &amp; Data</h3>
           <p>Your FitDex fitness data is stored locally on your device. FitDex does not require an account or FitDex cloud sync.</p>
         </section>
       </section>
+
+      {detailsOpen && release && (
+        <UpdateDetailsModal release={release} onClose={closeDetails} />
+      )}
+      {notesOpen && (
+        <ReleaseNotesModal onClose={() => setNotesOpen(false)} />
+      )}
     </div>
   )
 }

@@ -28,6 +28,7 @@
     "release:major": "npm run release:prepare:major",
     "release:publish": "node scripts/publish-release.mjs",
     "test:release-system": "node scripts/testReleaseSystem.mjs",
+    "test:updater": "node --experimental-strip-types src/features/updater/testUpdater.ts",
     "audit:catalog": "node --experimental-strip-types src/features/exerciseDex/auditExerciseCatalog.ts",
     "validate:exercise-content": "node --experimental-strip-types src/features/exerciseDex/validateExerciseContent.ts",
     "test:exercise-migration": "node --experimental-strip-types src/features/exerciseDex/testExerciseMigration.ts",

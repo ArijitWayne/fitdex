@@ -21,6 +21,9 @@ import { achievementAssetPath, rankAssetPath } from '../features/gamification/ga
 import { useAudio } from '../features/audio/useAudio'
 import { BACKGROUND_TRACK_ORDER, cycleBackgroundTrack } from '../features/audio/audioModel'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
+import { useUpdater } from '../features/updater/useUpdater'
+import { UpdateBanner } from '../features/updater/UpdateBanner'
+import { UpdateDetailsModal } from '../features/updater/UpdateDetailsModal'
 
 export type HomeWorkoutEntry = 'hub' | 'active' | 'start' | 'library' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'
 
@@ -28,6 +31,15 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
   const { selectedAvatar } = useAvatar()
   const { displayName } = useProfile()
   const { playEffect } = useAudio()
+  const {
+    status: updateStatus,
+    release: updateRelease,
+    dismissed: updateDismissed,
+    detailsOpen: updateDetailsOpen,
+    dismiss: dismissUpdate,
+    openDetails: openUpdateDetails,
+    closeDetails: closeUpdateDetails,
+  } = useUpdater(true)
   const [data, setData] = useState<HomeDashboardData>()
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => new Date())
@@ -55,6 +67,13 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
 
   return (
     <div className="page-stack home-page">
+      {updateStatus === 'update-available' && !updateDismissed && updateRelease && (
+        <UpdateBanner
+          release={updateRelease}
+          onViewDetails={openUpdateDetails}
+          onDismiss={dismissUpdate}
+        />
+      )}
       <section className="home-desktop-hero">
         <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
         <div>
@@ -151,6 +170,12 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
         {!data.hasHistory && !data.weeklyPlan.configured ? <Panel className="home-dashboard-panel home-connected-help" eyebrow="Your activity will appear here" title="Log once, see it everywhere"><p>Workouts and food you log automatically feed into Home, Journal and Progress.</p></Panel> : null}
         </>}
       </div>
+      {updateDetailsOpen && updateRelease && (
+        <UpdateDetailsModal
+          release={updateRelease}
+          onClose={closeUpdateDetails}
+        />
+      )}
     </div>
   )
 }

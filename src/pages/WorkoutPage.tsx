@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, ChevronRight, CircleHelp, Dumbbell, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
+import { RetroLoader } from '../components/ui/RetroLoader'
 import { ContextRail } from '../components/ui/ContextRail'
 import { PageFrame } from '../components/layout/PageFrame'
 import type { Exercise, RoutineExercise, WorkoutRoutine } from '../data/models'
@@ -236,7 +237,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
       </div>
     </header>
 
-    {loading ? <Panel><p>Loading your local workout data…</p></Panel> : <main className="workout-hub-stack">
+    {loading ? <Panel><RetroLoader label="LOADING WORKOUT DATA..." /></Panel> : <main className="workout-hub-stack">
       {showWorkoutLanding ? <ContextRail eyebrow="First workout" title="Choose how you want to train" actions={<><button className="primary-button" type="button" onClick={() => void chooseFirstWorkoutPath('prepare')}>Build Today</button><button className="secondary-button" type="button" onClick={() => void chooseFirstWorkoutPath('create')}>Create Routine</button></>}><p><strong>Build Today</strong> prepares a one-off session without saving a routine. <strong>Create Routine</strong> saves a reusable template. No workout or timer starts until you press Start Workout.</p></ContextRail> : null}
       <section className={`workout-mission-card${activeWorkout ? hubTimerPaused ? ' is-paused' : ' is-active' : ''}`} aria-labelledby="today-mission-title">
         <div className="workout-mission-core">

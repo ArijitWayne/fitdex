@@ -3,6 +3,7 @@ import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState }
 import { liveQuery } from 'dexie'
 import { PageFrame } from '../components/layout/PageFrame'
 import { ContextRail } from '../components/ui/ContextRail'
+import { RetroLoader } from '../components/ui/RetroLoader'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
@@ -151,7 +152,6 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   }, [date])
   useEffect(() => {
     let active = true
-    setEntriesLoading(true)
     void Promise.all([listFoodEntries(date), loadGamificationDashboard()]).then(([rows, game]) => {
       if (active) { setEntries(rows); setGamification(game); setEntriesLoading(false) }
     })
@@ -182,10 +182,9 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
       </div>
       <div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><span><strong>{formatDate(date)}</strong><small>{isLocalToday(date) ? 'Today' : 'Selected day'}</small></span><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>
     </header>
-    {entriesLoading ? <section className="panel food-loading" role="status">Loading nutrition…</section> : <>
+    {entriesLoading ? <section className="panel food-loading"><RetroLoader label="LOADING NUTRITION..." /></section> : <>
       {showFoodLanding ? <ContextRail
         title={targets?.enabled && targets.calorieTarget > 0 ? 'Log food against your targets' : 'Log food with or without targets'}
-        footnote="Clears after real action, not page visit"
         actions={targets?.enabled && targets.calorieTarget > 0 ? (
           <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log First Food</button>
         ) : (
@@ -204,7 +203,6 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
       {showFirstFoodFeedback && entries.length > 0 ? <ContextRail
         eyebrow="Logged result"
         title="Your totals updated from real food data"
-        footnote="Clears after real action, not page visit"
         actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('firstFoodFeedback'); setShowFirstFoodFeedback(false) }}>Understood</button>}
       >
         {targets?.enabled && targets.calorieTarget > 0 ? (
@@ -262,12 +260,16 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
   const [quickLoggingId, setQuickLoggingId] = useState<string>()
   const previousStageRef = useRef(stage)
 
-  useBackNavigation('food-editor', !categoryOpen, () => { if (stage === 'details' && !editing) setStage('suggestions'); else onBack() }, 20)
+  const showSuggestions = () => {
+    setSuggestionsLoading(true)
+    setStage('suggestions')
+  }
+
+  useBackNavigation('food-editor', !categoryOpen, () => { if (stage === 'details' && !editing) showSuggestions(); else onBack() }, 20)
   useEffect(() => { if (previousStageRef.current !== stage) { previousStageRef.current = stage; playEffect('select') } }, [playEffect, stage])
   useEffect(() => {
     if (stage !== 'suggestions') return
     let active = true
-    setSuggestionsLoading(true)
     const load = query ? searchRememberedFoods(query, meal) : getRecentFoods(meal)
     void Promise.all([load, query ? Promise.resolve([]) : getFrequentFoods(meal)]).then(([nextSuggestions, nextFrequent]) => {
       if (!active) return
@@ -280,6 +282,11 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
 
   const recentIds = useMemo(() => new Set(suggestions.map((food) => food.id)), [suggestions])
   const uniqueFrequent = useMemo(() => frequent.filter((food) => !recentIds.has(food.id)), [frequent, recentIds])
+
+  const updateQuery = (nextQuery: string) => {
+    setSuggestionsLoading(true)
+    setQuery(nextQuery)
+  }
 
   const fillRemembered = (food: RememberedFood) => {
     playEffect('select')
@@ -355,13 +362,13 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
     if (error?.field === key) setError(undefined)
   }
 
-  const editorBack = stage === 'details' && !editing ? () => setStage('suggestions') : onBack
+  const editorBack = stage === 'details' && !editing ? showSuggestions : onBack
   const editorTitle = editing ? 'Edit Food' : rememberedSource ? 'Edit Details' : 'New Food'
 
   return <div className="page-stack food-page food-editor-page">
     <header className="food-subheader"><button className="back-button" type="button" aria-label="Go back" onClick={editorBack}><ArrowLeft /></button><MealIcon meal={meal} /><div><p className="eyebrow">{stage === 'suggestions' ? 'Add Food' : editorTitle} · {formatDate(date)}</p><h1>{FOOD_MEAL_LABELS[meal]}</h1></div></header>
     {stage === 'suggestions' ? <section className="food-suggestions" aria-label={`Add food to ${FOOD_MEAL_LABELS[meal]}`}>
-      <label className="search-box"><Search size={18} aria-hidden="true" /><span className="sr-only">Search remembered local foods</span><input id="food-search" type="search" autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your foods..." />{query ? <button className="search-clear" type="button" aria-label="Clear search" onClick={() => setQuery('')}><X size={17} /></button> : <span className="search-clear" aria-hidden="true" />}</label>
+      <label className="search-box"><Search size={18} aria-hidden="true" /><span className="sr-only">Search remembered local foods</span><input id="food-search" type="search" autoFocus value={query} onChange={(event) => updateQuery(event.target.value)} placeholder="Search your foods..." />{query ? <button className="search-clear" type="button" aria-label="Clear search" onClick={() => updateQuery('')}><X size={17} /></button> : <span className="search-clear" aria-hidden="true" />}</label>
       <p className="local-note">Searches foods remembered on this device. No online food database.</p>
       {suggestionsLoading ? <p className="food-suggestion-empty" role="status">Loading remembered foods…</p> : query ? (
         suggestions.length ? <div className="food-groups"><SuggestionGroup title="Matches" foods={suggestions} meal={meal} quickLoggingId={quickLoggingId} onQuickLog={quickLog} onEdit={fillRemembered} /></div> : <section className="empty-results"><h2>No Matches Found</h2><p>No remembered local foods match “{query.trim() || 'Food'}”.</p><button className="secondary" type="button" onClick={startCreate}><Plus size={16} aria-hidden="true" /> Create “{query.trim() || 'Food'}”</button></section>
@@ -442,7 +449,7 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
 
   return <div className="food-dialog-backdrop"><section className="food-dialog food-category-dialog" role="dialog" aria-modal="true" aria-labelledby="category-title">
     <header><div><p className="eyebrow">Food category</p><h2 id="category-title">{creating ? 'Create Category' : 'Select Category'}</h2></div><button type="button" aria-label="Close category picker" onClick={() => { playEffect('select'); onClose() }}><X /></button></header>
-    {showCustomHint ? <ContextRail title="Custom categories are local labels" footnote="Clears after real action, not page visit" actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('customFoodCategory'); setShowCustomHint(false) }}>Got it</button>}><p>If predefined categories do not fit, create a reusable custom category with its own accent color. It organizes remembered foods; historical log snapshots remain preserved.</p></ContextRail> : null}
+    {showCustomHint ? <ContextRail title="Custom categories are local labels" actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('customFoodCategory'); setShowCustomHint(false) }}>Got it</button>}><p>If predefined categories do not fit, create a reusable custom category with its own accent color. It organizes remembered foods; historical log snapshots remain preserved.</p></ContextRail> : null}
     {creating ? <div className="custom-category-form"><button className="text-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="primary-button" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}>Cancel</button></div> : <><section className="food-category-section"><p className="eyebrow">Standard Categories</p><div className="category-grid">{PREDEFINED_FOOD_CATEGORIES.map((category) => <button className={selectedId === category.id && !selectedCustomId ? 'is-selected' : ''} type="button" key={category.id} onClick={() => select(category.id)}><FoodCategoryIcon categoryId={category.id} label={category.name} /><span>{category.name}</span></button>)}</div></section><section className="food-category-section"><p className="eyebrow">Custom Categories</p>{custom.length ? <div className="food-custom-category-list">{custom.map((category) => <div className="custom-category-option" key={category.id}><button className={selectedCustomId === category.id ? 'is-selected' : ''} type="button" onClick={() => select('other', category.id, category.name, category.color)}><FoodCategoryIcon categoryId="other" label={category.name} color={category.color} /><span>{category.name}</span></button><button className="custom-category-delete" type="button" aria-label={`Delete ${category.name} category`} onClick={() => { playEffect('select'); setPendingDelete(category) }}><Trash2 size={15} /></button></div>)}</div> : <p className="food-suggestion-empty">No custom categories.</p>}</section>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(true); setError('') }}><Plus size={18} /> Create Category</button></>}
   </section>{pendingDelete ? <section className="food-dialog food-confirm-dialog food-category-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title"><header><div><p className="eyebrow">Custom category</p><h2 id="delete-category-title">Delete Category?</h2></div></header><p>“{pendingDelete.name}” will be removed.</p><p>Remembered foods in this category will also be removed. Historical food logs remain and become Uncategorized.</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section> : null}</div>
 }

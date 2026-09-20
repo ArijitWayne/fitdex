@@ -1,32 +1,41 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 export function ContextRail({
   eyebrow = 'Field Intel',
   title,
   children,
   actions,
-  footnote = 'Clears after real action, not page visit',
 }: {
   eyebrow?: string
   title: string
   children: ReactNode
   actions?: ReactNode
-  footnote?: string | null
 }) {
+  const titleId = useId()
+  const descriptionId = useId()
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => { headingRef.current?.focus() }, [])
+
   return (
-    <aside className="context-rail" aria-label={title}>
-      <div className="context-rail-body">
-        <p className="eyebrow">{eyebrow}</p>
-        <h2>{title}</h2>
-        <div className="context-rail-copy">{children}</div>
-        {footnote ? (
-          <div className="context-rail-footnote">
-            <span className="context-rail-dot" aria-hidden="true">●</span>
-            <span>{footnote}</span>
+    <div className="guide-backdrop context-guide-backdrop" role="presentation">
+      <section className="guide-dialog context-guide-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
+        <header className="guide-topline">
+          <div className="guide-top-tag"><span>{eyebrow}</span></div>
+        </header>
+        <div className="guide-content">
+          <div className="guide-objective-strip">
+            <small>{eyebrow.toUpperCase()} DIRECTIVE</small>
+            <h2 id={titleId} ref={headingRef} tabIndex={-1}>{title}</h2>
           </div>
-        ) : null}
-      </div>
-      {actions ? <div className="context-rail-actions">{actions}</div> : null}
-    </aside>
+          <div className="guide-sections-stack">
+            <section className="section-card context-guide-copy" id={descriptionId}>
+              {children}
+            </section>
+          </div>
+        </div>
+        {actions ? <footer className="guide-actions context-guide-actions">{actions}</footer> : null}
+      </section>
+    </div>
   )
 }

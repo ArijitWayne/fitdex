@@ -4248,6 +4248,8 @@ button.session-hub-link {
 .active-workout-top-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .active-workout-top-actions button {
@@ -4257,6 +4259,15 @@ button.session-hub-link {
 .session-stats-bar .active-workout-top-actions button.pause-toggle-btn {
   min-height: 40px;
   height: auto;
+}
+
+.session-stats-bar .active-workout-top-actions button.rest-toggle-btn {
+  min-height: 40px;
+  height: auto;
+  padding-inline: 8px;
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .pause-toggle-btn {
@@ -6055,13 +6066,51 @@ button.session-hub-link {
   font-weight: 800;
 }
 
-.exercise-media-spinner {
-  width: 26px;
-  height: 26px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 700ms linear infinite;
+.retro-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.retro-loader-blocks {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.retro-loader-blocks i {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  animation: retroLoaderPulse 900ms steps(2, end) infinite;
+}
+
+.retro-loader-blocks i:nth-child(1),
+.retro-loader-blocks i:nth-child(2) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.retro-loader-blocks i:nth-child(2) { animation-delay: 120ms; }
+.retro-loader-blocks i:nth-child(3) { animation-delay: 240ms; }
+.retro-loader-blocks i:nth-child(4) { animation-delay: 360ms; }
+
+@keyframes retroLoaderPulse {
+  0%, 45% { opacity: 1; transform: translateY(0); }
+  50%, 100% { opacity: 0.42; transform: translateY(1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retro-loader-blocks i {
+    animation: none;
+    transform: none;
+  }
 }
 
 .exercise-media-actions {
@@ -9185,6 +9234,21 @@ button.session-hub-link {
 
 .custom-category-preview strong {
   overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+.custom-category-preview > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.custom-category-preview small {
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .color-picker {
@@ -9198,8 +9262,80 @@ button.session-hub-link {
 }
 
 .color-picker label {
+  position: relative;
+  display: grid;
+  place-items: center;
   min-width: 44px;
   min-height: 46px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.color-picker label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-muted);
+  box-shadow: inset 0 -3px 0 var(--color-primary), 2px 2px 0 var(--color-shadow);
+}
+
+.color-picker label:focus-within {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.color-picker input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.color-picker label > span {
+  display: block;
+  width: 25px;
+  height: 25px;
+  border: 2px solid var(--color-border-strong);
+  background: var(--food-category-color);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-surface) 20%, transparent);
+}
+
+.workout-flow-panel:not(.routine-editor) .routine-exercise-list > li {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 12px;
+  border: 2px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-raised)), var(--color-surface-subtle));
+  box-shadow: 2px 2px 0 var(--color-shadow);
+}
+
+.workout-flow-panel:not(.routine-editor) .routine-exercise-copy {
+  gap: 4px;
+}
+
+.workout-flow-panel:not(.routine-editor) .routine-exercise-copy strong {
+  font-size: .92rem;
+  line-height: 1.15;
+}
+
+.workout-flow-panel:not(.routine-editor) .routine-exercise-copy small {
+  color: var(--color-text-muted);
+  font-size: .68rem;
+  font-weight: 750;
+}
+
+.workout-flow-panel:not(.routine-editor) .routine-exercise-list > li > .secondary-button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-danger);
 }
 
 .food-category-delete-dialog {
@@ -11304,8 +11440,8 @@ button.home-mobile-row:active {
   height: 16px;
 }
 
-/* Shared retro handheld enclosure. Home remains the geometry source of truth. */
-.fitdex-page-frame {
+/* Home-only retro handheld enclosure. Other PageFrame screens keep their existing layout. */
+.home-command-home.fitdex-page-frame {
   min-width: 0;
   padding: 8px;
   border: 4px solid var(--color-border-strong);
@@ -11517,7 +11653,23 @@ button.home-mobile-row:active {
 }
 
 .home-command-home .home-quest-actions {
-  padding-left: 20px;
+  padding-inline: 0;
+}
+
+.home-command-home .home-workout-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 6px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.home-command-home .home-workout-actions > button {
+  width: min(100%, 220px);
+  min-height: 48px;
+  margin-inline: auto;
+  justify-content: center;
 }
 
 .home-command-home .home-quest-actions button {
@@ -11672,7 +11824,7 @@ button.home-mobile-row:active {
 }
 
 @media (max-width: 374px) {
-  .fitdex-page-frame {
+  .home-command-home.fitdex-page-frame {
     padding: 6px;
     border-width: 3px;
   }
@@ -12620,14 +12772,14 @@ button.home-mobile-row:active {
   }
 
 
-  .app-main:has(.fitdex-page-frame) {
+  .app-main:has(.home-command-home.fitdex-page-frame) {
     max-width: none;
     padding: 10px max(8px, env(safe-area-inset-right)) 18px max(8px, env(safe-area-inset-left));
     border-inline: 0;
     background: var(--color-app-surface);
   }
 
-  .fitdex-page-frame {
+  .home-command-home.fitdex-page-frame {
     padding: 7px;
     border-width: 2px;
     border-radius: 14px;
@@ -12729,75 +12881,25 @@ button.home-mobile-row:active {
     transition: none;
   }
 }
-/* Contextual first-use teaching: mobile-native Context Rail */
-.context-rail {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 38%, var(--color-border));
-  border-left: 4px solid var(--color-primary);
-  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-primary) 8%);
-  box-shadow: var(--shadow-sm);
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
+/* Contextual first-use teaching belongs in guide modal, never page flow. */
+.context-guide-dialog {
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
-.context-rail-body {
-  flex: 1;
-  min-width: 0;
+.context-guide-copy {
+  display: grid;
+  gap: 10px;
 }
-.context-rail .eyebrow {
-  margin: 0 0 2px;
-  color: var(--color-primary);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 850;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.context-rail h2 {
-  margin: 0 0 4px;
-  font-size: clamp(0.92rem, 3.8vw, 1.05rem);
-  font-weight: 850;
-  word-break: break-word;
-  color: var(--color-text);
-}
-.context-rail-copy, .context-rail-copy p {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
-  line-height: 1.45;
-  word-break: break-word;
-}
-.context-rail-footnote {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 8px;
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-}
-.context-rail-dot {
-  color: var(--color-primary);
-  font-size: 8px;
-}
-.context-rail-actions {
-  display: flex;
+.context-guide-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   gap: 8px;
-  flex: 0 0 auto;
-  align-items: center;
 }
-.context-rail-actions > button {
-  min-height: 42px;
-  padding: 8px 14px;
-  font-weight: 800;
-  font-size: 0.78rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  white-space: nowrap;
+
+.context-guide-actions > * {
+  width: min(100%, 280px);
+  min-height: 44px;
+  margin-inline: auto;
 }
 .mission-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
 .mission-brief .step-rail span { flex: 1; height: 6px; border: 1px solid var(--color-border); background: var(--color-surface-subtle); }
@@ -12852,37 +12954,7 @@ button.home-mobile-row:active {
 .freeze-reward-summary { width: 100%; display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
 
 @media (max-width: 640px) {
-  .context-rail {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px 14px;
-  }
-  .context-rail-actions {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-  .context-rail-actions > button {
-    flex: 1 1 120px;
-    min-width: 0;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
   .mission-nutrition-grid, .mission-nutrition-result { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 360px) {
-  .context-rail {
-    padding: 10px 12px;
-  }
-  .context-rail-actions {
-    flex-direction: column;
-  }
-  .context-rail-actions > button {
-    width: 100%;
-    flex: 1 1 auto;
-  }
 }
 
 /* ==========================================================================
@@ -13381,3 +13453,37 @@ button.home-mobile-row:active {
   margin-top: 6px;
 }
 
+.faction-change-dialog {
+  display: grid;
+  width: min(100%, 420px);
+  gap: 14px;
+  padding: 22px;
+  border: 3px solid var(--color-border-strong);
+  background: var(--color-surface);
+  box-shadow: 6px 6px 0 var(--color-shadow);
+}
+
+.faction-change-dialog .eyebrow,
+.faction-change-dialog h2,
+.faction-change-dialog p {
+  margin: 0;
+}
+
+.faction-change-dialog h2 {
+  color: var(--color-primary-text);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 4vw, 1.45rem);
+  line-height: 1.05;
+}
+
+.faction-change-dialog p:last-of-type {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.faction-change-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 8px;
+}
