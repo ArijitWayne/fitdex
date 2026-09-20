@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "test:hero": "node scripts/testHeroInteraction.mjs",
+    "test:release": "node scripts/testReleaseSystem.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

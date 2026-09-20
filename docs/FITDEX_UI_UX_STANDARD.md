@@ -290,3 +290,20 @@ The former `prototypes/` workspace was a temporary exploratory sandbox and has b
 - **Primary Showcase**: Six core screenshots embedded in `README.md` (Home, Workout Hub, Active Workout, Exercise Dex, Nutrition, Progress).
 - **Secondary Gallery**: Three additional views (Progress Overview, Journal, Achievements) retained in repository for future website/gallery use.
 - **Social Preview**: Configured manually in GitHub Repository Settings (intentionally not stored as an in-repo file).
+
+### 4.9 Public Website & Release Hub Standard
+- **Console Visual System**: Strict retro-RPG console presentation: near-charcoal background (`#0e1212`), panel framing (`#171d1c`), line dividers (`#45534e`), teal accents (`#2e9895`, `#63beb8`), ivory text (`#e8ece9`), and tactile button states with hard offset shadows.
+- **Single-Column Archive Stream**: The release archive (`/changelog`) is permanently locked as a single-column vertical chronological stream (newest first). Multi-column cards, grids, and masonry are strictly prohibited.
+- **Release Entry Hierarchy**:
+  1. Header: Version (`vX.Y.Z`), `LATEST` status badge (newest only), `BUILD` code tag, publication date, and git tag. Android compatibility metadata (`Android 8.0+`) is intentionally omitted from release headers to avoid clutter.
+  2. Summary: High-level overview of the release.
+  3. Structured Notes: Distinct category groups for `NEW` (teal accent), `IMPROVED` (gold accent), `FIXED` (muted accent), and `OTHER` (safe fallback).
+  4. Primary Action: `DOWNLOAD APK` with file size rendered as secondary metadata (`.btn-meta-badge`).
+  5. Secondary Actions: Direct `GITHUB RELEASE ↗` link.
+  6. Verification Block: Compact SHA-256 checksum presentation with low visual dominance, monospace hash, and accessible interactive `COPY` button.
+- **Release States**:
+  - **Pre-Release / Empty**: When no releases are published, the landing page displays `PUBLIC RELEASE COMING SOON` and `/changelog` displays `NO PUBLIC RELEASES YET.` with a clean `RETURN HOME` action.
+  - **Loading**: Tactical status ticker with pulsing indicator; never blocks the entire page.
+  - **Error**: Tactical error alert with retry control and direct GitHub fallback link.
+- **Landing Hero Composition**: Hero features public eyebrow `TACTICAL ANDROID FITNESS TRACKER`, headline `TRAIN. TRACK. LEVEL UP.`, value proposition ('804 exercises, deep logging, zero subscription'), pre-release CTA row (`PUBLIC RELEASE COMING SOON`, `VIEW CHANGELOG`, `TRY WEB APP`), and 3 public metrics (`804 EXERCISES`, `LOCAL FIRST STORAGE`, `$0 FOREVER FREE`). The 3-card screenshot hover stack preserves its fixed left/center/right interaction zones and desktop 3D transforms.
+- **Mobile Ergonomics**: Full-width comfortable touch targets, responsive checksum stacking on viewports below 480px, and zero horizontal overflow.

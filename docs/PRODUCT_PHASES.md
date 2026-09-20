@@ -54,12 +54,22 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **CI Compatibility**: Same scripts use existing `FITDEX_KEYSTORE_PATH`, `FITDEX_KEYSTORE_PASSWORD`, `FITDEX_KEY_ALIAS`, and `FITDEX_KEY_PASSWORD`; local and CI release logic do not diverge. No GitHub Actions release workflow exists or publishes on push.
 - **Current Boundary**: Phase 4 dry-run and static validation complete. Public FitDex `v1.0.0` remains unpublished. Repository version remains `1.0.0`; Android `versionCode` remains `2`.
 
-### Public Website — Phase 5 IN PROGRESS / Production Foundation Implemented
+### Public Website — Phase 5 COMPLETE / Production Foundation Deployed
 
-- **Separate Surface**: `website/` is an independent React + TypeScript + Vite public landing site. Vercel will use `website/` as its root later. The existing PWA remains on Cloudflare, and exercise media remains its separate Cloudflare Worker surface.
-- **Approved Direction**: Console is the only production visual direction: Spartan Dark, teal structural grid, ivory typography, low-radius rectangular panels, hard shadows, technical/RPG labels, real screenshots, and pre-launch release state. Editorial, Field Log, and prototype picker controls are not production features.
-- **Release Integration Boundary**: Website release presentation reserves the Phase 4 contract (`version`, `versionCode`, `tag`, `apk`, `apkDownloadUrl`, `checksum`, `sha256`, `releaseNotes`, `publishedAt`) for Phase 6. It shows no fabricated release date, APK, checksum, GitHub Release, or publication claim.
-- **Assets and Interaction**: Root `public/screenshots/` stays canonical; identical copies in `website/public/screenshots/` are deployed with Vercel build. The desktop Console hero uses transient neutral, left-hover, and right-hover depth stacks. Cards keep fixed identities; center hover restores neutral composition. Mobile (<= 768px) intentionally preserves one readable Home screenshot. Lower screenshot panels retain restrained hover and keyboard focus depth. Vercel deployment remains pending.
+- **Separate Surface**: `website/` is an independent React + TypeScript + Vite public landing site deployed live on Vercel at `https://fitdexinfo.vercel.app/`. The existing PWA remains on Cloudflare, and exercise media remains its separate Cloudflare Worker surface.
+- **Approved Direction**: Console is the production visual direction: Spartan Dark, teal structural grid, ivory typography, low-radius rectangular panels, hard shadows, technical/RPG labels, real screenshots, and pre-launch release state.
+- **Assets and Interaction**: Root `public/screenshots/` stays canonical; identical copies in `website/public/screenshots/` are deployed with Vercel build. The desktop Console hero uses transient neutral, left-hover, and right-hover depth stacks with fixed interaction zones. Cards keep fixed identities; center hover restores neutral composition. Mobile (<= 768px) preserves one readable Home screenshot. Lower screenshot panels retain resting size and hover expansion.
+
+### Release Hub & Automatic Release Sync — Phase 6 COMPLETE / APPROVED
+
+- **Source of Truth**: Published GitHub Releases (`https://api.github.com/repos/ArijitWayne/fitdex/releases`) are authoritative for all releases. Normal repository commits, documentation edits, and refactors are strictly ignored.
+- **Architecture**: Separated into `website/src/releases/` (`types.ts`, `releaseNotes.ts`, `normalize.ts`, `api.ts`), establishing a normalized release contract for the website and Phase 7 (in-app updates).
+- **Surface Implementation**:
+  - Landing (`/`): Dynamic latest release section with live GitHub fetch, 5-minute cache, and pre-release fallback (`FITDEX v1.0.0 // PUBLIC RELEASE COMING SOON`).
+  - Changelog (`/changelog`): Dedicated single-column chronological release archive, `#latest` anchor jump, empty archive state (`NO PUBLIC RELEASES YET.`), and tactical loading/error states.
+  - Verification & Actions: Primary `DOWNLOAD APK` CTA with secondary file-size badge (`.btn-meta-badge`), direct GitHub Release link, and compact SHA-256 verification box with interactive accessible clipboard copy.
+- **Routing**: Lightweight client-side router with `website/vercel.json` SPA rewrites.
+- **Validation**: 18 automated invariant checks in `website/scripts/testReleaseSystem.mjs` (`npm --prefix website run test:release`). Zero mock data in production. Standalone Screenshots gallery cleanly removed; contextual screenshots preserved. Existing hero interaction preserved (`test:hero`). Live public v1.0.0 remains unreleased.
 
 ---
 
