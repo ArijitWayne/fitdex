@@ -37,6 +37,10 @@ assert.equal(foodTutorialSteps.length, 8)
 assert.equal(gamificationHelpSteps.length, 1)
 assert.deepEqual(workoutTutorialSteps.map((step) => step.title), ['Welcome to Workouts', 'Build Today or Save a Routine', 'Plan Your Week', 'Starting a Workout', 'Logging Sets', 'Previous Performance', 'Rest Timer', 'Workout Timer', 'Finishing a Workout', 'Workout History', 'Exercise Dex', 'Workouts on Home'])
 assert.match(foodTutorialSteps[5].sections.map((section) => section.text).join(' '), /Protein × 4.*Carbs × 4.*Fat × 9/)
+assert.match(workoutTutorialSteps[6].sections.map((section) => section.text).join(' '), /Use Start Rest when you are ready for a break\./)
+assert.doesNotMatch(workoutTutorialSteps[6].sections.map((section) => section.text).join(' '), /;/)
+assert.match(workoutTutorialSteps[7].sections.map((section) => section.text).join(' '), /Start the timer when you begin training\./)
+assert.doesNotMatch(workoutTutorialSteps[7].sections.map((section) => section.text).join(' '), /active duration|state-machine|;/i)
 
 const dialog = fs.readFileSync('src/features/help/GuideDialog.tsx', 'utf8')
 const workoutPage = fs.readFileSync('src/pages/WorkoutPage.tsx', 'utf8')
@@ -49,6 +53,13 @@ const onboarding = fs.readFileSync('src/features/onboarding/Onboarding.tsx', 'ut
 const requiredName = fs.readFileSync('src/features/profile/RequiredDisplayNamePrompt.tsx', 'utf8')
 const app = fs.readFileSync('src/app/App.tsx', 'utf8')
 const exerciseDex = fs.readFileSync('src/features/exerciseDex/ExerciseDex.tsx', 'utf8')
+const workoutSession = fs.readFileSync('src/features/workout/WorkoutSessionViews.tsx', 'utf8')
+assert.doesNotMatch(workoutSession, /Your session timer is live|active duration excludes|pause excludes/i)
+assert.match(workoutSession, /Start the timer when you're ready/)
+assert.match(workoutSession, /Your workout is ready\. Start the timer when you begin training\./)
+const weeklyPlan = fs.readFileSync('src/features/workout/WeeklyPlanViews.tsx', 'utf8')
+const gamificationViews = fs.readFileSync('src/features/gamification/GamificationViews.tsx', 'utf8')
+const contextRail = fs.readFileSync('src/components/ui/ContextRail.tsx', 'utf8')
 
 const css = fs.readFileSync('src/styles/app.css', 'utf8')
 
@@ -109,13 +120,16 @@ assert.doesNotMatch(css, /\.tutorial-path[^{]*\{[^}]*width:\s*min\(100%,\s*470px
 assert.doesNotMatch(css, /\.path-callout[^{]*\{[^}]*width:\s*min\(100%,\s*470px\)/)
 assert.match(css, /(?:\.path-callout|\.tutorial-path)[^{]*\{[^}]*width:\s*auto;/)
 
-// Mobile Context Rail assertions
-assert.match(css, /\.context-rail[^{]*\{[^}]*border-left:\s*4px solid var\(--color-primary\);/)
-assert.match(css, /\.context-rail[^{]*\{[^}]*width:\s*100%;/)
-assert.match(css, /\.context-rail[^{]*\{[^}]*box-sizing:\s*border-box;/)
-assert.doesNotMatch(css, /\.context-rail-sidebar/)
-assert.doesNotMatch(css, /\.context-rail[^{]*\{[^}]*112px/)
-assert.match(css, /\.context-rail-footnote/)
+// First-use guidance renders in shared guide modal, never normal page flow.
+assert.match(contextRail, /className="guide-backdrop context-guide-backdrop"/)
+assert.match(contextRail, /className="guide-dialog context-guide-dialog" role="dialog" aria-modal="true"/)
+assert.match(contextRail, /className="guide-content"/)
+assert.match(contextRail, /className="guide-actions context-guide-actions"/)
+assert.match(contextRail, /headingRef\.current\?\.focus\(\)/)
+assert.doesNotMatch(contextRail, /<aside/)
+assert.doesNotMatch(contextRail, /context-rail/)
+assert.match(css, /\.context-guide-dialog[^{]*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto;/)
+assert.doesNotMatch([contextRail, workoutPage, workoutSession, foodPage, progress, journal, weeklyPlan, gamificationViews].join('\n'), /Clears\s+after/i)
 
 // Onboarding Field Guide assertions
 assert.match(onboarding, /FitDex Field Guide/)
@@ -178,6 +192,9 @@ assert.match(workoutPage, /workout-hub-help.*cmd-icon-btn/)
 assert.match(foodPage, /loadFirstUseGuidance/)
 assert.match(foodPage, /Recent and Frequent/)
 assert.match(foodPage, /How Food Works/)
+assert.match(css, /\.home-command-home \.home-workout-actions > button \{[^}]*width: min\(100%, 220px\);[^}]*margin-inline: auto;/s)
+assert.match(css, /\.context-guide-actions \{[^}]*display: grid;[^}]*justify-items: center;/s)
+assert.match(css, /\.context-guide-actions > \* \{[^}]*width: min\(100%, 280px\);[^}]*margin-inline: auto;/s)
 assert.match(foodPage, /workout-hub-help.*cmd-icon-btn/)
 assert.match(journal, /How Journal Works/)
 assert.match(journal, /page-help-button/)
@@ -229,7 +246,6 @@ assert.equal((journalHelpBlock.match(/title:/g) || []).length, 1)
 
 // 8 & 9. Gamification guide has NO top Close button and exactly one visible Close action
 assert.equal(gamificationHelpSteps.length, 1)
-const gamificationViews = fs.readFileSync('src/features/gamification/GamificationViews.tsx', 'utf8')
 assert.match(gamificationViews, /steps=\{gamificationHelpSteps\}/)
 
 // 10. Field Guide skip preserves first-run completion behavior

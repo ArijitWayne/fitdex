@@ -50,8 +50,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     () => ({
       family,
       brightness,
-      setFamily(nextFamily) {
+      setFamily(nextFamily, options) {
         deviceStorage.set(THEME_FAMILY_STORAGE_KEY, nextFamily)
+        if (options?.relaunchNative) void syncNativeLauncherBranding(brandingFamilyForTheme(nextFamily), true)
         setFamilyState(nextFamily)
       },
       setBrightness(nextBrightness) {

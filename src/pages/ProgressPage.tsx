@@ -67,7 +67,6 @@ export function ProgressPage({ initialView = 'overview' }: { initialView?: 'over
     <PageHeader eyebrow="Character stats" title="Progress" description="See how your training is changing" action={<button className="page-help-button progress-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }} aria-label="How Progress Works"><CircleHelp size={18} aria-hidden="true" /><span>How Progress Works</span></button>} />
     {showFirstUse ? <ContextRail
       title="Progress is derived, not another log"
-      footnote="Clears after real action, not page visit"
       actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('progress'); setShowFirstUse(false) }}>Understood</button>}
     >
       <p>Completed workouts and Food history produce these stats, trends, records, XP, and achievements automatically. Resistance Volume measures weight × reps workload, not calorie burn. Change the period to inspect real history.</p>

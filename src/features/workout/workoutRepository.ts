@@ -81,8 +81,8 @@ export async function startWorkoutFromRoutine(routineId: string, now = Date.now(
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), routineId, routineNameSnapshot: routine.name, nameSnapshot: routine.name,
-      status: 'active', startedAt: timestamp, timerState: routineItems.length ? 'running' : 'paused', accumulatedActiveSeconds: 0,
-      lastResumedAt: routineItems.length ? timestamp : undefined, createdAt: timestamp, updatedAt: timestamp,
+      status: 'active', startedAt: timestamp, timerState: 'paused', accumulatedActiveSeconds: 0,
+      lastResumedAt: undefined, createdAt: timestamp, updatedAt: timestamp,
     }
     const exerciseRows: WorkoutExercise[] = routineItems.map((item, order) => {
       const definition = definitionById.get(item.exerciseId)
@@ -128,8 +128,8 @@ export async function startPreparedWorkout(exercises: readonly Exercise[], name 
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), nameSnapshot: normalizeWorkoutName(name), status: 'active',
-      startedAt: timestamp, timerState: 'running', accumulatedActiveSeconds: 0,
-      lastResumedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
+      startedAt: timestamp, timerState: 'paused', accumulatedActiveSeconds: 0,
+      lastResumedAt: undefined, createdAt: timestamp, updatedAt: timestamp,
     }
     const exerciseRows: WorkoutExercise[] = exercises.map((exercise, order) => ({
       id: createRecordId('workout-exercise'), workoutId: workout.id, exerciseId: exercise.id,

@@ -887,3 +887,49 @@ Key architectural principles and locked design decisions:
 10. **Caching Policy**: 5-minute client-side session/in-memory cache (`fitdex_release_cache_v1`). Handles GitHub API rate limits (403) and network failures with graceful offline fallback and retry controls.
 11. **Landing Hero Parity**: Public hero utilizes approved product framing: eyebrow `TACTICAL ANDROID FITNESS TRACKER`, concise description ('804 exercises, deep logging, zero subscription'), pre-release CTA composition (`PUBLIC RELEASE COMING SOON`, `VIEW CHANGELOG` routing to `/changelog`, `TRY WEB APP`), and 3 public metrics (`804 EXERCISES`, `LOCAL FIRST STORAGE`, `$0 FOREVER FREE`).
 12. **Automated Test Suite**: Targeted Node test suite in `website/scripts/testReleaseSystem.mjs` verifying all 17 release and hero parity invariants via `npm --prefix website run test:release`, alongside existing `test:hero`.
+
+## 50. Startup Experience & In-App Update System — Phase 7 Implemented
+
+Phase 7 implements the production Android native splash, in-app retro RPG warrior boot sequence, and non-blocking in-app update system.
+
+### 1. Hosting Architecture Preserved
+FitDex maintains three distinct surfaces:
+- **Main App (PWA & Android WebView)**: Cloudflare Workers Static Assets (`https://fitdex.fitdexapp.workers.dev/`) & native Android Capacitor APK.
+- **Exercise Media**: Cloudflare Worker CDN (`fitdex-media.fitdexapp.workers.dev`).
+- **Marketing & Release Website**: Vercel (`https://fitdexinfo.vercel.app/`).
+The main application runtime is independent of Vercel and never blocks on the marketing site.
+
+### 2. Startup Architecture & Sequence
+- **Sequence**: Android Native Splash (`Theme.SplashScreen` in `#060908` with `fitdex-icon-spartan.png`) → WebView & React Hydration with Fail-Safe First Paint → FitDex In-App Boot Sequence → Home Usable → Background Update Check.
+- **Network Never Gates Startup**: The app boots and becomes interactive 100% offline. Cold launch does not await any network request or release metadata.
+- **Cold Launch vs. Warm Resume**:
+  - **Cold Launch** (process initialization, WebView creation, fresh browser session): plays the approved ~1.5s 4-frame warrior sequence. Marks `sessionStorage.getItem('fitdex_boot_completed') = 'true'`.
+  - **Warm Resume** (app restored from background with alive WebView): bypasses boot sequence and immediately renders active application state.
+- **Full Boot is Not a Generic Loader**: The warrior sequence is strictly an app identity/local initialization vignette. It is never reused for routine loading, exercise media downloads, workout creation, import/export, or page navigation.
+
+### 3. Faction Mapping & Boot Art
+- **Spartan Faction** (`spartan-dark`, `spartan-light`): Displays Spartan emblem, Spartan warrior sprite with Corinthian helmet, crimson crest, clear neck/gorget separation, 75% teal cuirass, bronze trim, dark leather skirt/boots, and neutral barbell.
+- **Amazonian Faction** (`amazonian-dark`, `amazonian-light`): Displays Amazonian emblem, Amazonian warrior sprite with tiara headpiece, ponytail, plum/crimson cuirass, gold trim, battle skirt, boots, and neutral barbell.
+- Character silhouette depends strictly on theme family, not individual user avatar.
+- **4-State Strength Motion**: Frame 1 (Ready Stance) → Frame 2 (Power Coil / Squat) → Frame 3 (Upward Drive) → Frame 4 (Overhead Lockout & Triumphant Flex with +1 STR badge).
+- **Reduced Motion** (`prefers-reduced-motion: reduce`): Displays static heroic Frame 4 with branding and +1 STR badge, shortening handoff to ~500ms without frame-by-frame animation.
+- **Fail-Safe First Paint**: Static inline fallback inside `index.html` `#root` guarantees zero white/black flashes or hung viewports before React mounts.
+
+### 4. In-App Update Architecture
+- **Single Source of Truth**: Consumes published, public GitHub releases (`https://api.github.com/repos/ArijitWayne/fitdex/releases`). Drafts, prereleases, branches, commits, and non-semver tags are strictly ignored.
+- **Version Comparison**: Strict semantic version comparison (`semver.ts`) supporting `1.10.0 > 1.9.9`, `2.0.0 > 1.99.99`. Identical semantic versions use Android `versionCode` as a tiebreaker.
+- **Non-Blocking Background Check**: Initiated asynchronously after Home renders. Session cache with 5-minute TTL (`updaterService.ts`) prevents redundant API requests.
+- **Update Available UI**: Non-blocking retro notification banner (`UpdateBanner.tsx`) displayed on Home with "VIEW RELEASE DETAILS" and "LATER" actions. Never blocks training, food logging, or offline usage.
+- **Update Details Modal** (`UpdateDetailsModal.tsx`): Displays new version, build, release date, package size, formatted release notes, SHA-256 verification checksum, and explicit installer CTA.
+- **Android APK Handoff**: Explicit user action triggers `handoffApkDownload()`. In Android Capacitor, passes intent to system installer via `window.open(url, '_system')`. In browser/PWA, opens download safely. Security check restricts downloads to official `github.com/ArijitWayne/fitdex` release endpoints.
+- **Settings & About Additions**:
+  - Displays `Version 1.0.0 · Build 2`.
+  - Manual `CHECK FOR UPDATES` button supporting 5 distinct states: `CHECKING`, `UP TO DATE`, `UPDATE AVAILABLE`, `OFFLINE`, and `ERROR`.
+  - `RELEASE NOTES` button opening full in-app changelog modal (`ReleaseNotesModal.tsx`) with pre-release baseline fallback.
+- **Offline & Error Resilience**: Offline devices receive a clear status indicator without treating offline as a crash or error. Network timeouts and errors display friendly retryable feedback. FitDex remains 100% local-first.
+
+### 5. Release State & Version Lock
+- Semantic app version remains `1.0.0`.
+- Android `versionCode` remains `2`.
+- Application ID remains `com.fitdex.app`.
+- No git tag, GitHub release, or production APK was published during Phase 7. Release state remains unreleased pre-launch.

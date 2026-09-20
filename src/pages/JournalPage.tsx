@@ -99,7 +99,6 @@ export function JournalPage() {
       <PageHeader eyebrow="Daily record" title="Journal" description="Your daily fitness history" action={<button className="page-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }}><CircleHelp size={18} aria-hidden="true" /> How Journal Works</button>} />
       {showFirstUse ? <ContextRail
         title="Journal is your read-only daily record"
-        footnote="Clears after real action, not page visit"
         actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('journal'); setShowFirstUse(false) }}>Understood</button>}
       >
         <p>Finished workouts and Food entries appear here automatically. Use the date controls to review history; there is no duplicate Journal entry to maintain.</p>

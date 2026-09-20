@@ -1,6 +1,7 @@
 import { ArrowLeft, Check, ChevronRight, Plus, Search, Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
+import { RetroLoader } from '../../components/ui/RetroLoader'
 import { db } from '../../data/database'
 import type { Exercise, ExerciseCategory } from '../../data/models'
 import { useTheme } from '../../theme/useTheme'
@@ -152,7 +153,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
   }
 
   if (loadState === 'loading') {
-    return <Panel className="exercise-dex-state" eyebrow="Exercise Dex" title="Loading exercise library"><p>Preparing the local index…</p></Panel>
+    return <Panel className="exercise-dex-state" eyebrow="Exercise Dex" title="Loading exercise library"><RetroLoader label="PREPARING LOCAL INDEX..." /></Panel>
   }
 
   if (loadState === 'error') {
@@ -505,8 +506,7 @@ function ExerciseMedia({ exerciseId, exerciseName, mediaPath, mediaType }: { exe
     return (
       <figure className="exercise-detail-media exercise-detail-media-loading">
         <div className="exercise-media-loading-state">
-          <span className="exercise-media-spinner" aria-hidden="true" />
-          <p role="status">Loading exercise media…</p>
+          <RetroLoader label="LOADING MEDIA..." />
         </div>
       </figure>
     )

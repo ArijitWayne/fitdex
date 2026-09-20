@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowLeft, ArrowUp, MoreHorizontal, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
+import { RetroLoader } from '../../components/ui/RetroLoader'
 import { ContextRail } from '../../components/ui/ContextRail'
 import { db } from '../../data/database'
 import type { Exercise, ExerciseTrackingType, WorkoutSet } from '../../data/models'
@@ -97,7 +98,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const [timerNotice, setTimerNotice] = useState(false)
   const exerciseCount = detail?.exercises.length ?? 0
   const timerPaused = detail ? isWorkoutTimerPaused(detail.workout, exerciseCount) : true
-  const timerHasStarted = Boolean(detail?.workout.lastResumedAt || (detail?.workout.accumulatedActiveSeconds ?? 0) > 0)
+  const timerHasStarted = Boolean(detail?.workout.timerState === 'running' || detail?.workout.lastResumedAt || (detail?.workout.accumulatedActiveSeconds ?? 0) > 0)
   const timerIsRunning = detail?.workout.status === 'active' && exerciseCount > 0 && !timerPaused
 
   useBackNavigation('exercise-menu', Boolean(openMenuExerciseId), () => setOpenMenuExerciseId(undefined))
@@ -238,7 +239,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     setFinishValidation(undefined)
   }
 
-  if (!detail) return <Panel><p>Loading active workout…</p>{feedback ? <p role="alert">{feedback}</p> : null}</Panel>
+  if (!detail) return <Panel><RetroLoader label="LOADING ACTIVE WORKOUT..." />{feedback ? <p role="alert">{feedback}</p> : null}</Panel>
 
   if (picker) {
     const existingExerciseIds = new Set(detail.exercises.map((item) => item.exercise.exerciseId))
@@ -344,7 +345,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
                 }}
               >
                 <Play size={11} aria-hidden="true" />
-                <span>Start Timer</span>
+                <span>START TIMER</span>
               </button>
             ) : (
               <button
@@ -363,9 +364,18 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
                 }}
               >
                 {timerPaused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
-                <span>{timerPaused ? 'Resume' : 'Pause'}</span>
+                <span>{timerPaused ? 'RESUME TIMER' : 'PAUSE'}</span>
               </button>
             )}
+            {loggedSets > 0 ? (
+              <button
+                className="rest-toggle-btn secondary-button"
+                type="button"
+                onClick={() => { playEffect('select'); setRest(DEFAULT_REST_SECONDS) }}
+              >
+                Start Rest
+              </button>
+            ) : null}
           </div>
         </div>
         <div className="stat-progress">
@@ -393,8 +403,8 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
       </div>
     ) : null}
 
-    {timerGuidance ? <ContextRail eyebrow="Workout Timer" title="Your session timer is live" footnote="Clears after acknowledging timer rules" actions={<button className="secondary-button" type="button" onClick={acknowledgeTimer}>Got it</button>}><p>It began only when you started this workout. Pause only when training itself is interrupted; pause excludes that time from active duration.</p></ContextRail> : null}
-    {restGuidance && loggedSets > 0 ? <ContextRail eyebrow="Rest Timer" title="Rest stays under your control" footnote="Clears after acknowledging rest rules" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>A valid set is logged. Rest runs independently and never pauses the workout timer. Tap the rest action when you need recovery time; FitDex never auto-starts rest.</p></ContextRail> : null}
+    {timerGuidance ? <ContextRail eyebrow="Workout Timer" title="Start the timer when you're ready" actions={<button className="secondary-button" type="button" onClick={acknowledgeTimer}>GOT IT</button>}><p>Your workout is ready. Start the timer when you begin training. If you need to stop training for a while, pause the timer. Resume it when you're ready to continue.</p></ContextRail> : null}
+    {restGuidance && loggedSets > 0 ? <ContextRail eyebrow="Rest Timer" title="Rest timer" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>Take a rest whenever you need one between sets. Your workout timer keeps running while the rest timer tracks your recovery. Use Start Rest when you're ready for a break.</p></ContextRail> : null}
 
     {detail.exercises.length ? <div className="active-exercise-list workout-feed">{detail.exercises.map((item, index) => {
       const isCurrent = currentExerciseId === item.exercise.id
@@ -789,7 +799,7 @@ export function CompletedWorkoutDetail({ workoutId, onBack, onDeleted = onBack }
   }, [workoutId])
   const loggedHistorySets = useMemo(() => detail?.exercises.flatMap((item) => item.sets.filter((set) => isHistoricalWorkoutSetLogged(set, item.exercise.trackingTypeSnapshot ?? 'reps_only'))) ?? [], [detail])
   const resistanceSets = useMemo(() => detail?.exercises.filter((item) => item.exercise.trackingTypeSnapshot === 'weight_reps').flatMap((item) => item.sets) ?? [], [detail])
-  if (!detail) return <Panel><button className="dex-back-button" type="button" onClick={onBack}><ArrowLeft size={20} /></button><p>{error || 'Loading workout history…'}</p></Panel>
+  if (!detail) return <Panel><button className="dex-back-button" type="button" onClick={onBack}><ArrowLeft size={20} /></button>{error ? <p role="alert">{error}</p> : <RetroLoader label="LOADING WORKOUT HISTORY..." />}</Panel>
   return <div className="page-stack completed-workout-page">
     <Panel className="completed-workout-header"><button className="dex-back-button" type="button" onClick={onBack} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Completed workout</p><h1>{detail.workout.nameSnapshot}</h1><p>{new Date(detail.workout.completedAt ?? detail.workout.startedAt).toLocaleString()}</p></div></Panel>
     <div className="completed-summary"><span><strong>{formatDuration(detail.workout.durationSeconds ?? 0)}</strong><small>Duration</small></span><span><strong>{detail.exercises.length}</strong><small>Exercises</small></span><span><strong>{loggedHistorySets.length}</strong><small>Logged sets</small></span>{calculateVolume(resistanceSets) > 0 ? <span><strong>{Number(displayWeightFromKg(calculateVolume(resistanceSets), units.preference).toFixed(1))}</strong><small>Resistance volume ({units.weightLabel})</small></span> : null}</div>

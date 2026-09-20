@@ -27,6 +27,9 @@ import { useProfile } from '../features/profile/useProfile'
 import { RequiredDisplayNamePrompt } from '../features/profile/RequiredDisplayNamePrompt'
 import { resolveProfileGate } from '../features/profile/profileGateModel'
 
+import { useTheme } from '../theme/useTheme'
+import { AppBootSequence } from '../features/boot/AppBootSequence'
+
 const rootLocation: AppLocation = { destination: 'home', settingsOpen: false, workoutEntry: 'hub', progressEntry: 'overview' }
 
 function App() {
@@ -34,7 +37,15 @@ function App() {
 }
 
 function AppContent() {
+  const { family } = useTheme()
   const { displayName, ready: profileReady } = useProfile()
+  const [bootCompleted, setBootCompleted] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('fitdex_boot_completed') === 'true';
+    } catch {
+      return true; // Fail-safe recovery into app
+    }
+  })
   const historyRef = useRef(createNavigationHistory(rootLocation))
   const [location, setLocation] = useState(rootLocation)
   const [historyDepth, setHistoryDepth] = useState(0)
@@ -125,6 +136,20 @@ function AppContent() {
   }, [location])
 
   const profileGate = profileReady ? resolveProfileGate(displayName, tutorialCompleted) : 'none'
+
+  if (!bootCompleted) {
+    return (
+      <AppBootSequence
+        themeFamily={family}
+        onComplete={() => {
+          try {
+            sessionStorage.setItem('fitdex_boot_completed', 'true')
+          } catch {}
+          setBootCompleted(true)
+        }}
+      />
+    )
+  }
 
   if (!profileReady) return <div className="profile-gate-loading" aria-live="polite">Loading FitDex…</div>
 

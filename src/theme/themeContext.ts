@@ -4,7 +4,7 @@ import type { BrightnessPreference, ThemeFamily } from './theme'
 export interface ThemeContextValue {
   family: ThemeFamily
   brightness: BrightnessPreference
-  setFamily: (family: ThemeFamily) => void
+  setFamily: (family: ThemeFamily, options?: { relaunchNative?: boolean }) => void
   setBrightness: (brightness: BrightnessPreference) => void
 }
 

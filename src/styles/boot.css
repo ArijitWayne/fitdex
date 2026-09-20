@@ -1,0 +1,238 @@
+/* ==========================================================================
+   FitDex Phase 7 - In-App Retro Boot Sequence Styles
+   Visual Parity with Approved Prototype: .temp-prototypes/phase-7-update-system/
+   ========================================================================== */
+
+.surface-boot {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background-color: var(--color-bg, #060908);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.surface-boot.boot-fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.retro-scanlines {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.6;
+}
+
+.boot-container {
+  position: relative;
+  z-index: 10;
+  width: 86%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.boot-icon-wrap {
+  margin-bottom: 8px;
+}
+
+.boot-app-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px var(--color-shadow, rgba(0, 0, 0, 0.5)));
+}
+
+/* Retro Warrior Vignette Stage */
+.boot-warrior-stage {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  background: radial-gradient(circle, var(--color-surface-raised, #1b2624) 0%, transparent 72%);
+  border-bottom: 2px solid var(--color-border, #1f2d2a);
+}
+
+.warrior-svg {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45));
+}
+
+.warrior-svg .warrior-frame {
+  display: none;
+}
+
+/* Default to frame-1 when data-frame unset */
+.warrior-svg .warrior-frame.frame-1 {
+  display: block;
+}
+
+.warrior-svg[data-frame="1"] .frame-1 {
+  display: block;
+}
+
+.warrior-svg[data-frame="2"] .frame-1 {
+  display: none;
+}
+.warrior-svg[data-frame="2"] .frame-2 {
+  display: block;
+}
+
+.warrior-svg[data-frame="3"] .frame-1 {
+  display: none;
+}
+.warrior-svg[data-frame="3"] .frame-3 {
+  display: block;
+}
+
+.warrior-svg[data-frame="4"] .frame-1 {
+  display: none;
+}
+.warrior-svg[data-frame="4"] .frame-4 {
+  display: block;
+}
+
+/* +1 STR Floating Pop Badge */
+.boot-str-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: var(--color-xp, #ffb300);
+  color: #0b1110;
+  font: 900 0.72rem var(--font-mono, monospace);
+  padding: 3px 8px;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(8px) scale(0.8);
+  transition: opacity 120ms ease-out, transform 160ms cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  pointer-events: none;
+  z-index: 15;
+}
+
+.boot-str-badge.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.str-plus {
+  color: #d32f2f;
+  font-weight: 900;
+  margin-right: 2px;
+}
+
+.str-stat {
+  letter-spacing: 0.06em;
+}
+
+/* Title & Tagline */
+.boot-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.boot-wordmark {
+  font-family: var(--font-display, monospace);
+  font-size: 2.1rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--color-text, #f0f6f5);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.boot-tagline {
+  font: 800 0.66rem var(--font-mono, monospace);
+  letter-spacing: 0.12em;
+  color: var(--color-primary-text, #4ecdc4);
+}
+
+/* Cartridge 4-Block Discrete Loading Meter */
+.boot-meter-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.boot-meter-blocks {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.meter-block {
+  width: 16px;
+  height: 8px;
+  background: var(--color-surface-subtle, #0d1615);
+  border: 2px solid var(--color-border-strong, #2c3e3a);
+  box-shadow: 1px 1px 0 var(--color-shadow, rgba(0, 0, 0, 0.4));
+  transition: all 80ms ease-out;
+}
+
+.meter-block.is-filled {
+  background: var(--color-primary, #2e9895);
+  border-color: var(--color-primary-strong, #3db8b4);
+  box-shadow: 0 0 8px rgba(46, 152, 149, 0.7);
+}
+
+.boot-telemetry {
+  min-height: 18px;
+}
+
+.boot-telemetry-text {
+  font: 800 0.64rem var(--font-mono, monospace);
+  color: var(--color-text-muted, #7c9893);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .surface-boot {
+    transition: opacity 120ms ease-out;
+  }
+  .retro-scanlines {
+    display: none;
+  }
+  .boot-app-icon {
+    animation: none;
+  }
+  .warrior-svg .warrior-frame {
+    display: none !important;
+  }
+  .warrior-svg .frame-4 {
+    display: block !important;
+  }
+  .boot-str-badge {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .meter-block {
+    transition: none !important;
+  }
+}

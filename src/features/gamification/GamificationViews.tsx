@@ -63,7 +63,7 @@ export function StreakDetailView({ data, onBack, onChanged }: { data: Gamificati
           </button>
           <span className="consistency-deck-title">CONSISTENCY DECK</span>
         </div>
-        <ContextRail title="Three kinds of streak protection" footnote="Clears after real action, not page visit" actions={<button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('streakProtection'); setShowFirstUse(false) }}>View My Streak</button>}>
+        <ContextRail title="Three kinds of streak protection" actions={<button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('streakProtection'); setShowFirstUse(false) }}>View My Streak</button>}>
           <p>Freezes cover one missed planned day automatically. Travel / Sickness Pause protects 1–7 days without progress or Freeze use. Your first material plan change per rolling 12 months is protected.</p>
         </ContextRail>
       </div>
@@ -347,4 +347,3 @@ export function GamificationHelpButton({ variant = 'default' }: { variant?: 'def
 function Subheader({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <header className="progress-subheader"><button className="back-button" type="button" aria-label="Back" onClick={() => { playEffect('select'); onBack() }}><ArrowLeft aria-hidden="true" /></button><div><p className="eyebrow">Gamification</p><h1>{title}</h1></div></header> }
 function titleCase(value: string) { return value.toLowerCase().replaceAll('_', ' ').replace(/(^|\s)\S/g, (letter) => letter.toUpperCase()) }
 function formatProgress(value: number) { return Number.isInteger(value) ? value.toLocaleString() : value.toFixed(1) }
-

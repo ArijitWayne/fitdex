@@ -1,6 +1,7 @@
 package com.fitdex.app;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import com.getcapacitor.Plugin;
@@ -29,5 +30,14 @@ public class LauncherBrandingPlugin extends Plugin {
         packageManager.setComponentEnabledSetting(active, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         packageManager.setComponentEnabledSetting(inactive, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
         call.resolve();
+
+        if (call.getBoolean("relaunch", false)) {
+            Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                getContext().startActivity(launchIntent);
+                if (getActivity() != null) getActivity().finishAffinity();
+            }
+        }
     }
 }

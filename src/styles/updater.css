@@ -1,0 +1,327 @@
+/* ==========================================================================
+   FitDex Phase 7 - In-App Updater Styles
+   Matches retro FitDex handheld aesthetic
+   ========================================================================== */
+
+/* Retro Update Available Banner on Home */
+.retro-update-banner {
+  background: var(--color-surface-raised, #131c1a);
+  border: 2px solid var(--color-primary, #2e9895);
+  box-shadow: 3px 3px 0 var(--color-border-strong, #1f2d2a);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: bannerDrop 200ms ease-out;
+  margin-bottom: 12px;
+}
+
+.update-banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner-tag {
+  font: 900 0.62rem var(--font-mono, monospace);
+  color: var(--color-primary-text, #4ecdc4);
+  letter-spacing: 0.08em;
+}
+
+.retro-update-banner strong {
+  font-family: var(--font-display, monospace);
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--color-text, #f0f6f5);
+}
+
+.retro-update-banner p {
+  font-size: 0.74rem;
+  color: var(--color-text-muted, #7c9893);
+  line-height: 1.3;
+}
+
+.update-banner-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+@keyframes bannerDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Update Details Modal Dialog */
+.update-details-dialog {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  border: 2px solid var(--color-border-strong, #2c3e3a);
+  background: var(--color-surface, #0e1615);
+  color: var(--color-text, #f0f6f5);
+  box-shadow: 4px 4px 0 var(--color-shadow, rgba(0, 0, 0, 0.6));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dialogPop 160ms var(--ease-out, ease-out);
+}
+
+.update-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-bg, #060908);
+  border-bottom: 1px solid var(--color-border, #1f2d2a);
+  font: 800 0.64rem var(--font-mono, monospace);
+  color: var(--color-text-muted, #7c9893);
+}
+
+.update-meta-item {
+  display: flex;
+  gap: 4px;
+}
+
+.update-meta-item strong {
+  color: var(--color-primary-text, #4ecdc4);
+}
+
+.update-dialog-body {
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.update-release-notes {
+  background: var(--color-surface-subtle, #0a1110);
+  border: 1px solid var(--color-border, #1f2d2a);
+  padding: 10px;
+  font-size: 0.76rem;
+  color: var(--color-text, #f0f6f5);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: var(--font-mono, monospace);
+}
+
+.update-checksum-box {
+  background: var(--color-bg, #060908);
+  border: 1px solid var(--color-border, #1f2d2a);
+  padding: 8px 10px;
+}
+
+.update-checksum-box small {
+  display: block;
+  font: 800 0.58rem var(--font-mono, monospace);
+  color: var(--color-primary-text, #4ecdc4);
+  margin-bottom: 3px;
+  letter-spacing: 0.05em;
+}
+
+.update-checksum-box code {
+  font: 700 0.62rem var(--font-mono, monospace);
+  color: var(--color-text-muted, #7c9893);
+  word-break: break-all;
+  display: block;
+}
+
+.update-dialog-footer {
+  padding: 10px 12px;
+  border-top: 2px solid var(--color-border-strong, #2c3e3a);
+  background: var(--color-surface-raised, #131c1a);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Settings / About: matching full-width commands preserve distinct button styles. */
+.update-settings-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.update-settings-actions .cmd-btn {
+  width: 100%;
+}
+
+/* Release archive follows approved Phase 7 changelog composition. */
+.release-notes-dialog {
+  max-width: 500px;
+  max-height: min(85dvh, 740px);
+}
+
+.release-notes-header {
+  min-height: 58px;
+}
+
+.release-notes-header .guide-title-box {
+  min-width: 0;
+  padding: 9px 0;
+}
+
+.release-notes-header .guide-eyebrow {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--color-primary-text, #4ecdc4);
+  font: 800 0.6rem var(--font-mono, monospace);
+  letter-spacing: 0.08em;
+}
+
+.release-notes-header strong {
+  display: block;
+  font: 900 clamp(0.94rem, 4vw, 1.12rem) var(--font-display, monospace);
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+}
+
+.release-archive-body {
+  gap: 14px;
+  padding: 14px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}
+
+.retro-release-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 2px solid var(--color-border-strong, #2c3e3a);
+  background: var(--color-surface-raised, #131c1a);
+  box-shadow: 3px 3px 0 var(--color-shadow, rgba(0, 0, 0, 0.6));
+}
+
+.release-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.release-card-version {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.release-card-version strong {
+  font: 900 1.05rem var(--font-display, monospace);
+  letter-spacing: 0.04em;
+}
+
+.release-badge {
+  border: 1px solid var(--color-border, #1f2d2a);
+  background: var(--color-surface-subtle, #0a1110);
+  color: var(--color-text-muted, #7c9893);
+  font: 800 0.56rem var(--font-mono, monospace);
+  letter-spacing: 0.05em;
+  padding: 2px 4px;
+}
+
+.release-badge.latest,
+.release-badge.local {
+  border-color: var(--color-primary, #2e9895);
+  background: var(--color-primary, #2e9895);
+  color: var(--color-on-primary, #101716);
+}
+
+.release-date {
+  flex: 0 1 auto;
+  color: var(--color-text-muted, #7c9893);
+  font: 700 0.62rem var(--font-mono, monospace);
+  line-height: 1.3;
+  text-align: right;
+}
+
+.release-card-summary {
+  margin: 0;
+  color: var(--color-text, #f0f6f5);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.release-archive-section {
+  border-left: 3px solid var(--color-border, #1f2d2a);
+  padding-left: 9px;
+}
+
+.release-archive-section h3 {
+  margin: 0 0 5px;
+  color: var(--color-text-muted, #7c9893);
+  font: 900 0.66rem var(--font-mono, monospace);
+  letter-spacing: 0.08em;
+}
+
+.release-archive-section.new { border-color: var(--color-primary, #2e9895); }
+.release-archive-section.new h3 { color: var(--color-primary-text, #4ecdc4); }
+.release-archive-section.improvements { border-color: var(--color-xp, #ffb300); }
+.release-archive-section.improvements h3 { color: var(--color-xp, #ffb300); }
+
+.release-archive-section pre,
+.release-archive-section ul {
+  margin: 0;
+  color: var(--color-text, #f0f6f5);
+  font: 0.74rem/1.45 var(--font-body, sans-serif);
+  white-space: pre-wrap;
+}
+
+.release-archive-section ul {
+  padding-left: 17px;
+}
+
+.release-card-actions {
+  padding-top: 2px;
+}
+
+@media (max-width: 360px) {
+  .release-card-header {
+    flex-direction: column;
+  }
+
+  .release-date {
+    text-align: left;
+  }
+}
+
+/* Settings Check for Updates Row Status Indicator */
+.updater-status-pill {
+  font: 800 0.62rem var(--font-mono, monospace);
+  padding: 2px 6px;
+  border: 1px solid var(--color-border, #1f2d2a);
+  background: var(--color-surface-subtle, #0a1110);
+  color: var(--color-text-muted, #7c9893);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.updater-status-pill.status-available {
+  border-color: var(--color-primary, #2e9895);
+  color: var(--color-primary-text, #4ecdc4);
+  background: var(--color-surface-raised, #131c1a);
+}
+
+.updater-status-pill.status-current {
+  border-color: var(--color-xp, #ffb300);
+  color: var(--color-xp, #ffb300);
+}
+
+.updater-status-pill.status-error {
+  border-color: #c62828;
+  color: #ff8a80;
+}

@@ -13,7 +13,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 | **Phase 3** | Food & Nutrition | **COMPLETE / LOCKED** | Goal-First (3A) + Compact (3B) | Daily Food Hub, compact meal cards, Recent/Frequent repository suggestions, Quick Log, custom categories, target guards. |
 | **Phase 5** | Journal & Activity Log | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 Field Notes | Read-only derived activity ledger (workouts + food), symmetric 2-dimension status, empty-meal suppression, chevron actions. |
 | **Phase 6** | Exercise Dex Standalone | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 RPG Codex | RPG Codex hero with selected character avatar, permanent search field, Index/Favorites tabs, theme-family anatomy cards, compact results, Exercise Record reordered (media → facts → How to Perform). |
-| **Phase 7** | Settings | **IMPLEMENTED / PHYSICAL QA PENDING** | V2 — Profile / Loadout | Profile/Avatar hero, 3-column status grid (Theme, Units, Targets), grouped rows (Personalize, Your System, Data & Help), Units subview, unified Audio, Nutrition Targets with drafts, Android Media management, Backup & Restore replacement semantics, Field Guide replay, About. |
+| **Phase 7** | Settings | **COMPLETE / ANDROID QA APPROVED** | V2 — Profile / Loadout | Profile/Avatar hero, 3-column status grid (Theme, Units, Targets), grouped rows (Personalize, Your System, Data & Help), Units subview, unified Audio, Nutrition Targets with drafts, Android Media management, Backup & Restore replacement semantics, Field Guide replay, About. |
 | **Phase 8** | Guides & Tutorials | **IMPLEMENTED / PHYSICAL QA PENDING** | V2 — Mission Brief + Style B Pixel Command | Field Guide (7 steps with replay mode + Home help button), Workout tutorial (12 steps), Food tutorial (8 steps), Progress help (1 step), Journal help (1 step), Gamification guide (+50 XP achievement reward), and Pixel Command retro tactile controls. |
 
 ---
@@ -316,7 +316,7 @@ The Exercise Record uses the reference-first RPG Codex layout:
 
 ---
 
-## 9. Phase 7 — Settings (IMPLEMENTED / PHYSICAL QA PENDING)
+## 9. Phase 7 — Settings (COMPLETE / ANDROID QA APPROVED)
 
 ### 9.1 Design Character & Hierarchy
 - **Locked Design**: **V2 — Profile / Loadout**.
@@ -339,6 +339,8 @@ The Exercise Record uses the reference-first RPG Codex layout:
      - `Field Guide`: Replayable 7-topic tutorial.
      - `Gamification Guide`: XP rules, Levels, Ranks, and Streak semantics.
      - `About FitDex`: Version, developer credit, local-first data guarantee.
+- **Android Faction Change**: When `LauncherBranding` is available, Spartan/Amazonian changes show a confirmation. Confirm updates launcher branding and intentionally relaunches FitDex; Cancel preserves current faction. Brightness changes within a faction never relaunch. Browser/PWA faction changes remain immediate.
+- **Physical QA**: Android Phase 7 physical QA completed and approved.
 
 ### 9.2 Nutrition Targets — V3 Nutrition Codex & Evidence-Based Protein Model
 - **Layout Direction**: **V3 — Nutrition Codex**. Clean, authoritative retro ledger hierarchy:
@@ -413,3 +415,38 @@ The Exercise Record uses the reference-first RPG Codex layout:
 - Primary `README.md` showcase presents six core screenshots (Home, Workout Hub, Active Workout, Exercise Dex, Nutrition, Progress) in a 2-column layout.
 - Three secondary screenshots (`progress-overview.png`, `journal.png`, `achievements.png`) retained for future gallery/documentation surfaces.
 - GitHub social preview configured manually via GitHub repository settings.
+
+### Phase 4 — Release Automation (COMPLETE / LOCKED)
+- Automated production build and packaging pipeline (`scripts/prepare-release.mjs`, `scripts/create-release-artifact.mjs`, `scripts/publish-release.mjs`).
+- Android Keystore signing credentials managed via environment or ignored properties; zero secrets in Git.
+- Validates version alignment between `package.json` and Android `build.gradle`.
+
+### Phase 5 — Public Marketing Website Foundation (COMPLETE / LOCKED)
+- Independent React + TypeScript + Vite marketing website deployed on Vercel (`https://fitdexinfo.vercel.app/`).
+- Console aesthetic with 3-state interactive hero depth stack and pixel command actions.
+- Preserves distinct hosting surfaces: main app on Cloudflare PWA / Android, media on Cloudflare Worker CDN, marketing on Vercel.
+
+### Phase 6 — Public Marketing Website Release Hub (COMPLETE / LOCKED)
+- Release Hub and automatic release sync on Vercel consuming published GitHub Releases.
+- Filtering of drafts, prereleases, and non-semver tags. Single-column archive layout on `/changelog`.
+
+### Phase 7 — Startup Experience & In-App Update System (COMPLETE / ANDROID QA APPROVED)
+- **Android Native Splash**: `Theme.SplashScreen` configured with dark `#060908` background and `fitdex-icon-spartan.png`, handing off seamlessly to `AppTheme.NoActionBar`.
+- **FitDex In-App Boot Sequence**: 4-frame retro RPG strength vignette (`BootWarriorSprite.tsx` in `src/features/boot/`):
+  - Spartan Faction: Corinthian helmet, arched crimson crest, neck gap, 75% teal cuirass, bronze trim, dark leather skirt/boots, neutral barbell.
+  - Amazonian Faction: Tiara headpiece, ponytail, plum/crimson cuirass, gold trim, battle skirt, boots, neutral barbell.
+  - Cartridge-style discrete 4-step meter and +1 STR pop badge (~1.5s total duration).
+  - Reduced motion support (`prefers-reduced-motion: reduce`) shortening handoff to ~500ms with static heroic frame.
+- **Fail-Safe First Paint**: Static inline fallback inside `index.html` `#root` prevents blank viewport under any script stall.
+- **Cold Launch vs. Warm Resume**: Full boot sequence executes strictly on cold start (process launch, new WebView, fresh session via `sessionStorage.getItem('fitdex_boot_completed')`); warm resume immediately returns to active user state.
+- **Non-Blocking Background Update Engine**:
+  - Independent service (`src/features/updater/`) querying official published GitHub Releases with 5-minute session caching.
+  - Strict semantic version comparison (`semver.ts`) with Android `versionCode` tiebreaker.
+  - Network never gates startup; offline devices retain 100% full local functionality.
+- **Restrained Update UI**: Non-blocking `UpdateBanner.tsx` on Home, `UpdateDetailsModal.tsx` with release notes, package size, and SHA-256 verification digest.
+- **Android APK Handoff**: `handoffApkDownload()` routes to system package installer on Android (`window.open(url, '_system')`) and safe browser download on PWA. Enforces strict URL origin check (`github.com/ArijitWayne/fitdex/releases/`).
+- **Settings & About Controls**:
+  - Displays `Version 1.0.0 · Build 2`.
+  - Manual `CHECK FOR UPDATES` button supporting 5 distinct states: `CHECKING`, `UP TO DATE`, `UPDATE AVAILABLE`, `OFFLINE`, and `ERROR`.
+  - In-app `RELEASE NOTES` modal (`ReleaseNotesModal.tsx`) with pre-release initial release baseline.
+- **Release State**: Version remains `1.0.0`, Android `versionCode` remains `2`, unreleased pre-launch.
