@@ -1,4 +1,5 @@
 import { parseReleaseNotes } from './releaseNotes'
+import { releaseMetadataByTag } from './metadata'
 import type { FitDexRelease } from './types'
 
 export type GitHubAsset = {
@@ -6,6 +7,7 @@ export type GitHubAsset = {
   size: number
   browser_download_url: string
   content_type?: string
+  digest?: string
 }
 
 export type GitHubRelease = {
@@ -82,8 +84,9 @@ export function normalizeGitHubReleases(rawReleases: unknown): FitDexRelease[] {
 
     const tag = item.tag_name.startsWith('v') ? item.tag_name : `v${version}`
     const apkAsset = findApkAsset(item.assets, version)
-    const sha256 = extractSha256FromBody(item.body)
-    const versionCode = extractVersionCodeFromBody(item.body)
+    const apkSha256 = apkAsset?.digest?.match(/^sha256:([a-fA-F0-9]{64})$/i)?.[1]?.toLowerCase()
+    const sha256 = extractSha256FromBody(item.body) || apkSha256
+    const versionCode = extractVersionCodeFromBody(item.body) ?? releaseMetadataByTag[tag]?.versionCode
 
     const release: FitDexRelease = {
       version,

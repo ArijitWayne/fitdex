@@ -1,8 +1,15 @@
 export type ReleaseNotes = {
+  summary?: string
+  highlights?: ReleaseHighlight[]
   new?: string[]
   improved?: string[]
   fixed?: string[]
   other?: string[]
+}
+
+export type ReleaseHighlight = {
+  category: 'new' | 'improved' | 'android' | 'fixed' | 'other'
+  text: string
 }
 
 export type FitDexRelease = {

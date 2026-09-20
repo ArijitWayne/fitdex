@@ -1,23 +1,25 @@
-import type { ReleaseNotes } from './types'
+import type { ReleaseHighlight, ReleaseNotes } from './types'
 
-type CategoryKey = 'new' | 'improved' | 'fixed' | 'other'
+type CategoryKey = ReleaseHighlight['category']
+type Section = CategoryKey | 'summary' | null
 
 function cleanLine(raw: string): string {
   return raw
     .replace(/^[-*+]\s+/, '')
     .replace(/^\d+\.\s+/, '')
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[`*_]/g, '')
     .trim()
 }
 
-function detectHeadingCategory(line: string): CategoryKey | null {
-  const trimmed = line.trim()
+function detectSection(line: string): Section {
+  const trimmed = cleanLine(line)
   if (!trimmed) return null
 
-  // Match markdown headings (# H1, ## H2, ### H3, #### H4) or trailing colons
-  const match = trimmed.match(/^(?:#{1,6}\s+)?(.+?):?$/)
-  if (!match) return null
-
-  const headingText = match[1].trim().toLowerCase()
+  const headingText = trimmed.replace(/:$/, '').toLowerCase()
+  if (headingText === 'first public release' || headingText === 'summary') return 'summary'
+  if (headingText === 'highlights') return 'new'
 
   if (
     headingText === "what's new" ||
@@ -55,6 +57,8 @@ function detectHeadingCategory(line: string): CategoryKey | null {
     return 'other'
   }
 
+  if (headingText === 'android' || headingText.startsWith('android ')) return 'android'
+
   return null
 }
 
@@ -64,15 +68,15 @@ export function parseReleaseNotes(bodyText: string): ReleaseNotes {
   }
 
   const lines = bodyText.split(/\r?\n/)
-  const categories: Record<CategoryKey, string[]> = {
+  const categories: Record<Exclude<CategoryKey, 'android'>, string[]> = {
     new: [],
     improved: [],
     fixed: [],
     other: [],
   }
-
-  let currentCategory: CategoryKey | null = null
-  const uncategorizedLines: string[] = []
+  const highlights: ReleaseHighlight[] = []
+  let currentSection: Section = null
+  let summary: string | undefined
 
   for (const line of lines) {
     const trimmed = line.trim()
@@ -83,39 +87,39 @@ export function parseReleaseNotes(bodyText: string): ReleaseNotes {
       continue
     }
 
-    const detected = detectHeadingCategory(trimmed)
+    const detected = detectSection(trimmed)
     if (detected) {
-      currentCategory = detected
+      currentSection = detected
       continue
     }
 
     const cleaned = cleanLine(trimmed)
     if (!cleaned) continue
 
-    if (currentCategory) {
-      categories[currentCategory].push(cleaned)
-    } else {
-      uncategorizedLines.push(cleaned)
+    if (currentSection === 'summary') {
+      summary ||= cleaned
+      continue
     }
-  }
 
-  // If items were detected under categories, but some lines were at the top before any heading,
-  // put those top lines in `other`.
-  if (uncategorizedLines.length > 0) {
-    categories.other.unshift(...uncategorizedLines)
+    const category = currentSection ?? 'other'
+    const resolvedCategory = category === 'android' && /^Exercise MP4s are excluded/i.test(cleaned) ? 'improved' : category
+    highlights.push({ category: resolvedCategory, text: cleaned })
+    if (resolvedCategory !== 'android') categories[resolvedCategory].push(cleaned)
   }
 
   const result: ReleaseNotes = {}
+  if (summary) result.summary = summary
+  if (highlights.length > 0) result.highlights = highlights
   if (categories.new.length > 0) result.new = categories.new
   if (categories.improved.length > 0) result.improved = categories.improved
   if (categories.fixed.length > 0) result.fixed = categories.fixed
   if (categories.other.length > 0) result.other = categories.other
 
-  // Fallback: If nothing was parsed (e.g. unexpected structure), keep the original lines safely in other
-  if (!result.new && !result.improved && !result.fixed && !result.other) {
+  if (!result.highlights && !result.summary) {
     const fallbackLines = lines.map((l) => cleanLine(l)).filter(Boolean)
     if (fallbackLines.length > 0) {
       result.other = fallbackLines
+      result.highlights = fallbackLines.map((text) => ({ category: 'other', text }))
     }
   }
 

@@ -157,6 +157,35 @@ assert.equal(parsedNotes.fixed?.length, 1, 'Should parse 1 Fix')
 assert.equal(parsedNotes.other?.length, 1, 'Should parse 1 Note')
 assert.equal(parsedNotes.new[0], 'Added 804 exercises to Exercise Codex')
 
+// 8b. Current public release Markdown becomes summary + structured rows, never raw Markdown text.
+const currentReleaseBody = `# FitDex v1.0.0
+
+## First Public Release
+
+FitDex v1.0.0 is the first public Android release of the local-first retro RPG fitness tracker.
+
+## Highlights
+
+- Workout routines, set logging, active workout timer and independent rest timer.
+- 804-exercise Exercise Dex with instructions, muscle targets and on-demand demonstrations.
+
+## Android
+
+- Native splash, cold-start boot sequence, updater support and adaptive faction launcher branding.
+- Exercise MP4s are excluded from the APK and fetched on demand.`
+const currentNotes = parseReleaseNotes(currentReleaseBody)
+assert.equal(currentNotes.summary, 'FitDex v1.0.0 is the first public Android release of the local-first retro RPG fitness tracker.')
+assert.deepEqual(currentNotes.highlights?.map((highlight) => highlight.category), ['new', 'new', 'android', 'improved'])
+assert.ok(currentNotes.highlights?.every((highlight) => !/[#`]/.test(highlight.text)), 'Rendered highlights must not contain Markdown tokens')
+
+const currentRelease = normalizeGitHubReleases([{
+  tag_name: 'v1.0.0', draft: false, prerelease: false, published_at: '2026-09-20T19:00:18Z',
+  html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v1.0.0', body: currentReleaseBody,
+  assets: [{ name: 'fitdex.1.0.0.apk', size: 61348089, digest: 'sha256:cd97b77e97c79e9a0abebaee4e687cccf88d402566736a0f411c31e9a5638400', browser_download_url: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.0.0/fitdex.1.0.0.apk' }],
+}])[0]
+assert.equal(currentRelease.versionCode, 3, 'Published build metadata must enrich the current GitHub release')
+assert.equal(currentRelease.sha256, 'cd97b77e97c79e9a0abebaee4e687cccf88d402566736a0f411c31e9a5638400', 'APK digest must provide SHA-256 when release body omits it')
+
 // 9. Fallback 'other' notes when headings not recognized
 const rawNotes = `This is a raw unstructured changelog.\nSecond line of changes.`
 const parsedRaw = parseReleaseNotes(rawNotes)
@@ -185,9 +214,9 @@ assert.equal(normNoApk.apkDownloadUrl, undefined, 'Missing APK asset must leave 
 // 12. Missing checksum behavior
 assert.equal(normNoApk.sha256, undefined, 'Missing checksum must not be fabricated')
 
-// 13. Pre-release landing state present in main.tsx
-assert.match(mainSource, /PUBLIC RELEASE COMING SOON/, 'Pre-release landing notice must exist in main.tsx')
-assert.match(mainSource, /FitDex v1\.0\.0 is being prepared for its first public release/, 'Pre-release explanation must exist')
+// 13. Published-release fallback must not claim a release is pending.
+assert.match(mainSource, /RELEASE FEED UNAVAILABLE/, 'Release-feed fallback must exist in main.tsx')
+assert.doesNotMatch(mainSource, /PUBLIC RELEASE COMING SOON/, 'Landing page must not claim the public release is pending')
 
 // 14. /changelog empty state in ChangelogView.tsx
 assert.match(changelogSource, /NO PUBLIC RELEASES YET\./, 'Empty archive title must exist in ChangelogView.tsx')
@@ -203,6 +232,10 @@ assert.doesNotMatch(changelogSource, /data-demo-apk/, 'ChangelogView.tsx must no
 assert.match(mainSource, /pathname === '\/changelog'/, 'Route for /changelog must be handled')
 assert.match(changelogSource, /id=\{isLatest \? 'latest' : `tag-\$\{rel\.tag\}`\}/, 'Newest release must receive id="latest"')
 assert.match(changelogSource, /DOWNLOAD APK/, 'Primary download button label must be DOWNLOAD APK')
+assert.match(changelogSource, /LATEST STABLE BUILD/, 'Latest release card must show stable state')
+assert.match(changelogSource, /ANDROID VERSIONCODE:/, 'Latest release card must show Android build metadata')
+assert.match(changelogSource, /RELEASE HIGHLIGHTS/, 'Latest release card must render structured highlights')
+assert.match(changelogSource, /SHA-256 VERIFIED/, 'Latest release card must show checksum trust state')
 assert.match(cssSource, /\.archive-stream \{ display:flex; flex-direction:column;/, 'Single-column stream must be enforced')
 
 // 17. Hero content parity with approved prototype

@@ -16,6 +16,20 @@ export function formatDate(isoString?: string | null): string {
   }
 }
 
+export function formatReleaseDate(isoString?: string | null): string {
+  if (!isoString) return 'DATE UNAVAILABLE'
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(isoString)).toUpperCase()
+  } catch {
+    return formatDate(isoString).toUpperCase()
+  }
+}
+
 export function formatBytes(bytes?: number): string {
   if (!bytes || isNaN(bytes)) return ''
   const mb = bytes / (1024 * 1024)
@@ -192,12 +206,15 @@ export function ChangelogView({ releaseState, onNavigate }: ChangelogViewProps) 
           <div className="archive-stream" aria-label="Chronological releases stream">
             {releases.map((rel, index) => {
               const isLatest = index === 0
-              const hasNotes = Boolean(
-                rel.releaseNotes.new?.length ||
-                rel.releaseNotes.improved?.length ||
-                rel.releaseNotes.fixed?.length ||
-                rel.releaseNotes.other?.length
-              )
+              const highlights = (rel.releaseNotes.highlights ?? []).filter((highlight) => highlight.category !== 'other')
+              const highlightGroups = ['new', 'improved', 'android', 'fixed'] as const
+              const highlightGroupLabels = {
+                new: 'NEW FEATURES',
+                improved: 'IMPROVEMENTS',
+                android: 'ANDROID',
+                fixed: 'FIXES',
+              } as const
+              const isAndroidPackagingNote = (text: string) => /^Exercise MP4s are excluded/i.test(text)
 
               return (
                 <article
@@ -209,89 +226,40 @@ export function ChangelogView({ releaseState, onNavigate }: ChangelogViewProps) 
                     <div>
                       <div className="version-row">
                         <span className="entry-version">v{rel.version}</span>
-                        {isLatest && <span className="release-status">LATEST</span>}
-                        {rel.versionCode && (
-                          <span className="build-tag">BUILD {rel.versionCode}</span>
-                        )}
+                        {isLatest && <span className="release-status">LATEST STABLE BUILD</span>}
                       </div>
-                      <div className="entry-meta">
-                        <time dateTime={rel.publishedAt}>{formatDate(rel.publishedAt)}</time>
-                        <span className="meta-dot" aria-hidden="true">•</span>
-                        <span>tag {rel.tag}</span>
+                      <div className="entry-build-meta">
+                        <span>BUILD {rel.versionCode ?? '—'}</span>
+                        <span>ANDROID VERSIONCODE: {rel.versionCode ?? '—'}</span>
                       </div>
                     </div>
-
-                    <div className="entry-quick-actions">
-                      <a
-                        className="text-link"
-                        href={rel.githubReleaseUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        GITHUB RELEASE ↗
-                      </a>
+                    <div className="entry-published">
+                      <span>PUBLISHED</span>
+                      <time dateTime={rel.publishedAt}>{formatReleaseDate(rel.publishedAt)}</time>
                     </div>
                   </header>
 
-                  {hasNotes && (
-                    <div className="structured-notes">
-                      {rel.releaseNotes.new && rel.releaseNotes.new.length > 0 && (
-                        <div className="notes-group">
-                          <h3 className="group-heading">
-                            <span className="category-badge cat-new">NEW</span>
-                            <span>WHAT&apos;S NEW</span>
+                  <section className="release-highlights" aria-labelledby={`highlights-${rel.tag}`}>
+                    <p className="eyebrow" id={`highlights-${rel.tag}`}>RELEASE HIGHLIGHTS</p>
+                    {rel.releaseNotes.summary ? <p className="entry-summary">{rel.releaseNotes.summary}</p> : null}
+                    {highlights.length > 0 ? <div className="highlight-groups">{highlightGroups.map((category) => {
+                      const items = highlights.filter((highlight) => category === 'android'
+                        ? highlight.category === 'android' || (highlight.category === 'improved' && isAndroidPackagingNote(highlight.text))
+                        : highlight.category === category && !(category === 'improved' && isAndroidPackagingNote(highlight.text)))
+                      if (items.length === 0) return null
+                      return (
+                        <section className="highlight-group" key={category} aria-label={highlightGroupLabels[category]}>
+                          <h3 className="highlight-group-heading">
+                            <span className={`category-badge cat-${category}`}>{category.toUpperCase()}</span>
+                            {highlightGroupLabels[category]}
                           </h3>
-                          <ul className="notes-list">
-                            {rel.releaseNotes.new.map((item, i) => (
-                              <li key={i}>{item}</li>
-                            ))}
+                          <ul>
+                            {items.map((highlight, highlightIndex) => <li key={`${category}:${highlightIndex}`}>{highlight.text}</li>)}
                           </ul>
-                        </div>
-                      )}
-
-                      {rel.releaseNotes.improved && rel.releaseNotes.improved.length > 0 && (
-                        <div className="notes-group">
-                          <h3 className="group-heading">
-                            <span className="category-badge cat-imp">IMPROVED</span>
-                            <span>IMPROVEMENTS</span>
-                          </h3>
-                          <ul className="notes-list">
-                            {rel.releaseNotes.improved.map((item, i) => (
-                              <li key={i}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {rel.releaseNotes.fixed && rel.releaseNotes.fixed.length > 0 && (
-                        <div className="notes-group">
-                          <h3 className="group-heading">
-                            <span className="category-badge cat-fix">FIXED</span>
-                            <span>BUG FIXES</span>
-                          </h3>
-                          <ul className="notes-list">
-                            {rel.releaseNotes.fixed.map((item, i) => (
-                              <li key={i}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {rel.releaseNotes.other && rel.releaseNotes.other.length > 0 && (
-                        <div className="notes-group">
-                          <h3 className="group-heading">
-                            <span className="category-badge">OTHER</span>
-                            <span>NOTES &amp; REVISIONS</span>
-                          </h3>
-                          <ul className="notes-list">
-                            {rel.releaseNotes.other.map((item, i) => (
-                              <li key={i}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        </section>
+                      )
+                    })}</div> : <p className="entry-summary">Release details are available on GitHub.</p>}
+                  </section>
 
                   <footer className="entry-footer">
                     <div className="action-row">
@@ -323,9 +291,19 @@ export function ChangelogView({ releaseState, onNavigate }: ChangelogViewProps) 
                         target="_blank"
                         rel="noreferrer"
                       >
+                        VIEW FULL CHANGELOG ↗
+                      </a>
+                      <a
+                        className="text-link"
+                        href={rel.githubReleaseUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         GITHUB RELEASE ↗
                       </a>
                     </div>
+
+                    {rel.apkDownloadUrl && <p className="release-trust">SIGNED RELEASE // {rel.sha256 ? 'SHA-256 VERIFIED' : 'CHECKSUM AVAILABLE ON GITHUB'}</p>}
 
                     {rel.sha256 && (
                       <div className="checksum-block compact">

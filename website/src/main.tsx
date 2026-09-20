@@ -21,10 +21,10 @@ export type ReleaseMetadata = {
   publishedAt: string | null
 }
 
-// Matches Phase 4 release-artifacts/release.json. Phase 6 synchronizes this pre-launch state with published metadata.
+// Published-release fallback. Live GitHub metadata remains the source of truth.
 export const release: ReleaseMetadata = {
   version: '1.0.0',
-  versionCode: 2,
+  versionCode: 3,
   tag: 'v1.0.0',
   apk: null,
   apkDownloadUrl: null,
@@ -145,7 +145,7 @@ function App() {
           >
             <img src="/branding/fitdex-logo-spartan.png" alt="" />
             <span>FITDEX</span>
-            <b>{latest ? `v${latest.version} // LATEST` : 'v1.0.0 // PRE-LAUNCH'}</b>
+            <b>{latest ? `v${latest.version} // LATEST` : 'RELEASE SYNC'}</b>
           </a>
           <button
             className="menu-button"
@@ -218,7 +218,7 @@ function App() {
                       </a>
                     ) : (
                       <a className="button" href="#download" onClick={(e) => handleNavClick('#download', e)}>
-                        PUBLIC RELEASE COMING SOON
+                        CHECK RELEASE STATUS
                       </a>
                     )}
                     <a
@@ -416,11 +416,11 @@ function App() {
               ) : (
                 <div className="shell release-grid">
                   <div>
-                    <p className="eyebrow">RELEASE NOTES // PHASE 6 READY</p>
+                    <p className="eyebrow">RELEASE NOTES // DATA UNAVAILABLE</p>
                     <h2>FITDEX v{release.version}</h2>
-                    <p className="release-status">PUBLIC RELEASE COMING SOON</p>
+                    <p className="release-status">RELEASE FEED UNAVAILABLE</p>
                     <p className="muted">
-                      FitDex v1.0.0 is being prepared for its first public release. Release UI reserves version, Android versionCode, date, reviewed notes, APK download, and SHA-256 for Phase 6 metadata integration.
+                      Live release details could not be loaded. The published archive on GitHub remains the authoritative source for the APK, checksum, and release notes.
                     </p>
                     <div className="action-row" style={{ marginTop: '20px' }}>
                       <a
@@ -438,11 +438,11 @@ function App() {
                   <dl className="release-data">
                     <div><dt>VERSION</dt><dd>{release.version}</dd></div>
                     <div><dt>VERSION CODE</dt><dd>{release.versionCode}</dd></div>
-                    <div><dt>PUBLISHED AT</dt><dd>{release.publishedAt ?? 'Available with public release'}</dd></div>
-                    <div><dt>WHAT&apos;S NEW</dt><dd>Reviewed with public release</dd></div>
-                    <div><dt>IMPROVEMENTS / FIXES</dt><dd>Reviewed with public release</dd></div>
-                    <div><dt>APK DOWNLOAD</dt><dd>{release.apkDownloadUrl ?? 'Available with public release'}</dd></div>
-                    <div><dt>SHA-256</dt><dd>{release.sha256 ?? 'Available with public release'}</dd></div>
+                    <div><dt>PUBLISHED AT</dt><dd>{release.publishedAt ?? 'See GitHub release'}</dd></div>
+                    <div><dt>WHAT&apos;S NEW</dt><dd>See GitHub release</dd></div>
+                    <div><dt>IMPROVEMENTS / FIXES</dt><dd>See GitHub release</dd></div>
+                    <div><dt>APK DOWNLOAD</dt><dd>{release.apkDownloadUrl ?? 'See GitHub release'}</dd></div>
+                    <div><dt>SHA-256</dt><dd>{release.sha256 ?? 'See GitHub release'}</dd></div>
                   </dl>
                 </div>
               )}
