@@ -233,4 +233,33 @@ assert.match(mainSource, /id:\s*'home'[^}]*src:\s*'\/screenshots\/home\.png'/, '
 assert.match(mainSource, /id:\s*'workout'[^}]*src:\s*'\/screenshots\/active-workout\.png'/, 'Hero workout screenshot asset must remain')
 assert.match(mainSource, /id:\s*'progress'[^}]*src:\s*'\/screenshots\/progress-records\.png'/, 'Hero progress screenshot asset must remain')
 
-console.log('✓ All 18 FitDex Phase 6 release system, hero parity, and screenshot gallery cleanup invariants successfully verified.')
+// 19. Social / Link preview metadata and branding
+const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf8')
+const socialPreviewAsset = await readFile(new URL('../public/branding/social-preview.jpg', import.meta.url))
+assert.ok(socialPreviewAsset.length > 0, 'social-preview.jpg must exist in public/branding/')
+
+assert.match(indexHtml, /<title>FitDex — Train\. Track\. Level Up\.<\/title>/, 'Title tag must match approved text')
+assert.match(indexHtml, /<meta name="description" content="A free, local-first Android fitness tracker built like a retro RPG\." \/>/, 'Description meta must match')
+assert.match(indexHtml, /<meta name="theme-color" content="#0e1212" \/>/, 'Theme color must match Spartan dark background')
+assert.match(indexHtml, /<link rel="canonical" href="https:\/\/fitdexinfo\.vercel\.app\/" \/>/, 'Canonical link must point to production domain')
+
+assert.match(indexHtml, /<meta property="og:type" content="website" \/>/, 'og:type must be website')
+assert.match(indexHtml, /<meta property="og:site_name" content="FitDex" \/>/, 'og:site_name must be FitDex')
+assert.match(indexHtml, /<meta property="og:title" content="FitDex — Train\. Track\. Level Up\." \/>/, 'og:title must match')
+assert.match(indexHtml, /<meta property="og:description" content="A free, local-first Android fitness tracker built like a retro RPG\." \/>/, 'og:description must match')
+assert.match(indexHtml, /<meta property="og:url" content="https:\/\/fitdexinfo\.vercel\.app\/" \/>/, 'og:url must match')
+assert.match(indexHtml, /<meta property="og:image" content="https:\/\/fitdexinfo\.vercel\.app\/branding\/social-preview\.jpg" \/>/, 'og:image must match')
+assert.match(indexHtml, /<meta property="og:image:alt" content="FitDex — Train\. Track\. Level Up\." \/>/, 'og:image:alt must match')
+assert.match(indexHtml, /<meta property="og:image:type" content="image\/jpeg" \/>/, 'og:image:type must be image/jpeg')
+assert.match(indexHtml, /<meta property="og:image:width" content="1774" \/>/, 'og:image:width must be 1774')
+assert.match(indexHtml, /<meta property="og:image:height" content="887" \/>/, 'og:image:height must be 887')
+
+assert.match(indexHtml, /<meta name="twitter:card" content="summary_large_image" \/>/, 'twitter:card must be summary_large_image')
+assert.match(indexHtml, /<meta name="twitter:title" content="FitDex — Train\. Track\. Level Up\." \/>/, 'twitter:title must match')
+assert.match(indexHtml, /<meta name="twitter:description" content="A free, local-first Android fitness tracker built like a retro RPG\." \/>/, 'twitter:description must match')
+assert.match(indexHtml, /<meta name="twitter:image" content="https:\/\/fitdexinfo\.vercel\.app\/branding\/social-preview\.jpg" \/>/, 'twitter:image must match')
+assert.match(indexHtml, /<meta name="twitter:image:alt" content="FitDex — Train\. Track\. Level Up\." \/>/, 'twitter:image:alt must match')
+
+assert.match(indexHtml, /<link rel="icon" href="\/branding\/fitdex-icon-spartan\.png" type="image\/png" \/>/, 'Favicon link must remain Spartan icon')
+
+console.log('✓ All 19 FitDex Phase 6 release system, hero parity, gallery cleanup, and social preview metadata invariants successfully verified.')
