@@ -54,6 +54,13 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **CI Compatibility**: Same scripts use existing `FITDEX_KEYSTORE_PATH`, `FITDEX_KEYSTORE_PASSWORD`, `FITDEX_KEY_ALIAS`, and `FITDEX_KEY_PASSWORD`; local and CI release logic do not diverge. No GitHub Actions release workflow exists or publishes on push.
 - **Current Boundary**: Phase 4 dry-run and static validation complete. Public FitDex `v1.0.0` remains unpublished. Repository version remains `1.0.0`; Android `versionCode` remains `2`.
 
+### Public Website — Phase 5 IN PROGRESS / Production Foundation Implemented
+
+- **Separate Surface**: `website/` is an independent React + TypeScript + Vite public landing site. Vercel will use `website/` as its root later. The existing PWA remains on Cloudflare, and exercise media remains its separate Cloudflare Worker surface.
+- **Approved Direction**: Console is the only production visual direction: Spartan Dark, teal structural grid, ivory typography, low-radius rectangular panels, hard shadows, technical/RPG labels, real screenshots, and pre-launch release state. Editorial, Field Log, and prototype picker controls are not production features.
+- **Release Integration Boundary**: Website release presentation reserves the Phase 4 contract (`version`, `versionCode`, `tag`, `apk`, `apkDownloadUrl`, `checksum`, `sha256`, `releaseNotes`, `publishedAt`) for Phase 6. It shows no fabricated release date, APK, checksum, GitHub Release, or publication claim.
+- **Assets and Interaction**: Root `public/screenshots/` stays canonical; identical copies in `website/public/screenshots/` are deployed with Vercel build. The desktop Console hero uses transient neutral, left-hover, and right-hover depth stacks. Cards keep fixed identities; center hover restores neutral composition. Mobile (<= 768px) intentionally preserves one readable Home screenshot. Lower screenshot panels retain restrained hover and keyboard focus depth. Vercel deployment remains pending.
+
 ---
 
 ## 3. Phase 1 — Home & Global Shell (COMPLETE / LOCKED)

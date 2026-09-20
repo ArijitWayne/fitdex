@@ -80,6 +80,12 @@ Prototypes and views must never invent independent color palettes or custom hex 
 
 ---
 
+### Public Website Console Foundation — Phase 5
+
+The standalone `website/` public surface uses the approved **Console** direction only: Spartan Dark palette, teal technical grid, neutral high-contrast body text, rectangular panels, restrained corner radii, and hard offset shadows. It is not part of PWA AppShell and does not replace Cloudflare PWA or media Worker UX.
+
+Website controls retain visible focus, 44px-scale touch targets, explicit property transitions, reduced-motion support, and mobile navigation. The desktop hero presents a transient three-state hover stack with fixed Active Workout, Home, and Personal Records cards: neutral, left hover, and right hover. Center hover and focus restore neutral; focus leaving the stack also restores neutral. Phones (<= 768px) intentionally show one readable Home screen. Lower screenshot cards retain restrained hover and keyboard focus depth. Production website never includes Editorial, Field Log, or variant-picker interfaces.
+
 ### 1.2 Retro Controls & Widgets Doctrine
 
 FitDex interactive controls must feel like **tactile, rectangular, framed, game-command widgets** from the 8-bit/16-bit console and handheld era—never modern soft, floating, pill-shaped SaaS components.
@@ -284,4 +290,3 @@ The former `prototypes/` workspace was a temporary exploratory sandbox and has b
 - **Primary Showcase**: Six core screenshots embedded in `README.md` (Home, Workout Hub, Active Workout, Exercise Dex, Nutrition, Progress).
 - **Secondary Gallery**: Three additional views (Progress Overview, Journal, Achievements) retained in repository for future website/gallery use.
 - **Social Preview**: Configured manually in GitHub Repository Settings (intentionally not stored as an in-repo file).
-

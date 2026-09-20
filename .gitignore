@@ -32,3 +32,4 @@ graphify-out/
 release-signing.properties
 release-artifacts/
 .temp-prototypes/
+.vercel/
