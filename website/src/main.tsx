@@ -97,7 +97,7 @@ function App() {
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header">
       <div className="shell nav-shell">
-        <a className="brand" href="#top" onClick={closeMenu} aria-label="FitDex home"><img src="/branding/fitdex-icon-spartan.png" alt="" /><span>FITDEX</span><b>v1.0.0 // PRE-LAUNCH</b></a>
+        <a className="brand" href="#top" onClick={closeMenu} aria-label="FitDex home"><img src="/branding/fitdex-logo-spartan.png" alt="" /><span>FITDEX</span><b>v1.0.0 // PRE-LAUNCH</b></a>
         <button className="menu-button" type="button" aria-expanded={menuOpen} aria-controls="primary-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'CLOSE ×' : 'MENU ≡'}</button>
         <nav id="primary-nav" className={menuOpen ? 'open' : ''} aria-label="Primary navigation">
           {nav.map(([label, href]) => <a href={href} key={href} onClick={closeMenu}>{label}</a>)}
@@ -134,9 +134,28 @@ function App() {
       <Gallery />
       <section className="section release-section" id="release-notes"><div className="shell release-grid"><div><p className="eyebrow">RELEASE NOTES // PHASE 6 READY</p><h2>FITDEX v{release.version}</h2><p className="release-status">PUBLIC RELEASE COMING SOON</p><p className="muted">Release UI reserves version, Android versionCode, date, reviewed notes, APK download, and SHA-256 for Phase 6 metadata integration.</p></div><dl className="release-data"><div><dt>VERSION</dt><dd>{release.version}</dd></div><div><dt>VERSION CODE</dt><dd>{release.versionCode}</dd></div><div><dt>PUBLISHED AT</dt><dd>{release.publishedAt ?? 'Available with public release'}</dd></div><div><dt>WHAT'S NEW</dt><dd>Reviewed with public release</dd></div><div><dt>IMPROVEMENTS / FIXES</dt><dd>Reviewed with public release</dd></div><div><dt>APK DOWNLOAD</dt><dd>{release.apkDownloadUrl ?? 'Available with public release'}</dd></div><div><dt>SHA-256</dt><dd>{release.sha256 ?? 'Available with public release'}</dd></div></dl></div></section>
       <section className="section" id="download"><div className="shell platform-grid"><article><p className="eyebrow">PRIMARY PLATFORM</p><h2>ANDROID</h2><p className="lede">Signed APK</p><p className="release-status">COMING WITH v1.0.0</p></article><article><p className="eyebrow">LIVE PLATFORM</p><h2>WEB APP</h2><p className="muted">Use FitDex PWA now.</p><a className="button" href={pwa} target="_blank" rel="noreferrer">OPEN WEB APP</a></article><article><p className="eyebrow">PLATFORM STATUS</p><h2>iOS</h2><p className="muted">Future consideration.</p></article></div></section>
-      <section className="section alternate" id="licensing"><div className="shell license-grid"><div><p className="eyebrow">SOURCE / LICENSING</p><h2>BUILD WITH<br /><em>CLEAR TERMS.</em></h2></div><div className="license-list"><p><strong>Core application code</strong><span>PolyForm Noncommercial 1.0.0</span></p><p><strong>Supporting docs and scripts</strong><span>MIT where identified</span></p><p><strong>Branding, artwork, and media</strong><span>Separate terms apply</span></p><p><strong>Exercise media</strong><span>Separate media terms; rights may vary</span></p><div className="doc-links"><a href={`${github}/blob/dev/LICENSING.md`} target="_blank" rel="noreferrer">LICENSING ↗</a><a href={`${github}/blob/dev/ASSETS.md`} target="_blank" rel="noreferrer">ASSETS ↗</a><a href={`${github}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">CONTRIBUTING ↗</a><a href={`${github}/blob/dev/SECURITY.md`} target="_blank" rel="noreferrer">SECURITY ↗</a></div></div></div></section>
+      <section className="section alternate" id="licensing">
+        <div className="shell license-grid">
+          <div className="license-intro">
+            <p className="eyebrow">SOURCE / LICENSING</p>
+            <h2>BUILT WITH<br /><em>CLEAR TERMS.</em></h2>
+            <p className="muted">FitDex separates software licensing from brand and media usage so terms for each project part stay clear.</p>
+          </div>
+          <div className="license-summary">
+            <article><strong>Core application</strong><span>PolyForm Noncommercial 1.0.0</span></article>
+            <article><strong>Documentation &amp; tooling</strong><span>MIT where identified</span></article>
+            <article><strong>Brand &amp; media assets</strong><span>See asset terms</span></article>
+            <div className="doc-links">
+              <a href={`${github}/blob/dev/LICENSING.md`} target="_blank" rel="noreferrer">LICENSING ↗</a>
+              <a href={`${github}/blob/dev/ASSETS.md`} target="_blank" rel="noreferrer">ASSET TERMS ↗</a>
+              <a href={`${github}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">CONTRIBUTING ↗</a>
+              <a href={`${github}/blob/dev/SECURITY.md`} target="_blank" rel="noreferrer">SECURITY ↗</a>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
-    <footer><div className="shell footer-grid"><div><a className="brand footer-brand" href="#top"><img src="/branding/fitdex-icon-spartan.png" alt="" /><span>FITDEX</span></a><p>TRAIN. TRACK. LEVEL UP.</p><small>Copyright © 2026 Arijit Bhaduri</small></div><nav aria-label="Footer"><a href={github} target="_blank" rel="noreferrer">GitHub</a><a href={pwa} target="_blank" rel="noreferrer">Web App</a><a href="#release-notes">Release Notes</a><a href="#licensing">Licensing</a><a href={`${github}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">Contributing</a><a href={`${github}/blob/dev/SECURITY.md`} target="_blank" rel="noreferrer">Security</a></nav></div></footer>
+    <footer><div className="shell footer-grid"><div><a className="brand footer-brand" href="#top"><img src="/branding/fitdex-logo-spartan.png" alt="" /><span>FITDEX</span></a><p>TRAIN. TRACK. LEVEL UP.</p><small>Copyright © 2026 Arijit Bhaduri</small></div><nav aria-label="Footer"><a href={github} target="_blank" rel="noreferrer">GitHub</a><a href={pwa} target="_blank" rel="noreferrer">Web App</a><a href="#release-notes">Release Notes</a><a href="#licensing">Licensing</a><a href={`${github}/blob/dev/CONTRIBUTING.md`} target="_blank" rel="noreferrer">Contributing</a><a href={`${github}/blob/dev/SECURITY.md`} target="_blank" rel="noreferrer">Security</a></nav></div></footer>
   </>
 }
 
