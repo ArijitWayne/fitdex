@@ -1,4 +1,4 @@
-import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PredefinedFoodCategoryId } from '../../data/models.ts'
+import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PhotoEstimatedItem, type PredefinedFoodCategoryId } from '../../data/models.ts'
 
 export const FOOD_MEAL_LABELS: Record<FoodMeal, string> = {
   breakfast: 'Breakfast', lunch: 'Lunch', supper: 'Supper', dinner: 'Dinner',
@@ -131,4 +131,21 @@ export function parseOptionalNutrition(value: string): number | undefined {
 
 export function categoryName(categoryId: PredefinedFoodCategoryId) {
   return PREDEFINED_FOOD_CATEGORIES.find((category) => category.id === categoryId)?.name ?? 'Other'
+}
+
+/** Snapped photos have no explicit meal picker; the meal is inferred silently from local time of day. */
+export function inferMealFromTime(date: Date): FoodMeal {
+  const hour = date.getHours()
+  if (hour < 11) return 'breakfast'
+  if (hour < 15) return 'lunch'
+  if (hour < 18) return 'supper'
+  return 'dinner'
+}
+
+/** Turns a multi-item photo estimate into a single human-readable food name for the log row. */
+export function summarizePhotoItems(items: readonly PhotoEstimatedItem[]): string {
+  if (!items.length) return 'Snapped meal'
+  const names = items.map((item) => item.name)
+  if (names.length <= 3) return names.join(', ')
+  return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
 }

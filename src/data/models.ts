@@ -214,6 +214,7 @@ export interface RoutineExercise extends EntityRecord {
   exerciseNameSnapshot: string
   order: number
   plannedSets: number
+  targetReps?: number
 }
 
 export interface Workout extends EntityRecord {
@@ -222,12 +223,6 @@ export interface Workout extends EntityRecord {
   nameSnapshot: string
   status: 'active' | 'completed' | 'discarded'
   startedAt: string
-  /** Active-workout timer state. Missing values on legacy active records mean running. */
-  timerState?: 'running' | 'paused'
-  /** Whole active seconds banked before the current running interval. */
-  accumulatedActiveSeconds?: number
-  /** Start of the current running interval. */
-  lastResumedAt?: string
   completedAt?: string
   durationSeconds?: number
   notes?: string
@@ -325,6 +320,12 @@ export interface RememberedFood extends EntityRecord, FoodNutrition {
   mealUsage: Partial<Record<FoodMeal, number>>
 }
 
+export interface PhotoEstimatedItem {
+  name: string
+  portion: string
+  calories: number
+}
+
 export interface FoodLogEntry extends EntityRecord, FoodNutrition {
   date: string
   meal: FoodMeal
@@ -336,6 +337,12 @@ export interface FoodLogEntry extends EntityRecord, FoodNutrition {
   customCategoryId?: string
   customCategoryName?: string
   customCategoryColor?: string
+  /** Snapped meal photo, stored as a data URI. Absent for manually logged entries. */
+  imageDataUri?: string
+  /** True until the user corrects the AI's read via the "Error?" flow. */
+  aiEstimated?: boolean
+  /** Per-item breakdown the model detected in the photo, for display only. */
+  aiItems?: PhotoEstimatedItem[]
 }
 
 export interface BodyMeasurement extends EntityRecord {

@@ -33,3 +33,7 @@ release-signing.properties
 release-artifacts/
 .temp-prototypes/
 .vercel/
+.claude/
+.env
+.env.*
+!.env.example

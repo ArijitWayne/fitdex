@@ -3,7 +3,7 @@ import { db } from '../../data/database.ts'
 import type { Exercise, Workout, WorkoutExercise, WorkoutSet } from '../../data/models.ts'
 import { createId } from '../../utils/createId.ts'
 import { getLocalDayTimestampRange } from '../../utils/localDate.ts'
-import { DEFAULT_AD_HOC_SETS, calculateVolume, createPausedTimerState, createResumedTimerState, getFinalWorkoutDuration, isHistoricalWorkoutSetLogged, isWorkoutSetLogged, normalizeWorkoutName, validateWorkoutForFinish, type WorkoutFinishValidation } from './workoutModel.ts'
+import { DEFAULT_AD_HOC_SETS, calculateVolume, getFinalWorkoutDuration, isHistoricalWorkoutSetLogged, isWorkoutSetLogged, normalizeWorkoutName, validateWorkoutForFinish, type WorkoutFinishValidation } from './workoutModel.ts'
 import { ensureGamificationInitialized, reconcileGamification } from '../gamification/gamificationRepository.ts'
 
 export interface WorkoutExerciseDetail {
@@ -81,8 +81,7 @@ export async function startWorkoutFromRoutine(routineId: string, now = Date.now(
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), routineId, routineNameSnapshot: routine.name, nameSnapshot: routine.name,
-      status: 'active', startedAt: timestamp, timerState: 'paused', accumulatedActiveSeconds: 0,
-      lastResumedAt: undefined, createdAt: timestamp, updatedAt: timestamp,
+      status: 'active', startedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     }
     const exerciseRows: WorkoutExercise[] = routineItems.map((item, order) => {
       const definition = definitionById.get(item.exerciseId)
@@ -112,8 +111,7 @@ export async function startEmptyWorkout(name = 'Workout', now = Date.now()) {
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), nameSnapshot: normalizeWorkoutName(name), status: 'active',
-      startedAt: timestamp, timerState: 'paused', accumulatedActiveSeconds: 0,
-      lastResumedAt: undefined, createdAt: timestamp, updatedAt: timestamp,
+      startedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     }
     await db.workouts.add(workout)
     return { workout, exercises: [] } satisfies WorkoutDetail
@@ -128,8 +126,7 @@ export async function startPreparedWorkout(exercises: readonly Exercise[], name 
     const timestamp = nowIso(now)
     const workout: Workout = {
       id: createRecordId('workout'), nameSnapshot: normalizeWorkoutName(name), status: 'active',
-      startedAt: timestamp, timerState: 'paused', accumulatedActiveSeconds: 0,
-      lastResumedAt: undefined, createdAt: timestamp, updatedAt: timestamp,
+      startedAt: timestamp, createdAt: timestamp, updatedAt: timestamp,
     }
     const exerciseRows: WorkoutExercise[] = exercises.map((exercise, order) => ({
       id: createRecordId('workout-exercise'), workoutId: workout.id, exerciseId: exercise.id,
@@ -149,17 +146,6 @@ export async function getWorkoutDetail(workoutId: string): Promise<WorkoutDetail
   const workout = await db.workouts.get(workoutId)
   if (!workout) throw new Error('Workout not found.')
   const exercises = await db.workoutExercises.where('workoutId').equals(workoutId).sortBy('order')
-  if (workout.status === 'active' && exercises.length === 0 && workout.timerState !== 'paused') {
-    workout.timerState = 'paused'
-    workout.lastResumedAt = undefined
-    workout.accumulatedActiveSeconds = workout.accumulatedActiveSeconds ?? 0
-    await db.workouts.update(workoutId, {
-      timerState: 'paused',
-      lastResumedAt: undefined,
-      accumulatedActiveSeconds: workout.accumulatedActiveSeconds,
-      updatedAt: nowIso(),
-    })
-  }
   const setRows = exercises.length ? await db.workoutSets.where('workoutExerciseId').anyOf(exercises.map((item) => item.id)).toArray() : []
   return {
     workout,
@@ -252,13 +238,6 @@ export async function removeWorkoutExercise(workoutExerciseId: string) {
     await db.workoutExercises.delete(workoutExerciseId)
     const remaining = await db.workoutExercises.where('workoutId').equals(target.workoutId).sortBy('order')
     await db.workoutExercises.bulkPut(remaining.map((item, order) => ({ ...item, order, updatedAt: nowIso() })))
-    if (remaining.length === 0) {
-      const workout = await db.workouts.get(target.workoutId)
-      if (workout && workout.status === 'active' && workout.timerState !== 'paused') {
-        const pausedState = createPausedTimerState(workout, Date.now())
-        await db.workouts.update(target.workoutId, { ...pausedState, lastResumedAt: undefined, updatedAt: nowIso() })
-      }
-    }
   })
 }
 
@@ -289,22 +268,6 @@ export async function getPreviousPerformance(exerciseId: string, currentWorkoutI
   return { workout: previous, exercise: occurrence, sets }
 }
 
-export async function pauseWorkout(workoutId: string, now = Date.now()) {
-  const workout = await requireActiveWorkout(workoutId)
-  await db.workouts.update(workoutId, { ...createPausedTimerState(workout, now), updatedAt: nowIso(now) })
-  return getWorkoutDetail(workoutId)
-}
-
-export async function resumeWorkout(workoutId: string, now = Date.now()) {
-  const workout = await requireActiveWorkout(workoutId)
-  const exerciseCount = await db.workoutExercises.where('workoutId').equals(workoutId).count()
-  if (exerciseCount === 0) {
-    throw new Error('Add at least one exercise to start your workout timer.')
-  }
-  await db.workouts.update(workoutId, { ...createResumedTimerState(workout, now, exerciseCount), updatedAt: nowIso(now) })
-  return getWorkoutDetail(workoutId)
-}
-
 export async function finishWorkout(workoutId: string, now = Date.now()) {
   // Establish the forward-only XP boundary before the completed workout is
   // committed. If reconciliation fails after the save, a later retry can still
@@ -324,8 +287,7 @@ export async function finishWorkout(workoutId: string, now = Date.now()) {
     const sets = detail.exercises.flatMap((item) => item.sets)
     await db.workoutSets.bulkPut(sets.map((set) => ({ ...set, completed: true, updatedAt: completedAt })))
     await db.workouts.update(workoutId, {
-      status: 'completed', completedAt, durationSeconds: getFinalWorkoutDuration(detail.workout, now),
-      timerState: undefined, accumulatedActiveSeconds: undefined, lastResumedAt: undefined, updatedAt: completedAt,
+      status: 'completed', completedAt, durationSeconds: getFinalWorkoutDuration(detail.workout, now), updatedAt: completedAt,
     })
     return getWorkoutDetail(workoutId)
   })
@@ -394,3 +356,58 @@ async function summarizeWorkouts(workouts: Workout[]): Promise<WorkoutSummary[]>
     }
   })
 }
+
+export async function toggleWorkoutExerciseComplete(workoutExerciseId: string, isDone: boolean, defaultReps = 12) {
+  const sets = await db.workoutSets.where('workoutExerciseId').equals(workoutExerciseId).sortBy('order')
+  const exercise = await db.workoutExercises.get(workoutExerciseId)
+  const trackingType = exercise?.trackingTypeSnapshot ?? 'reps_only'
+  const timestamp = new Date().toISOString()
+
+  const updatedSets = sets.map((set) => {
+    if (isDone) {
+      const hasReps = trackingType === 'reps_only' || trackingType === 'weight_reps' || trackingType === 'bodyweight_reps' || trackingType === 'assisted_bodyweight' || trackingType === 'duration_reps'
+      const hasWeight = trackingType === 'weight_reps' || trackingType === 'assisted_bodyweight' || trackingType === 'weight_distance'
+      const hasDuration = trackingType === 'duration' || trackingType === 'distance_duration' || trackingType === 'duration_optional_distance' || trackingType === 'duration_reps'
+      const hasDistance = trackingType === 'distance_duration' || trackingType === 'weight_distance'
+
+      const reps = hasReps ? (set.reps ?? defaultReps) : undefined
+      const weight = hasWeight ? (set.weight ?? 0) : undefined
+      const durationSeconds = hasDuration ? (set.durationSeconds ?? 60) : undefined
+      const distance = hasDistance ? (set.distance ?? 1) : undefined
+
+      return { ...set, reps, weight, durationSeconds, distance, completed: true, updatedAt: timestamp }
+    } else {
+      return { ...set, completed: false, updatedAt: timestamp }
+    }
+  })
+  if (updatedSets.length) {
+    await db.workoutSets.bulkPut(updatedSets)
+  }
+}
+
+export async function completeActiveWorkout(workoutId: string, now = Date.now()) {
+  const detail = await getWorkoutDetail(workoutId)
+  if (detail.workout.status !== 'active') throw new Error('Only active workouts can be finished.')
+
+  const completedExercises = detail.exercises.filter((item) =>
+    item.sets.length > 0 && item.sets.some((s) => s.completed)
+  )
+  const unperformedExercises = detail.exercises.filter((item) =>
+    item.sets.length === 0 || !item.sets.some((s) => s.completed)
+  )
+
+  // Prune any unperformed exercises so validateWorkoutForFinish passes cleanly
+  if (completedExercises.length > 0 && unperformedExercises.length > 0) {
+    for (const unperformed of unperformedExercises) {
+      await removeWorkoutExercise(unperformed.exercise.id)
+    }
+  } else if (completedExercises.length === 0 && detail.exercises.length > 0) {
+    // If tapped Finish without marking any done, mark them all done
+    for (const item of detail.exercises) {
+      await toggleWorkoutExerciseComplete(item.exercise.id, true)
+    }
+  }
+
+  return finishWorkout(workoutId, now)
+}
+

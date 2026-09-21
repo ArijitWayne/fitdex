@@ -4,10 +4,9 @@ import { Panel } from '../components/ui/Panel'
 import { PageFrame } from '../components/layout/PageFrame'
 import { ContextRail } from '../components/ui/ContextRail'
 import { derivePersonalRecords, formatPersonalRecordDate, formatPersonalRecordMetric, searchPersonalRecords, type ExercisePersonalRecords } from '../features/progress/personalRecords'
-import { buildNutritionTrend, buildVolumeTrend, buildWorkoutFrequencyTrend, calculateNutritionSummary, calculateTrainingSeconds, calculateTrainingVolume, calculateVolumeComparison, formatTrainingTime, PROGRESS_PERIODS, type ProgressPeriod, type TrendBucket } from '../features/progress/progressModel'
+import { buildNutritionTrend, buildRepsTrend, buildWorkoutFrequencyTrend, calculateNutritionSummary, calculateRepsComparison, calculateTrainingReps, calculateTrainingSeconds, formatTrainingTime, PROGRESS_PERIODS, type ProgressPeriod, type TrendBucket } from '../features/progress/progressModel'
 import { loadProgressSource, type ProgressSourceData } from '../features/progress/progressRepository'
 import { getLocalDateKey } from '../utils/localDate'
-import { displayWeightFromKg } from '../utils/units'
 import { PageHeader } from './PageHeader'
 import { GuideDialog, type GuideStep } from '../features/help/GuideDialog'
 import { AchievementsView, RankDetailView } from '../features/gamification/GamificationViews'
@@ -19,13 +18,13 @@ import { useBackNavigation } from '../features/navigation/useBackNavigation'
 import { acknowledgeFirstUse, loadFirstUseGuidance } from '../features/help/firstUseGuidance'
 
 const PERIOD_LABELS: Record<ProgressPeriod, string> = { '7d': '7D', '30d': '30D', '90d': '90D', all: 'All' }
-const progressHelpSteps: readonly GuideStep[] = [{ title: 'How Progress Works', sections: [{ text: 'Progress is calculated automatically from completed workouts and Food history. There is nothing extra to log here.' }, { label: 'Workout data', bullets: ['Workout count', 'Training time', 'Resistance Volume', 'Personal Records'] }, { label: 'Food data', bullets: ['Average calories', 'Average protein', 'Nutrition trends'] }, { label: 'Resistance Volume', text: 'Weight × reps across logged weight-based resistance sets. It is a workload measure, not a universal score of training quality.' }] }]
-type TrendMode = 'workouts' | 'volume' | 'nutrition'
+const progressHelpSteps: readonly GuideStep[] = [{ title: 'How Progress Works', sections: [{ text: 'Progress is calculated automatically from completed workouts and Food history. There is nothing extra to log here.' }, { label: 'Workout data', bullets: ['Workout count', 'Training time', 'Total Reps', 'Personal Records'] }, { label: 'Food data', bullets: ['Average calories', 'Average protein', 'Nutrition trends'] }, { label: 'Total Reps', text: 'Total completed repetitions across all finished exercise sets. A pure measure of completed training work.' }] }]
+type TrendMode = 'workouts' | 'reps' | 'nutrition'
 
 export function ProgressPage({ initialView = 'overview' }: { initialView?: 'overview' | 'achievements' }) {
   const { playEffect } = useAudio()
   const [period, setPeriod] = useState<ProgressPeriod>('30d')
-  const [trend, setTrend] = useState<TrendMode>('volume')
+  const [trend, setTrend] = useState<TrendMode>('workouts')
   const [data, setData] = useState<ProgressSourceData>()
   const [error, setError] = useState('')
   const [recordsOpen, setRecordsOpen] = useState(false)
@@ -56,27 +55,34 @@ export function ProgressPage({ initialView = 'overview' }: { initialView?: 'over
   const selectPeriod = (next: ProgressPeriod) => { playEffect('select'); setData(undefined); setError(''); setPeriod(next) }
   const workoutCount = data?.currentWorkouts.length ?? 0
   const trainingSeconds = calculateTrainingSeconds(data?.currentWorkouts ?? [])
-  const volumeKg = calculateTrainingVolume(data?.currentWorkouts ?? [])
-  const previousVolumeKg = calculateTrainingVolume(data?.previousWorkouts ?? [])
-  const comparison = calculateVolumeComparison(volumeKg, previousVolumeKg, period)
+  const totalReps = calculateTrainingReps(data?.currentWorkouts ?? [])
+  const previousTotalReps = calculateTrainingReps(data?.previousWorkouts ?? [])
+  const repsComparison = calculateRepsComparison(totalReps, previousTotalReps, period)
   const nutrition = calculateNutritionSummary(data?.foodEntries ?? [])
-  const displayVolume = data ? displayWeightFromKg(volumeKg, data.units.preference) : 0
-  const trends = { workouts: buildWorkoutFrequencyTrend(data?.currentWorkouts ?? [], period, referenceDateKey), volume: buildVolumeTrend(data?.currentWorkouts ?? [], period, referenceDateKey).map((bucket) => ({ ...bucket, value: data ? displayWeightFromKg(bucket.value, data.units.preference) : 0 })), nutrition: buildNutritionTrend(data?.foodEntries ?? [], period, referenceDateKey) }
-  const trendMeta = trend === 'workouts' ? { title: workoutCount ? `${workoutCount} completed ${workoutCount === 1 ? 'workout' : 'workouts'}` : 'No completed training in this period', valueLabel: 'workouts', emptyText: 'No completed workouts in this period.', summary: 'Completed training sessions in this period.' } : trend === 'volume' ? { title: `${formatNumber(displayVolume)} ${data?.units.weightLabel ?? 'kg'} resistance volume`, valueLabel: data?.units.weightLabel ?? 'kg', emptyText: 'No completed weight-and-reps volume in this period.', summary: 'Total weight × reps across logged resistance sets.' } : { title: nutrition.loggedDays ? `${formatNumber(nutrition.averageKcal)} kcal average` : 'No food history in this period', valueLabel: 'average kcal', emptyText: 'Logged foods have no calorie values in this period.', summary: 'Averages use days with at least one food entry.' }
+  const trends = {
+    workouts: buildWorkoutFrequencyTrend(data?.currentWorkouts ?? [], period, referenceDateKey),
+    reps: buildRepsTrend(data?.currentWorkouts ?? [], period, referenceDateKey),
+    nutrition: buildNutritionTrend(data?.foodEntries ?? [], period, referenceDateKey)
+  }
+  const trendMeta = trend === 'workouts'
+    ? { title: workoutCount ? `${workoutCount} completed ${workoutCount === 1 ? 'workout' : 'workouts'}` : 'No completed training in this period', valueLabel: 'workouts', emptyText: 'No completed workouts in this period.', summary: 'Completed training sessions in this period.' }
+    : trend === 'reps'
+    ? { title: `${formatNumber(totalReps)} completed reps`, valueLabel: 'reps', emptyText: 'No completed repetitions in this period.', summary: 'Total repetitions completed across all exercises.' }
+    : { title: nutrition.loggedDays ? `${formatNumber(nutrition.averageKcal)} kcal average` : 'No food history in this period', valueLabel: 'average kcal', emptyText: 'Logged foods have no calorie values in this period.', summary: 'Averages use days with at least one food entry.' }
   return <PageFrame className="page-stack progress-page">
     <PageHeader eyebrow="Character stats" title="Progress" description="See how your training is changing" action={<button className="page-help-button progress-help-button" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }} aria-label="How Progress Works"><CircleHelp size={18} aria-hidden="true" /><span>How Progress Works</span></button>} />
     {showFirstUse ? <ContextRail
       title="Progress is derived, not another log"
       actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('progress'); setShowFirstUse(false) }}>Understood</button>}
     >
-      <p>Completed workouts and Food history produce these stats, trends, records, XP, and achievements automatically. Resistance Volume measures weight × reps workload, not calorie burn. Change the period to inspect real history.</p>
+      <p>Completed workouts and Food history produce these stats, trends, records, XP, and achievements automatically. Total Reps measures overall repetition volume across your completed workouts. Change the period to inspect real history.</p>
     </ContextRail> : null}
     <nav className="progress-view-tabs" role="tablist" aria-label="Progress sections"><button type="button" role="tab" aria-selected={view === 'overview'} onClick={() => { playEffect('select'); setView('overview') }}>Overview</button><button type="button" role="tab" aria-selected="false" onClick={() => { playEffect('select'); setView('records') }}>Records</button><button type="button" role="tab" aria-selected="false" onClick={() => { playEffect('select'); setView('achievements') }}>Achievements</button></nav>
     {gamification ? <CharacterHero data={gamification} onRank={() => { playEffect('select'); setView('rank') }} onAchievements={() => { playEffect('select'); setView('achievements') }} /> : null}
     <section className="progress-period" aria-labelledby="progress-period-title"><p className="eyebrow" id="progress-period-title">Period</p><div>{PROGRESS_PERIODS.map((item) => <button type="button" key={item} aria-pressed={period === item} className={period === item ? 'is-selected' : ''} onClick={() => selectPeriod(item)}>{PERIOD_LABELS[item]}</button>)}</div></section>
     {!data ? <Panel className="progress-state"><p className="progress-loading" aria-live="polite">{error ? 'Progress unavailable' : 'Loading progress…'}</p>{error ? <p className="form-error" role="alert">{error}</p> : null}</Panel> : !data.hasAnyHistory ? <Panel className="progress-empty"><span className="empty-glyph" aria-hidden="true">↗</span><div><h2>Start building your history</h2><p>Complete workouts and log meals to see progress here.</p></div></Panel> : <>
-      <Panel className="progress-section progress-attributes" eyebrow="Training attributes" title="Real progress stats"><div className="progress-attribute-list"><Attribute number="01" label="Consistency" detail="Completed workouts" value={formatNumber(workoutCount)} /><Attribute number="02" label="Training Time" detail="Completed session duration" value={formatTrainingTime(trainingSeconds)} /><Attribute number="03" label="Resistance Volume" detail={comparison.kind === 'percent' ? `${comparison.percent >= 0 ? '+' : ''}${formatNumber(comparison.percent)}% vs previous period` : comparison.kind === 'no-previous' ? 'No previous volume' : 'All-time total'} value={`${formatNumber(displayVolume)} ${data.units.weightLabel}`} /><Attribute number="04" label="Record Book" detail="Exercises with records" value={formatNumber(records.length)} /></div></Panel>
-      <Panel className="progress-section progress-evidence" eyebrow="Logged evidence" title={trendMeta.title}><div className="progress-trend-switch" role="group" aria-label="Progress trend">{(['workouts', 'volume', 'nutrition'] as const).map((item) => <button type="button" key={item} aria-pressed={trend === item} onClick={() => { playEffect('select'); setTrend(item) }}>{item}</button>)}</div><SimpleBarChart buckets={trends[trend]} valueLabel={trendMeta.valueLabel} emptyText={trendMeta.emptyText} /><p className="progress-chart-summary">{trendMeta.summary}</p>{trend === 'volume' && comparison.kind === 'percent' ? <p className="progress-comparison">{comparison.percent >= 0 ? '+' : ''}{formatNumber(comparison.percent)}% vs previous period</p> : trend === 'volume' && comparison.kind === 'no-previous' ? <p className="progress-comparison">No previous volume</p> : null}</Panel>
+      <Panel className="progress-section progress-attributes" eyebrow="Training attributes" title="Real progress stats"><div className="progress-attribute-list"><Attribute number="01" label="Consistency" detail="Completed workouts" value={formatNumber(workoutCount)} /><Attribute number="02" label="Training Time" detail="Completed session duration" value={formatTrainingTime(trainingSeconds)} /><Attribute number="03" label="Total Reps" detail={repsComparison.kind === 'percent' ? `${repsComparison.percent >= 0 ? '+' : ''}${formatNumber(repsComparison.percent)}% vs previous period` : repsComparison.kind === 'no-previous' ? 'No previous reps' : 'All-time total'} value={`${formatNumber(totalReps)} reps`} /><Attribute number="04" label="Record Book" detail="Exercises with records" value={formatNumber(records.length)} /></div></Panel>
+      <Panel className="progress-section progress-evidence" eyebrow="Logged evidence" title={trendMeta.title}><div className="progress-trend-switch" role="group" aria-label="Progress trend">{(['workouts', 'reps', 'nutrition'] as const).map((item) => <button type="button" key={item} aria-pressed={trend === item} onClick={() => { playEffect('select'); setTrend(item) }}>{item}</button>)}</div><SimpleBarChart buckets={trends[trend]} valueLabel={trendMeta.valueLabel} emptyText={trendMeta.emptyText} /><p className="progress-chart-summary">{trendMeta.summary}</p>{trend === 'reps' && repsComparison.kind === 'percent' ? <p className="progress-comparison">{repsComparison.percent >= 0 ? '+' : ''}{formatNumber(repsComparison.percent)}% vs previous period</p> : trend === 'reps' && repsComparison.kind === 'no-previous' ? <p className="progress-comparison">No previous reps</p> : null}</Panel>
       <Panel className="progress-section progress-pr-preview" eyebrow="Personal records" title={records.length ? `${records.length} exercises with records` : 'No valid records yet'}>{records.length ? <div className="progress-pr-list">{records.slice(0, 3).map((record) => <PrPreview key={record.exerciseId} record={record} units={data.units} />)}</div> : <p className="progress-no-data">Complete measurable sets to establish personal records.</p>}<button className="progress-pr-cta" type="button" onClick={() => { playEffect('select'); setRecordsOpen(true); setView('records') }}><span><Award size={20} aria-hidden="true" /> View All PRs</span><ChevronRight size={18} aria-hidden="true" /></button></Panel>
       <Panel className="progress-section" eyebrow="Nutrition" title={nutrition.loggedDays ? `${nutrition.loggedDays} logged ${nutrition.loggedDays === 1 ? 'day' : 'days'}` : 'No food history in this period'}>{nutrition.loggedDays ? <div className="nutrition-average-grid"><span><strong>{formatNumber(nutrition.averageKcal)} kcal</strong><small>Average Calories</small></span><span><strong>{formatNumber(nutrition.averageProtein)} g</strong><small>Average Protein</small></span></div> : <div className="progress-no-data"><Utensils aria-hidden="true" /><p>Log meals in Food to see calorie and protein history.</p></div>}</Panel>
     </>}

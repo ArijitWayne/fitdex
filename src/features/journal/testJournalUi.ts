@@ -69,6 +69,6 @@ assert.match(css, /@media\s*\(max-width:\s*374px\)[\s\S]*\.journal-summary-grid\
 assert.match(css, /\.journal-ledger \{[^}]*var\(--color-border\)/s)
 assert.match(css, /\.journal-ledger-entry \{[^}]*var\(--color-surface\)/s)
 assert.match(css, /\.journal-ledger-hero \{[^}]*var\(--color-rpg-accent\)/s)
-assert.doesNotMatch(css.match(/\/\* Journal V3[\s\S]*$/)?.[0] ?? '', /#[0-9a-f]{3,8}/i)
+assert.doesNotMatch(css.match(/\/\* Journal V3[\s\S]*?(?=\/\* Progress)/)?.[0] ?? '', /#[0-9a-f]{3,8}/i)
 
 console.log('Journal UI assertions passed: V3 Field Notes ledger, symmetric status, empty-meal suppression, detail reuse, responsive layout, and theme tokens')

@@ -9,7 +9,7 @@ import { loadHomeDashboard, type HomeDashboardData } from '../features/home/home
 import { formatPersonalRecordDate, formatPersonalRecordMetric } from '../features/progress/personalRecords'
 import { formatTrainingTime } from '../features/progress/progressModel'
 import { useProfile } from '../features/profile/useProfile'
-import { getWorkoutDuration, isWorkoutTimerPaused } from '../features/workout/workoutModel'
+import { getWorkoutDuration } from '../features/workout/workoutModel'
 import type { AppDestination } from '../types/navigation'
 import { getLocalDateKey } from '../utils/localDate'
 import { displayWeightFromKg } from '../utils/units'
@@ -54,7 +54,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
   }, [todayDateKey])
 
   useEffect(() => {
-    if (!data?.activeWorkout || isWorkoutTimerPaused(data.activeWorkout.workout)) return
+    if (!data?.activeWorkout) return
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
   }, [data?.activeWorkout])
@@ -199,7 +199,7 @@ function HomeMusicController() {
 }
 
 function mobileMissionCommand(data: HomeDashboardData) {
-  if (data.activeWorkout) return { summary: `${data.activeWorkout.workout.nameSnapshot} · ${isWorkoutTimerPaused(data.activeWorkout.workout) ? 'Paused' : 'In progress'}` }
+  if (data.activeWorkout) return { summary: `${data.activeWorkout.workout.nameSnapshot} · In progress` }
   if (data.todayAssignment.type === 'routine' && data.scheduledRoutine) {
     const routineId = data.todayAssignment.routineId
     const completed = data.completedByStartDate.find((summary) => summary.workout.routineId === routineId)
@@ -286,8 +286,7 @@ function MobileMusicRow({ number }: { number: string }) {
 
 function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {
   if (data.activeWorkout) {
-    const paused = isWorkoutTimerPaused(data.activeWorkout.workout)
-    return <HomeQuest className="is-active" eyebrow={paused ? 'Workout paused' : "Today's Quest · Active"} title={data.activeWorkout.workout.nameSnapshot} detail={`${formatActiveTime(getWorkoutDuration(data.activeWorkout.workout, now.getTime()), paused)} · ${data.activeWorkout.exercises.length} ${data.activeWorkout.exercises.length === 1 ? 'exercise' : 'exercises'}${data.completedToday.length ? ` · ${data.completedToday.length} already completed today` : ''}`} status={paused ? 'Recover' : 'In progress'}><button className="primary-button" type="button" onClick={() => onOpenWorkout('active')}><Dumbbell size={17} aria-hidden="true" /> {paused ? 'Open Paused Workout' : 'Resume Workout'}</button></HomeQuest>
+    return <HomeQuest className="is-active" eyebrow="Today's Quest · Active" title={data.activeWorkout.workout.nameSnapshot} detail={`${formatActiveTime(getWorkoutDuration(data.activeWorkout.workout, now.getTime()))} · ${data.activeWorkout.exercises.length} ${data.activeWorkout.exercises.length === 1 ? 'exercise' : 'exercises'}${data.completedToday.length ? ` · ${data.completedToday.length} already completed today` : ''}`} status="In progress"><button className="primary-button" type="button" onClick={() => onOpenWorkout('active')}><Dumbbell size={17} aria-hidden="true" /> Resume Workout</button></HomeQuest>
   }
   const assignment = data.todayAssignment
   if (assignment.type === 'routine' && data.scheduledRoutine) {
@@ -306,8 +305,7 @@ function TodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardDa
 
 function DesktopTodayWorkoutPanel({ data, now, onOpenWorkout }: { data: HomeDashboardData; now: Date; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void }) {
   if (data.activeWorkout) {
-    const paused = isWorkoutTimerPaused(data.activeWorkout.workout)
-    return <Panel className="home-dashboard-panel home-workout is-active" eyebrow={paused ? 'Workout paused' : "Today's workout"} title={data.activeWorkout.workout.nameSnapshot}><p>{formatActiveTime(getWorkoutDuration(data.activeWorkout.workout, now.getTime()), paused)} · {data.activeWorkout.exercises.length} {data.activeWorkout.exercises.length === 1 ? 'exercise' : 'exercises'}{data.completedToday.length ? ` · ${data.completedToday.length} already completed today` : ''}</p><button className="primary-button" type="button" onClick={() => onOpenWorkout('active')}><Dumbbell size={17} aria-hidden="true" /> {paused ? 'Open Paused Workout' : 'Resume Workout'}</button></Panel>
+    return <Panel className="home-dashboard-panel home-workout is-active" eyebrow="Today's workout" title={data.activeWorkout.workout.nameSnapshot}><p>{formatActiveTime(getWorkoutDuration(data.activeWorkout.workout, now.getTime()))} · {data.activeWorkout.exercises.length} {data.activeWorkout.exercises.length === 1 ? 'exercise' : 'exercises'}{data.completedToday.length ? ` · ${data.completedToday.length} already completed today` : ''}</p><button className="primary-button" type="button" onClick={() => onOpenWorkout('active')}><Dumbbell size={17} aria-hidden="true" /> Resume Workout</button></Panel>
   }
   const assignment = data.todayAssignment
   if (assignment.type === 'routine' && data.scheduledRoutine) {
@@ -335,7 +333,7 @@ function HomeQuest({ children, className = '', eyebrow, title, detail, status }:
 function ActivityMetric({ value, label }: { value: string; label: string }) { return <span><strong>{value}</strong><small>{label}</small></span> }
 function formatNumber(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value) }
 function formatCommandDate(value: Date) { return new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(value).toUpperCase() }
-function formatActiveTime(seconds: number, paused = false) { const minutes = Math.floor(seconds / 60); const hours = Math.floor(minutes / 60); const duration = hours ? `${hours}h ${minutes % 60}m` : `${minutes} min`; return `${duration} ${paused ? 'active · timer paused' : 'elapsed'}` }
+function formatActiveTime(seconds: number) { const minutes = Math.floor(seconds / 60); const hours = Math.floor(minutes / 60); const duration = hours ? `${hours}h ${minutes % 60}m` : `${minutes} min`; return `${duration} elapsed` }
 
 function HomeConsistencyRail({ data, onOpenStreak }: { data: HomeDashboardData; onOpenStreak: () => void }) {
   const currentStreak = data.gamification.streak.current

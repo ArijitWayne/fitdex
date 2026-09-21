@@ -1,14 +1,15 @@
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Camera, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { liveQuery } from 'dexie'
 import { PageFrame } from '../components/layout/PageFrame'
 import { ContextRail } from '../components/ui/ContextRail'
 import { RetroLoader } from '../components/ui/RetroLoader'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
-import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
 import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getFrequentFoods, getRecentFoods, listCustomCategories, listFoodEntries, listMealEntries, searchRememberedFoods, type FoodDraft } from '../features/food/foodRepository'
-import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, type NutritionBreakdown } from '../features/food/foodModel'
+import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, inferMealFromTime, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, summarizePhotoItems, type NutritionBreakdown } from '../features/food/foodModel'
+import { captureMealPhoto, PhotoCaptureCancelledError } from '../features/food/photoCapture'
+import { estimateCaloriesFromImage } from '../features/ai/aiService'
 import { GuideDialog } from '../features/help/GuideDialog'
 import { foodTutorialSteps } from '../features/help/tutorialSteps'
 import { markTutorialSeen } from '../features/help/tutorialPreferences'
@@ -23,8 +24,7 @@ import { acknowledgeFirstUse, loadFirstUseGuidance } from '../features/help/firs
 
 type View =
   | { kind: 'overview' }
-  | { kind: 'meal'; meal: FoodMeal; notice?: string }
-  | { kind: 'add'; meal: FoodMeal; editing?: FoodLogEntry }
+  | { kind: 'add'; editing?: FoodLogEntry }
 
 type NutritionStrings = Record<keyof Required<FoodNutrition>, string>
 type FormError = { field?: keyof NutritionStrings | 'name'; message: string }
@@ -143,7 +143,11 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [gamification, setGamification] = useState<GamificationDashboard>()
   const [showFoodLanding, setShowFoodLanding] = useState(false)
   const [showFirstFoodFeedback, setShowFirstFoodFeedback] = useState(false)
-  useBackNavigation('food-subview', view.kind !== 'overview', () => { if (view.kind === 'add') setView({ kind: 'meal', meal: view.meal }); else if (view.kind === 'meal') setView({ kind: 'overview' }) })
+  const [capturing, setCapturing] = useState(false)
+  const [captureError, setCaptureError] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<FoodLogEntry>()
+  useBackNavigation('food-subview', view.kind !== 'overview', () => setView({ kind: 'overview' }))
+  useBackNavigation('food-entry-delete', Boolean(pendingDelete), () => setPendingDelete(undefined), 50)
 
   const refresh = useCallback(async () => {
     const [entriesResult, gamificationResult] = await Promise.all([listFoodEntries(date), loadGamificationDashboard()])
@@ -164,11 +168,46 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   }, [])
 
   const totals = useMemo(() => nutritionTotals(entries), [entries])
+  const sortedEntries = useMemo(() => [...entries].sort((left, right) => right.createdAt.localeCompare(left.createdAt)), [entries])
   const navigateDate = (nextDate: string) => { playEffect('select'); setEntriesLoading(true); setDate(nextDate); setView({ kind: 'overview' }) }
-  const openAdd = (meal: FoodMeal) => { playEffect('select'); setView({ kind: 'add', meal }) }
+  const openAdd = (editing?: FoodLogEntry) => { playEffect('select'); setView({ kind: 'add', editing }) }
 
-  if (view.kind === 'add') return <FoodEditor date={date} meal={view.meal} editing={view.editing} onBack={() => { playEffect('select'); setView({ kind: 'meal', meal: view.meal }) }} onSaved={async (notice) => { await refresh(); setView({ kind: 'meal', meal: view.meal, notice }) }} />
-  if (view.kind === 'meal') return <MealDetail date={date} meal={view.meal} entries={entries.filter((entry) => entry.meal === view.meal)} notice={view.notice} onBack={() => { playEffect('select'); setView({ kind: 'overview' }) }} onAdd={() => openAdd(view.meal)} onEdit={(editing) => { playEffect('select'); setView({ kind: 'add', meal: view.meal, editing }) }} onChanged={refresh} />
+  const handleSnap = async () => {
+    playEffect('select')
+    setCaptureError('')
+    setCapturing(true)
+    try {
+      const imageDataUri = await captureMealPhoto()
+      const estimate = await estimateCaloriesFromImage(imageDataUri)
+      const draft: FoodDraft = {
+        name: summarizePhotoItems(estimate.items),
+        categoryId: 'other',
+        kcal: estimate.totalCalories,
+        protein: estimate.totalProteinG,
+        carbs: estimate.totalCarbsG,
+        fat: estimate.totalFatG,
+        imageDataUri,
+        aiEstimated: true,
+        aiItems: estimate.items,
+      }
+      const beforeCount = entries.length
+      await addFoodLog(date, inferMealFromTime(new Date()), draft)
+      const effect = foodSaveEffect(false, beforeCount)
+      if (effect) playEffect(effect)
+      await refresh()
+    } catch (error) {
+      if (!(error instanceof PhotoCaptureCancelledError)) {
+        setCaptureError(error instanceof Error ? error.message : 'Could not analyze that photo. Try again or log it manually.')
+      }
+    } finally {
+      setCapturing(false)
+    }
+  }
+
+  const requestDelete = (entry: FoodLogEntry) => { playEffect('select'); setPendingDelete(entry) }
+  const confirmDelete = async () => { if (!pendingDelete) return; await deleteFoodLog(pendingDelete.id); setPendingDelete(undefined); await refresh() }
+
+  if (view.kind === 'add') return <FoodEditor date={date} editing={view.editing} onBack={() => { playEffect('select'); setView({ kind: 'overview' }) }} onSaved={async () => { await refresh(); setView({ kind: 'overview' }) }} />
 
   return <PageFrame className="page-stack food-page" data-food-design="goal-first">
     <header className="food-header">
@@ -186,18 +225,18 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
       {showFoodLanding ? <ContextRail
         title={targets?.enabled && targets.calorieTarget > 0 ? 'Log food against your targets' : 'Log food with or without targets'}
         actions={targets?.enabled && targets.calorieTarget > 0 ? (
-          <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log First Food</button>
+          <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd() }}>Log First Food</button>
         ) : (
           <>
-            <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log Without Targets</button>
+            <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd() }}>Log Without Targets</button>
             {onOpenSettings ? <button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); onOpenSettings() }}>Set My Targets</button> : null}
           </>
         )}
       >
         {targets?.enabled && targets.calorieTarget > 0 ? (
-          <p>Calories and protein lead while full nutrition stays available below. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log to reuse a saved snapshot.</p>
+          <p>Calories and protein lead while full nutrition stays available below. Snap a photo of any meal for an instant estimate, or log without a photo.</p>
         ) : (
-          <p>Food remains fully usable without targets. Log Breakfast, Lunch, Supper, or Dinner at any time. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log.</p>
+          <p>Food remains fully usable without targets. Snap a photo of any meal for an instant estimate, or log without a photo at any time.</p>
         )}
       </ContextRail> : null}
       {showFirstFoodFeedback && entries.length > 0 ? <ContextRail
@@ -211,36 +250,52 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
           <p>{Math.round(totals.kcal ?? 0)} kcal · {Math.round(totals.protein ?? 0)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.</p>
         )}
       </ContextRail> : null}
-      {targets?.enabled && targets.calorieTarget > 0 ? <DailyTargetsCard targets={targets} totals={totals} onEdit={() => onOpenSettings?.()} onLog={() => openAdd('breakfast')} /> : <TargetsOffCard totals={totals} onLog={() => openAdd('breakfast')} />}
-      <section className="food-meals-section" aria-labelledby="food-meals-title"><header><div><p className="eyebrow">Daily checkpoints</p><h2 id="food-meals-title">Meals</h2></div><span>{entries.length} {entries.length === 1 ? 'item' : 'items'} logged</span></header><div className="food-meal-list">{FOOD_MEALS.map((meal) => { const mealEntries = entries.filter((entry) => entry.meal === meal); const mealTotals = nutritionTotals(mealEntries); return <article className="food-meal-card" key={meal}><button className="food-meal-open" type="button" onClick={() => { playEffect('select'); setView({ kind: 'meal', meal }) }}><MealIcon meal={meal} /><span className="food-meal-title"><strong>{FOOD_MEAL_LABELS[meal]}</strong><small>{mealEntries.length ? `${mealEntries.length} ${mealEntries.length === 1 ? 'item' : 'items'} · ${valueOrDash(mealTotals.kcal, 'kcal')} · ${valueOrDash(mealTotals.protein)}` : 'No food logged'}</small><em className={mealEntries.length ? undefined : 'is-empty'}>{mealEntries.length ? 'Logged' : 'Empty'}</em></span><ChevronRight aria-hidden="true" /></button><button className="food-meal-add" type="button" onClick={() => openAdd(meal)}><Plus size={16} aria-hidden="true" /> Add</button></article> })}</div></section>
+      {targets?.enabled && targets.calorieTarget > 0 ? <DailyTargetsCard targets={targets} totals={totals} onEdit={() => onOpenSettings?.()} onLog={() => openAdd()} /> : <TargetsOffCard totals={totals} onLog={() => openAdd()} />}
+      <section className="food-log-section" aria-labelledby="food-log-title">
+        <header><div><p className="eyebrow">Today's log</p><h2 id="food-log-title">Log</h2></div><span>{entries.length} {entries.length === 1 ? 'item' : 'items'} logged</span></header>
+        <div className="food-log-actions">
+          <button className="primary-button food-snap-btn" type="button" disabled={capturing} onClick={() => void handleSnap()}>
+            <Camera size={18} aria-hidden="true" /> {capturing ? 'Analyzing…' : 'Snap a Meal'}
+          </button>
+          <button className="text-button food-manual-btn" type="button" onClick={() => openAdd()}>Log without a photo</button>
+        </div>
+        {captureError ? <p className="form-error food-capture-error" role="alert">{captureError}</p> : null}
+        <div className="food-log-list">
+          {sortedEntries.length ? sortedEntries.map((entry) => (
+            <FoodLogRow key={entry.id} entry={entry} onEdit={() => openAdd(entry)} onDelete={() => requestDelete(entry)} />
+          )) : <div className="panel food-detail-empty"><Camera size={28} aria-hidden="true" /><h2>No Food Logged</h2><p>Snap a photo of your next meal to get started.</p></div>}
+        </div>
+      </section>
       <section className="food-nutrition-details"><button className="food-nutrition-toggle" type="button" aria-expanded={nutritionOpen} onClick={() => setNutritionOpen((open) => !open)}><span><strong>Nutrition Details</strong><small>Carbs · Fat · Fiber · Sugar · Sat. fat · Sodium</small></span>{nutritionOpen ? <ChevronUp /> : <ChevronDown />}</button>{nutritionOpen ? <div className="food-nutrition-content"><MacroStrip nutrition={totals} secondary /><NutritionBreakdownCard key={date} entries={entries} totals={totals} /></div> : null}</section>
     </>}
     {tutorialOpen ? <GuideDialog eyebrow="How Food Works" steps={foodTutorialSteps} onClose={() => { setTutorialOpen(false); void markTutorialSeen('food') }} /> : null}
+    {pendingDelete ? <div className="food-dialog-backdrop"><section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title"><header><div><p className="eyebrow">Food log</p><h2 id="delete-food-title">Delete Food Entry?</h2></div></header><p>Remove "{pendingDelete.foodName}" from your log?</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void confirmDelete() }}>Delete</button></div></section></div> : null}
   </PageFrame>
 }
 
-function MealDetail({ date, meal, entries, notice, onBack, onAdd, onEdit, onChanged }: { date: string; meal: FoodMeal; entries: FoodLogEntry[]; notice?: string; onBack: () => void; onAdd: () => void; onEdit: (entry: FoodLogEntry) => void; onChanged: () => Promise<void> }) {
-  const { playEffect } = useAudio()
-  const [pendingDelete, setPendingDelete] = useState<FoodLogEntry>()
-  useBackNavigation('food-entry-delete', Boolean(pendingDelete), () => setPendingDelete(undefined), 50)
-  const totals = nutritionTotals(entries)
-  const remove = async () => { if (!pendingDelete) return; await deleteFoodLog(pendingDelete.id); setPendingDelete(undefined); await onChanged() }
-
-  return <div className="page-stack food-page food-meal-detail">
-    <header className="food-subheader"><button className="back-button" type="button" aria-label="Back to Food" onClick={onBack}><ArrowLeft /></button><MealIcon meal={meal} /><div><p className="eyebrow">{formatDate(date)}</p><h1>{FOOD_MEAL_LABELS[meal]}</h1></div></header>
-    {notice ? <div className="food-success" role="status"><strong>{notice}</strong><span>Stored nutrition snapshot logged unchanged.</span></div> : null}
-    <section className="panel food-meal-totals"><p className="eyebrow">Meal totals</p><MacroStrip nutrition={totals} /><div className="food-meal-secondary"><MacroStrip nutrition={totals} secondary /></div></section>
-    <section className="food-entry-list" aria-label={`${FOOD_MEAL_LABELS[meal]} entries`}>{entries.length ? entries.map((entry) => {
-      const categoryLabel = entry.categoryKind === 'unresolved' ? 'Uncategorized' : entry.categoryName
-      return <article className="food-entry" key={entry.id}><FoodCategoryIcon categoryId={entry.categoryId ?? 'other'} label={categoryLabel} color={entry.customCategoryColor} /><div className="food-entry-copy"><h2>{entry.foodName}</h2><p>{categoryLabel} · {valueOrDash(entry.kcal, 'kcal')} · {valueOrDash(entry.protein)}</p></div><div className="food-entry-actions"><button type="button" aria-label={`Edit ${entry.foodName}`} onClick={() => onEdit(entry)}><Pencil size={18} /></button><button type="button" aria-label={`Delete ${entry.foodName}`} onClick={() => { playEffect('select'); setPendingDelete(entry) }}><Trash2 size={18} /></button></div></article>
-    }) : <div className="panel food-detail-empty"><MealIcon meal={meal} /><h2>No Food Logged</h2><p>Start logging your {FOOD_MEAL_LABELS[meal].toLowerCase()}.</p><button className="primary-button" type="button" onClick={onAdd}><Plus size={18} /> Add Food</button></div>}</section>
-    {entries.length ? <button className="primary-button food-sticky-add" type="button" onClick={onAdd}><Plus size={18} /> Add Food</button> : null}
-    {pendingDelete ? <div className="food-dialog-backdrop"><section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title"><header><div><p className="eyebrow">{FOOD_MEAL_LABELS[meal]} entry</p><h2 id="delete-food-title">Delete Food Entry?</h2></div></header><p>Remove “{pendingDelete.foodName}” from {FOOD_MEAL_LABELS[meal]}?</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section></div> : null}
-  </div>
+function FoodLogRow({ entry, onEdit, onDelete }: { entry: FoodLogEntry; onEdit: () => void; onDelete: () => void }) {
+  const time = useMemo(() => new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(entry.createdAt)), [entry.createdAt])
+  const categoryLabel = entry.categoryKind === 'unresolved' ? 'Uncategorized' : entry.categoryName
+  return <article className="food-log-row">
+    <div className="food-log-thumb">
+      {entry.imageDataUri ? <img src={entry.imageDataUri} alt="" /> : <FoodCategoryIcon categoryId={entry.categoryId ?? 'other'} label={categoryLabel} color={entry.customCategoryColor} />}
+    </div>
+    <div className="food-log-copy">
+      <h3>{entry.foodName}</h3>
+      <p className="food-log-macros">{valueOrDash(entry.kcal, 'kcal')} · {valueOrDash(entry.protein)} protein</p>
+      <p className="food-log-meta"><MealIcon meal={entry.meal} /> {FOOD_MEAL_LABELS[entry.meal]} · {time}</p>
+      {entry.aiEstimated ? <button className="text-button food-log-error-btn" type="button" onClick={onEdit}>Error? Fix this</button> : null}
+    </div>
+    <div className="food-entry-actions">
+      <button type="button" aria-label={`Edit ${entry.foodName}`} onClick={onEdit}><Pencil size={18} /></button>
+      <button type="button" aria-label={`Delete ${entry.foodName}`} onClick={onDelete}><Trash2 size={18} /></button>
+    </div>
+  </article>
 }
 
-function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; meal: FoodMeal; editing?: FoodLogEntry; onBack: () => void; onSaved: (notice?: string) => Promise<void> }) {
+function FoodEditor({ date, editing, onBack, onSaved }: { date: string; editing?: FoodLogEntry; onBack: () => void; onSaved: () => Promise<void> }) {
   const { playEffect } = useAudio()
+  const meal = useMemo(() => editing?.meal ?? inferMealFromTime(new Date()), [editing])
   const [stage, setStage] = useState<'suggestions' | 'details'>(editing ? 'details' : 'suggestions')
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<RememberedFood[]>([])
@@ -323,7 +378,7 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
       await addFoodLog(date, meal, rememberedFoodDraft(food))
       const effect = foodSaveEffect(false, beforeCount)
       if (effect) playEffect(effect)
-      await onSaved(`${food.name} added to ${FOOD_MEAL_LABELS[meal]}`)
+      await onSaved()
     } catch (reason) {
       setError({ message: reason instanceof Error ? reason.message : 'Unable to log food.' })
     } finally {
@@ -349,7 +404,7 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
         const effect = foodSaveEffect(false, beforeCount)
         if (effect) playEffect(effect)
       }
-      await onSaved(editing ? `${trimmedName} updated` : `${trimmedName} added to ${FOOD_MEAL_LABELS[meal]}`)
+      await onSaved()
     } catch (reason) {
       setError({ message: reason instanceof Error ? reason.message : 'Unable to save food.' })
     } finally {
