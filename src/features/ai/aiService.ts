@@ -144,7 +144,7 @@ function sanitizeEstimate(raw: any): CalorieEstimate {
  * Estimates calories and macros from a snapped meal photo using the Cloudflare
  * Worker running Llama 3.2 11B Vision Instruct.
  */
-export async function estimateCaloriesFromImage(imageDataUri: string): Promise<CalorieEstimate> {
+export async function estimateCaloriesFromImage(imageDataUri: string, retries = 1): Promise<CalorieEstimate> {
   const proxyUrl = getAiProxyUrl()
   if (!proxyUrl) {
     throw new Error('AI Proxy URL is not configured. Please specify VITE_AI_PROXY_URL in your .env file.')
@@ -180,6 +180,10 @@ export async function estimateCaloriesFromImage(imageDataUri: string): Promise<C
     return sanitizeEstimate(data.estimate)
   } catch (err: any) {
     clearTimeout(timeoutId)
+    if (retries > 0 && err.name !== 'AbortError') {
+      console.warn('[PulseFit AI] Calorie estimation attempt failed, retrying...', err?.message || err)
+      return estimateCaloriesFromImage(imageDataUri, retries - 1)
+    }
     if (err.name === 'AbortError') {
       throw new Error('Calorie estimation timed out. Please check your network connection and try again.')
     }

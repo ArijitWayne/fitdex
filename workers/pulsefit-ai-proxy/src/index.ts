@@ -103,25 +103,89 @@ STRICT JSON SCHEMA:
   "totalFatG": 8
 }`
 
-function cleanJsonOutput(raw: string): any {
-  if (typeof raw === 'object' && raw !== null) return raw
+function parseCalorieMarkdownFallback(text: string): any {
+  const items: Array<{ name: string; portion: string; calories: number }> = []
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
 
-  let cleaned = String(raw || '').trim()
-  if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7)
-  if (cleaned.startsWith('```')) cleaned = cleaned.slice(3)
-  if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3)
-  cleaned = cleaned.trim()
+  for (const line of lines) {
+    if (/total/i.test(line)) continue
+    const calMatch = line.match(/(\d+)\s*(?:kcal|cal|calories)/i)
+    if (calMatch) {
+      const calories = parseInt(calMatch[1], 10)
+      const name = line.replace(/^[*\-•\d.]+\s*/, '').split(/[:–-]/)[0].replace(/\([^)]+\)/, '').trim()
+      const portionMatch = line.match(/\(([^)]+)\)/) || line.match(/(\d+\s*(?:g|oz|cup|slice|piece|medium|bowl|plate)s?)/i)
+      const portion = portionMatch ? portionMatch[1].trim() : '1 serving'
+      if (name && !Number.isNaN(calories)) {
+        items.push({ name, portion, calories })
+      }
+    }
+  }
 
+  const totalCalMatch = text.match(/total\s*(?:calories)?[:\s]+~?\s*(\d+)/i) || text.match(/(\d+)\s*(?:kcal|calories)\s*(?:total)?/i)
+  const proteinMatch = text.match(/protein[:\s]+~?\s*(\d+)\s*g/i) || text.match(/(\d+)\s*g\s*protein/i)
+  const carbsMatch = text.match(/carbs?[:\s]+~?\s*(\d+)\s*g/i) || text.match(/(\d+)\s*g\s*carb/i)
+  const fatMatch = text.match(/fat[:\s]+~?\s*(\d+)\s*g/i) || text.match(/(\d+)\s*g\s*fat/i)
+
+  const totalCalories = totalCalMatch ? parseInt(totalCalMatch[1], 10) : items.reduce((s, i) => s + i.calories, 0)
+  const totalProteinG = proteinMatch ? parseInt(proteinMatch[1], 10) : 0
+  const totalCarbsG = carbsMatch ? parseInt(carbsMatch[1], 10) : 0
+  const totalFatG = fatMatch ? parseInt(fatMatch[1], 10) : 0
+
+  if (items.length > 0 || totalCalories > 0) {
+    return { items, totalCalories, totalProteinG, totalCarbsG, totalFatG }
+  }
+
+  return null
+}
+
+function cleanJsonOutput(raw: any): any {
+  if (typeof raw === 'object' && raw !== null) {
+    if (raw.items || raw.monday || raw.totalCalories !== undefined) return raw
+    if (raw.response && typeof raw.response === 'object') return raw.response
+  }
+
+  const rawStr = typeof raw === 'string' ? raw : (raw?.response || raw?.choices?.[0]?.message?.content || '')
+  let cleaned = String(rawStr || '').trim()
+
+  // 1. Extract content within ```json ... ``` or ``` ... ``` if present
+  const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+  if (codeBlockMatch && codeBlockMatch[1]) {
+    cleaned = codeBlockMatch[1].trim()
+  }
+
+  // 2. Direct JSON parse
   try {
     return JSON.parse(cleaned)
-  } catch {
-    const firstBrace = cleaned.indexOf('{')
-    const lastBrace = cleaned.lastIndexOf('}')
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1))
-    }
-    throw new Error('Unable to extract valid JSON from model response')
-  }
+  } catch {}
+
+  // 3. Find outermost { ... }
+  const firstBrace = cleaned.indexOf('{')
+  const lastBrace = cleaned.lastIndexOf('}')
+  const candidate = (firstBrace !== -1 && lastBrace > firstBrace)
+    ? cleaned.slice(firstBrace, lastBrace + 1)
+    : cleaned
+
+  try {
+    return JSON.parse(candidate)
+  } catch {}
+
+  // 4. Sanitize candidate JSON (comments, trailing commas, numbers with units, single quotes, unquoted keys)
+  const repaired = candidate
+    .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
+    .replace(/,\s*([}\]])/g, '$1')
+    .replace(/:\s*~?\s*(\d+(?:\.\d+)?)\s*(?:kcal|cal|calories|grams?|g|mg|oz)\b/gi, ': $1')
+    .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
+    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+
+  try {
+    return JSON.parse(repaired)
+  } catch {}
+
+  // 5. Fallback: Parse markdown list / prose if model responded without valid JSON
+  const fallback = parseCalorieMarkdownFallback(rawStr)
+  if (fallback) return fallback
+
+  throw new Error('Unable to extract valid JSON from model response')
 }
 
 // When the completion looks like JSON, Workers AI parses `response` into an object
@@ -157,9 +221,8 @@ async function runModel(env: Env, messages: any[]): Promise<any> {
 async function estimateCaloriesFromImage(env: Env, imageDataUri: string): Promise<any> {
   const rawBase64 = imageDataUri.replace(/^data:image\/\w+;base64,/, '')
   const res = await env.AI.run(VISION_MODEL as any, {
-    // Llama 3.2 11B Vision follows the JSON-only instruction far more reliably when
-    // the full task + schema sits in the user turn rather than the system turn —
-    // with the schema in `system` it ignored the format and wrote markdown prose instead.
+    // Llama 3.2 11B Vision is optimized for a single user turn with the image.
+    // Putting the entire prompt in the user turn avoids markdown prose drift.
     messages: [
       { role: 'system', content: 'You are a nutrition estimation assistant for a fitness app. Respond with strict JSON only — no markdown, no headings, no explanation.' },
       { role: 'user', content: SYSTEM_CALORIE_PROMPT },

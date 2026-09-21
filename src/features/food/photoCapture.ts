@@ -13,6 +13,9 @@ export async function captureMealPhoto(): Promise<string> {
       resultType: CameraResultType.DataUrl,
       source: CameraSource.Camera,
       quality: 70,
+      width: 1024,
+      height: 1024,
+      correctOrientation: true,
       allowEditing: false,
       saveToGallery: false,
     })

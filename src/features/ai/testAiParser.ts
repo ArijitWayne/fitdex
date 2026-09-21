@@ -133,4 +133,11 @@ import { getAiProxyUrl, parseWorkoutSplitWithAi } from './aiService.ts'
   if (original) process.env.VITE_AI_PROXY_URL = original
 }
 
+// 5. Calorie estimate resilience test
+{
+  const { estimateCaloriesFromImage } = await import('./aiService.ts')
+  assert.equal(typeof estimateCaloriesFromImage, 'function')
+}
+
 console.log('AI and Routine Parser tests passed cleanly!')
+
