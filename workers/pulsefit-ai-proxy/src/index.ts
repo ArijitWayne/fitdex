@@ -82,28 +82,62 @@ STRICT JSON SCHEMA:
   "sunday": { ... }
 }`
 
-const SYSTEM_CALORIE_PROMPT = `You are a nutrition estimation assistant for a fitness app. A user has photographed a meal or snack.
+const SYSTEM_CALORIE_PROMPT = `You are a strict nutrition estimation assistant for a fitness app.
+A user has photographed an image expecting it to be a meal, snack, or drink.
 
-TASK:
+STEP 1: FOOD VALIDATION (CRITICAL)
+First, determine whether the photo actually contains edible food, a beverage, or a prepared meal.
+- If the image depicts human body parts (hands, fingers, skin, face, arms, feet), clothes, pets, everyday non-food objects (phones, keys, remotes, laptops, furniture, gym equipment), or an empty/blurry scene with NO identifiable food:
+  You MUST IMMEDIATELY classify it as NOT food.
+  NEVER guess food on human hands, skin, or non-food objects (e.g., do NOT hallucinate "Grilled Chicken", "Meat", or "Bread" when looking at human fingers or skin).
+  Set "isFood": false, provide a polite explanation in "unrecognizedReason", set "items": [], and set all totals to 0.
+
+- Only if real, edible food or drink is clearly visible, set "isFood": true and proceed to Step 2.
+
+STEP 2: NUTRITION ESTIMATION (ONLY IF FOOD IS PRESENT)
 Identify every distinct food item visible in the photo. For each item, estimate a realistic portion size and its calories, using visual cues (plate/bowl/cup size, relative proportions) to judge quantity. Then compute totals across all items.
 
 RULES:
 1. List each distinct food separately — do not merge different foods into one line.
 2. Portion estimates should read naturally (e.g. "150g", "1 cup", "2 slices", "1 medium").
 3. Calories and macros are estimates from typical nutrition data for that food and portion — be reasonable, not overly precise.
-4. If the photo contains no identifiable food, return an empty "items" array and zero totals.
-5. Output MUST be ONLY raw JSON, no markdown code fences, no explanation, no preamble.
+4. Output MUST be ONLY raw JSON adhering strictly to the schema below, with no markdown code fences, no explanation, no preamble.
 
-STRICT JSON SCHEMA:
+STRICT JSON SCHEMA (WHEN FOOD IS DETECTED):
 {
+  "isFood": true,
   "items": [ { "name": "Grilled Chicken Breast", "portion": "150g", "calories": 250 } ],
   "totalCalories": 250,
   "totalProteinG": 40,
   "totalCarbsG": 5,
   "totalFatG": 8
+}
+
+STRICT JSON SCHEMA (WHEN NO FOOD IS DETECTED / BODY PART / OBJECT):
+{
+  "isFood": false,
+  "unrecognizedReason": "No edible food detected. The photo appears to show a human hand or non-food object.",
+  "items": [],
+  "totalCalories": 0,
+  "totalProteinG": 0,
+  "totalCarbsG": 0,
+  "totalFatG": 0
 }`
 
 function parseCalorieMarkdownFallback(text: string): any {
+  // If the model output mentions no food, hand, fingers, skin, or non-food:
+  if (/no\s*(?:food|edible|meal)|not\s*(?:a\s*)?food|hand|finger|skin|body\s*part|non-food|cannot\s*(?:identify|detect|find)\s*(?:any\s*)?food/i.test(text)) {
+    return {
+      isFood: false,
+      unrecognizedReason: 'No edible food detected in the photo.',
+      items: [],
+      totalCalories: 0,
+      totalProteinG: 0,
+      totalCarbsG: 0,
+      totalFatG: 0,
+    }
+  }
+
   const items: Array<{ name: string; portion: string; calories: number }> = []
   const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
 
@@ -131,61 +165,106 @@ function parseCalorieMarkdownFallback(text: string): any {
   const totalCarbsG = carbsMatch ? parseInt(carbsMatch[1], 10) : 0
   const totalFatG = fatMatch ? parseInt(fatMatch[1], 10) : 0
 
-  if (items.length > 0 || totalCalories > 0) {
-    return { items, totalCalories, totalProteinG, totalCarbsG, totalFatG }
+  if (items.length > 0 && totalCalories > 0) {
+    return { isFood: true, items, totalCalories, totalProteinG, totalCarbsG, totalFatG }
   }
 
-  return null
+  return {
+    isFood: false,
+    unrecognizedReason: 'No edible food detected in the photo.',
+    items: [],
+    totalCalories: 0,
+    totalProteinG: 0,
+    totalCarbsG: 0,
+    totalFatG: 0,
+  }
 }
 
 function cleanJsonOutput(raw: any): any {
+  let parsed: any = null
+
   if (typeof raw === 'object' && raw !== null) {
-    if (raw.items || raw.monday || raw.totalCalories !== undefined) return raw
-    if (raw.response && typeof raw.response === 'object') return raw.response
+    if (raw.items || raw.monday || raw.totalCalories !== undefined || raw.isFood !== undefined) parsed = raw
+    else if (raw.response && typeof raw.response === 'object') parsed = raw.response
   }
 
-  const rawStr = typeof raw === 'string' ? raw : (raw?.response || raw?.choices?.[0]?.message?.content || '')
-  let cleaned = String(rawStr || '').trim()
+  if (!parsed) {
+    const rawStr = typeof raw === 'string' ? raw : (raw?.response || raw?.choices?.[0]?.message?.content || '')
+    let cleaned = String(rawStr || '').trim()
 
-  // 1. Extract content within ```json ... ``` or ``` ... ``` if present
-  const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-  if (codeBlockMatch && codeBlockMatch[1]) {
-    cleaned = codeBlockMatch[1].trim()
+    // 1. Extract content within ```json ... ``` or ``` ... ``` if present
+    const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (codeBlockMatch && codeBlockMatch[1]) {
+      cleaned = codeBlockMatch[1].trim()
+    }
+
+    // 2. Direct JSON parse
+    try {
+      parsed = JSON.parse(cleaned)
+    } catch {}
+
+    // 3. Find outermost { ... }
+    if (!parsed) {
+      const firstBrace = cleaned.indexOf('{')
+      const lastBrace = cleaned.lastIndexOf('}')
+      const candidate = (firstBrace !== -1 && lastBrace > firstBrace)
+        ? cleaned.slice(firstBrace, lastBrace + 1)
+        : cleaned
+
+      try {
+        parsed = JSON.parse(candidate)
+      } catch {}
+
+      // 4. Sanitize candidate JSON (comments, trailing commas, numbers with units, single quotes, unquoted keys)
+      if (!parsed) {
+        const repaired = candidate
+          .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
+          .replace(/,\s*([}\]])/g, '$1')
+          .replace(/:\s*~?\s*(\d+(?:\.\d+)?)\s*(?:kcal|cal|calories|grams?|g|mg|oz)\b/gi, ': $1')
+          .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
+          .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+
+        try {
+          parsed = JSON.parse(repaired)
+        } catch {}
+      }
+    }
+
+    // 5. Fallback: Parse markdown list / prose if model responded without valid JSON
+    if (!parsed) {
+      const fallback = parseCalorieMarkdownFallback(rawStr)
+      if (fallback) return fallback
+      throw new Error('Unable to extract valid JSON from model response')
+    }
   }
 
-  // 2. Direct JSON parse
-  try {
-    return JSON.parse(cleaned)
-  } catch {}
+  // If this is a calorie response (has items or totalCalories or isFood), normalize isFood
+  if (parsed && (Array.isArray(parsed.items) || parsed.totalCalories !== undefined || parsed.isFood !== undefined)) {
+    const hasItems = Array.isArray(parsed.items) && parsed.items.length > 0
+    const hasCals = Number(parsed.totalCalories) > 0
+    if (parsed.isFood === false || (!hasItems && !hasCals)) {
+      return {
+        isFood: false,
+        unrecognizedReason: parsed.unrecognizedReason || 'No edible food detected in the photo.',
+        items: [],
+        totalCalories: 0,
+        totalProteinG: 0,
+        totalCarbsG: 0,
+        totalFatG: 0,
+      }
+    }
+    return {
+      isFood: parsed.isFood ?? true,
+      unrecognizedReason: parsed.unrecognizedReason,
+      items: parsed.items || [],
+      totalCalories: Number(parsed.totalCalories) || 0,
+      totalProteinG: Number(parsed.totalProteinG) || 0,
+      totalCarbsG: Number(parsed.totalCarbsG) || 0,
+      totalFatG: Number(parsed.totalFatG) || 0,
+    }
+  }
 
-  // 3. Find outermost { ... }
-  const firstBrace = cleaned.indexOf('{')
-  const lastBrace = cleaned.lastIndexOf('}')
-  const candidate = (firstBrace !== -1 && lastBrace > firstBrace)
-    ? cleaned.slice(firstBrace, lastBrace + 1)
-    : cleaned
-
-  try {
-    return JSON.parse(candidate)
-  } catch {}
-
-  // 4. Sanitize candidate JSON (comments, trailing commas, numbers with units, single quotes, unquoted keys)
-  const repaired = candidate
-    .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
-    .replace(/,\s*([}\]])/g, '$1')
-    .replace(/:\s*~?\s*(\d+(?:\.\d+)?)\s*(?:kcal|cal|calories|grams?|g|mg|oz)\b/gi, ': $1')
-    .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
-    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
-
-  try {
-    return JSON.parse(repaired)
-  } catch {}
-
-  // 5. Fallback: Parse markdown list / prose if model responded without valid JSON
-  const fallback = parseCalorieMarkdownFallback(rawStr)
-  if (fallback) return fallback
-
-  throw new Error('Unable to extract valid JSON from model response')
+  return parsed
 }
 
 // When the completion looks like JSON, Workers AI parses `response` into an object
@@ -224,7 +303,7 @@ async function estimateCaloriesFromImage(env: Env, imageDataUri: string): Promis
     // Llama 3.2 11B Vision is optimized for a single user turn with the image.
     // Putting the entire prompt in the user turn avoids markdown prose drift.
     messages: [
-      { role: 'system', content: 'You are a nutrition estimation assistant for a fitness app. Respond with strict JSON only — no markdown, no headings, no explanation.' },
+      { role: 'system', content: 'You are a nutrition estimation assistant for a fitness app. You MUST first verify if the image contains actual edible food. If the image shows human body parts (hands, fingers, skin), animals, or non-food objects, you must return {"isFood": false, "unrecognizedReason": "...", "items": [], "totalCalories": 0, "totalProteinG": 0, "totalCarbsG": 0, "totalFatG": 0}. Respond with strict JSON only — no markdown, no headings, no explanation.' },
       { role: 'user', content: SYSTEM_CALORIE_PROMPT },
     ],
     image: rawBase64,

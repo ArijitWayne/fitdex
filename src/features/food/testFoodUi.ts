@@ -68,6 +68,8 @@ assert.match(page, /Remembered foods in this category will also be removed\. His
 assert.match(page, /entry\.categoryKind === 'unresolved' \? 'Uncategorized'/)
 assert.match(page, /role="alertdialog"/)
 assert.match(page, /useBackNavigation\('food-entry-delete',[\s\S]*, 50\)/)
+assert.match(page, /useBackNavigation\('food-unrecognized-dialog',[\s\S]*, 50\)/)
+assert.match(page, /Food Not Recognized/)
 assert.match(page, /useBackNavigation\('food-category-delete',[\s\S]*, 70\)/)
 assert.match(page, /useBackNavigation\('food-category-create',[\s\S]*, 60\)/)
 assert.match(page, /useBackNavigation\('food-category-sheet',[\s\S]*, 50\)/)

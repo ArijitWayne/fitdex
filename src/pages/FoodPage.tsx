@@ -146,8 +146,10 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [capturing, setCapturing] = useState(false)
   const [captureError, setCaptureError] = useState('')
   const [pendingDelete, setPendingDelete] = useState<FoodLogEntry>()
+  const [unrecognizedPhoto, setUnrecognizedPhoto] = useState<{ imageDataUri?: string; reason?: string }>()
   useBackNavigation('food-subview', view.kind !== 'overview', () => setView({ kind: 'overview' }))
   useBackNavigation('food-entry-delete', Boolean(pendingDelete), () => setPendingDelete(undefined), 50)
+  useBackNavigation('food-unrecognized-dialog', Boolean(unrecognizedPhoto), () => setUnrecognizedPhoto(undefined), 50)
 
   const refresh = useCallback(async () => {
     const [entriesResult, gamificationResult] = await Promise.all([listFoodEntries(date), loadGamificationDashboard()])
@@ -176,9 +178,17 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
     playEffect('select')
     setCaptureError('')
     setCapturing(true)
+    let capturedUri = ''
     try {
-      const imageDataUri = await captureMealPhoto()
-      const estimate = await estimateCaloriesFromImage(imageDataUri)
+      capturedUri = await captureMealPhoto()
+      const estimate = await estimateCaloriesFromImage(capturedUri)
+      if (!estimate.isFood || estimate.items.length === 0 || estimate.totalCalories <= 0) {
+        setUnrecognizedPhoto({
+          imageDataUri: capturedUri,
+          reason: estimate.unrecognizedReason || 'FitDex could not recognize any edible food in this photo.',
+        })
+        return
+      }
       const draft: FoodDraft = {
         name: summarizePhotoItems(estimate.items),
         categoryId: 'other',
@@ -186,7 +196,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
         protein: estimate.totalProteinG,
         carbs: estimate.totalCarbsG,
         fat: estimate.totalFatG,
-        imageDataUri,
+        imageDataUri: capturedUri,
         aiEstimated: true,
         aiItems: estimate.items,
       }
@@ -197,7 +207,11 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
       await refresh()
     } catch (error) {
       if (!(error instanceof PhotoCaptureCancelledError)) {
-        setCaptureError(error instanceof Error ? error.message : 'Could not analyze that photo. Try again or log it manually.')
+        const message = error instanceof Error ? error.message : 'Could not analyze that photo. Try again or log it manually.'
+        setUnrecognizedPhoto({
+          imageDataUri: capturedUri || undefined,
+          reason: message,
+        })
       }
     } finally {
       setCapturing(false)
@@ -270,6 +284,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
     </>}
     {tutorialOpen ? <GuideDialog eyebrow="How Food Works" steps={foodTutorialSteps} onClose={() => { setTutorialOpen(false); void markTutorialSeen('food') }} /> : null}
     {pendingDelete ? <div className="food-dialog-backdrop"><section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title"><header><div><p className="eyebrow">Food log</p><h2 id="delete-food-title">Delete Food Entry?</h2></div></header><p>Remove "{pendingDelete.foodName}" from your log?</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void confirmDelete() }}>Delete</button></div></section></div> : null}
+    {unrecognizedPhoto ? <div className="food-dialog-backdrop"><section className="food-dialog unrecognized-food-dialog" role="dialog" aria-modal="true" aria-labelledby="unrecognized-food-title"><header><div><p className="eyebrow">Photo Analysis</p><h2 id="unrecognized-food-title">Food Not Recognized</h2></div><button type="button" aria-label="Close dialog" onClick={() => { playEffect('select'); setUnrecognizedPhoto(undefined) }}><X size={20} /></button></header>{unrecognizedPhoto.imageDataUri ? <div className="unrecognized-photo-preview"><img src={unrecognizedPhoto.imageDataUri} alt="Captured meal attempt" /></div> : null}<div className="unrecognized-food-body"><p className="unrecognized-food-message">{unrecognizedPhoto.reason || 'FitDex could not recognize any edible food in this photo.'}</p><p className="unrecognized-food-tip"><strong>Tip:</strong> Ensure your meal is well-lit, in focus, and centered. Avoid hands, objects, or photos taken too far away.</p></div><div className="food-dialog-actions unrecognized-food-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setUnrecognizedPhoto(undefined); openAdd() }}>Log Manually</button><button className="primary-button" type="button" onClick={() => { playEffect('select'); setUnrecognizedPhoto(undefined); void handleSnap() }}><Camera size={16} aria-hidden="true" /> Retake Photo</button></div></section></div> : null}
   </PageFrame>
 }
 

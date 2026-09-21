@@ -133,10 +133,58 @@ import { getAiProxyUrl, parseWorkoutSplitWithAi } from './aiService.ts'
   if (original) process.env.VITE_AI_PROXY_URL = original
 }
 
-// 5. Calorie estimate resilience test
+// 5. Calorie estimate resilience and non-food validation tests
 {
-  const { estimateCaloriesFromImage } = await import('./aiService.ts')
+  const { estimateCaloriesFromImage, sanitizeEstimate } = await import('./aiService.ts')
   assert.equal(typeof estimateCaloriesFromImage, 'function')
+  assert.equal(typeof sanitizeEstimate, 'function')
+
+  // Valid food payload
+  const validFood = sanitizeEstimate({
+    isFood: true,
+    items: [{ name: 'Oatmeal with Blueberries', portion: '1 bowl', calories: 250 }],
+    totalCalories: 250,
+    totalProteinG: 8,
+    totalCarbsG: 45,
+    totalFatG: 4,
+  })
+  assert.equal(validFood.isFood, true)
+  assert.equal(validFood.items.length, 1)
+  assert.equal(validFood.items[0].name, 'Oatmeal with Blueberries')
+  assert.equal(validFood.totalCalories, 250)
+  assert.equal(validFood.unrecognizedReason, undefined)
+
+  // Non-food payload (e.g. human hand or non-food object)
+  const nonFood = sanitizeEstimate({
+    isFood: false,
+    unrecognizedReason: 'No edible food detected. The photo appears to show a human hand.',
+    items: [],
+    totalCalories: 0,
+    totalProteinG: 0,
+    totalCarbsG: 0,
+    totalFatG: 0,
+  })
+  assert.equal(nonFood.isFood, false)
+  assert.equal(nonFood.items.length, 0)
+  assert.equal(nonFood.totalCalories, 0)
+  assert.equal(nonFood.unrecognizedReason, 'No edible food detected. The photo appears to show a human hand.')
+
+  // Hallucinated payload with isFood: false but items populated -> must be sanitized to empty
+  const forcedClean = sanitizeEstimate({
+    isFood: false,
+    items: [{ name: 'Chicken', portion: '1 hand', calories: 200 }],
+    totalCalories: 200,
+  })
+  assert.equal(forcedClean.isFood, false)
+  assert.equal(forcedClean.items.length, 0)
+  assert.equal(forcedClean.totalCalories, 0)
+  assert.ok(forcedClean.unrecognizedReason)
+
+  // Zero calories or empty items -> must be classified as not food
+  const emptyEstimate = sanitizeEstimate({ items: [], totalCalories: 0 })
+  assert.equal(emptyEstimate.isFood, false)
+  assert.equal(emptyEstimate.items.length, 0)
+  assert.ok(emptyEstimate.unrecognizedReason)
 }
 
 console.log('AI and Routine Parser tests passed cleanly!')

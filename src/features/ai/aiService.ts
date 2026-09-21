@@ -10,6 +10,8 @@ export interface GenerateSplitParams {
 }
 
 export interface CalorieEstimate {
+  isFood: boolean
+  unrecognizedReason?: string
   items: PhotoEstimatedItem[]
   totalCalories: number
   totalProteinG: number
@@ -120,7 +122,7 @@ export async function generateWeeklySplitWithAi(params: GenerateSplitParams): Pr
   }
 }
 
-function sanitizeEstimate(raw: any): CalorieEstimate {
+export function sanitizeEstimate(raw: any): CalorieEstimate {
   const items: PhotoEstimatedItem[] = Array.isArray(raw?.items)
     ? raw.items
       .map((item: any) => ({
@@ -128,15 +130,28 @@ function sanitizeEstimate(raw: any): CalorieEstimate {
         portion: String(item?.portion || '').trim(),
         calories: Number(item?.calories),
       }))
-      .filter((item: PhotoEstimatedItem) => item.name && Number.isFinite(item.calories))
+      .filter((item: PhotoEstimatedItem) => item.name && Number.isFinite(item.calories) && item.calories > 0)
     : []
   const toNonNegative = (value: unknown) => (Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : 0)
+  const totalCalories = toNonNegative(raw?.totalCalories)
+
+  // Strict isFood determination:
+  // Must NOT be explicitly false, and MUST have detected items and calories > 0
+  const isExplicitlyNotFood = raw?.isFood === false
+  const isFood = !isExplicitlyNotFood && items.length > 0 && totalCalories > 0
+
+  const unrecognizedReason = typeof raw?.unrecognizedReason === 'string' && raw.unrecognizedReason.trim()
+    ? raw.unrecognizedReason.trim()
+    : (!isFood ? 'FitDex could not recognize any edible food in this photo.' : undefined)
+
   return {
-    items,
-    totalCalories: toNonNegative(raw?.totalCalories),
-    totalProteinG: toNonNegative(raw?.totalProteinG),
-    totalCarbsG: toNonNegative(raw?.totalCarbsG),
-    totalFatG: toNonNegative(raw?.totalFatG),
+    isFood,
+    unrecognizedReason,
+    items: isFood ? items : [],
+    totalCalories: isFood ? totalCalories : 0,
+    totalProteinG: isFood ? toNonNegative(raw?.totalProteinG) : 0,
+    totalCarbsG: isFood ? toNonNegative(raw?.totalCarbsG) : 0,
+    totalFatG: isFood ? toNonNegative(raw?.totalFatG) : 0,
   }
 }
 
