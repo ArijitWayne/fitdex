@@ -329,6 +329,8 @@ export interface PhotoEstimatedItem {
 export interface FoodLogEntry extends EntityRecord, FoodNutrition {
   date: string
   meal: FoodMeal
+  /** Dynamic context-aware meal classification (e.g. "Late Night Snack", "Midnight Snack", "Breakfast", "Snack"). */
+  mealType?: string
   rememberedFoodId?: string
   foodName: string
   categoryId?: PredefinedFoodCategoryId

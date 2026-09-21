@@ -12,6 +12,9 @@ export interface GenerateSplitParams {
 export interface CalorieEstimate {
   isFood: boolean
   unrecognizedReason?: string
+  foodName?: string
+  mealType?: string
+  time?: string
   items: PhotoEstimatedItem[]
   totalCalories: number
   totalProteinG: number
@@ -122,7 +125,7 @@ export async function generateWeeklySplitWithAi(params: GenerateSplitParams): Pr
   }
 }
 
-export function sanitizeEstimate(raw: any): CalorieEstimate {
+export function sanitizeEstimate(raw: any, fallbackTime?: string): CalorieEstimate {
   const items: PhotoEstimatedItem[] = Array.isArray(raw?.items)
     ? raw.items
       .map((item: any) => ({
@@ -144,9 +147,16 @@ export function sanitizeEstimate(raw: any): CalorieEstimate {
     ? raw.unrecognizedReason.trim()
     : (!isFood ? 'FitDex could not recognize any edible food in this photo.' : undefined)
 
+  const foodName = typeof raw?.foodName === 'string' && raw.foodName.trim() ? raw.foodName.trim() : undefined
+  const mealType = typeof raw?.mealType === 'string' && raw.mealType.trim() ? raw.mealType.trim() : undefined
+  const time = typeof raw?.time === 'string' && raw.time.trim() ? raw.time.trim() : fallbackTime
+
   return {
     isFood,
     unrecognizedReason,
+    foodName: isFood ? foodName : undefined,
+    mealType: isFood ? mealType : undefined,
+    time: isFood ? time : undefined,
     items: isFood ? items : [],
     totalCalories: isFood ? totalCalories : 0,
     totalProteinG: isFood ? toNonNegative(raw?.totalProteinG) : 0,
@@ -156,10 +166,10 @@ export function sanitizeEstimate(raw: any): CalorieEstimate {
 }
 
 /**
- * Estimates calories and macros from a snapped meal photo using the Cloudflare
- * Worker running Llama 3.2 11B Vision Instruct.
+ * Estimates calories, food classification, and macros from a snapped meal photo
+ * using the Cloudflare Worker running Llama 3.2 11B Vision Instruct.
  */
-export async function estimateCaloriesFromImage(imageDataUri: string, retries = 1): Promise<CalorieEstimate> {
+export async function estimateCaloriesFromImage(imageDataUri: string, localTime?: string, retries = 1): Promise<CalorieEstimate> {
   const proxyUrl = getAiProxyUrl()
   if (!proxyUrl) {
     throw new Error('AI Proxy URL is not configured. Please specify VITE_AI_PROXY_URL in your .env file.')
@@ -168,6 +178,8 @@ export async function estimateCaloriesFromImage(imageDataUri: string, retries = 
     throw new Error('No photo provided to analyze.')
   }
 
+  const effectiveTime = localTime || new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date())
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 60000)
 
@@ -175,7 +187,7 @@ export async function estimateCaloriesFromImage(imageDataUri: string, retries = 
     const response = await fetch(`${proxyUrl}/estimate-calories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: imageDataUri }),
+      body: JSON.stringify({ image: imageDataUri, localTime: effectiveTime }),
       signal: controller.signal,
     })
 
@@ -192,12 +204,12 @@ export async function estimateCaloriesFromImage(imageDataUri: string, retries = 
       throw new Error('Invalid response structure received from AI Proxy.')
     }
 
-    return sanitizeEstimate(data.estimate)
+    return sanitizeEstimate(data.estimate, effectiveTime)
   } catch (err: any) {
     clearTimeout(timeoutId)
     if (retries > 0 && err.name !== 'AbortError') {
       console.warn('[PulseFit AI] Calorie estimation attempt failed, retrying...', err?.message || err)
-      return estimateCaloriesFromImage(imageDataUri, retries - 1)
+      return estimateCaloriesFromImage(imageDataUri, localTime, retries - 1)
     }
     if (err.name === 'AbortError') {
       throw new Error('Calorie estimation timed out. Please check your network connection and try again.')

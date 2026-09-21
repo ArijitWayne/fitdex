@@ -8,6 +8,7 @@ export interface FoodDraft extends FoodNutrition {
   name: string
   categoryId: PredefinedFoodCategoryId
   customCategoryId?: string
+  mealType?: string
   imageDataUri?: string
   aiEstimated?: boolean
   aiItems?: PhotoEstimatedItem[]
@@ -98,7 +99,7 @@ export async function addFoodLog(date: string, meal: FoodMeal, draft: FoodDraft)
       await db.rememberedFoods.add(remembered)
     }
     const entry: FoodLogEntry = {
-      id: recordId('food-log'), date, meal, rememberedFoodId: remembered.id, foodName: name,
+      id: recordId('food-log'), date, meal, mealType: draft.mealType, rememberedFoodId: remembered.id, foodName: name,
       categoryId: draft.categoryId, ...category, ...nutritionFrom(draft), createdAt: timestamp, updatedAt: timestamp,
       imageDataUri: draft.imageDataUri, aiEstimated: draft.aiEstimated, aiItems: draft.aiItems,
     }
@@ -118,7 +119,7 @@ export async function editFoodLog(id: string, draft: FoodDraft) {
     if (!existing) throw new Error('Food entry not found.')
     const category = await resolveCategory(draft)
     const updated: FoodLogEntry = {
-      ...existing, foodName: name, categoryId: draft.categoryId, ...category, ...nutritionFrom(draft), updatedAt: nowIso(),
+      ...existing, foodName: name, categoryId: draft.categoryId, mealType: draft.mealType ?? existing.mealType, ...category, ...nutritionFrom(draft), updatedAt: nowIso(),
       // Any manual save through this form (including the photo "Error?" correction) means the numbers are now user-verified.
       aiEstimated: false,
     }

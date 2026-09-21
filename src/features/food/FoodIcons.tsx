@@ -32,7 +32,16 @@ function Sprite({ src, label, Fallback }: { src: string; label: string; Fallback
   </span>
 }
 
-export function MealIcon({ meal }: { meal: FoodMeal }) {
+export function MealIcon({ meal, mealType }: { meal: FoodMeal; mealType?: string }) {
+  if (mealType) {
+    const lower = mealType.toLowerCase()
+    if (lower.includes('snack') || lower.includes('midnight') || lower.includes('late')) {
+      return <span className="food-sprite" role="img" aria-label={mealType}><Apple size={16} aria-hidden={true} /></span>
+    }
+    if (lower.includes('drink') || lower.includes('beverage') || lower.includes('milk') || lower.includes('shake')) {
+      return <span className="food-sprite" role="img" aria-label={mealType}><Milk size={16} aria-hidden={true} /></span>
+    }
+  }
   return <Sprite src={mealIconAssetPath(meal)} label={`${meal} meal`} Fallback={mealFallbacks[meal]} />
 }
 

@@ -7,7 +7,7 @@ import { RetroLoader } from '../components/ui/RetroLoader'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
 import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getFrequentFoods, getRecentFoods, listCustomCategories, listFoodEntries, listMealEntries, searchRememberedFoods, type FoodDraft } from '../features/food/foodRepository'
-import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, inferMealFromTime, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, summarizePhotoItems, type NutritionBreakdown } from '../features/food/foodModel'
+import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, inferMealClassification, inferMealFromTime, mapMealTypeToCanonicalMeal, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, summarizePhotoItems, type NutritionBreakdown } from '../features/food/foodModel'
 import { captureMealPhoto, PhotoCaptureCancelledError } from '../features/food/photoCapture'
 import { estimateCaloriesFromImage } from '../features/ai/aiService'
 import { GuideDialog } from '../features/help/GuideDialog'
@@ -181,7 +181,9 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
     let capturedUri = ''
     try {
       capturedUri = await captureMealPhoto()
-      const estimate = await estimateCaloriesFromImage(capturedUri)
+      const now = new Date()
+      const localTime = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(now)
+      const estimate = await estimateCaloriesFromImage(capturedUri, localTime)
       if (!estimate.isFood || estimate.items.length === 0 || estimate.totalCalories <= 0) {
         setUnrecognizedPhoto({
           imageDataUri: capturedUri,
@@ -189,9 +191,14 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
         })
         return
       }
+      const detectedName = estimate.foodName || summarizePhotoItems(estimate.items)
+      const detectedMealType = estimate.mealType || inferMealClassification(now)
+      const canonicalMeal = mapMealTypeToCanonicalMeal(detectedMealType, now)
+
       const draft: FoodDraft = {
-        name: summarizePhotoItems(estimate.items),
+        name: detectedName,
         categoryId: 'other',
+        mealType: detectedMealType,
         kcal: estimate.totalCalories,
         protein: estimate.totalProteinG,
         carbs: estimate.totalCarbsG,
@@ -201,7 +208,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
         aiItems: estimate.items,
       }
       const beforeCount = entries.length
-      await addFoodLog(date, inferMealFromTime(new Date()), draft)
+      await addFoodLog(date, canonicalMeal, draft)
       const effect = foodSaveEffect(false, beforeCount)
       if (effect) playEffect(effect)
       await refresh()
@@ -291,6 +298,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
 function FoodLogRow({ entry, onEdit, onDelete }: { entry: FoodLogEntry; onEdit: () => void; onDelete: () => void }) {
   const time = useMemo(() => new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(entry.createdAt)), [entry.createdAt])
   const categoryLabel = entry.categoryKind === 'unresolved' ? 'Uncategorized' : entry.categoryName
+  const mealLabel = entry.mealType || FOOD_MEAL_LABELS[entry.meal] || 'Meal'
   return <article className="food-log-row">
     <div className="food-log-thumb">
       {entry.imageDataUri ? <img src={entry.imageDataUri} alt="" /> : <FoodCategoryIcon categoryId={entry.categoryId ?? 'other'} label={categoryLabel} color={entry.customCategoryColor} />}
@@ -298,7 +306,7 @@ function FoodLogRow({ entry, onEdit, onDelete }: { entry: FoodLogEntry; onEdit: 
     <div className="food-log-copy">
       <h3>{entry.foodName}</h3>
       <p className="food-log-macros">{valueOrDash(entry.kcal, 'kcal')} · {valueOrDash(entry.protein)} protein</p>
-      <p className="food-log-meta"><MealIcon meal={entry.meal} /> {FOOD_MEAL_LABELS[entry.meal]} · {time}</p>
+      <p className="food-log-meta"><MealIcon meal={entry.meal} mealType={entry.mealType} /> {mealLabel} · {time}</p>
       {entry.aiEstimated ? <button className="text-button food-log-error-btn" type="button" onClick={onEdit}>Error? Fix this</button> : null}
     </div>
     <div className="food-entry-actions">

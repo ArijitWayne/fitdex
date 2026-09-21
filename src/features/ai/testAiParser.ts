@@ -185,6 +185,33 @@ import { getAiProxyUrl, parseWorkoutSplitWithAi } from './aiService.ts'
   assert.equal(emptyEstimate.isFood, false)
   assert.equal(emptyEstimate.items.length, 0)
   assert.ok(emptyEstimate.unrecognizedReason)
+
+  // Dynamic meal classification and time extraction
+  const lateNightMilk = sanitizeEstimate({
+    isFood: true,
+    foodName: 'Amul Lactose-Free Milk',
+    mealType: 'Late Night Snack',
+    time: '12:35 AM',
+    items: [{ name: 'Amul Lactose-Free Milk', portion: '250ml', calories: 104 }],
+    totalCalories: 104,
+    totalProteinG: 8,
+    totalCarbsG: 12,
+    totalFatG: 3,
+  })
+  assert.equal(lateNightMilk.isFood, true)
+  assert.equal(lateNightMilk.foodName, 'Amul Lactose-Free Milk')
+  assert.equal(lateNightMilk.mealType, 'Late Night Snack')
+  assert.equal(lateNightMilk.time, '12:35 AM')
+}
+
+// 6. Midnight & Late Night meal classification tests (never call 12 AM breakfast)
+{
+  const { inferMealFromTime, inferMealClassification, mapMealTypeToCanonicalMeal } = await import('../food/foodModel.ts')
+  const midnightDate = new Date(2026, 8, 22, 0, 35) // 12:35 AM
+  assert.notEqual(inferMealFromTime(midnightDate), 'breakfast', '12:35 AM must never be classified as breakfast')
+  assert.equal(inferMealFromTime(midnightDate), 'dinner')
+  assert.equal(inferMealClassification(midnightDate), 'Late Night Snack')
+  assert.equal(mapMealTypeToCanonicalMeal('Late Night Snack', midnightDate), 'dinner')
 }
 
 console.log('AI and Routine Parser tests passed cleanly!')

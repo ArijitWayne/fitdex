@@ -7308,6 +7308,7 @@ button.session-hub-link {
 }
 
 .food-sprite {
+  position: relative;
   display: grid;
   width: 44px;
   min-width: 44px;
@@ -7869,9 +7870,25 @@ button.session-hub-link {
 }
 
 .food-log-meta .food-sprite {
-  width: 14px;
-  min-width: 14px;
-  height: 14px;
+  position: relative;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.food-log-meta .food-sprite img {
+  position: static;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.food-log-meta .food-sprite svg {
+  width: 16px;
+  height: 16px;
 }
 
 .food-log-error-btn {

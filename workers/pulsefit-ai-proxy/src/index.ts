@@ -82,7 +82,7 @@ STRICT JSON SCHEMA:
   "sunday": { ... }
 }`
 
-const SYSTEM_CALORIE_PROMPT = `You are a strict nutrition estimation assistant for a fitness app.
+const SYSTEM_CALORIE_PROMPT = `You are an expert nutrition and meal classification assistant for a fitness app.
 A user has photographed an image expecting it to be a meal, snack, or drink.
 
 STEP 1: FOOD VALIDATION (CRITICAL)
@@ -94,23 +94,32 @@ First, determine whether the photo actually contains edible food, a beverage, or
 
 - Only if real, edible food or drink is clearly visible, set "isFood": true and proceed to Step 2.
 
-STEP 2: NUTRITION ESTIMATION (ONLY IF FOOD IS PRESENT)
-Identify every distinct food item visible in the photo. For each item, estimate a realistic portion size and its calories, using visual cues (plate/bowl/cup size, relative proportions) to judge quantity. Then compute totals across all items.
-
-RULES:
-1. List each distinct food separately — do not merge different foods into one line.
-2. Portion estimates should read naturally (e.g. "150g", "1 cup", "2 slices", "1 medium").
-3. Calories and macros are estimates from typical nutrition data for that food and portion — be reasonable, not overly precise.
-4. Output MUST be ONLY raw JSON adhering strictly to the schema below, with no markdown code fences, no explanation, no preamble.
+STEP 2: FOOD RECOGNITION, MEAL CLASSIFICATION & NUTRITION ESTIMATION (ONLY IF FOOD IS PRESENT)
+1. "foodName": A clear, concise title recognizing what this meal or beverage is (e.g. "Amul Lactose-Free Milk", "Grilled Chicken Breast with Rice", "Dark Chocolate Snack", "Protein Shake").
+2. "mealType": A dynamic, context-aware meal classification. Do NOT restrict to fixed categories. Common examples include:
+   - "Late Night Snack" or "Midnight Snack" (for food/drinks consumed past midnight or late night, e.g. 11:00 PM - 4:59 AM)
+   - "Breakfast" (morning meal, e.g. 5:00 AM - 10:59 AM)
+   - "Morning Snack" / "Brunch"
+   - "Lunch" (midday meal, e.g. 11:00 AM - 2:59 PM)
+   - "Afternoon Snack" / "Post-Workout Snack"
+   - "Dinner" (evening meal, e.g. 6:00 PM - 10:59 PM)
+   - "Beverage" / "Drink"
+   CRITICAL TIME RULE: If the photo was captured past midnight or late at night (e.g. 11:00 PM to 4:59 AM), NEVER call it "Breakfast". Eating a snack or drinking milk at 12 AM / midnight is a "Late Night Snack", "Midnight Snack", or "Snack".
+3. "time": Return the formatted meal time string (e.g. "12:35 AM") based on the client local time provided in the request context.
+4. "items": Identify every distinct food/drink item visible in the photo. For each item, estimate a realistic portion size and its calories.
+5. "totalCalories", "totalProteinG", "totalCarbsG", "totalFatG": Compute realistic totals across all items.
 
 STRICT JSON SCHEMA (WHEN FOOD IS DETECTED):
 {
   "isFood": true,
-  "items": [ { "name": "Grilled Chicken Breast", "portion": "150g", "calories": 250 } ],
-  "totalCalories": 250,
-  "totalProteinG": 40,
-  "totalCarbsG": 5,
-  "totalFatG": 8
+  "foodName": "Amul Lactose-Free Milk",
+  "mealType": "Late Night Snack",
+  "time": "12:35 AM",
+  "items": [ { "name": "Amul Lactose-Free Milk", "portion": "250ml", "calories": 104 } ],
+  "totalCalories": 104,
+  "totalProteinG": 8,
+  "totalCarbsG": 12,
+  "totalFatG": 3
 }
 
 STRICT JSON SCHEMA (WHEN NO FOOD IS DETECTED / BODY PART / OBJECT):
@@ -255,6 +264,9 @@ function cleanJsonOutput(raw: any): any {
     }
     return {
       isFood: parsed.isFood ?? true,
+      foodName: typeof parsed.foodName === 'string' && parsed.foodName.trim() ? parsed.foodName.trim() : undefined,
+      mealType: typeof parsed.mealType === 'string' && parsed.mealType.trim() ? parsed.mealType.trim() : undefined,
+      time: typeof parsed.time === 'string' && parsed.time.trim() ? parsed.time.trim() : undefined,
       unrecognizedReason: parsed.unrecognizedReason,
       items: parsed.items || [],
       totalCalories: Number(parsed.totalCalories) || 0,
@@ -297,14 +309,15 @@ async function runModel(env: Env, messages: any[]): Promise<any> {
 // llama-3.2-11b-vision-instruct uses Cloudflare's bespoke vision schema: plain-text
 // messages plus a top-level `image` field (raw base64, no data-URI prefix) — not
 // the OpenAI-style image_url content-part format some other Workers AI models use.
-async function estimateCaloriesFromImage(env: Env, imageDataUri: string): Promise<any> {
+async function estimateCaloriesFromImage(env: Env, imageDataUri: string, localTime?: string): Promise<any> {
   const rawBase64 = imageDataUri.replace(/^data:image\/\w+;base64,/, '')
+  const timeContext = localTime ? `\n\nUSER CONTEXT:\nThe user snapped this photo at local time: ${localTime}. Use this time to accurately determine the "mealType" (e.g. past midnight / 12 AM is a "Late Night Snack" or "Midnight Snack", NEVER "Breakfast") and return "time": "${localTime}".` : ''
   const res = await env.AI.run(VISION_MODEL as any, {
     // Llama 3.2 11B Vision is optimized for a single user turn with the image.
     // Putting the entire prompt in the user turn avoids markdown prose drift.
     messages: [
-      { role: 'system', content: 'You are a nutrition estimation assistant for a fitness app. You MUST first verify if the image contains actual edible food. If the image shows human body parts (hands, fingers, skin), animals, or non-food objects, you must return {"isFood": false, "unrecognizedReason": "...", "items": [], "totalCalories": 0, "totalProteinG": 0, "totalCarbsG": 0, "totalFatG": 0}. Respond with strict JSON only — no markdown, no headings, no explanation.' },
-      { role: 'user', content: SYSTEM_CALORIE_PROMPT },
+      { role: 'system', content: 'You are an expert nutrition and meal classification assistant for a fitness app. You MUST first verify if the image contains actual edible food. If the image shows human body parts (hands, fingers, skin), animals, or non-food objects, you must return {"isFood": false, "unrecognizedReason": "...", "items": [], "totalCalories": 0, "totalProteinG": 0, "totalCarbsG": 0, "totalFatG": 0}. Respond with strict JSON only adhering to the schema — no markdown, no headings, no explanation.' },
+      { role: 'user', content: SYSTEM_CALORIE_PROMPT + timeContext },
     ],
     image: rawBase64,
     max_tokens: 2048,
@@ -396,6 +409,7 @@ ${customInstructions ? `- Custom Notes: ${customInstructions}` : ''}`
 
       if (url.pathname === '/estimate-calories') {
         const image = String(body.image || '').trim()
+        const localTime = String(body.localTime || '').trim()
         if (!image) {
           return new Response(JSON.stringify({ error: 'Missing required field: image' }), {
             status: 400,
@@ -403,7 +417,7 @@ ${customInstructions ? `- Custom Notes: ${customInstructions}` : ''}`
           })
         }
 
-        const estimate = await estimateCaloriesFromImage(env, image)
+        const estimate = await estimateCaloriesFromImage(env, image, localTime)
         return new Response(JSON.stringify({ success: true, estimate }), {
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         })
