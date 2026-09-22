@@ -130,18 +130,33 @@ export function sanitizeEstimate(raw: any, fallbackTime?: string): CalorieEstima
     ? raw.items
       .map((item: any) => ({
         name: String(item?.name || '').trim(),
-        portion: String(item?.portion || '').trim(),
+        portion: String(item?.portion || '').trim() || '1 serving',
         calories: Number(item?.calories),
       }))
       .filter((item: PhotoEstimatedItem) => item.name && Number.isFinite(item.calories) && item.calories > 0)
     : []
   const toNonNegative = (value: unknown) => (Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : 0)
-  const totalCalories = toNonNegative(raw?.totalCalories)
+  let totalCalories = toNonNegative(raw?.totalCalories)
+  const totalProteinG = toNonNegative(raw?.totalProteinG)
+  const totalCarbsG = toNonNegative(raw?.totalCarbsG)
+  const totalFatG = toNonNegative(raw?.totalFatG)
+
+  const itemCalSum = items.reduce((s, it) => s + it.calories, 0)
+  if (itemCalSum > 0) {
+    if (totalCalories === 0 || Math.abs(totalCalories - itemCalSum) > 25) {
+      totalCalories = itemCalSum
+    }
+  }
+
+  const macroCalories = Math.round(totalProteinG * 4 + totalCarbsG * 4 + totalFatG * 9)
+  if (totalCalories === 0 && macroCalories > 0) {
+    totalCalories = macroCalories
+  }
 
   // Strict isFood determination:
-  // Must NOT be explicitly false, and MUST have detected items and calories > 0
+  // Must NOT be explicitly false, and MUST have detected items or calories > 0
   const isExplicitlyNotFood = raw?.isFood === false
-  const isFood = !isExplicitlyNotFood && items.length > 0 && totalCalories > 0
+  const isFood = !isExplicitlyNotFood && (items.length > 0 || totalCalories > 0)
 
   const unrecognizedReason = typeof raw?.unrecognizedReason === 'string' && raw.unrecognizedReason.trim()
     ? raw.unrecognizedReason.trim()
@@ -159,9 +174,9 @@ export function sanitizeEstimate(raw: any, fallbackTime?: string): CalorieEstima
     time: isFood ? time : undefined,
     items: isFood ? items : [],
     totalCalories: isFood ? totalCalories : 0,
-    totalProteinG: isFood ? toNonNegative(raw?.totalProteinG) : 0,
-    totalCarbsG: isFood ? toNonNegative(raw?.totalCarbsG) : 0,
-    totalFatG: isFood ? toNonNegative(raw?.totalFatG) : 0,
+    totalProteinG: isFood ? totalProteinG : 0,
+    totalCarbsG: isFood ? totalCarbsG : 0,
+    totalFatG: isFood ? totalFatG : 0,
   }
 }
 

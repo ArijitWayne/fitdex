@@ -29,7 +29,9 @@ DIRECT OUTPUT ONLY:
 Do NOT output chain-of-thought, reasoning, or thinking blocks. Output ONLY the raw JSON object.
 
 CRITICAL PHONETIC & SPEECH ERROR CORRECTIONS:
-Voice dictation frequently misrecognizes exercise terminology. You MUST correct phonetic homophones:
+Voice dictation frequently misrecognizes exercise terminology. You MUST correct phonetic homophones and exact exercise mappings:
+- "bayesian curl / bayesian curls / baysian / baisian" -> "Bayesian Cable Curl" (NEVER identify as "band curl" or generic curl)
+- "cable crunch / cable crunches / rope crunch / rope crunches" -> "Kneeling Cable Abs Crunches" (NEVER identify as "Cable Kneeling Side Crunch")
 - "tumble / tumble press" -> "dumbbell / dumbbell press"
 - "leg breast / breast" -> "leg press / press"
 - "face pools / pools" -> "face pull / pull"
@@ -38,7 +40,7 @@ Voice dictation frequently misrecognizes exercise terminology. You MUST correct 
 - "landline / landline press" -> "landmine / landmine press"
 - "dead lift" -> "deadlift"
 - "flies" -> "fly"
-- "abs with cable" -> "cable abs crunch"
+- "abs with cable" -> "Kneeling Cable Abs Crunches"
 
 SETS & REPS EXTRACTION REQUIREMENTS:
 You MUST accurately detect and extract the planned sets and reps for each exercise:
@@ -82,7 +84,7 @@ STRICT JSON SCHEMA:
   "sunday": { ... }
 }`
 
-const SYSTEM_CALORIE_PROMPT = `You are an expert nutrition and meal classification assistant for a fitness app.
+const SYSTEM_CALORIE_PROMPT = `You are an expert clinical dietitian, sports nutritionist, and computer vision food analyst for a fitness app.
 A user has photographed an image expecting it to be a meal, snack, or drink.
 
 STEP 1: FOOD VALIDATION (CRITICAL)
@@ -94,20 +96,63 @@ First, determine whether the photo actually contains edible food, a beverage, or
 
 - Only if real, edible food or drink is clearly visible, set "isFood": true and proceed to Step 2.
 
-STEP 2: FOOD RECOGNITION, MEAL CLASSIFICATION & NUTRITION ESTIMATION (ONLY IF FOOD IS PRESENT)
-1. "foodName": A clear, concise title recognizing what this meal or beverage is (e.g. "Amul Lactose-Free Milk", "Grilled Chicken Breast with Rice", "Dark Chocolate Snack", "Protein Shake").
-2. "mealType": A dynamic, context-aware meal classification. Do NOT restrict to fixed categories. Common examples include:
-   - "Late Night Snack" or "Midnight Snack" (for food/drinks consumed past midnight or late night, e.g. 11:00 PM - 4:59 AM)
-   - "Breakfast" (morning meal, e.g. 5:00 AM - 10:59 AM)
+STEP 2: FOOD RECOGNITION, MEAL CLASSIFICATION & ACCURATE NUTRITION ESTIMATION (ONLY IF FOOD IS PRESENT)
+1. "foodName": A clear, concise title recognizing what this meal or beverage is (e.g. "Amul Lactose-Free Milk", "Grilled Chicken Breast with Jasmine Rice", "Dark Chocolate Snack", "Whey Protein Shake").
+2. "mealType": A dynamic, context-aware meal classification based on the provided time:
+   - "Late Night Snack" or "Midnight Snack" (food/drinks consumed 11:00 PM - 4:59 AM)
+   - "Breakfast" (morning meal, 5:00 AM - 10:59 AM)
    - "Morning Snack" / "Brunch"
-   - "Lunch" (midday meal, e.g. 11:00 AM - 2:59 PM)
+   - "Lunch" (midday meal, 11:00 AM - 2:59 PM)
    - "Afternoon Snack" / "Post-Workout Snack"
-   - "Dinner" (evening meal, e.g. 6:00 PM - 10:59 PM)
+   - "Dinner" (evening meal, 6:00 PM - 10:59 PM)
    - "Beverage" / "Drink"
-   CRITICAL TIME RULE: If the photo was captured past midnight or late at night (e.g. 11:00 PM to 4:59 AM), NEVER call it "Breakfast". Eating a snack or drinking milk at 12 AM / midnight is a "Late Night Snack", "Midnight Snack", or "Snack".
+   CRITICAL TIME RULE: If the photo was captured past midnight or late at night (11:00 PM to 4:59 AM), NEVER call it "Breakfast". Eating a snack or drinking milk at 12 AM / midnight is a "Late Night Snack", "Midnight Snack", or "Snack".
 3. "time": Return the formatted meal time string (e.g. "12:35 AM") based on the client local time provided in the request context.
-4. "items": Identify every distinct food/drink item visible in the photo. For each item, estimate a realistic portion size and its calories.
-5. "totalCalories", "totalProteinG", "totalCarbsG", "totalFatG": Compute realistic totals across all items.
+
+4. PACKAGING & PORTION GROUNDING RULES:
+   - If a commercial carton, bottle, can, or packaged item is visible (e.g. Amul milk, protein bar, yogurt cup, beverage can):
+     * Check if package volume or net weight is visible (e.g. 200ml, 250ml, 500ml, 1L, 330ml, 50g, 100g).
+     * If the user has poured a glass or cup, a standard drinking glass is ~200-250ml (do NOT charge the full 1000ml container unless they are drinking the whole carton).
+     * If unopened or drinking directly from carton/bottle, use the container volume (e.g. 250ml tetra pack = 250ml).
+   - If a plate or bowl is shown, estimate weight in grams using standard density benchmarks below.
+
+5. STANDARD USDA NUTRITION DENSITY BENCHMARKS (USE THESE REALISTIC DENSITIES):
+   - Milks & Dairy:
+     * Whole milk (cow/buffalo): ~62-65 kcal per 100ml. Standard glass (250ml) = ~155 kcal (8g protein, 12g carbs, 8g fat).
+     * Toned / 2% / Lactose-Free milk: ~50-52 kcal per 100ml. Standard glass (250ml) = ~130 kcal (8g protein, 12g carbs, 4.5g fat). Tetra pack (200ml) = ~104 kcal.
+     * Skim / Non-fat milk: ~35 kcal per 100ml. Standard glass (250ml) = ~88 kcal (8.5g protein, 12g carbs, 0.5g fat).
+     * Plain Greek yogurt (0% fat): ~59 kcal/100g (10g protein, 3.6g carbs, 0g fat). Whole Greek yogurt: ~100 kcal/100g.
+     * Whey protein powder: 1 standard scoop (30g) = ~120 kcal (24g protein, 2g carbs, 1.5g fat).
+     * Paneer / Indian Cottage Cheese: ~265 kcal/100g (18g protein, 4g carbs, 20g fat).
+   - Meats & Proteins:
+     * Cooked Chicken Breast (boneless, skinless): ~165 kcal per 100g (31g protein, 0g carbs, 3.6g fat). Palm-sized portion = ~150g (~250 kcal).
+     * Cooked Chicken Thigh (skinless): ~209 kcal per 100g (26g protein, 0g carbs, 11g fat).
+     * Cooked Lean Beef (90/10): ~215 kcal per 100g (26g protein, 0g carbs, 12g fat).
+     * Cooked Salmon: ~206 kcal per 100g (22g protein, 0g carbs, 12g fat). Fillet = ~150g (~310 kcal).
+     * Whole Egg (boiled/poached): ~72 kcal (6g protein, 0.5g carbs, 5g fat) per large egg.
+     * Fried Egg (with 1 tsp oil/butter): ~115 kcal (6g protein, 0.5g carbs, 10g fat).
+     * Tofu (firm): ~80 kcal per 100g (9g protein, 2g carbs, 5g fat).
+   - Grains & Starches:
+     * Cooked White/Brown Rice: ~130 kcal per 100g (2.7g protein, 28g carbs, 0.3g fat). 1 standard cooked cup (~160g) = ~210 kcal.
+     * Cooked Pasta / Noodles: ~150 kcal per 100g (5g protein, 30g carbs, 1g fat). 1 cup (~140g) = ~210 kcal.
+     * Roti / Chapati: 1 medium piece (40g) = ~115 kcal (3.5g protein, 20g carbs, 2.5g fat).
+     * Bread: 1 standard slice (30g) = ~80 kcal (3g protein, 14g carbs, 1g fat).
+     * Boiled/Baked Potato: ~87 kcal per 100g. Medium potato (~170g) = ~150 kcal.
+     * Cooked Oatmeal (in water): ~70 kcal per 100g. 1 bowl (~240g) = ~165 kcal.
+   - Hidden Cooking Oils & Fats (CRITICAL):
+     * Cooking oil / Butter / Ghee = ~880-900 kcal per 100g.
+     * 1 tablespoon (14g) = ~120 kcal (14g fat).
+     * 1 teaspoon (5g) = ~45 kcal (5g fat).
+     * For any sautéd, stir-fried, curry, or restaurant dish, ALWAYS account for 1-2 tsp (45-90 kcal) of cooking oil/butter.
+   - Snacks & Common Foods:
+     * Regular Pizza Slice: ~270 kcal (100g).
+     * Cheeseburger: ~450-520 kcal.
+     * Medium Banana: ~105 kcal (27g carbs).
+     * Medium Apple: ~95 kcal (25g carbs).
+
+6. ATWATER MACRO MATHEMATICAL INTEGRITY (THE 4-4-9 RULE):
+   totalCalories MUST equal: Math.round(totalProteinG * 4 + totalCarbsG * 4 + totalFatG * 9).
+   Ensure individual item calories in "items" sum up exactly to "totalCalories". Never output contradictory numbers.
 
 STRICT JSON SCHEMA (WHEN FOOD IS DETECTED):
 {
@@ -115,11 +160,11 @@ STRICT JSON SCHEMA (WHEN FOOD IS DETECTED):
   "foodName": "Amul Lactose-Free Milk",
   "mealType": "Late Night Snack",
   "time": "12:35 AM",
-  "items": [ { "name": "Amul Lactose-Free Milk", "portion": "250ml", "calories": 104 } ],
-  "totalCalories": 104,
+  "items": [ { "name": "Amul Lactose-Free Milk", "portion": "250ml", "calories": 130 } ],
+  "totalCalories": 130,
   "totalProteinG": 8,
   "totalCarbsG": 12,
-  "totalFatG": 3
+  "totalFatG": 5
 }
 
 STRICT JSON SCHEMA (WHEN NO FOOD IS DETECTED / BODY PART / OBJECT):
@@ -247,11 +292,39 @@ function cleanJsonOutput(raw: any): any {
     }
   }
 
-  // If this is a calorie response (has items or totalCalories or isFood), normalize isFood
+  // If this is a calorie response (has items or totalCalories or isFood), normalize isFood & reconcile calculations
   if (parsed && (Array.isArray(parsed.items) || parsed.totalCalories !== undefined || parsed.isFood !== undefined)) {
-    const hasItems = Array.isArray(parsed.items) && parsed.items.length > 0
-    const hasCals = Number(parsed.totalCalories) > 0
-    if (parsed.isFood === false || (!hasItems && !hasCals)) {
+    const rawItems = Array.isArray(parsed.items) ? parsed.items : []
+    const items = rawItems
+      .map((it: any) => ({
+        name: String(it?.name || '').trim(),
+        portion: String(it?.portion || '').trim() || '1 serving',
+        calories: Number(it?.calories) || 0,
+      }))
+      .filter((it: any) => it.name && it.calories > 0)
+
+    let totalCalories = Number(parsed.totalCalories) || 0
+    let totalProteinG = Math.max(0, Number(parsed.totalProteinG) || 0)
+    let totalCarbsG = Math.max(0, Number(parsed.totalCarbsG) || 0)
+    let totalFatG = Math.max(0, Number(parsed.totalFatG) || 0)
+
+    const itemCalSum = items.reduce((s: number, i: any) => s + i.calories, 0)
+
+    // Reconcile totalCalories with sum of individual items
+    if (itemCalSum > 0) {
+      if (totalCalories === 0 || Math.abs(totalCalories - itemCalSum) > 25) {
+        totalCalories = itemCalSum
+      }
+    }
+
+    // Macro-calorie integrity (Atwater calculation: 4*P + 4*C + 9*F)
+    const macroCalories = Math.round(totalProteinG * 4 + totalCarbsG * 4 + totalFatG * 9)
+    if (totalCalories === 0 && macroCalories > 0) {
+      totalCalories = macroCalories
+    }
+
+    const isFood = parsed.isFood !== false && (items.length > 0 || totalCalories > 0)
+    if (!isFood) {
       return {
         isFood: false,
         unrecognizedReason: parsed.unrecognizedReason || 'No edible food detected in the photo.',
@@ -262,17 +335,18 @@ function cleanJsonOutput(raw: any): any {
         totalFatG: 0,
       }
     }
+
     return {
-      isFood: parsed.isFood ?? true,
+      isFood: true,
       foodName: typeof parsed.foodName === 'string' && parsed.foodName.trim() ? parsed.foodName.trim() : undefined,
       mealType: typeof parsed.mealType === 'string' && parsed.mealType.trim() ? parsed.mealType.trim() : undefined,
       time: typeof parsed.time === 'string' && parsed.time.trim() ? parsed.time.trim() : undefined,
-      unrecognizedReason: parsed.unrecognizedReason,
-      items: parsed.items || [],
-      totalCalories: Number(parsed.totalCalories) || 0,
-      totalProteinG: Number(parsed.totalProteinG) || 0,
-      totalCarbsG: Number(parsed.totalCarbsG) || 0,
-      totalFatG: Number(parsed.totalFatG) || 0,
+      unrecognizedReason: undefined,
+      items,
+      totalCalories,
+      totalProteinG,
+      totalCarbsG,
+      totalFatG,
     }
   }
 

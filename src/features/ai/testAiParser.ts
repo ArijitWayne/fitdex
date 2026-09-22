@@ -34,6 +34,30 @@ import { getAiProxyUrl, parseWorkoutSplitWithAi } from './aiService.ts'
   const pullup = matchCatalogExercise('Pull-ups')
   assert.ok(pullup, 'Pull-ups should match an exercise')
   assert.match(pullup.name, /Pull/i)
+
+  // Critical fix: "cable crunches" must map to "Kneeling Cable Abs Crunches", NEVER "Cable Kneeling Side Crunch"
+  const cableCrunches = matchCatalogExercise('cable crunches')
+  assert.ok(cableCrunches, 'cable crunches should match an exercise')
+  assert.equal(cableCrunches.sourceId, 'kneeling-cable-abs-crunches')
+  assert.equal(cableCrunches.name, 'Kneeling Cable Abs Crunches')
+
+  const cableCrunch = matchCatalogExercise('cable crunch')
+  assert.ok(cableCrunch, 'cable crunch should match an exercise')
+  assert.equal(cableCrunch.sourceId, 'kneeling-cable-abs-crunches')
+
+  // Critical fix: "bayesian curls" and phonetic speech variants must map to "Bayesian Cable Curl"
+  const bayesianCurls = matchCatalogExercise('bayesian curls')
+  assert.ok(bayesianCurls, 'bayesian curls should match an exercise')
+  assert.equal(bayesianCurls.sourceId, 'bayesian-cable-curl')
+  assert.equal(bayesianCurls.name, 'Bayesian Cable Curl')
+
+  const baysianCurl = matchCatalogExercise('baysian curl')
+  assert.ok(baysianCurl, 'baysian curl should match an exercise')
+  assert.equal(baysianCurl.sourceId, 'bayesian-cable-curl')
+
+  const baisianCurls = matchCatalogExercise('baisian curls')
+  assert.ok(baisianCurls, 'baisian curls should match an exercise')
+  assert.equal(baisianCurls.sourceId, 'bayesian-cable-curl')
 }
 
 // 3. Mapping Cloudflare Gemma 4 structured JSON output to Fitdex weekly schedule
@@ -192,16 +216,41 @@ import { getAiProxyUrl, parseWorkoutSplitWithAi } from './aiService.ts'
     foodName: 'Amul Lactose-Free Milk',
     mealType: 'Late Night Snack',
     time: '12:35 AM',
-    items: [{ name: 'Amul Lactose-Free Milk', portion: '250ml', calories: 104 }],
-    totalCalories: 104,
+    items: [{ name: 'Amul Lactose-Free Milk', portion: '250ml', calories: 130 }],
+    totalCalories: 130,
     totalProteinG: 8,
     totalCarbsG: 12,
-    totalFatG: 3,
+    totalFatG: 5,
   })
   assert.equal(lateNightMilk.isFood, true)
   assert.equal(lateNightMilk.foodName, 'Amul Lactose-Free Milk')
   assert.equal(lateNightMilk.mealType, 'Late Night Snack')
   assert.equal(lateNightMilk.time, '12:35 AM')
+
+  // Calorie reconciliation from item sums when model omits or drifts totalCalories
+  const itemReconciled = sanitizeEstimate({
+    isFood: true,
+    items: [
+      { name: 'Cooked Chicken Breast', portion: '150g', calories: 250 },
+      { name: 'White Rice', portion: '1 cup', calories: 210 },
+      { name: 'Olive Oil', portion: '1 tsp', calories: 45 },
+    ],
+    totalCalories: 0, // model forgot totalCalories
+  })
+  assert.equal(itemReconciled.isFood, true)
+  assert.equal(itemReconciled.totalCalories, 505)
+
+  // Atwater macro formula fallback: 4*P + 4*C + 9*F
+  const macroFallback = sanitizeEstimate({
+    isFood: true,
+    items: [{ name: 'Protein Shake', portion: '1 shaker', calories: 0 }],
+    totalCalories: 0,
+    totalProteinG: 30, // 120 kcal
+    totalCarbsG: 5,    // 20 kcal
+    totalFatG: 2,      // 18 kcal
+  })
+  assert.equal(macroFallback.isFood, true)
+  assert.equal(macroFallback.totalCalories, 158) // 30*4 + 5*4 + 2*9 = 158
 }
 
 // 6. Midnight & Late Night meal classification tests (never call 12 AM breakfast)

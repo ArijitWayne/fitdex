@@ -27,6 +27,42 @@ export const WEEKDAYS_MAP: Array<{ id: WeekdayId; label: string; aliases: string
   { id: 'sunday', label: 'Sunday', aliases: ['sunday', 'sun', 'day 7', 'day7'] },
 ]
 
+export const KNOWN_EXERCISE_ALIASES: Record<string, string> = {
+  // Cable abs crunches & variants (standard compound abs movement, NOT side crunch)
+  'cable crunch': 'kneeling-cable-abs-crunches',
+  'cable crunches': 'kneeling-cable-abs-crunches',
+  'rope crunch': 'kneeling-cable-abs-crunches',
+  'rope crunches': 'kneeling-cable-abs-crunches',
+  'cable ab crunch': 'kneeling-cable-abs-crunches',
+  'cable ab crunches': 'kneeling-cable-abs-crunches',
+  'cable abs crunch': 'kneeling-cable-abs-crunches',
+  'cable abs crunches': 'kneeling-cable-abs-crunches',
+  'kneeling cable crunch': 'kneeling-cable-abs-crunches',
+  'kneeling cable crunches': 'kneeling-cable-abs-crunches',
+  'kneeling cable abs crunch': 'kneeling-cable-abs-crunches',
+  'kneeling cable abs crunches': 'kneeling-cable-abs-crunches',
+
+  // Bayesian curl variants (standard cable curl variant, NOT band curl or hercules)
+  'bayesian curl': 'bayesian-cable-curl',
+  'bayesian curls': 'bayesian-cable-curl',
+  'baysian curl': 'bayesian-cable-curl',
+  'baysian curls': 'bayesian-cable-curl',
+  'baisian curl': 'bayesian-cable-curl',
+  'baisian curls': 'bayesian-cable-curl',
+  'bayesian cable curl': 'bayesian-cable-curl',
+  'bayesian cable curls': 'bayesian-cable-curl',
+  'bayesian biceps curl': 'bayesian-cable-curl',
+  'bayesian bicep curl': 'bayesian-cable-curl',
+
+  // Other common spoken aliases
+  'lat pulldown': 'cable-lat-pulldown',
+  'lat pulldowns': 'cable-lat-pulldown',
+  'bench press': 'barbell-bench-press',
+  'flat bench press': 'barbell-bench-press',
+  'incline bench press': 'barbell-incline-bench-press',
+  'overhead press': 'barbell-overhead-press',
+}
+
 function normalizeString(str: string): string {
   return str.normalize('NFKD').replace(/[’']/g, '').replace(/[^a-zA-Z0-9]+/g, ' ').trim().toLowerCase()
 }
@@ -42,6 +78,8 @@ export function stemWord(w: string): string {
 export function cleanSpokenExercise(input: string): string {
   return input
     .toLowerCase()
+    .replace(/\b(?:bayesian|baysian|baisian)\s+(?:cable\s+)?(?:biceps?\s+)?curls?\b/g, 'bayesian cable curl')
+    .replace(/\bcable\s+(?:abs?\s+)?crunches?\b/g, 'kneeling cable abs crunches')
     .replace(/\btumble\b/g, 'dumbbell')
     .replace(/\bpools?\b/g, 'pull')
     .replace(/\bbreast\b/g, 'press')
@@ -57,7 +95,7 @@ export function cleanSpokenExercise(input: string): string {
     .replace(/\bbicep\b/g, 'biceps')
     .replace(/\bagain\b/g, '')
     .replace(/\bthe\b/g, '')
-    .replace(/\babs with cable\b/g, 'cable abs crunch')
+    .replace(/\babs with cable\b/g, 'kneeling cable abs crunches')
     .replace(/^[\s\-*•0-9.)]+/, '')
     .trim()
 }
@@ -77,16 +115,30 @@ export function matchCatalogExercise(rawInput: string): Exercise | undefined {
   const normalized = normalizeString(cleaned)
   if (!normalized) return undefined
 
-  // 1. Exact match on name
+  // 1. Direct match in KNOWN_EXERCISE_ALIASES
+  const aliasSlug = KNOWN_EXERCISE_ALIASES[normalized]
+  if (aliasSlug) {
+    const matched = builtInExercises.find((ex) => ex.sourceId === aliasSlug || ex.id === `builtin-exercise:${aliasSlug}`)
+    if (matched) return matched
+  }
+
+  // 2. Exact match on name
   let match = builtInExercises.find((ex) => normalizeString(ex.name) === normalized)
   if (match) return match
 
-  // 2. Exact match on alias
+  // 3. Exact match on alias
   match = builtInExercises.find((ex) => ex.aliases?.some((alias) => normalizeString(alias) === normalized))
   if (match) return match
 
-  // 3. Phonetically cleaned and stemmed match
+  // 4. Phonetically cleaned and stemmed match
   const spokenClean = cleanSpokenExercise(cleaned)
+  const spokenNorm = normalizeString(spokenClean)
+  const spokenAliasSlug = KNOWN_EXERCISE_ALIASES[spokenNorm]
+  if (spokenAliasSlug) {
+    const matched = builtInExercises.find((ex) => ex.sourceId === spokenAliasSlug || ex.id === `builtin-exercise:${spokenAliasSlug}`)
+    if (matched) return matched
+  }
+
   const words = spokenClean.split(/\s+/).map(stemWord).filter((w) => w.length > 1)
   if (!words.length) return undefined
 
@@ -96,9 +148,12 @@ export function matchCatalogExercise(rawInput: string): Exercise | undefined {
     if (exClean === words.join(' ')) return ex
   }
 
-  // 4. Token overlap scoring
+  // 5. Token overlap scoring with unrequested modifier penalty
   let best: Exercise | undefined
   let highestScore = 15 // minimum threshold
+
+  // Modifiers that distinguish specific variants from the main exercise
+  const VARIANT_MODIFIERS = ['side', 'twisting', 'twist', 'reverse', 'band', 'resistance', 'alternate', 'alternating', 'single', 'seated', 'standing', 'cross']
 
   for (const ex of builtInExercises) {
     const exNorm = normalizeString(ex.name)
@@ -118,6 +173,14 @@ export function matchCatalogExercise(rawInput: string): Exercise | undefined {
 
     if (matchedCount === words.length) score += 40
     score -= Math.abs(exWords.length - words.length) * 2
+
+    // Unrequested variant modifier penalty:
+    // If the candidate contains specific modifiers (e.g. "side", "twisting", "band") that were NOT in the query, penalize heavily
+    for (const mod of VARIANT_MODIFIERS) {
+      if (exWords.includes(mod) && !words.includes(mod)) {
+        score -= 25
+      }
+    }
 
     if (score > highestScore) {
       highestScore = score
