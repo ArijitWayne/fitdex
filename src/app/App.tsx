@@ -167,16 +167,24 @@ function AppContent() {
             onBack={closeSettingsToOrigin}
             onReplayTutorial={() => setTutorialOpen(true)}
           />
-        ) : location.destination === 'home' ? (
-          <HomePage onNavigate={navigateDestination} onOpenAchievements={() => navigate({ ...location, destination: 'progress', settingsOpen: false, progressEntry: 'achievements' })} onOpenWorkout={(entry, targetId) => navigate({ ...location, destination: 'workout', settingsOpen: false, workoutEntry: entry, workoutTargetId: targetId })} onOpenFieldGuide={() => setTutorialOpen(true)} />
-        ) : location.destination === 'workout' ? (
-          <WorkoutPage key={`workout:${location.workoutEntry}:${location.workoutTargetId ?? ''}`} initialView={location.workoutEntry} initialRoutineId={location.workoutEntry === 'start-routine' ? location.workoutTargetId : undefined} initialWorkoutId={location.workoutEntry === 'history' ? location.workoutTargetId : undefined} />
-        ) : location.destination === 'food' ? (
-          <FoodPage onOpenSettings={openSettings} />
-        ) : location.destination === 'progress' ? (
-          <ProgressPage key={`progress:${location.progressEntry}`} initialView={location.progressEntry} />
         ) : (
-          <JournalPage />
+          <>
+            <div className={`tab-page ${location.destination === 'home' ? 'is-active' : 'is-hidden'}`} style={{ display: location.destination === 'home' ? 'contents' : 'none' }}>
+              <HomePage onNavigate={navigateDestination} onOpenAchievements={() => navigate({ ...location, destination: 'progress', settingsOpen: false, progressEntry: 'achievements' })} onOpenWorkout={(entry, targetId) => navigate({ ...location, destination: 'workout', settingsOpen: false, workoutEntry: entry, workoutTargetId: targetId })} onOpenFieldGuide={() => setTutorialOpen(true)} />
+            </div>
+            <div className={`tab-page ${location.destination === 'workout' ? 'is-active' : 'is-hidden'}`} style={{ display: location.destination === 'workout' ? 'contents' : 'none' }}>
+              <WorkoutPage key={`workout:${location.workoutEntry ?? 'hub'}:${location.workoutTargetId ?? 'none'}`} initialView={location.workoutEntry} initialRoutineId={location.workoutEntry === 'start-routine' ? location.workoutTargetId : undefined} initialWorkoutId={location.workoutEntry === 'history' ? location.workoutTargetId : undefined} />
+            </div>
+            <div className={`tab-page ${location.destination === 'food' ? 'is-active' : 'is-hidden'}`} style={{ display: location.destination === 'food' ? 'contents' : 'none' }}>
+              <FoodPage onOpenSettings={openSettings} />
+            </div>
+            <div className={`tab-page ${location.destination === 'progress' ? 'is-active' : 'is-hidden'}`} style={{ display: location.destination === 'progress' ? 'contents' : 'none' }}>
+              <ProgressPage initialView={location.progressEntry} />
+            </div>
+            <div className={`tab-page ${location.destination === 'journal' ? 'is-active' : 'is-hidden'}`} style={{ display: location.destination === 'journal' ? 'contents' : 'none' }}>
+              <JournalPage />
+            </div>
+          </>
         )}
       </AppShell>
       {profileGate === 'onboarding' ? <Onboarding requiresDisplayName onClose={() => { setTutorialCompleted(true); setTutorialOpen(false) }} /> : profileGate === 'migration' ? <RequiredDisplayNamePrompt /> : tutorialOpen ? <Onboarding onClose={() => setTutorialOpen(false)} /> : null}

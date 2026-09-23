@@ -61,10 +61,10 @@ function relevantSetMetrics(type: ExerciseTrackingType) {
   return (Object.keys(SET_METRIC_LABELS) as WorkoutSetMetric[]).filter((metric) => fields[metric === 'durationSeconds' ? 'duration' : metric])
 }
 
-function isValidSetMetric(metric: WorkoutSetMetric, value: number | undefined, type: ExerciseTrackingType) {
+function isValidSetMetric(metric: WorkoutSetMetric, value: number | undefined, _type: ExerciseTrackingType) {
   if (value === undefined || !Number.isFinite(value)) return false
   if (metric === 'reps') return Number.isInteger(value) && value > 0
-  if (metric === 'weight' && type === 'assisted_bodyweight') return value >= 0
+  if (metric === 'weight') return value >= 0
   return value > 0
 }
 
@@ -140,42 +140,19 @@ export function elapsedSeconds(startedAt: string, now = Date.now()) {
   return Number.isFinite(elapsed) ? Math.max(0, Math.floor(elapsed / 1000)) : 0
 }
 
-export function isWorkoutTimerPaused(workout: Pick<Workout, 'status' | 'timerState'>, exerciseCount?: number) {
-  return workout.status === 'active' && (workout.timerState === 'paused' || exerciseCount === 0)
-}
-
 function safeStoredSeconds(value: number | undefined) {
   return Number.isFinite(value) ? Math.max(0, Math.floor(value ?? 0)) : 0
 }
 
-/** Reconstructs the active duration without writing timer ticks to persistence. */
-export function getWorkoutDuration(
-  workout: Pick<Workout, 'status' | 'startedAt' | 'timerState' | 'accumulatedActiveSeconds' | 'lastResumedAt' | 'durationSeconds'>,
-  now = Date.now(),
-  exerciseCount?: number,
-) {
+/** An active workout's duration is wall-clock time since it started — there is no pause/resume. */
+export function getWorkoutDuration(workout: Pick<Workout, 'status' | 'startedAt' | 'durationSeconds'>, now = Date.now()) {
   if (workout.status !== 'active') return safeStoredSeconds(workout.durationSeconds)
-  const accumulated = safeStoredSeconds(workout.accumulatedActiveSeconds)
-  if (workout.timerState === 'paused' || exerciseCount === 0) return accumulated
-  return accumulated + elapsedSeconds(workout.lastResumedAt ?? workout.startedAt, now)
+  return elapsedSeconds(workout.startedAt, now)
 }
 
-export function createPausedTimerState(workout: Workout, now = Date.now()): Pick<Workout, 'timerState' | 'accumulatedActiveSeconds'> {
-  if (workout.status !== 'active') throw new Error('Only an active workout timer can be paused.')
-  if (workout.timerState === 'paused') throw new Error('Workout timer is already paused.')
-  return { timerState: 'paused', accumulatedActiveSeconds: getWorkoutDuration(workout, now) }
-}
-
-export function createResumedTimerState(workout: Workout, now = Date.now(), exerciseCount?: number): Pick<Workout, 'timerState' | 'lastResumedAt'> {
-  if (workout.status !== 'active') throw new Error('Only an active workout timer can be resumed.')
-  if (exerciseCount === 0) throw new Error('Add at least one exercise to start your workout timer.')
-  if (workout.timerState !== 'paused') throw new Error('Workout timer is already running.')
-  return { timerState: 'running', lastResumedAt: new Date(now).toISOString() }
-}
-
-export function getFinalWorkoutDuration(workout: Workout, now = Date.now(), exerciseCount?: number) {
+export function getFinalWorkoutDuration(workout: Workout, now = Date.now()) {
   if (workout.status !== 'active') throw new Error('Only an active workout can be finished.')
-  return getWorkoutDuration(workout, now, exerciseCount)
+  return getWorkoutDuration(workout, now)
 }
 
 export function formatDuration(seconds: number) {

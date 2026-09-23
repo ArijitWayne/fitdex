@@ -1,5 +1,5 @@
 import { db } from '../../data/database.ts'
-import { PREDEFINED_FOOD_CATEGORY_IDS, type CustomFoodCategory, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PredefinedFoodCategoryId, type RememberedFood } from '../../data/models.ts'
+import { PREDEFINED_FOOD_CATEGORY_IDS, type CustomFoodCategory, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PhotoEstimatedItem, type PredefinedFoodCategoryId, type RememberedFood } from '../../data/models.ts'
 import { createId } from '../../utils/createId.ts'
 import { categoryName, normalizeFoodName, nutritionTotals, validateNutrition } from './foodModel.ts'
 import { reconcileFoodGamification } from '../gamification/gamificationRepository.ts'
@@ -8,6 +8,10 @@ export interface FoodDraft extends FoodNutrition {
   name: string
   categoryId: PredefinedFoodCategoryId
   customCategoryId?: string
+  mealType?: string
+  imageDataUri?: string
+  aiEstimated?: boolean
+  aiItems?: PhotoEstimatedItem[]
 }
 
 function recordId(prefix: string) { return `${prefix}:${createId()}` }
@@ -95,8 +99,9 @@ export async function addFoodLog(date: string, meal: FoodMeal, draft: FoodDraft)
       await db.rememberedFoods.add(remembered)
     }
     const entry: FoodLogEntry = {
-      id: recordId('food-log'), date, meal, rememberedFoodId: remembered.id, foodName: name,
+      id: recordId('food-log'), date, meal, mealType: draft.mealType, rememberedFoodId: remembered.id, foodName: name,
       categoryId: draft.categoryId, ...category, ...nutritionFrom(draft), createdAt: timestamp, updatedAt: timestamp,
+      imageDataUri: draft.imageDataUri, aiEstimated: draft.aiEstimated, aiItems: draft.aiItems,
     }
     await db.foodLogEntries.add(entry)
     return entry
@@ -114,7 +119,9 @@ export async function editFoodLog(id: string, draft: FoodDraft) {
     if (!existing) throw new Error('Food entry not found.')
     const category = await resolveCategory(draft)
     const updated: FoodLogEntry = {
-      ...existing, foodName: name, categoryId: draft.categoryId, ...category, ...nutritionFrom(draft), updatedAt: nowIso(),
+      ...existing, foodName: name, categoryId: draft.categoryId, mealType: draft.mealType ?? existing.mealType, ...category, ...nutritionFrom(draft), updatedAt: nowIso(),
+      // Any manual save through this form (including the photo "Error?" correction) means the numbers are now user-verified.
+      aiEstimated: false,
     }
     if (category.categoryKind === 'predefined') {
       delete updated.customCategoryId

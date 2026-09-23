@@ -17,8 +17,7 @@ const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { ver
 
 assert.match(page, /<AvatarPortrait avatar=\{selectedAvatar\} size="medium" priority/)
 assert.match(page, /Resume Workout/)
-assert.match(page, /Workout paused/)
-assert.match(page, /Open Paused Workout/)
+assert.doesNotMatch(page, /Workout paused|Open Paused Workout|isWorkoutTimerPaused/, 'The manual workout timer (pause/resume) has been removed — an active workout is always just "In progress"')
 assert.match(page, /getWorkoutDuration/)
 assert.match(page, /Start Workout/)
 assert.match(page, /Workout Day Complete/)

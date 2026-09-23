@@ -3,6 +3,9 @@ import type { Exercise, RoutineExercise, WorkoutRoutine } from '../../data/model
 export const DEFAULT_PLANNED_SETS = 3
 export const MIN_PLANNED_SETS = 1
 export const MAX_PLANNED_SETS = 20
+export const DEFAULT_PLANNED_REPS = 12
+export const MIN_PLANNED_REPS = 1
+export const MAX_PLANNED_REPS = 100
 export const MAX_ROUTINE_NAME_LENGTH = 80
 
 export function normalizeRoutineName(name: string) {
@@ -35,6 +38,7 @@ export function addExerciseToRoutineItems(
   exercise: Exercise,
   timestamp: string,
   id: string,
+  targetReps = DEFAULT_PLANNED_REPS,
 ) {
   if (items.some((item) => item.exerciseId === exercise.id)) throw new Error(`${exercise.name} is already in this routine.`)
   return [...items, {
@@ -44,6 +48,7 @@ export function addExerciseToRoutineItems(
     exerciseNameSnapshot: exercise.name,
     order: items.length,
     plannedSets: DEFAULT_PLANNED_SETS,
+    targetReps,
     createdAt: timestamp,
     updatedAt: timestamp,
   } satisfies RoutineExercise]
@@ -54,6 +59,13 @@ export function changeRoutineItemSets(items: readonly RoutineExercise[], itemId:
     throw new Error(`Planned sets must be between ${MIN_PLANNED_SETS} and ${MAX_PLANNED_SETS}.`)
   }
   return items.map((item) => item.id === itemId ? { ...item, plannedSets, updatedAt: timestamp } : item)
+}
+
+export function changeRoutineItemReps(items: readonly RoutineExercise[], itemId: string, targetReps: number, timestamp: string) {
+  if (!Number.isInteger(targetReps) || targetReps < MIN_PLANNED_REPS || targetReps > MAX_PLANNED_REPS) {
+    throw new Error(`Target reps must be between ${MIN_PLANNED_REPS} and ${MAX_PLANNED_REPS}.`)
+  }
+  return items.map((item) => item.id === itemId ? { ...item, targetReps, updatedAt: timestamp } : item)
 }
 
 export function moveRoutineItem(items: readonly RoutineExercise[], itemId: string, direction: -1 | 1, timestamp: string) {

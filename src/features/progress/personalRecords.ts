@@ -122,13 +122,16 @@ function metricsForTrackingType(type: ExerciseTrackingType, candidates: readonly
 }
 
 function weightRepsMetrics(candidates: readonly Candidate[]) {
+  const reps = highestRepsMetric(candidates)
   const valid = candidates.filter(({ set }) => positive(set.weight) && positive(set.reps))
+  if (!valid.length) return reps
   const heaviest = best(valid, (left, right) => compare(left.set.weight!, right.set.weight!) || compare(left.set.reps!, right.set.reps!) || compare(left.achievedAt, right.achievedAt))
-  if (!heaviest) return []
+  if (!heaviest) return reps
   const atHeaviest = valid.filter(({ set }) => set.weight === heaviest.set.weight)
   const bestReps = best(atHeaviest, (left, right) => compare(left.set.reps!, right.set.reps!) || compare(left.achievedAt, right.achievedAt))!
   const bestVolume = best(valid, (left, right) => compare(left.set.weight! * left.set.reps!, right.set.weight! * right.set.reps!) || compare(left.achievedAt, right.achievedAt))!
   return [
+    ...reps,
     metric('heaviest-weight', 'Heaviest Weight', 'weight', heaviest.set.weight!, heaviest, { weight: heaviest.set.weight, reps: heaviest.set.reps }),
     metric('best-reps-heavy', 'Best Reps at Heaviest Weight', 'weighted-reps', bestReps.set.reps!, bestReps, { weight: bestReps.set.weight, reps: bestReps.set.reps }),
     metric('best-set-volume', 'Best Set Volume', 'set-volume', bestVolume.set.weight! * bestVolume.set.reps!, bestVolume, { weight: bestVolume.set.weight, reps: bestVolume.set.reps }),

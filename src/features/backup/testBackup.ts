@@ -45,7 +45,7 @@ const fixtures: Partial<Record<BackupStoreName, BackupRecord[]>> = {
   customTags: [entity('tag:test', { name: 'Power', appliesTo: 'exercise' })],
   workoutRoutines: [entity('routine:test', { name: 'Backup Routine', notes: 'Keep this' })],
   routineExercises: [entity('routine-exercise:test', { routineId: 'routine:test', exerciseId: 'custom:test', exerciseNameSnapshot: 'My Test Move', order: 0, plannedSets: 1 })],
-  workouts: [entity('workout:completed', { routineId: 'routine:test', routineNameSnapshot: 'Backup Routine', nameSnapshot: 'Backup Routine', status: 'completed', startedAt: timestamp, completedAt: later, durationSeconds: 3600 }), entity('workout:active', { nameSnapshot: 'Active Backup Workout', status: 'active', startedAt: later, timerState: 'paused', accumulatedActiveSeconds: 120 })],
+  workouts: [entity('workout:completed', { routineId: 'routine:test', routineNameSnapshot: 'Backup Routine', nameSnapshot: 'Backup Routine', status: 'completed', startedAt: timestamp, completedAt: later, durationSeconds: 3600 }), entity('workout:active', { nameSnapshot: 'Active Backup Workout', status: 'active', startedAt: later })],
   workoutExercises: [entity('workout-exercise:test', { workoutId: 'workout:completed', exerciseId: 'custom:test', exerciseNameSnapshot: 'My Test Move', order: 0 })],
   workoutSets: [entity('workout-set:test', { workoutExerciseId: 'workout-exercise:test', order: 0, reps: 8, weight: 40, completed: true })],
   cardioSessions: [entity('cardio:test', { workoutId: 'workout:completed', activity: 'Running', startedAt: timestamp, durationSeconds: 600 })],

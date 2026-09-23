@@ -72,6 +72,18 @@ export function calculateTrainingVolume(workouts: readonly ProgressWorkoutFact[]
   return total
 }
 
+export function calculateTrainingReps(workouts: readonly ProgressWorkoutFact[]) {
+  let total = 0
+  for (const workout of workouts) {
+    for (const { sets } of workout.exercises) {
+      for (const set of sets) {
+        if (set.reps && Number.isFinite(set.reps)) total += set.reps
+      }
+    }
+  }
+  return total
+}
+
 export function calculateTrainingSeconds(workouts: readonly ProgressWorkoutFact[]) {
   return workouts.reduce((total, fact) => total + (isFiniteMetric(fact.workout.durationSeconds) ? fact.workout.durationSeconds : 0), 0)
 }
@@ -85,6 +97,12 @@ export function formatTrainingTime(seconds: number) {
 }
 
 export function calculateVolumeComparison(current: number, previous: number, period: ProgressPeriod) {
+  if (period === 'all') return { kind: 'omitted' as const }
+  if (previous === 0) return { kind: 'no-previous' as const }
+  return { kind: 'percent' as const, percent: ((current - previous) / previous) * 100 }
+}
+
+export function calculateRepsComparison(current: number, previous: number, period: ProgressPeriod) {
   if (period === 'all') return { kind: 'omitted' as const }
   if (previous === 0) return { kind: 'no-previous' as const }
   return { kind: 'percent' as const, percent: ((current - previous) / previous) * 100 }
@@ -116,6 +134,11 @@ export function buildWorkoutFrequencyTrend(workouts: readonly ProgressWorkoutFac
 export function buildVolumeTrend(workouts: readonly ProgressWorkoutFact[], period: ProgressPeriod, referenceDateKey: string) {
   const buckets = createBuckets(period, referenceDateKey, workouts.map((workout) => workout.dateKey))
   return buckets.map((bucket) => ({ ...bucket, value: calculateTrainingVolume(workouts.filter((workout) => dateKeyInRange(workout.dateKey, bucket.startDateKey, bucket.endDateKey))) }))
+}
+
+export function buildRepsTrend(workouts: readonly ProgressWorkoutFact[], period: ProgressPeriod, referenceDateKey: string) {
+  const buckets = createBuckets(period, referenceDateKey, workouts.map((workout) => workout.dateKey))
+  return buckets.map((bucket) => ({ ...bucket, value: calculateTrainingReps(workouts.filter((workout) => dateKeyInRange(workout.dateKey, bucket.startDateKey, bucket.endDateKey))) }))
 }
 
 /** Bucket values are average calories across logged-food days in that bucket. */

@@ -1,4 +1,4 @@
-import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PredefinedFoodCategoryId } from '../../data/models.ts'
+import { FOOD_MEALS, type FoodLogEntry, type FoodMeal, type FoodNutrition, type PhotoEstimatedItem, type PredefinedFoodCategoryId } from '../../data/models.ts'
 
 export const FOOD_MEAL_LABELS: Record<FoodMeal, string> = {
   breakfast: 'Breakfast', lunch: 'Lunch', supper: 'Supper', dinner: 'Dinner',
@@ -131,4 +131,47 @@ export function parseOptionalNutrition(value: string): number | undefined {
 
 export function categoryName(categoryId: PredefinedFoodCategoryId) {
   return PREDEFINED_FOOD_CATEGORIES.find((category) => category.id === categoryId)?.name ?? 'Other'
+}
+
+/** Snapped photos have no explicit meal picker; the meal is inferred silently from local time of day. */
+export function inferMealFromTime(date: Date): FoodMeal {
+  const hour = date.getHours()
+  if (hour >= 5 && hour < 11) return 'breakfast'
+  if (hour >= 11 && hour < 15) return 'lunch'
+  if (hour >= 15 && hour < 19) return 'supper'
+  return 'dinner' // 19:00 - 04:59 (including midnight, 12 AM, late night)
+}
+
+/** Inferred human-readable classification when not supplied by AI. */
+export function inferMealClassification(date: Date): string {
+  const hour = date.getHours()
+  if (hour >= 0 && hour < 5) return 'Late Night Snack'
+  if (hour >= 5 && hour < 11) return 'Breakfast'
+  if (hour >= 11 && hour < 15) return 'Lunch'
+  if (hour >= 15 && hour < 18) return 'Afternoon Snack'
+  if (hour >= 18 && hour < 22) return 'Dinner'
+  return 'Late Night Snack'
+}
+
+/** Maps a dynamic meal classification string (e.g. from LLM) to a canonical FoodMeal bucket for indexing. */
+export function mapMealTypeToCanonicalMeal(mealType?: string, date: Date = new Date()): FoodMeal {
+  if (!mealType) return inferMealFromTime(date)
+  const lower = mealType.toLowerCase()
+  if (lower.includes('breakfast') || lower.includes('brunch') || lower.includes('morning')) return 'breakfast'
+  if (lower.includes('lunch') || lower.includes('midday')) return 'lunch'
+  if (lower.includes('dinner') || lower.includes('evening')) return 'dinner'
+  if (lower.includes('supper')) return 'supper'
+  if (lower.includes('snack') || lower.includes('late') || lower.includes('midnight') || lower.includes('night') || lower.includes('drink') || lower.includes('beverage')) {
+    const hour = date.getHours()
+    return hour >= 15 && hour < 19 ? 'supper' : 'dinner'
+  }
+  return inferMealFromTime(date)
+}
+
+/** Turns a multi-item photo estimate into a single human-readable food name for the log row. */
+export function summarizePhotoItems(items: readonly PhotoEstimatedItem[]): string {
+  if (!items.length) return 'Snapped meal'
+  const names = items.map((item) => item.name)
+  if (names.length <= 3) return names.join(', ')
+  return `${names.slice(0, 3).join(', ')} +${names.length - 3} more`
 }

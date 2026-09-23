@@ -1,16 +1,37 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { BackgroundMusicPreference } from '../../data/models'
 import { AudioContext } from './audioContext'
-import { AUDIO_EFFECT_PATHS, BACKGROUND_MUSIC_PATHS, DEFAULT_AUDIO_PREFERENCES, highestPriorityEffect, type AudioEffect } from './audioModel'
+import { AUDIO_EFFECT_PATHS, BACKGROUND_MUSIC_PATHS, DEFAULT_AUDIO_PREFERENCES, type AudioEffect } from './audioModel'
 import { loadAudioPreferences, saveBackgroundMusic, saveSoundEffectsEnabled } from './audioRepository'
-
-const EFFECT_PRIORITY_WINDOW_MS = 80
 
 function safelyPlay(audio: HTMLAudioElement, onBlocked?: () => void) {
   try {
     const result = audio.play()
     if (result) void result.catch(() => onBlocked?.())
   } catch { onBlocked?.() }
+}
+
+// In-memory decoded Web Audio buffers for instant, zero-latency (<5ms) sound playback
+const webAudioBuffers = new Map<AudioEffect, AudioBuffer>()
+type BrowserAudioContext = InstanceType<typeof globalThis.AudioContext>
+let sharedAudioContext: BrowserAudioContext | null = null
+
+function getAudioContext(): BrowserAudioContext | null {
+  if (typeof window === 'undefined') return null
+  if (!sharedAudioContext) {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof globalThis.AudioContext }).webkitAudioContext
+    if (AudioContextClass) {
+      try {
+        sharedAudioContext = new AudioContextClass()
+      } catch {
+        sharedAudioContext = null
+      }
+    }
+  }
+  if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
+    void sharedAudioContext.resume().catch(() => undefined)
+  }
+  return sharedAudioContext
 }
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
@@ -20,8 +41,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [backgroundMusicPaused, setBackgroundMusicPaused] = useState(false)
   const effectsRef = useRef<Map<AudioEffect, HTMLAudioElement>>(new Map())
   const bgmRef = useRef<HTMLAudioElement | undefined>(undefined)
-  const pendingEffectsRef = useRef<AudioEffect[]>([])
-  const effectTimerRef = useRef<number | undefined>(undefined)
   const bgmBlockedRef = useRef(false)
   const soundEffectsEnabledRef = useRef(soundEffectsEnabled)
   const backgroundMusicRef = useRef(backgroundMusic)
@@ -48,6 +67,21 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       const audio = new Audio(path)
       audio.preload = 'auto'
       effects.set(effect, audio)
+
+      // Pre-decode audio buffer into RAM for zero latency
+      if (typeof window !== 'undefined') {
+        void fetch(path)
+          .then((res) => res.arrayBuffer())
+          .then((arrayBuffer) => {
+            const ctx = getAudioContext()
+            if (ctx) {
+              return ctx.decodeAudioData(arrayBuffer).then((decoded) => {
+                webAudioBuffers.set(effect, decoded)
+              })
+            }
+          })
+          .catch(() => undefined)
+      }
     }
     effectsRef.current = effects
     const bgm = new Audio()
@@ -55,7 +89,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     bgm.loop = true
     bgmRef.current = bgm
     return () => {
-      if (effectTimerRef.current !== undefined) window.clearTimeout(effectTimerRef.current)
       for (const audio of effects.values()) audio.pause()
       bgm.pause()
       effectsRef.current.clear()
@@ -65,23 +98,32 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const playEffect = useCallback((effect: AudioEffect) => {
     if (!soundEffectsEnabledRef.current) return
-    pendingEffectsRef.current.push(effect)
-    if (effectTimerRef.current !== undefined) return
-    effectTimerRef.current = window.setTimeout(() => {
-      effectTimerRef.current = undefined
-      const selected = highestPriorityEffect(pendingEffectsRef.current)
-      pendingEffectsRef.current = []
-      if (!selected || !soundEffectsEnabledRef.current) return
-      for (const audio of effectsRef.current.values()) { audio.pause(); audio.currentTime = 0 }
-      const audio = effectsRef.current.get(selected)
-      if (audio) safelyPlay(audio)
-    }, EFFECT_PRIORITY_WINDOW_MS)
+
+    // 1. Instant Web Audio API playback (sub-5ms, zero CoreAudio negotiation delay)
+    const ctx = getAudioContext()
+    const buffer = webAudioBuffers.get(effect)
+    if (ctx && buffer) {
+      try {
+        if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined)
+        const source = ctx.createBufferSource()
+        source.buffer = buffer
+        source.connect(ctx.destination)
+        source.start(0)
+        return
+      } catch {
+        // Fallback to HTML audio element if Web Audio throws
+      }
+    }
+
+    // 2. Fallback HTMLAudioElement
+    const audio = effectsRef.current.get(effect)
+    if (audio) {
+      audio.currentTime = 0
+      safelyPlay(audio)
+    }
   }, [])
 
   const stopEffects = useCallback(() => {
-    pendingEffectsRef.current = []
-    if (effectTimerRef.current !== undefined) window.clearTimeout(effectTimerRef.current)
-    effectTimerRef.current = undefined
     for (const audio of effectsRef.current.values()) { audio.pause(); audio.currentTime = 0 }
   }, [])
 
@@ -114,6 +156,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       else if (backgroundMusicRef.current !== 'none' && !backgroundMusicPausedRef.current) safelyPlay(bgm, () => { bgmBlockedRef.current = true })
     }
     const resumeBlockedMusic = () => {
+      // Unlock Web Audio context on user gesture
+      getAudioContext()
+
       const bgm = bgmRef.current
       if (!bgmBlockedRef.current || !bgm || backgroundMusicRef.current === 'none' || backgroundMusicPausedRef.current || document.visibilityState !== 'visible') return
       bgmBlockedRef.current = false

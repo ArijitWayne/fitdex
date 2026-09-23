@@ -3,8 +3,10 @@ import type { Exercise, RoutineExercise, WorkoutRoutine } from '../../data/model
 import { createId } from '../../utils/createId.ts'
 import {
   addExerciseToRoutineItems,
+  changeRoutineItemReps,
   changeRoutineItemSets,
   createRoutineRecord,
+  DEFAULT_PLANNED_REPS,
   moveRoutineItem,
   renameRoutineRecord,
   removeRoutineItem,
@@ -56,11 +58,11 @@ async function replaceRoutineItems(routineId: string, items: readonly RoutineExe
   })
 }
 
-export async function addExercisesToRoutine(routineId: string, exercises: readonly Exercise[]) {
+export async function addExercisesToRoutine(routineId: string, exercises: readonly Exercise[], defaultReps = DEFAULT_PLANNED_REPS) {
   const timestamp = new Date().toISOString()
   let items = await db.routineExercises.where('routineId').equals(routineId).sortBy('order')
   for (const exercise of exercises) {
-    items = addExerciseToRoutineItems(items, routineId, exercise, timestamp, createRecordId('routine-exercise'))
+    items = addExerciseToRoutineItems(items, routineId, exercise, timestamp, createRecordId('routine-exercise'), defaultReps)
   }
   await replaceRoutineItems(routineId, items)
 }
@@ -69,6 +71,12 @@ export async function updateRoutineItemSets(routineId: string, itemId: string, p
   const timestamp = new Date().toISOString()
   const items = await db.routineExercises.where('routineId').equals(routineId).sortBy('order')
   await replaceRoutineItems(routineId, changeRoutineItemSets(items, itemId, plannedSets, timestamp))
+}
+
+export async function updateRoutineItemReps(routineId: string, itemId: string, targetReps: number) {
+  const timestamp = new Date().toISOString()
+  const items = await db.routineExercises.where('routineId').equals(routineId).sortBy('order')
+  await replaceRoutineItems(routineId, changeRoutineItemReps(items, itemId, targetReps, timestamp))
 }
 
 export async function reorderRoutineItem(routineId: string, itemId: string, direction: -1 | 1) {
