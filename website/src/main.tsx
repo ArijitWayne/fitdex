@@ -23,15 +23,15 @@ export type ReleaseMetadata = {
 
 // Published-release fallback. Live GitHub metadata remains the source of truth.
 export const release: ReleaseMetadata = {
-  version: '1.0.0',
-  versionCode: 3,
-  tag: 'v1.0.0',
-  apk: null,
-  apkDownloadUrl: null,
-  checksum: null,
-  sha256: null,
-  releaseNotes: 'release-notes.md',
-  publishedAt: null,
+  version: '1.1.0',
+  versionCode: 4,
+  tag: 'v1.1.0',
+  apk: 'fitdex.1.1.0.apk',
+  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.1.0/fitdex.1.1.0.apk',
+  checksum: 'fitdex.1.1.0.apk.sha256',
+  sha256: 'bfa60f2cb2398285efd958873c98789ea06da9f02eda5d4213a33e3adea8587b',
+  releaseNotes: 'RELEASE_NOTES.md',
+  publishedAt: '2026-09-27T09:38:12Z',
 }
 
 type ShotProps = { src: string; alt: string; label: string; className?: string }
