@@ -70,5 +70,18 @@ export async function restoreFitDexBackup(backup: ValidatedFitDexBackup, databas
       if (records.length) await table.bulkAdd(records)
     }
   })
+  const restoredCompletedWorkoutIds = (backup.data.workouts as Array<{ id: string; status?: string }> | undefined)
+    ?.filter((w) => w.status === 'completed')
+    .map((w) => w.id) ?? []
+  if (restoredCompletedWorkoutIds.length) {
+    const timestamp = new Date().toISOString()
+    await database.systemMetadata.put({
+      id: 'restored-completed-workouts',
+      value: JSON.stringify(restoredCompletedWorkoutIds),
+      updatedAt: timestamp,
+    })
+  } else {
+    await database.systemMetadata.delete('restored-completed-workouts').catch(() => undefined)
+  }
   return { externalPreferenceFailures: restoreLocalPreferences(backup, storage) }
 }

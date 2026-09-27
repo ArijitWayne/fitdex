@@ -88,14 +88,14 @@ export async function routineScheduledDays(routineId: string) {
   return Object.entries(plan.days).filter(([, assignment]) => assignment.type === 'routine' && assignment.routineId === routineId).map(([day]) => day)
 }
 
-export async function deleteRoutine(routineId: string, options: { confirmPlanReset?: boolean; replacementRoutineId?: string } = {}) {
+export async function deleteRoutine(routineId: string, options: { replacementRoutineId?: string } = {}) {
   const plan = await loadWeeklyPlan()
   const affectsPlan = Object.values(plan.days).some((assignment) => assignment.type === 'routine' && assignment.routineId === routineId)
   if (affectsPlan) {
     const days = options.replacementRoutineId
       ? Object.fromEntries(Object.entries(plan.days).map(([day, assignment]) => [day, assignment.type === 'routine' && assignment.routineId === routineId ? { type: 'routine', routineId: options.replacementRoutineId! } : assignment])) as WeeklyPlan['days']
       : { ...plan.days, ...clearRoutineFromPlan(plan.days, routineId) }
-    await saveWeeklyPlan(days, { confirmReset: options.confirmPlanReset })
+    await saveWeeklyPlan(days)
   }
   await db.transaction('rw', db.workoutRoutines, db.routineExercises, async () => {
     await db.routineExercises.where('routineId').equals(routineId).delete()

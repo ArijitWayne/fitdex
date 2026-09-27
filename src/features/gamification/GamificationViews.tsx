@@ -63,8 +63,8 @@ export function StreakDetailView({ data, onBack, onChanged }: { data: Gamificati
           </button>
           <span className="consistency-deck-title">CONSISTENCY DECK</span>
         </div>
-        <ContextRail title="Three kinds of streak protection" actions={<button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('streakProtection'); setShowFirstUse(false) }}>View My Streak</button>}>
-          <p>Freezes cover one missed planned day automatically. Travel / Sickness Pause protects 1–7 days without progress or Freeze use. Your first material plan change per rolling 12 months is protected.</p>
+        <ContextRail title="Streak protection" actions={<button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('streakProtection'); setShowFirstUse(false) }}>View My Streak</button>}>
+          <p>Freezes cover one missed planned day automatically. Travel / Sickness Pause protects 1–7 days without progress or Freeze use.</p>
         </ContextRail>
       </div>
     )
@@ -138,25 +138,6 @@ export function StreakDetailView({ data, onBack, onChanged }: { data: Gamificati
         >
           PLAN A PAUSE ›
         </button>
-      </section>
-
-      <section className="consistency-deck-section">
-        <h2 className="consistency-deck-heading">WEEKLY PLAN PROTECTION</h2>
-        <p className="consistency-deck-copy">
-          1 material Weekly Plan change per rolling 12 months is protected. Later material changes require confirmation and reset the current Plan Streak.
-        </p>
-        {data.protectedPlanChange.available ? (
-          <p className="consistency-deck-status is-available">
-            ✓ 1 PROTECTED CHANGE AVAILABLE
-          </p>
-        ) : (
-          <div className="consistency-deck-status is-used">
-            <strong>PROTECTED CHANGE USED</strong>
-            {data.protectedPlanChange.nextAvailable ? (
-              <small>Next available {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(data.protectedPlanChange.nextAvailable))}</small>
-            ) : null}
-          </div>
-        )}
       </section>
 
       {pauseOpen ? <PauseDialog onClose={() => setPauseOpen(false)} onSaved={async () => { setPauseOpen(false); onChanged(await loadGamificationDashboard()) }} /> : null}

@@ -52,7 +52,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **Publish Boundary**: `npm run release:publish` separately validates prepared metadata and artifacts, checks local/remote tag absence and authenticated GitHub CLI, then commits, tags, pushes, releases, uploads APK/checksum, and verifies release. `npm run release:publish -- --dry-run` does not mutate state.
 - **Consumer Contract**: ignored `release-artifacts/release.json` has `version`, `versionCode`, `tag`, `apk`, `apkDownloadUrl`, `checksum`, `sha256`, `releaseNotes`, and `publishedAt`. URLs and timestamps remain `null` before public release. `release-notes.md` is a reviewed template, never automated commit prose.
 - **CI Compatibility**: Same scripts use existing `FITDEX_KEYSTORE_PATH`, `FITDEX_KEYSTORE_PASSWORD`, `FITDEX_KEY_ALIAS`, and `FITDEX_KEY_PASSWORD`; local and CI release logic do not diverge. No GitHub Actions release workflow exists or publishes on push.
-- **Current Boundary**: Phase 4 dry-run and static validation complete. Public FitDex `v1.0.0` remains unpublished. Repository version remains `1.0.0`; Android `versionCode` remains `2`.
+- **Current Boundary**: `v1.1.0` source preparation is complete with Android `versionCode` `4`. No APK, tag, GitHub Release, deployment, or publish action was created by this change.
 
 ### Public Website — Phase 5 COMPLETE / Production Foundation Deployed
 
@@ -112,7 +112,7 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **Deck Structure & Parity**: Matches approved prototype structure. Redundant "THIS WEEK" schedule block is omitted from Consistency Deck (retained authoritatively in Workout Hub).
 - **Freeze UX & Scalability**: Uncapped balance represented quantitatively (`❄ {N} AVAILABLE`), never generating N DOM cards per freeze. Automatic consumption on missed planned training days without manual action buttons. Real-time progress to next Freeze milestone (`{count % 15} / 15 successful planned training days toward next Freeze`).
 - **Travel / Sickness Pause**: 1–7 days, maximum 2 uses per rolling 12 months. Surfaced active pause status with date range (`TRAVEL PAUSE ACTIVE` / `SICKNESS PAUSE ACTIVE`). Native date picker wired with direct `showPicker()` touch handlers and 48px targets on Android/mobile.
-- **Weekly Plan Protection**: Communicates accurate rolling 12-month rule (first material plan modification is protected; subsequent warns and resets streak). Shows available/used status without claiming a "weekly" allowance.
+- **Weekly Plan Editing**: Recurring assignments are freely editable. Changes affect current/future expectations only; completed historical outcomes are immutable.
 
 ---
 
@@ -124,7 +124,9 @@ This document is the permanent source of truth for FitDex product phase statuses
   - `Workout` (Active): Resumable, auto-saved local session. Paused time is tracked and strictly excluded from final `durationSeconds`.
   - `Workout` (Completed): Immutable historical snapshot with frozen exercise snapshots (`WorkoutExercise`) and set snapshots (`WorkoutSet`).
 - **Clean Finish Validation**: A workout cannot be finished if it contains zero completed sets. Empty or abandoned exercises are safely handled or cleaned up before completion.
-- **Weekly Plan**: Recurring weekly schedule with four day types: Routine Days (links to specific routine), Workout Days (open training), Rest Days, and No Plan days. Supports streak protection, automatic freezes, and travel pauses.
+- **Weekly Plan**: Recurring weekly schedule with four day types: Routine Days (links to specific routine), Workout Days (open training), Rest Days, and No Plan days. Completed No Plan workouts count toward Plan Streak; saved-routine sessions infer that routine for the weekday, while ad-hoc sessions infer a generic Workout Day without creating a routine.
+- **History-Safe Plan Evolution**: Backward reconciliation credits real completed No Plan training without projecting the current plan backward. Rest Day workouts and workouts using a different saved routine remain logged but require an explicit choice before future weekday assignments change.
+- **Completion Feedback**: Weekly Plan tiles use an explicit `✓ DONE` state (`✓ DONE · TODAY` for today). Normal planned completion opens no message; inference, restored historical credit, and explicit plan decisions use durable one-shot feedback that is removed after acknowledgement.
 
 ### 4.2 Exercise Dex & Exercise Picker
 - **Dataset Version 4**: 804 active built-in exercises with verified local MP4 demonstrations and complete instructions.
@@ -142,6 +144,26 @@ This document is the permanent source of truth for FitDex product phase statuses
 ### 4.3 Historical Refinement Constraint
 - A wholesale replacement/transplant of the Workout module was previously attempted and rejected because it degraded production UX.
 - Future Workout changes must be **surgical and production-aware**, preserving all underlying session state machines, timers, rest timers, audio triggers, and Android Back integration.
+
+### 4.4 Active Workout Exercise Actions & Reorder (Production UX Improvements)
+- **Exercise Overflow Menu Contract**: Every active workout exercise card features a 3-dot overflow menu with exactly four actions:
+  1. `How to perform` — Reuses the canonical, existing Exercise Dex detail view (`ExerciseDetail`) for full video demonstrations, anatomy, instructions, equipment, and metadata. Opened from an active workout, the back navigation returns directly to the running session without pausing or resetting the workout duration timer or active rest timer. Fallback synthesizes an exercise record if an ad-hoc custom exercise ID is not in the built-in library.
+  2. `Reorder exercises` — Opens the dedicated workout exercise reordering screen (`WorkoutExerciseReorder`).
+  3. `Exercise notes` — Opens the same per-exercise note editor as inline `Notes`; both controls share state and persistence.
+  4. `Remove exercise` — Unchanged production deletion flow with confirmation dialog if user data/sets have been entered.
+- **Retirement of Move Up / Move Down**: Individual move-up and move-down button actions are permanently retired in favor of the dedicated drag reorder experience.
+- **Session-Only Reorder Isolation**:
+  - Reordering exercises via `reorderWorkoutExercises` mutates ONLY the active session (`workoutExercises` records for that `workoutId`).
+  - Saved routines (`WorkoutRoutine` and `routineExercises`) and recurring Weekly Plans remain completely untouched.
+  - Reordering preserves all exercise snapshots, draft values, logged sets, copied Previous values, notes, and tracking types.
+- **Fluid Drag-and-Drop Reorder Interface**:
+  - Dedicated 48px touch-target handle (`.reorder-drag-handle`) with `touch-action: none`.
+  - Custom Pointer Events sortable engine with zero runtime framework dependencies (100% React 19 compatible).
+  - Floating lifted overlay, real-time surrounding card vertical displacement animations, accessible labels, and persistent Done / Cancel actions.
+- **Set Actions and Persistence**:
+  - Every active workout set has separate Log and Delete action slots. Log remains primary; the compact destructive delete control never overlaps its success state.
+  - Empty sets delete immediately through `removeWorkoutSet`; populated or logged sets require the standard destructive confirmation. Deletion preserves the active exercise, timer state, rest timer, surviving drafts, and set renumbering.
+  - `Tap Copy` persists copied values through the active-set update path and keeps the set unlogged until explicit logging.
 
 ---
 
@@ -335,7 +357,7 @@ The Exercise Record uses the reference-first RPG Codex layout:
      - `Nutrition Targets`: Full daily goal and calculation profile management.
   3. **Data & Help**:
      - `Exercise Media` (conditional): Native Android offline video demonstration management.
-     - `Backup & Restore`: Portable `.fitdex` export and safe replacement restore.
+     - `Backup & Restore`: Portable `.fitdex` export and safe replacement restore. `.fitdex` restore restores gamification state; it does not replay XP-producing historical events. Historical Plan Streak reconciliation is XP-neutral.
      - `Field Guide`: Replayable 7-topic tutorial.
      - `Gamification Guide`: XP rules, Levels, Ranks, and Streak semantics.
      - `About FitDex`: Version, developer credit, local-first data guarantee.
@@ -356,9 +378,9 @@ The Exercise Record uses the reference-first RPG Codex layout:
   - Derived metrics: $\text{proteinCalories} = \text{grams} \times 4\text{ kcal}$, $\text{proteinPercentOfCalories} = \text{round}((\text{proteinCalories} / \text{calorieTarget}) \times 100)$.
   - Zero/Unavailable state renders as `PROTEIN TARGET: NOT SET` rather than a literal `0 g` target.
   - Manual overrides preserve their value without being silently overwritten when the profile changes; explicit recalculation command restores the calculated target.
-- **Calorie Formulas & Boundaries Preserved**:
+- **Calorie Formulas & Boundaries**:
   - Mifflin–St Jeor calculation and internal TDEE factors (`1.20`–`1.90`) 100% preserved.
-  - Goal adjustments (Lose $-500$/$-750$, Maintain TDEE, Gain $+250$) and $1,000\text{ kcal}$ safety floor preserved.
+  - Calculated Lose targets keep $-500$/$-750$ selection, then clamp to the estimated intake needed to cap loss at about 0.75% body weight per week. Maintain stays TDEE; Gain stays $+250$. Daily evaluation and nutrition XP use the saved safe target; intake below $1,000\text{ kcal}$ remains ineligible.
   - XP rules (+5 XP for calories, +5 XP for protein when target $> 0$) and forward-only eligibility boundaries (`nutritionTargetsInitializedAt`, `nutritionTargetsEligibleFrom`) preserved.
   - **Zero database schema changes** (`DATABASE_SCHEMA_VERSION = 7` intact); backup format 100% compatible.
 
@@ -392,13 +414,14 @@ The Exercise Record uses the reference-first RPG Codex layout:
 - **Settings Navigation Contract**: Settings subviews preserve their entry origin and return to the originating Settings surface, including contextual Nutrition Targets and other deep links; no app-shell history is bypassed.
 - **Nutrition Codex Polish**: Nutrition Targets V3 retains Style B Pixel Command controls, semantic containment, and SFX coverage. These fixes passed physical visual review; broader physical phone QA remains the final gate for Phase 9.
 - **QA Gate**: Automated validation and desktop checks do not replace physical-device review across supported phone widths and all four theme variants.
-- **Guided First Use**: Acknowledged mobile-native inline Context Rails teach Workout choices/timer/rest, Weekly Plan and protection rules, Food discovery/targets/results/categories, and the derived Progress/Journal surfaces without stealing width with a desktop sidebar or causing horizontal overflow. Merely visiting does not persist learning. Every interactive control triggers semantic SFX (`select`, `add`, `progress_complete`, or `achievements_unlock`).
+- **Guided First Use**: Acknowledged mobile-native inline Context Rails teach Workout choices/timer/rest, freely editable Weekly Plans, Food discovery/targets/results/categories, and the derived Progress/Journal surfaces without stealing width with a desktop sidebar or causing horizontal overflow. Merely visiting does not persist learning. Every interactive control triggers semantic SFX (`select`, `add`, `progress_complete`, or `achievements_unlock`).
 - **Workout Preparation Contract**: Build Today is transient component state backed by Exercise Dex. Only explicit Start Workout creates an active session, exercise snapshots, initial sets, and a running timer.
 - **Freeze Economy Revision**: Initial balance remains 2; every 15 successful planned training days earns +1 with no cap. Rewards are durable, idempotent, and use the grouped FitDex notification and achievement SFX architecture.
-- **Locked Boundaries**: Phase 8 and the seven-topic Field Guide remain intact. Travel/Sickness Pause (1-7 days, max 2 uses per rolling 12 months) and protected Plan Change semantics are unchanged. Monetization remains future documentation only.
+- **Locked Boundaries**: Phase 8 and the seven-topic Field Guide remain intact. Travel/Sickness Pause remains 1–7 days with a maximum of 2 uses per rolling 12 months. Weekly Plan edits carry no streak penalty and never rewrite historical results. Monetization remains future documentation only.
+- **Notifications V1**: Local notification preferences persist in Settings. Shared rules drive PWA QA delivery and Android Local Notifications: stable update once per version, qualifying unfinished Weekly Plan workout once per local date, and final persisted calorie target reminder once per local date when at least 100 kcal remains. Android channels retain category-specific custom sounds; faction controls notification branding; no remote push infrastructure exists.
 
 ### Deferred Product Work
-- **Monetization Idea — Documentation Only**: A future phase may explore paid access or replenishment for Streak Freezes, Travel/Sickness Pauses, or additional protected Weekly Plan structural resets. No purchases, subscriptions, payment SDK, entitlement logic, premium flags, gates, or fake locked UI exist in the current product.
+- **Monetization Idea — Documentation Only**: A future phase may explore paid access or replenishment for Streak Freezes or Travel/Sickness Pauses. No purchases, subscriptions, payment SDK, entitlement logic, premium flags, gates, or fake locked UI exist in the current product.
 - **Body Tracking & Measurements**: `BodyMeasurement` exists in schema/backup contracts, but UI tracking remains deferred future product work and is outside the current Phase 1–9 UI modernization roadmap unless explicitly introduced later.
 - **Native Polish**: Deep physical-device QA for Capacitor Android and iOS PWA, native share sheet backup export, and hardware audio focus management.
 

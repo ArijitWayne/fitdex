@@ -2,9 +2,13 @@ import Dexie from 'dexie'
 import { db } from '../../data/database.ts'
 import type { Exercise, Workout, WorkoutExercise, WorkoutSet } from '../../data/models.ts'
 import { createId } from '../../utils/createId.ts'
-import { getLocalDayTimestampRange } from '../../utils/localDate.ts'
+import { getLocalDateKey, getLocalDayTimestampRange } from '../../utils/localDate.ts'
+import { reconcileNotificationSchedules } from '../notifications/notificationScheduler.ts'
+import { getLocalSettingsRecord } from '../settings/settingsRepository.ts'
 import { DEFAULT_AD_HOC_SETS, calculateVolume, createPausedTimerState, createResumedTimerState, getFinalWorkoutDuration, isHistoricalWorkoutSetLogged, isWorkoutSetLogged, normalizeWorkoutName, validateWorkoutForFinish, type WorkoutFinishValidation } from './workoutModel.ts'
-import { ensureGamificationInitialized, reconcileGamification } from '../gamification/gamificationRepository.ts'
+import { ensureGamificationInitialized, loadGamificationDashboard, reconcileGamification } from '../gamification/gamificationRepository.ts'
+import { inferWeeklyPlanFromCompletedWorkout, weekdayIdForLocalDateKey } from './weeklyPlan.ts'
+import { enqueueWeeklyPlanFeedback } from './weeklyPlanFeedback.ts'
 
 export interface WorkoutExerciseDetail {
   exercise: WorkoutExercise
@@ -275,6 +279,23 @@ export async function reorderWorkoutExercise(workoutExerciseId: string, directio
   await db.workoutExercises.bulkPut(rows.map((item, order) => ({ ...item, order, updatedAt: timestamp })))
 }
 
+export async function reorderWorkoutExercises(workoutId: string, orderedWorkoutExerciseIds: string[]) {
+  await requireActiveWorkout(workoutId)
+  const rows = await db.workoutExercises.where('workoutId').equals(workoutId).toArray()
+  const rowMap = new Map(rows.map((item) => [item.id, item]))
+  const timestamp = nowIso()
+  const updatedRows = orderedWorkoutExerciseIds
+    .map((id, order) => {
+      const row = rowMap.get(id)
+      return row ? { ...row, order, updatedAt: timestamp } : undefined
+    })
+    .filter((item): item is typeof rows[number] => Boolean(item))
+  if (updatedRows.length !== rows.length) {
+    throw new Error('Reorder exercise list must match all workout exercises.')
+  }
+  await db.workoutExercises.bulkPut(updatedRows)
+}
+
 export async function getPreviousPerformance(exerciseId: string, currentWorkoutId?: string) {
   const occurrences = await db.workoutExercises.where('exerciseId').equals(exerciseId).toArray()
   const workoutIds = [...new Set(occurrences.map((item) => item.workoutId))]
@@ -313,7 +334,9 @@ export async function finishWorkout(workoutId: string, now = Date.now()) {
   if (preflight.workout.status !== 'active') throw new Error('This workout is no longer active.')
   const preflightValidation = validateWorkoutForFinish(preflight.exercises)
   if (!preflightValidation.valid) throw new IncompleteWorkoutError(preflightValidation)
+  const workoutDate = getLocalDateKey(new Date(preflight.workout.startedAt))
   await ensureGamificationInitialized(new Date(now))
+  const beforeGamification = await loadGamificationDashboard(getLocalDateKey(new Date(now)), false)
 
   const detail = await db.transaction('rw', db.workouts, db.workoutExercises, db.workoutSets, async () => {
     const detail = await getWorkoutDetail(workoutId)
@@ -329,7 +352,44 @@ export async function finishWorkout(workoutId: string, now = Date.now()) {
     })
     return getWorkoutDetail(workoutId)
   })
-  await reconcileGamification(new Date(now))
+  const afterGamification = await reconcileGamification(new Date(now), { retrospective: false })
+  const plannedSnapshot = afterGamification.snapshots.find((snapshot) => snapshot.localDate === workoutDate)
+  const inferred = await inferWeeklyPlanFromCompletedWorkout(detail.workout)
+  const createdAt = detail.workout.completedAt ?? nowIso(now)
+  if (inferred?.assignment.type === 'routine') {
+    await enqueueWeeklyPlanFeedback({
+      id: `weekly-plan-feedback:inference:${detail.workout.id}`,
+      type: 'inferred_routine', workoutId: detail.workout.id, weekday: inferred.weekday,
+      routineId: inferred.assignment.routineId, routineName: inferred.routineName ?? detail.workout.nameSnapshot,
+      streakBefore: beforeGamification.streak.current, streakAfter: afterGamification.streak.current, createdAt,
+    })
+  } else if (inferred?.assignment.type === 'workout_day') {
+    await enqueueWeeklyPlanFeedback({
+      id: `weekly-plan-feedback:inference:${detail.workout.id}`,
+      type: 'inferred_workout_day', workoutId: detail.workout.id, weekday: inferred.weekday,
+      streakBefore: beforeGamification.streak.current, streakAfter: afterGamification.streak.current, createdAt,
+    })
+  } else if (plannedSnapshot?.plannedType === 'rest_day') {
+    const routine = detail.workout.routineId ? await db.workoutRoutines.get(detail.workout.routineId) : undefined
+    await enqueueWeeklyPlanFeedback({
+      id: `weekly-plan-feedback:rest-day:${workoutDate}`,
+      type: 'rest_day_decision', workoutId: detail.workout.id,
+      weekday: weekdayIdForLocalDateKey(workoutDate), routineId: routine?.id,
+      routineName: routine?.name, streakBefore: beforeGamification.streak.current,
+      streakAfter: afterGamification.streak.current, createdAt,
+    })
+  } else if (plannedSnapshot?.plannedType === 'routine' && detail.workout.routineId && detail.workout.routineId !== plannedSnapshot.routineId) {
+    const completedRoutine = await db.workoutRoutines.get(detail.workout.routineId)
+    if (completedRoutine) await enqueueWeeklyPlanFeedback({
+      id: `weekly-plan-feedback:different-routine:${detail.workout.id}`,
+      type: 'different_routine_decision', workoutId: detail.workout.id,
+      weekday: weekdayIdForLocalDateKey(workoutDate), plannedRoutineId: plannedSnapshot.routineId!,
+      plannedRoutineName: plannedSnapshot.routineNameSnapshot ?? 'planned routine',
+      completedRoutineId: completedRoutine.id, completedRoutineName: completedRoutine.name, createdAt,
+    })
+  }
+  const family = (await getLocalSettingsRecord())?.themeFamily === 'amazonians' ? 'amazonians' : 'spartans'
+  await reconcileNotificationSchedules(family, new Date(now))
   return detail
 }
 

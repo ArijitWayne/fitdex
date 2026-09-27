@@ -7,6 +7,8 @@ import {
   isValidReleaseDownloadUrl,
 } from './updaterModel';
 import { Capacitor } from '@capacitor/core';
+import { getLocalSettingsRecord } from '../settings/settingsRepository';
+import { notifyUpdateAvailable } from '../notifications/notificationScheduler';
 
 const GITHUB_RELEASES_API = 'https://api.github.com/repos/ArijitWayne/fitdex/releases';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -99,6 +101,10 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
 
     cachedResult = result;
     lastCheckTime = now;
+    if (result.status === 'update-available' && result.release) {
+      const family = (await getLocalSettingsRecord())?.themeFamily === 'amazonians' ? 'amazonians' : 'spartans'
+      await notifyUpdateAvailable(result.release.version, family)
+    }
     return result;
   } catch (err: unknown) {
     clearTimeout(timeoutId);

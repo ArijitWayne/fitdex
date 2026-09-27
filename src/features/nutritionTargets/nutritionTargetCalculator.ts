@@ -2,6 +2,7 @@ import type { NutritionActivityLevel, NutritionGoal, NutritionTargets } from '..
 
 export const ACTIVITY_FACTORS: Record<NutritionActivityLevel, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, very: 1.725, extreme: 1.9 }
 export const CALORIE_SAFETY_FLOOR = 1000
+export const MAX_WEEKLY_LOSS_RATE = 0.0075
 
 export type CalorieDayStatus = 'target_achieved' | 'below_target_outer' | 'too_far_below' | 'below_safety_floor' | 'above_target' | 'below_target'
 
@@ -15,9 +16,18 @@ export function calculateTdee(rmr: number, activityLevel: NutritionActivityLevel
   return Math.round(rmr * ACTIVITY_FACTORS[activityLevel])
 }
 
-export function calculateSuggestedCalorieTargets(tdee: number, goal: NutritionGoal) {
+export function calculateRateBasedCalorieFloor(tdee: number, weightKg: number) {
+  if (!Number.isFinite(tdee) || tdee <= 0 || !Number.isFinite(weightKg) || weightKg <= 0) throw new Error('A positive maintenance estimate and body weight are required.')
+  return tdee - ((weightKg * 7700 * MAX_WEEKLY_LOSS_RATE) / 7)
+}
+
+export function calculateSuggestedCalorieTargets(tdee: number, goal: NutritionGoal, weightKg: number) {
   if (!Number.isFinite(tdee) || tdee <= 0) throw new Error('A positive maintenance estimate is required.')
-  if (goal === 'lose') return { moderate: Math.max(CALORIE_SAFETY_FLOOR, tdee - 500), higher: Math.max(CALORIE_SAFETY_FLOOR, tdee - 750), defaultTarget: Math.max(CALORIE_SAFETY_FLOOR, tdee - 500) }
+  if (goal === 'lose') {
+    const floor = calculateRateBasedCalorieFloor(tdee, weightKg)
+    const safeTarget = (deficit: number) => Math.round(Math.max(tdee - deficit, floor))
+    return { moderate: safeTarget(500), higher: safeTarget(750), defaultTarget: safeTarget(500) }
+  }
   const target = goal === 'gain' ? tdee + 250 : tdee
   return { moderate: target, higher: target, defaultTarget: target }
 }

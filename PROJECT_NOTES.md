@@ -28,7 +28,7 @@ Phones (Android and iPhone) are the primary platform. Desktop and Mac browsers a
 - Dexie
 - IndexedDB
 - `vite-plugin-pwa`
-- Capacitor 8 Android with App, Filesystem, and File Transfer plugins
+- Capacitor 8 Android with App, Filesystem, File Transfer, and Local Notifications plugins
 - `lucide-react`
 - Cloudflare Workers Static Assets / Wrangler
 
@@ -45,6 +45,10 @@ Desktop/larger headers use the full family logo where space permits; compact mob
 The global top bar is shared uniformly across all primary views (Home, Workout, Food, Progress, Journal, Exercise Dex, Settings): left emblem/wordmark, live connectivity pill when offline, Light/Dark quick toggle, and right Settings gear. Faction selection (Spartans / Amazonians) is housed exclusively in Settings → Appearance.
 
 Android uses two launcher activity aliases targeting the same `com.fitdex.app` activity. A tiny local Capacitor `LauncherBranding` helper enables the requested Spartan/Amazonian alias before disabling the other, preserving one launchable app entry and all local data. Derived adaptive launcher foregrounds are safely padded around the supplied final crest art, with deep charcoal Spartan and deep plum Amazonian backgrounds. Some launchers may refresh the icon with a short delay. No second package, installation, branding setting, backup field, backend, or cloud media is introduced. Branding remains bundled static media; exercise videos remain remote/on-demand and audio remains local.
+
+## 2.2 Notifications V1
+
+Notifications remain local-first: no remote push service or server is required. Users intentionally enable permission from Settings. `NOT NOW` keeps master Notifications off and leaves permission unrequested. The only categories are stable FitDex updates, today's qualifying Weekly Plan workout, and calories still below the final persisted safe target. Workout and nutrition reminders run at user-selected local times, never replay stale prior-day reminders, and send at most once per date; nutrition requires at least 100 kcal remaining. UI presentation uses full bordered-card retro panels, dedicated category header bands (`APP`, `WORKOUT`, `NUTRITION`), and expandable `WHEN IT SENDS` disclosures (`▸` / `▾`). Category rows never expose sound names or preview UI. Sounds are internal only: Update → `update_notification.mp3`, Workout → `morning_notification.mp3`, Nutrition → `warning_notification.mp3`. Android uses category-specific native local channels and bundled sounds in `res/raw`; PWA delivery exists for permission, rule, branding, routing, and audio QA but does not promise closed-app scheduling. Spartan/Amazonian notification branding follows faction, never brightness. Calorie notifications evaluate against the final persisted safe calorie target (Lose: deficit clamped by approx 0.75% bodyweight/week maximum-loss rate; Maintain: TDEE; Gain: TDEE + 250).
 
 ## 3. Hosting and distribution
 
@@ -389,6 +393,8 @@ Demonstrations stay under `public/exercises/`, load only in Exercise Detail, and
 
 The Workout tab is the parent hub for Today (Start/Resume), Your Routines, Exercise Library, and Recent Workouts. Local schema v5 tables are `workoutRoutines`, `routineExercises`, `workouts`, `workoutExercises`, and `workoutSets`; there is no cloud database, account requirement, or workout sync. Routine items default to three planned sets (1–20 allowed), preserve an exercise-name snapshot and deterministic order, and reject duplicate exercise IDs. Canonical values are kilograms, kilometres, and seconds, with existing `settings.units` controlling kg/lb and km/mi display/input conversion. A lightweight 90-second rest timer is resettable/skippable; session notes are supported, while RPE/RIR, calorie estimation, and advanced exercise/set notes remain deferred.
 
+Active Workout exercise menus contain How to Perform, Reorder Exercises, Exercise Notes, and Remove Exercise. How to Perform uses canonical Exercise Dex detail and returns directly to the same running workout. Reorder changes only active-workout order, never saved routine order. Exercise Notes and inline Notes open the same editor. Every set has separate Log and Delete controls; populated-set deletion requires confirmation, and Tap Copy persists values while leaving the set unlogged until explicitly logged.
+
 ## 18. Exercise-library direction and organization
 
 FitDex’s supported exercise library is the 804 built-in Exercise Dex. Existing compatibility structures for older custom-exercise records remain non-destructive, but the product direction does not promote a custom-exercise creation workflow. Personal favourites, notes, and custom tags remain separate user-owned organization data.
@@ -679,7 +685,7 @@ Nutrition Targets are optional local fields on the singleton Settings record, so
 
 V1 deliberately limits targets to Calories and Protein. Carbs, Fat, and Fiber are tracked nutrition content for awareness; Fiber remains optional and is never a target or gamified. There are no carbohydrate, fat, or fiber target inputs, achievement IDs, XP events, or deeper micronutrient targets in V1.
 
-FitDex estimates RMR with Mifflin–St Jeor and maintenance as RMR × activity factor: Sedentary 1.20, Lightly Active 1.375, Moderately Active 1.55, Very Active 1.725, and Extremely Active 1.90. Lose Weight recommends TDEE −500 by default or TDEE −750; Maintain recommends TDEE; Gain recommends TDEE +250. Users can always manually override targets. Calorie needs are estimates, not medical advice.
+FitDex estimates RMR with Mifflin–St Jeor and maintenance as RMR × activity factor: Sedentary 1.20, Lightly Active 1.375, Moderately Active 1.55, Very Active 1.725, and Extremely Active 1.90. Lose Weight keeps its TDEE −500 default or TDEE −750 higher deficit, then clamps every saved cut target to a maximum estimated loss rate of about 0.75% body weight per week. Maintain recommends TDEE; Gain recommends TDEE +250. The saved safe target drives Daily Targets, evaluation, and nutrition XP. Calorie needs are estimates, not medical advice.
 
 Daily Targets appears between Food Daily Totals and Nutrition Breakdown when enabled. It evaluates the selected local Food date from authoritative logged kcal/protein totals. Intake below 1,000 kcal never counts. Lose Weight counts only a 0–1,000 kcal estimated deficit, treating 751–1,000 as an eligible outer zone without bonus; deficits over 1,000, intake over target, and below-floor intake do not count. Maintain/Gain use a FitDex ±10% adherence band. Protein meets its target at or above the chosen grams with no penalty for exceeding it. Eligible dates award one idempotent +5 calorie and/or +5 protein event, never a multiplier; paused dates receive neither. The six existing target achievements now count those ledger events.
 

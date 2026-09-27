@@ -1,16 +1,18 @@
-import { ArrowDown, ArrowLeft, ArrowUp, MoreHorizontal, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, ArrowUpDown, BookOpen, Hourglass, MoreHorizontal, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
 import { RetroLoader } from '../../components/ui/RetroLoader'
 import { ContextRail } from '../../components/ui/ContextRail'
 import { db } from '../../data/database'
-import type { Exercise, ExerciseTrackingType, WorkoutSet } from '../../data/models'
+import type { Exercise, ExerciseEquipment, ExerciseTrackingType, WorkoutExercise, WorkoutSet } from '../../data/models'
 import { displayDistanceFromKm, displayWeightFromKg, getUnitContext, storeDistanceAsKm, storeWeightAsKg, type UnitContext } from '../../utils/units.ts'
-import { ExerciseDex } from '../exerciseDex/ExerciseDex'
+import { ExerciseDex, ExerciseDetail } from '../exerciseDex/ExerciseDex'
+import { WorkoutExerciseReorder } from './WorkoutExerciseReorder'
 import { useAudio } from '../audio/useAudio'
 import { useBackNavigation } from '../navigation/useBackNavigation'
 import {
   DEFAULT_REST_SECONDS,
+  applySetDraft,
   calculateVolume,
   formatDuration,
   formatPreviousSet,
@@ -19,9 +21,12 @@ import {
   getWorkoutDuration,
   getTrackingFields,
   isHistoricalWorkoutSetLogged,
+  isPauseTimerGuidanceEligible,
+  isRestTimerGuidanceEligible,
   isWorkoutTimerPaused,
   parseWorkoutNumber,
   validateWorkoutForFinish,
+  type SetDraft,
   type WorkoutFinishValidation,
   type WorkoutSetMetric,
 } from './workoutModel'
@@ -39,7 +44,7 @@ import {
   removeWorkoutSet,
   renameActiveWorkout,
   resumeWorkout,
-  reorderWorkoutExercise,
+  reorderWorkoutExercises,
   type WorkoutDetail,
   updateWorkoutNotes,
   updateWorkoutSet,
@@ -47,7 +52,6 @@ import {
 import { acknowledgeFirstUse, loadFirstUseGuidance } from '../help/firstUseGuidance'
 
 const metricUnits = getUnitContext('metric')
-type SetDraft = Partial<Record<WorkoutSetMetric, string>>
 
 function displayWeight(value: number | undefined, units: UnitContext) {
   if (value === undefined) return ''
@@ -75,7 +79,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const { playEffect } = useAudio()
   const [detail, setDetail] = useState<WorkoutDetail>()
   const [previous, setPrevious] = useState<Map<string, WorkoutSet[]>>(new Map())
-  const [exerciseEquipment, setExerciseEquipment] = useState<Map<string, string>>(new Map())
+  const [exerciseEquipment, setExerciseEquipment] = useState<Map<string, ExerciseEquipment>>(new Map())
   const [currentExerciseId, setCurrentExerciseId] = useState<string>()
   const [openMenuExerciseId, setOpenMenuExerciseId] = useState<string>()
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -91,17 +95,58 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const [setDrafts, setSetDrafts] = useState<Map<string, SetDraft>>(new Map())
   const [feedback, setFeedback] = useState('')
   const [confirmExerciseRemovalId, setConfirmExerciseRemovalId] = useState<string>()
+  const [confirmSetRemovalId, setConfirmSetRemovalId] = useState<string>()
   const [showSessionNotes, setShowSessionNotes] = useState(false)
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(() => new Set())
   const [timerGuidance, setTimerGuidance] = useState(false)
+  const [pauseGuidance, setPauseGuidance] = useState(false)
   const [restGuidance, setRestGuidance] = useState(false)
   const [timerNotice, setTimerNotice] = useState(false)
   const exerciseCount = detail?.exercises.length ?? 0
   const timerPaused = detail ? isWorkoutTimerPaused(detail.workout, exerciseCount) : true
   const timerHasStarted = Boolean(detail?.workout.timerState === 'running' || detail?.workout.lastResumedAt || (detail?.workout.accumulatedActiveSeconds ?? 0) > 0)
   const timerIsRunning = detail?.workout.status === 'active' && exerciseCount > 0 && !timerPaused
+  const restActive = rest !== undefined
 
-  useBackNavigation('exercise-menu', Boolean(openMenuExerciseId), () => setOpenMenuExerciseId(undefined))
+  const [inspectingExercise, setInspectingExercise] = useState<Exercise | null>(null)
+  const [reordering, setReordering] = useState(false)
+
+  useBackNavigation('workout-exercise-detail', Boolean(inspectingExercise), () => setInspectingExercise(null), 30)
+  useBackNavigation('workout-exercise-reorder', reordering, () => setReordering(false), 25)
+  useBackNavigation('exercise-menu', Boolean(openMenuExerciseId), () => setOpenMenuExerciseId(undefined), 35)
+
+  async function openExerciseDetail(workoutExercise: WorkoutExercise) {
+    playEffect('select')
+    try {
+      let exercise = await db.exercises.get(workoutExercise.exerciseId)
+      if (!exercise) {
+        const allExercises = await db.exercises.toArray()
+        exercise = allExercises.find((e) => e.name.toLowerCase() === workoutExercise.exerciseNameSnapshot?.toLowerCase())
+      }
+      if (exercise) {
+        setInspectingExercise(exercise)
+      } else {
+        const fallbackExercise: Exercise = {
+          id: workoutExercise.exerciseId,
+          name: workoutExercise.exerciseNameSnapshot ?? 'Exercise',
+          aliases: [],
+          category: (workoutExercise.exerciseCategorySnapshot as any) ?? 'Chest',
+          primaryMuscles: [],
+          secondaryMuscles: [],
+          muscleRegions: [],
+          equipment: exerciseEquipment.get(workoutExercise.exerciseId) ?? 'Other',
+          trackingType: workoutExercise.trackingTypeSnapshot ?? 'reps_only',
+          source: 'custom',
+          archived: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setInspectingExercise(fallbackExercise)
+      }
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Could not open exercise instructions.')
+    }
+  }
 
   async function refresh() {
     const next = await getWorkoutDetail(workoutId)
@@ -128,6 +173,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     })
     void loadFirstUseGuidance().then((guidance) => {
       setTimerGuidance(!guidance.workoutTimer)
+      setPauseGuidance(!guidance.workoutPause)
       setRestGuidance(!guidance.workoutRest)
     })
   }, [workoutId])
@@ -262,10 +308,64 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     }} />
   }
 
+  if (inspectingExercise) {
+    return (
+      <div className="page-stack active-workout-page exercise-record-view">
+        <div className="workout-continuity-strip" role="status">
+          <span>WORKOUT IN PROGRESS</span>
+          <strong>{detail.workout.nameSnapshot ?? 'Active Workout'}</strong>
+        </div>
+        <ExerciseDetail
+          exercise={inspectingExercise}
+          onBack={() => setInspectingExercise(null)}
+          backLabel="Back to workout"
+        />
+      </div>
+    )
+  }
+
+  if (reordering) {
+    return (
+      <WorkoutExerciseReorder
+        workoutName={detail.workout.nameSnapshot ?? 'Active Workout'}
+        exercises={detail.exercises}
+        setDrafts={setDrafts}
+        onDone={async (orderedIds) => {
+          await run(() => reorderWorkoutExercises(workoutId, orderedIds))
+          setReordering(false)
+        }}
+        onCancel={() => setReordering(false)}
+      />
+    )
+  }
+
   const allSets = detail.exercises.flatMap((item) => item.sets)
   const loggedSets = detail.exercises.reduce((total, item) => total + item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length, 0)
   const acknowledgeTimer = () => { playEffect('select'); setTimerGuidance(false); void acknowledgeFirstUse('workoutTimer') }
+  const acknowledgePause = () => { playEffect('select'); setPauseGuidance(false); void acknowledgeFirstUse('workoutPause') }
   const acknowledgeRest = () => { playEffect('select'); setRestGuidance(false); void acknowledgeFirstUse('workoutRest') }
+  const startRest = () => {
+    if (restActive) return
+    playEffect('select')
+    setRest(DEFAULT_REST_SECONDS)
+  }
+  const deleteActiveSet = async (setId: string) => {
+    await removeWorkoutSet(setId)
+    setSetDrafts((current) => {
+      if (!current.has(setId)) return current
+      const next = new Map(current)
+      next.delete(setId)
+      return next
+    })
+  }
+  const requestSetRemoval = (set: WorkoutSet, renderedSet: WorkoutSet, trackingType: ExerciseTrackingType) => {
+    playEffect('select')
+    if (hasMeaningfulWorkoutSetData([renderedSet], trackingType)) {
+      setConfirmSetRemovalId(set.id)
+      return
+    }
+    void run(() => deleteActiveSet(set.id))
+  }
 
   const toggleExerciseNotes = (exerciseId: string) => {
     setExpandedNotes((prev) => {
@@ -323,10 +423,15 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
         )}
       </div>
 
+    </header>
+
+    <section className="session-control-pane" aria-label="Workout controls">
       <div className="session-stats-bar">
         <div className="stat-duration">
-          <span>Time</span>
-          <strong>{formatDuration(getWorkoutDuration(detail.workout, now, exerciseCount))}</strong>
+          <div className="stat-duration-left">
+            <span>Time</span>
+            <strong>{formatDuration(getWorkoutDuration(detail.workout, now, exerciseCount))}</strong>
+          </div>
           <div className="active-workout-top-actions">
             {!timerHasStarted ? (
               <button
@@ -367,15 +472,17 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
                 <span>{timerPaused ? 'RESUME TIMER' : 'PAUSE'}</span>
               </button>
             )}
-            {loggedSets > 0 ? (
-              <button
-                className="rest-toggle-btn secondary-button"
-                type="button"
-                onClick={() => { playEffect('select'); setRest(DEFAULT_REST_SECONDS) }}
-              >
-                Start Rest
-              </button>
-            ) : null}
+            <button
+              className={`rest-toggle-btn secondary-button ${restActive ? 'is-resting' : ''}`}
+              type="button"
+              disabled={restActive}
+              aria-label={restActive ? 'Rest timer active' : 'Start rest timer'}
+              title={restActive ? 'Rest timer active' : 'Start rest timer'}
+              onClick={startRest}
+            >
+              <Hourglass size={14} aria-hidden="true" />
+              <span>{restActive ? 'REST ACTIVE' : 'START REST'}</span>
+            </button>
           </div>
         </div>
         <div className="stat-progress">
@@ -384,7 +491,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
           <span className="visually-hidden">{loggedSets}/{allSets.length} sets logged</span>
         </div>
       </div>
-    </header>
+    </section>
 
     {timerNotice ? (
       <div className="workout-feedback timer-attempt-feedback" role="alert">
@@ -404,7 +511,8 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     ) : null}
 
     {timerGuidance ? <ContextRail eyebrow="Workout Timer" title="Start the timer when you're ready" actions={<button className="secondary-button" type="button" onClick={acknowledgeTimer}>GOT IT</button>}><p>Your workout is ready. Start the timer when you begin training. If you need to stop training for a while, pause the timer. Resume it when you're ready to continue.</p></ContextRail> : null}
-    {restGuidance && loggedSets > 0 ? <ContextRail eyebrow="Rest Timer" title="Rest timer" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>Take a rest whenever you need one between sets. Your workout timer keeps running while the rest timer tracks your recovery. Use Start Rest when you're ready for a break.</p></ContextRail> : null}
+    {isPauseTimerGuidanceEligible(timerGuidance, pauseGuidance, timerHasStarted) ? <ContextRail eyebrow="Pause Timer" title="Pause when training stops" actions={<button className="secondary-button" type="button" onClick={acknowledgePause}>GOT IT</button>}><p>Pause the workout timer when you step away. Resume it when you are ready to train again.</p></ContextRail> : null}
+    {isRestTimerGuidanceEligible(timerGuidance, pauseGuidance, restGuidance) ? <ContextRail eyebrow="Rest Timer" title="Rest timer" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>Take a rest whenever you need one between sets. Your workout timer keeps running while the rest timer tracks your recovery. Use Start Rest when you're ready for a break.</p></ContextRail> : null}
 
     {detail.exercises.length ? <div className="active-exercise-list workout-feed">{detail.exercises.map((item, index) => {
       const isCurrent = currentExerciseId === item.exercise.id
@@ -447,13 +555,48 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
               </button>
               {isMenuOpen ? (
                 <div className="exercise-context-menu" role="menu" onClick={(e) => e.stopPropagation()}>
-                  <button type="button" role="menuitem" disabled={index === 0} onClick={() => { setOpenMenuExerciseId(undefined); void run(() => reorderWorkoutExercise(item.exercise.id, -1)) }}><ArrowUp size={16} aria-hidden="true" /> Move up</button>
-                  <button type="button" role="menuitem" disabled={index === detail.exercises.length - 1} onClick={() => { setOpenMenuExerciseId(undefined); void run(() => reorderWorkoutExercise(item.exercise.id, 1)) }}><ArrowDown size={16} aria-hidden="true" /> Move down</button>
-                  <button type="button" role="menuitem" onClick={() => { setOpenMenuExerciseId(undefined); toggleExerciseNotes(item.exercise.id) }}><Pencil size={16} aria-hidden="true" /> {expandedNotes.has(item.exercise.id) ? 'Hide notes' : 'Exercise notes'}</button>
-                  {item.sets.length > 0 ? (
-                    <button type="button" role="menuitem" className="danger-menu-item" onClick={() => { setOpenMenuExerciseId(undefined); void removeWorkoutSet(item.sets[item.sets.length - 1].id).then(refresh) }}><Trash2 size={16} aria-hidden="true" /> Delete set {item.sets.length}</button>
-                  ) : null}
-                  <button type="button" role="menuitem" className="danger-menu-item" onClick={() => { setOpenMenuExerciseId(undefined); if (renderedExerciseHasData(item.exercise.id)) setConfirmExerciseRemovalId(item.exercise.id); else void run(() => removeActiveExercise(item.exercise.id)) }}><Trash2 size={16} aria-hidden="true" /> Remove exercise</button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpenMenuExerciseId(undefined)
+                      void openExerciseDetail(item.exercise)
+                    }}
+                  >
+                    <BookOpen size={16} aria-hidden="true" /> How to perform
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpenMenuExerciseId(undefined)
+                      setReordering(true)
+                    }}
+                  >
+                    <ArrowUpDown size={16} aria-hidden="true" /> Reorder exercises
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setOpenMenuExerciseId(undefined)
+                      toggleExerciseNotes(item.exercise.id)
+                    }}
+                  >
+                    <Pencil size={16} aria-hidden="true" /> Exercise notes
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="danger-menu-item"
+                    onClick={() => {
+                      setOpenMenuExerciseId(undefined)
+                      if (renderedExerciseHasData(item.exercise.id)) setConfirmExerciseRemovalId(item.exercise.id)
+                      else void run(() => removeActiveExercise(item.exercise.id))
+                    }}
+                  >
+                    <Trash2 size={16} aria-hidden="true" /> Remove exercise
+                  </button>
                 </div>
               ) : null}
             </div>
@@ -468,6 +611,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
             {fields.duration ? <span>Time (s)</span> : null}
             {fields.distance ? <span>Dist ({units.distanceLabel})</span> : null}
             <span style={{ textAlign: 'center' }}>Log</span>
+            <span aria-hidden="true" />
           </div>
           <div className="set-list">
             {item.sets.map((set, setIndex) => (
@@ -484,7 +628,8 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
                 onDraftChange={(field, value) => updateDraft(set.id, field, value)}
                 onDraftSaved={(field, value) => clearDraftField(set.id, field, value)}
                 onSaved={refresh}
-                onStartRest={() => setRest(DEFAULT_REST_SECONDS)}
+                onStartRest={startRest}
+                onRequestDelete={() => requestSetRemoval(set, applySetDraft(set, setDrafts.get(set.id)), trackingType)}
               />
             ))}
           </div>
@@ -547,22 +692,11 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     {finishValidation ? <FinishValidationDialog validation={finishValidation} onClose={() => setFinishValidation(undefined)} /> : null}
     {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => { playEffect('progress_complete'); onCompleted(workoutId) }).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
     {confirmDiscard ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="alertdialog" aria-modal="true" aria-labelledby="discard-workout-title"><h2 id="discard-workout-title">Discard workout?</h2><p>This session will not appear in history or previous performance.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmDiscard(false)}>Keep workout</button><button className="danger-button" type="button" onClick={() => void discardWorkout(workoutId).then(onExit)}>Discard</button></section></div> : null}
+    {confirmSetRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm set-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-set-title"><h2 id="remove-active-set-title">Delete set?</h2><p>This set contains entered workout data. Deleting it will remove this set from the current workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmSetRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const setId = confirmSetRemovalId; setConfirmSetRemovalId(undefined); void run(() => deleteActiveSet(setId)) }}>Delete set</button></section></div> : null}
     {confirmExerciseRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-exercise-title"><h2 id="remove-active-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmExerciseRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exerciseId = confirmExerciseRemovalId; setConfirmExerciseRemovalId(undefined); void run(() => removeActiveExercise(exerciseId)) }}>Remove</button></section></div> : null}
   </div>
 }
 
-function previewDraftNumber(value: string) {
-  if (value.trim() === '') return undefined
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : Number.NaN
-}
-
-function applySetDraft(set: WorkoutSet, draft: SetDraft | undefined): WorkoutSet {
-  if (!draft) return set
-  const next = { ...set }
-  for (const field of Object.keys(draft) as WorkoutSetMetric[]) next[field] = previewDraftNumber(draft[field] ?? '')
-  return next
-}
 
 function createPersistedDraftPatch(draft: SetDraft, units: UnitContext) {
   const patch: Partial<Pick<WorkoutSet, WorkoutSetMetric>> = {}
@@ -575,7 +709,7 @@ function createPersistedDraftPatch(draft: SetDraft, units: UnitContext) {
   return patch
 }
 
-function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, layoutClass, isActiveSet, onDraftChange, onDraftSaved, onSaved, onStartRest }: {
+function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, layoutClass, isActiveSet, onDraftChange, onDraftSaved, onSaved, onStartRest, onRequestDelete }: {
   set: WorkoutSet
   draft?: SetDraft
   setNumber: number
@@ -588,6 +722,7 @@ function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, la
   onDraftSaved: (field: WorkoutSetMetric, value: string) => void
   onSaved: () => Promise<void>
   onStartRest: () => void
+  onRequestDelete: () => void
 }) {
   const { playEffect } = useAudio()
   const fields = getTrackingFields(trackingType)
@@ -607,20 +742,30 @@ function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, la
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Invalid value.') }
   }
 
-  function handleCopyPrevious() {
+  async function handleCopyPrevious() {
     if (!previous || logState === 'logged') return
     const trackingFields = getTrackingFields(trackingType)
+    const copied: SetDraft = {}
     if (trackingFields.weight && previous.weight !== undefined) {
-      onDraftChange('weight', String(displayWeight(previous.weight, units)))
+      copied.weight = String(displayWeight(previous.weight, units))
     }
     if (trackingFields.reps && previous.reps !== undefined) {
-      onDraftChange('reps', String(previous.reps))
+      copied.reps = String(previous.reps)
     }
     if (trackingFields.duration && previous.durationSeconds !== undefined) {
-      onDraftChange('durationSeconds', String(previous.durationSeconds))
+      copied.durationSeconds = String(previous.durationSeconds)
     }
     if (trackingFields.distance && previous.distance !== undefined) {
-      onDraftChange('distance', String(displayDistance(previous.distance, units)))
+      copied.distance = String(displayDistance(previous.distance, units))
+    }
+    try {
+      for (const [field, value] of Object.entries(copied) as [WorkoutSetMetric, string][]) onDraftChange(field, value)
+      await updateWorkoutSet(set.id, createPersistedDraftPatch(copied, units))
+      setError('')
+      await onSaved()
+      for (const [field, value] of Object.entries(copied) as [WorkoutSetMetric, string][]) onDraftSaved(field, value)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Previous values could not be copied.')
     }
     playEffect('select')
   }
@@ -647,7 +792,7 @@ function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, la
       <button
         type="button"
         className="prev-copy-btn previous-copy-btn"
-        onClick={handleCopyPrevious}
+        onClick={() => void handleCopyPrevious()}
         disabled={logState === 'logged'}
         aria-label={`Copy previous performance (${previousFormatted}) to set ${setNumber}`}
         title={logState === 'logged' ? 'Completed sets cannot be overwritten' : 'Tap to copy previous values'}
@@ -729,6 +874,15 @@ function ActiveSetRow({ set, draft, setNumber, trackingType, previous, units, la
         </span>
       </button>
     </div>
+      <button
+        type="button"
+        className="set-remove-button"
+        aria-label={`Delete set ${setNumber}`}
+        title={`Delete set ${setNumber}`}
+        onClick={onRequestDelete}
+      >
+        <Trash2 size={15} aria-hidden="true" />
+      </button>
     {error ? <small className="set-error" role="alert">{error}</small> : null}
   </div>
 }

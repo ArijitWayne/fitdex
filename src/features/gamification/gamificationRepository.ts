@@ -7,8 +7,9 @@ import { loadProgressSource } from '../progress/progressRepository.ts'
 import { getLocalSettingsRecord, updateLocalSettings } from '../settings/settingsRepository.ts'
 import { calculateRmr, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from '../nutritionTargets/nutritionTargetCalculator.ts'
 import { isHistoricalWorkoutSetLogged } from '../workout/workoutModel.ts'
+import { enqueueWeeklyPlanFeedback } from '../workout/weeklyPlanFeedback.ts'
 import { ACHIEVEMENTS, type AchievementDefinition, type AchievementProgressKey } from './achievementCatalog.ts'
-import { INITIAL_FREEZE_BALANCE, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, levelForXp } from './gamificationConfig.ts'
+import { INITIAL_FREEZE_BALANCE, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, levelForXp } from './gamificationConfig.ts'
 import { deriveStreak, inclusiveDateDuration, totalXpFromAmounts } from './gamificationModel.ts'
 
 const recordId = (prefix: string) => `${prefix}:${createId()}`
@@ -30,7 +31,6 @@ export interface GamificationDashboard {
   unlocks: AchievementUnlock[]
   achievements: Array<{ definition: AchievementDefinition; unlocked?: AchievementUnlock; progress: number }>
   latestAchievement?: { definition: AchievementDefinition; unlocked: AchievementUnlock }
-  protectedPlanChange: { available: boolean; usedAt?: string; nextAvailable?: string }
 }
 
 export async function ensureGamificationInitialized(now = new Date()) {
@@ -48,12 +48,21 @@ export async function ensureGamificationInitialized(now = new Date()) {
 
 async function assignmentForDate(dateKey: string) {
   const [settings, routines] = await Promise.all([getLocalSettingsRecord(), db.workoutRoutines.toArray()])
+  const configuredDate = settings?.weeklyPlanConfiguredAt ? getLocalDateKey(new Date(settings.weeklyPlanConfiguredAt)) : undefined
+  if (!settings?.weeklyPlanConfigured || !configuredDate || dateKey < configuredDate) return { assignment: { type: 'no_plan' } as WeeklyPlanAssignment, routineName: undefined }
   const date = new Date(`${dateKey}T12:00:00`)
   const weekday = WEEKDAY_IDS[(date.getDay() + 6) % 7]
   const assignment = settings?.weeklyPlan?.[weekday] ?? { type: 'no_plan' }
   if (assignment.type !== 'routine') return { assignment, routineName: undefined }
   const routine = routines.find((item) => item.id === assignment.routineId)
   return routine ? { assignment, routineName: routine.name } : { assignment: { type: 'no_plan' } as WeeklyPlanAssignment, routineName: undefined }
+}
+
+async function establishWeeklyPlanActivation(now: Date) {
+  const settings = await getLocalSettingsRecord()
+  if (settings?.weeklyPlanConfigured && !settings.weeklyPlanConfiguredAt) {
+    await updateLocalSettings({ weeklyPlanConfiguredAt: iso(now) })
+  }
 }
 
 async function materializeSnapshots(initializedAt: string, todayDateKey: string) {
@@ -93,8 +102,8 @@ async function finalizePastSnapshots(todayDateKey: string) {
       await db.planDaySnapshots.update(snapshot.id, { result: 'paused', pauseId: pause.id, finalizedAt: timestamp, updatedAt: timestamp })
       continue
     }
-    if (snapshot.plannedType === 'rest_day' || snapshot.plannedType === 'no_plan') {
-      await db.planDaySnapshots.update(snapshot.id, { result: snapshot.plannedType === 'rest_day' ? 'rest' : 'no_plan', finalizedAt: timestamp, updatedAt: timestamp })
+    if (snapshot.plannedType === 'no_plan') {
+      await db.planDaySnapshots.update(snapshot.id, { result: 'no_plan', finalizedAt: timestamp, updatedAt: timestamp })
       continue
     }
     const workouts = await completedWorkoutsOnStartDate(snapshot.localDate)
@@ -112,12 +121,46 @@ async function finalizePastSnapshots(todayDateKey: string) {
       }
       continue
     }
+    if (snapshot.plannedType === 'rest_day') {
+      await db.planDaySnapshots.update(snapshot.id, { result: 'rest', finalizedAt: timestamp, updatedAt: timestamp })
+      continue
+    }
     if (await freezeBalance() > 0) {
       const sourceKey = `freeze:missed:${snapshot.localDate}`
       if (!await db.streakFreezeEvents.where('sourceKey').equals(sourceKey).first()) await db.streakFreezeEvents.add({ id: sourceKey, sourceKey, amount: -1, type: 'automatic_missed_plan', localDate: snapshot.localDate, occurredAt: timestamp, createdAt: timestamp, updatedAt: timestamp })
       await db.planDaySnapshots.update(snapshot.id, { result: 'frozen', finalizedAt: timestamp, updatedAt: timestamp })
     } else await db.planDaySnapshots.update(snapshot.id, { result: 'missed', finalizedAt: timestamp, updatedAt: timestamp })
   }
+}
+
+async function finalizeCurrentWorkoutSuccess(todayDateKey: string) {
+  const snapshot = await db.planDaySnapshots.get(`plan-day:${todayDateKey}`)
+  if (!snapshot || snapshot.result !== 'pending' || (snapshot.plannedType !== 'routine' && snapshot.plannedType !== 'workout_day' && snapshot.plannedType !== 'rest_day')) return
+  if (snapshot.plannedType === 'rest_day' && pauseForDate(await db.streakPauses.toArray(), todayDateKey)) return
+  const workouts = await completedWorkoutsOnStartDate(todayDateKey)
+  const satisfying = snapshot.plannedType === 'routine'
+    ? workouts.find((workout) => workout.routineId === snapshot.routineId)
+    : workouts[0]
+  if (!satisfying) return
+  const timestamp = iso()
+  await db.planDaySnapshots.update(snapshot.id, { result: 'success', satisfyingWorkoutId: satisfying.id, finalizedAt: timestamp, updatedAt: timestamp })
+}
+
+async function reconcileNoPlanWorkoutSuccesses(todayDateKey: string) {
+  const [snapshots, pauses] = await Promise.all([
+    db.planDaySnapshots.where('plannedType').equals('no_plan').toArray(),
+    db.streakPauses.toArray(),
+  ])
+  const restoredHistoricalDates: string[] = []
+  for (const snapshot of snapshots) {
+    if (snapshot.localDate > todayDateKey || (snapshot.result !== 'pending' && snapshot.result !== 'no_plan') || pauseForDate(pauses, snapshot.localDate)) continue
+    const satisfying = (await completedWorkoutsOnStartDate(snapshot.localDate))[0]
+    if (!satisfying) continue
+    const timestamp = iso()
+    await db.planDaySnapshots.update(snapshot.id, { result: 'success', satisfyingWorkoutId: satisfying.id, finalizedAt: timestamp, updatedAt: timestamp })
+    if (snapshot.localDate < todayDateKey) restoredHistoricalDates.push(snapshot.localDate)
+  }
+  return restoredHistoricalDates
 }
 
 async function reconcileFreezeMilestones() {
@@ -133,21 +176,54 @@ async function reconcileFreezeMilestones() {
 
 async function completedWorkoutsOnStartDate(dateKey: string) {
   const all: Workout[] = await db.workouts.toArray()
-  return all.filter((workout) => workout.status === 'completed' && getLocalDateKey(new Date(workout.startedAt)) === dateKey)
+  return all.filter((workout) => workout.status === 'completed' && getLocalDateKey(new Date(workout.startedAt)) === dateKey).sort((left, right) => left.startedAt.localeCompare(right.startedAt))
+}
+
+export async function hasWorkoutXp(workoutId: string): Promise<boolean> {
+  const candidateKeys = new Set([
+    `workout:${workoutId}`,
+    workoutId,
+    workoutId.startsWith('workout:') ? workoutId.slice('workout:'.length) : `workout:${workoutId}`,
+    `workout:workout:${workoutId.replace(/^workout:/, '')}`,
+  ])
+  for (const key of candidateKeys) {
+    if (await db.xpEvents.where('sourceKey').equals(key).first()) return true
+  }
+  const byMetadata = await db.xpEvents.filter((event) => event.metadata?.workoutId === workoutId).first()
+  return Boolean(byMetadata)
+}
+
+export async function getRestoredCompletedWorkoutIds(): Promise<Set<string>> {
+  try {
+    const metadata = await db.systemMetadata.get('restored-completed-workouts')
+    if (!metadata?.value) return new Set()
+    const parsed = JSON.parse(metadata.value)
+    return Array.isArray(parsed) ? new Set(parsed) : new Set()
+  } catch {
+    return new Set()
+  }
 }
 
 async function addXpEvent(type: XpEventType, amount: number, sourceKey: string, occurredAt: string, metadata?: Record<string, string | number | boolean | undefined>) {
   if (await db.xpEvents.where('sourceKey').equals(sourceKey).first()) return false
+  if ((type === 'planned_routine' || type === 'planned_workout' || type === 'unplanned_workout') && metadata?.workoutId && typeof metadata.workoutId === 'string' && await hasWorkoutXp(metadata.workoutId)) return false
   await db.xpEvents.add({ id: sourceKey, type, amount, sourceKey, occurredAt, metadata, createdAt: iso(), updatedAt: iso() })
   return true
 }
 
-async function reconcileWorkoutXp(initializedAt: string, snapshots: readonly PlanDaySnapshot[]) {
-  const workouts = (await db.workouts.where('status').equals('completed').toArray()).sort((left, right) => left.startedAt.localeCompare(right.startedAt))
-  for (const workout of workouts.filter((item) => (item.completedAt ?? item.startedAt) >= initializedAt)) {
+async function reconcileWorkoutXp(initializedAt: string, snapshots: readonly PlanDaySnapshot[], retrospective = false) {
+  if (retrospective) return
+  const [workouts, restoredIds] = await Promise.all([
+    db.workouts.where('status').equals('completed').toArray(),
+    getRestoredCompletedWorkoutIds(),
+  ])
+  const sorted = workouts.sort((left, right) => left.startedAt.localeCompare(right.startedAt))
+  for (const workout of sorted.filter((item) => (item.completedAt ?? item.startedAt) >= initializedAt)) {
+    if (restoredIds.has(workout.id)) continue
+    if (await hasWorkoutXp(workout.id)) continue
     const dateKey = getLocalDateKey(new Date(workout.startedAt))
     const plan = snapshots.find((snapshot) => snapshot.localDate === dateKey)
-    const sameDay = workouts.filter((candidate) => getLocalDateKey(new Date(candidate.startedAt)) === dateKey)
+    const sameDay = sorted.filter((candidate) => getLocalDateKey(new Date(candidate.startedAt)) === dateKey)
     const plannedWinner = plan?.satisfyingWorkoutId ?? (plan?.plannedType === 'routine'
       ? sameDay.find((candidate) => candidate.routineId === plan.routineId)?.id
       : plan?.plannedType === 'workout_day' ? sameDay[0]?.id : undefined)
@@ -182,19 +258,27 @@ async function deriveHistoricalPrEvents() {
   return { events: result, source }
 }
 
-async function reconcilePrXp(initializedAt: string) {
-  const { events } = await deriveHistoricalPrEvents()
-  for (const event of events.filter((entry) => entry.occurredAt >= initializedAt)) await addXpEvent('personal_record', XP_REWARDS.personalRecord, `pr:${event.workoutId}:${event.exerciseId}:${event.metric}`, event.occurredAt, event)
+async function reconcilePrXp(initializedAt: string, retrospective = false) {
+  if (retrospective) return
+  const [prData, restoredIds] = await Promise.all([
+    deriveHistoricalPrEvents(),
+    getRestoredCompletedWorkoutIds(),
+  ])
+  for (const event of prData.events.filter((entry) => entry.occurredAt >= initializedAt)) {
+    if (restoredIds.has(event.workoutId)) continue
+    await addXpEvent('personal_record', XP_REWARDS.personalRecord, `pr:${event.workoutId}:${event.exerciseId}:${event.metric}`, event.occurredAt, event)
+  }
 }
 
-async function reconcileFoodXp(initializedAt: string, pauses: readonly StreakPause[]) {
+async function reconcileFoodXp(initializedAt: string, pauses: readonly StreakPause[], retrospective = false) {
+  if (retrospective) return
   const activationDate = getLocalDateKey(new Date(initializedAt))
   const entries = await db.foodLogEntries.where('date').aboveOrEqual(activationDate).toArray()
   const dates = [...new Set(entries.map((entry) => entry.date))]
   for (const date of dates) {
     if (pauseForDate(pauses, date)) continue
     const meals = new Set(entries.filter((entry) => entry.date === date).map((entry) => entry.meal))
-    if (FOOD_MEALS.every((meal) => meals.has(meal))) await addXpEvent('full_food_log', XP_REWARDS.fullFoodLog, `full-food-log:${date}`, iso(), { localDate: date })
+    if (FOOD_MEALS.every((meal) => meals.has(meal))) await addXpEvent('full_food_log', XP_REWARDS.fullFoodLog, `full-food-log:${date}`, `${date}T12:00:00.000Z`, { localDate: date })
   }
   const settings = await getLocalSettingsRecord()
   const targets = settings?.nutritionTargets
@@ -257,7 +341,7 @@ async function deriveAchievementStats(snapshots: readonly PlanDaySnapshot[]) {
   const completeNutritionDays = [...mealSets.values()].filter((meals) => FOOD_MEALS.every((meal) => meals.has(meal))).length
   const xp = await db.xpEvents.toArray()
   const progression = levelForXp(totalXpFromAmounts(xp.map((event) => event.amount)))
-  const streak = deriveStreak(snapshots, await db.planChangeEvents.toArray())
+  const streak = deriveStreak(snapshots)
   const periods = completePeriods(snapshots)
   return {
     workouts: source.allWorkouts.length,
@@ -276,7 +360,11 @@ async function deriveAchievementStats(snapshots: readonly PlanDaySnapshot[]) {
   } satisfies GamificationStats
 }
 
-async function reconcileAchievements(snapshots: readonly PlanDaySnapshot[]) {
+export interface ReconcileGamificationOptions {
+  retrospective?: boolean
+}
+
+async function reconcileAchievements(snapshots: readonly PlanDaySnapshot[], retrospective = false, streakRepaired = false) {
   const [stats, existing] = await Promise.all([deriveAchievementStats(snapshots), db.achievementUnlocks.toArray()])
   const existingIds = new Set(existing.map((unlock) => unlock.achievementId))
   const timestamp = iso()
@@ -285,6 +373,8 @@ async function reconcileAchievements(snapshots: readonly PlanDaySnapshot[]) {
     await db.achievementUnlocks.bulkAdd(rows)
     for (const row of rows) {
       const definition = ACHIEVEMENTS.find((d) => d.id === row.achievementId)
+      const isStreakAchievement = definition?.progressKey === 'bestStreak' || definition?.progressKey === 'plannedWeeks' || definition?.progressKey === 'perfectMonths'
+      if (retrospective || (streakRepaired && isStreakAchievement)) continue
       await addXpEvent('achievement_unlock', XP_REWARDS.achievement, `achievement:${row.achievementId}`, timestamp, {
         achievementId: row.achievementId,
         name: definition?.name ?? row.achievementId,
@@ -293,17 +383,34 @@ async function reconcileAchievements(snapshots: readonly PlanDaySnapshot[]) {
   }
 }
 
-export async function reconcileGamification(now = new Date()) {
+export async function reconcileGamification(now = new Date(), options?: ReconcileGamificationOptions) {
   const initializedAt = await ensureGamificationInitialized(now)
   const todayDateKey = getLocalDateKey(now)
+  await establishWeeklyPlanActivation(now)
   await materializeSnapshots(initializedAt, todayDateKey)
+  const beforeRepair = deriveStreak(await db.planDaySnapshots.orderBy('localDate').toArray())
+  const restoredHistoricalDates = await reconcileNoPlanWorkoutSuccesses(todayDateKey)
+  await finalizeCurrentWorkoutSuccess(todayDateKey)
   await finalizePastSnapshots(todayDateKey)
   await reconcileFreezeMilestones()
   const [snapshots, pauses] = await Promise.all([db.planDaySnapshots.orderBy('localDate').toArray(), db.streakPauses.toArray()])
-  await reconcileWorkoutXp(initializedAt, snapshots)
-  await reconcilePrXp(initializedAt)
-  await reconcileFoodXp(initializedAt, pauses)
-  await reconcileAchievements(snapshots)
+  if (restoredHistoricalDates.length) {
+    const afterRepair = deriveStreak(snapshots)
+    await enqueueWeeklyPlanFeedback({
+      id: `weekly-plan-feedback:historical:${restoredHistoricalDates.join(',')}`,
+      type: 'historical_reconciliation',
+      restoredDays: restoredHistoricalDates.length,
+      streakBefore: beforeRepair.current,
+      streakAfter: afterRepair.current,
+      createdAt: iso(now),
+    })
+  }
+  const isRetrospective = Boolean(options?.retrospective || restoredHistoricalDates.length > 0)
+  const streakRepaired = restoredHistoricalDates.length > 0
+  await reconcileWorkoutXp(initializedAt, snapshots, isRetrospective)
+  await reconcilePrXp(initializedAt, isRetrospective)
+  await reconcileFoodXp(initializedAt, pauses, isRetrospective)
+  await reconcileAchievements(snapshots, isRetrospective, streakRepaired)
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('fitdex:gamification-changed'))
   return loadGamificationDashboard(todayDateKey, false)
 }
@@ -311,9 +418,9 @@ export async function reconcileGamification(now = new Date()) {
 export async function reconcileFoodGamification(now = new Date()) {
   const initializedAt = await ensureGamificationInitialized(now)
   const pauses = await db.streakPauses.toArray()
-  await reconcileFoodXp(initializedAt, pauses)
+  await reconcileFoodXp(initializedAt, pauses, false)
   const snapshots = await db.planDaySnapshots.orderBy('localDate').toArray()
-  await reconcileAchievements(snapshots)
+  await reconcileAchievements(snapshots, false, false)
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('fitdex:gamification-changed'))
 }
 
@@ -323,12 +430,12 @@ function dateOneYearBefore(dateKey: string) {
   return getLocalDateKey(date)
 }
 
-export async function loadGamificationDashboard(todayDateKey = getLocalDateKey(), reconcile = true): Promise<GamificationDashboard> {
-  if (reconcile) return reconcileGamification(new Date(`${todayDateKey}T12:00:00`))
+export async function loadGamificationDashboard(todayDateKey = getLocalDateKey(), reconcile = true, options?: ReconcileGamificationOptions): Promise<GamificationDashboard> {
+  if (reconcile) return reconcileGamification(new Date(`${todayDateKey}T12:00:00`), { retrospective: true, ...options })
   const initializedAt = await ensureGamificationInitialized()
-  const [xpEvents, snapshots, freezes, pauses, unlocks, changes] = await Promise.all([
+  const [xpEvents, snapshots, freezes, pauses, unlocks] = await Promise.all([
     db.xpEvents.orderBy('occurredAt').reverse().toArray(), db.planDaySnapshots.orderBy('localDate').toArray(),
-    db.streakFreezeEvents.toArray(), db.streakPauses.toArray(), db.achievementUnlocks.orderBy('unlockedAt').reverse().toArray(), db.planChangeEvents.orderBy('occurredAt').reverse().toArray(),
+    db.streakFreezeEvents.toArray(), db.streakPauses.toArray(), db.achievementUnlocks.orderBy('unlockedAt').reverse().toArray(),
   ])
   const totalXp = totalXpFromAmounts(xpEvents.map((event) => event.amount))
   const stats = await deriveAchievementStats(snapshots)
@@ -336,7 +443,6 @@ export async function loadGamificationDashboard(todayDateKey = getLocalDateKey()
   const latest = unlocks[0]
   const cutoff = dateOneYearBefore(todayDateKey)
   const pauseUses = pauses.filter((pause) => pause.startDate >= cutoff && pause.startDate <= todayDateKey).length
-  const protectedChange = changes.find((event) => event.type === 'protected' && getLocalDateKey(new Date(event.occurredAt)) >= cutoff)
   const weekStart = shiftLocalDateKey(todayDateKey, -((new Date(`${todayDateKey}T12:00:00`).getDay() + 6) % 7))
   const previewRows = await Promise.all(Array.from({ length: 7 }, async (_, index) => {
     const localDate = shiftLocalDateKey(weekStart, index)
@@ -345,7 +451,7 @@ export async function loadGamificationDashboard(todayDateKey = getLocalDateKey()
   }))
   return {
     initializedAt, progression: levelForXp(totalXp), xpEvents, snapshots,
-    streak: deriveStreak(snapshots, changes),
+    streak: deriveStreak(snapshots),
     freezeBalance: Math.max(0, totalXpFromAmounts(freezes.map((event) => event.amount))),
     pauseUsesRemaining: Math.max(0, MAX_PAUSES_PER_ROLLING_YEAR - pauseUses),
     activePause: pauses.find((pause) => pause.startDate <= todayDateKey && pause.endDate >= todayDateKey),
@@ -354,11 +460,8 @@ export async function loadGamificationDashboard(todayDateKey = getLocalDateKey()
     unlocks,
     achievements: ACHIEVEMENTS.map((definition) => ({ definition, unlocked: unlockById.get(definition.id), progress: stats[definition.progressKey] })),
     latestAchievement: latest ? { definition: ACHIEVEMENTS.find((definition) => definition.id === latest.achievementId)!, unlocked: latest } : undefined,
-    protectedPlanChange: protectedChange ? { available: false, usedAt: protectedChange.occurredAt, nextAvailable: shiftYear(protectedChange.occurredAt) } : { available: true },
   }
 }
-
-function shiftYear(timestamp: string) { const date = new Date(timestamp); date.setFullYear(date.getFullYear() + 1); return date.toISOString() }
 
 export async function planStreakPause(reason: StreakPause['reason'], startDate: string, endDate: string, todayDateKey = getLocalDateKey()) {
   if (startDate < todayDateKey) throw new Error('A pause cannot start in the past.')
@@ -374,19 +477,6 @@ export async function planStreakPause(reason: StreakPause['reason'], startDate: 
   await db.streakPauses.add(pause)
   return pause
 }
-
-export async function recordPlanChange(type: 'protected' | 'reset', effectiveDate = getLocalDateKey()) {
-  const timestamp = iso()
-  const sourceKey = `plan-change:${type}:${createId()}`
-  await db.planChangeEvents.add({ id: sourceKey, sourceKey, type, occurredAt: timestamp, effectiveDate, createdAt: timestamp, updatedAt: timestamp })
-}
-
-export async function protectedChangesUsed(referenceDateKey = getLocalDateKey()) {
-  const cutoff = dateOneYearBefore(referenceDateKey)
-  return db.planChangeEvents.filter((event) => event.type === 'protected' && getLocalDateKey(new Date(event.occurredAt)) >= cutoff).count()
-}
-
-export function protectedPlanChangeLimit() { return MAX_PROTECTED_PLAN_CHANGES_PER_ROLLING_YEAR }
 
 export async function loadPendingGamificationNotifications() {
   const [events, unlocks, freezeRewards, currentFreezeBalance] = await Promise.all([

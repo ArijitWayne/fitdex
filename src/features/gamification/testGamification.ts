@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import type { PlanDaySnapshot } from '../../data/models.ts'
 import { ACHIEVEMENTS } from './achievementCatalog.ts'
 import { ACHIEVEMENT_BADGE_ASSET_FILES, INITIAL_FREEZE_BALANCE, LEVEL_XP_THRESHOLDS, MAX_LEVEL, RANK_BADGE_ASSET_FILES, RANKS, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS, achievementAssetPath, levelForXp, rankAssetPath, rankForLevel } from './gamificationConfig.ts'
-import { deriveStreak, inclusiveDateDuration, isMaterialPlanChange } from './gamificationModel.ts'
+import { deriveStreak, inclusiveDateDuration } from './gamificationModel.ts'
 
 assert.equal(ACHIEVEMENTS.length, 52)
 assert.deepEqual(ACHIEVEMENTS.filter((item) => item.category === 'EXERCISE_DEX').map((item) => item.name), ['First Exercise', '5 Different Exercises', '10 Different Exercises', '25 Different Exercises', '50 Different Exercises', 'All Categories'])
@@ -95,18 +95,15 @@ assert.match(gamificationRepositorySource, /freezeRewards/)
 const row = (localDate: string, plannedType: PlanDaySnapshot['plannedType'], result: PlanDaySnapshot['result']): PlanDaySnapshot => ({ id: localDate, localDate, plannedType, result, createdAt: localDate, updatedAt: localDate })
 assert.deepEqual(deriveStreak([row('2026-01-01', 'routine', 'success'), row('2026-01-02', 'rest_day', 'rest'), row('2026-01-03', 'no_plan', 'no_plan'), row('2026-01-04', 'workout_day', 'frozen'), row('2026-01-05', 'routine', 'paused'), row('2026-01-06', 'routine', 'success')]), { current: 2, best: 2, successfulPlannedDays: 2 })
 assert.equal(deriveStreak([row('2026-01-01', 'routine', 'success'), row('2026-01-02', 'routine', 'missed')]).current, 0)
-assert.equal(deriveStreak([row('2026-01-01', 'routine', 'success'), row('2026-01-02', 'routine', 'success')], [{ id: 'reset', sourceKey: 'reset', type: 'reset', effectiveDate: '2026-01-02', occurredAt: '2026-01-02T00:00:00', createdAt: '', updatedAt: '' }]).current, 1)
+assert.equal(deriveStreak([row('2026-01-01', 'routine', 'success'), row('2026-01-02', 'routine', 'success')]).current, 2)
 assert.equal(inclusiveDateDuration('2026-08-01', '2026-08-07'), 7)
 assert.equal(inclusiveDateDuration('2026-08-01', '2026-08-08'), 8)
-assert.equal(isMaterialPlanChange({ type: 'routine', routineId: 'a' }, { type: 'routine', routineId: 'a' }), false)
-assert.equal(isMaterialPlanChange({ type: 'routine', routineId: 'a' }, { type: 'routine', routineId: 'b' }), true)
-
 await Dexie.delete('fitdex')
 const { db } = await import('../../data/database.ts')
 const { loadGamificationDashboard, loadPendingGamificationNotifications, markGamificationNotificationsSeen, planStreakPause, reconcileGamification } = await import('./gamificationRepository.ts')
 const yesterday = '2026-08-25'
 const today = '2026-08-26'
-await db.settings.put({ id: 'settings', weeklyPlanConfigured: true, weeklyPlan: { tuesday: { type: 'workout_day' } }, gamificationInitializedAt: '2026-08-25T00:00:00.000Z', createdAt: '2026-08-25T00:00:00.000Z', updatedAt: '2026-08-25T00:00:00.000Z' })
+await db.settings.put({ id: 'settings', weeklyPlanConfigured: true, weeklyPlanConfiguredAt: '2026-08-25T00:00:00.000Z', weeklyPlan: { tuesday: { type: 'workout_day' } }, gamificationInitializedAt: '2026-08-25T00:00:00.000Z', createdAt: '2026-08-25T00:00:00.000Z', updatedAt: '2026-08-25T00:00:00.000Z' })
 await db.workouts.put({ id: 'workout:planned', nameSnapshot: 'Workout A', status: 'completed', startedAt: `${yesterday}T10:00:00.000Z`, completedAt: `${yesterday}T11:00:00.000Z`, durationSeconds: 3600, createdAt: `${yesterday}T10:00:00.000Z`, updatedAt: `${yesterday}T11:00:00.000Z` })
 await reconcileGamification(new Date(`${today}T12:00:00`))
 await reconcileGamification(new Date(`${today}T12:00:00`))
@@ -282,6 +279,7 @@ assert.match(viewsSource, /SUCCESSFUL_DAYS_PER_FREEZE/)
 assert.match(viewsSource, /activePause/)
 assert.match(viewsSource, /TRAVEL PAUSE ACTIVE|SICKNESS PAUSE ACTIVE/)
 assert.match(viewsSource, /rolling 12 months/)
+assert.doesNotMatch(viewsSource, /WEEKLY PLAN PROTECTION|PROTECTED CHANGE|material Weekly Plan change/i)
 assert.doesNotMatch(viewsSource, /available this week/i, 'plan change protection must not claim weekly allowance')
 assert.doesNotMatch(viewsSource, /streak-week/, 'must not have Mon-Sun weekly schedule grid')
 assert.doesNotMatch(viewsSource, /THIS WEEK/i, 'must not have THIS WEEK schedule block')
@@ -305,8 +303,347 @@ assert.match(viewsSource, /min=\{today\}/, 'must enforce min date as today for s
 assert.match(viewsSource, /min=\{startDate\}/, 'must enforce min date as startDate for end date')
 assert.match(viewsSource, /max=\{shiftLocalDateKey\(startDate, MAX_PAUSE_DAYS - 1\)\}/, 'must enforce max 7-day range for end date')
 
+// 8. Gamification & Backup Restore Integrity Tests (14 focused requirements)
+const { createFitDexBackup, restoreFitDexBackup } = await import('../backup/backupRepository.ts')
+const { validateFitDexBackup } = await import('../backup/backupValidation.ts')
+const { finishWorkout } = await import('../workout/workoutRepository.ts')
+
+async function resetGamificationState() {
+  await Promise.all([
+    db.settings.clear(),
+    db.workouts.clear(),
+    db.workoutExercises.clear(),
+    db.workoutSets.clear(),
+    db.planDaySnapshots.clear(),
+    db.streakFreezeEvents.clear(),
+    db.streakPauses.clear(),
+    db.planChangeEvents.clear(),
+    db.xpEvents.clear(),
+    db.achievementUnlocks.clear(),
+    db.systemMetadata.clear(),
+  ])
+}
+
+await resetGamificationState()
+const sep20 = '2026-09-20T00:00:00.000Z'
+await db.settings.put({
+  id: 'settings',
+  gamificationInitializedAt: sep20,
+  createdAt: sep20,
+  updatedAt: sep20,
+})
+
+// Test 3: Plan Streak reconciliation can change 0 → 1 while XP remains unchanged
+await db.workouts.put({
+  id: 'workout:sep23',
+  nameSnapshot: 'Workout Sep 23',
+  status: 'completed',
+  startedAt: '2026-09-23T09:00:00.000Z',
+  completedAt: '2026-09-23T10:00:00.000Z',
+  durationSeconds: 3600,
+  createdAt: '2026-09-23T09:00:00.000Z',
+  updatedAt: '2026-09-23T10:00:00.000Z',
+})
+await db.xpEvents.put({
+  id: 'workout:workout:sep23',
+  sourceKey: 'workout:workout:sep23',
+  type: 'unplanned_workout',
+  amount: 20,
+  occurredAt: '2026-09-23T10:00:00.000Z',
+  createdAt: '2026-09-23T10:00:00.000Z',
+  updatedAt: '2026-09-23T10:00:00.000Z',
+})
+
+let integrityDash = await loadGamificationDashboard('2026-09-24', false)
+assert.equal(integrityDash.streak.current, 0, 'Streak initially 0')
+assert.equal(integrityDash.progression.totalXp, 20)
+
+integrityDash = await reconcileGamification(new Date('2026-09-24T12:00:00.000Z'))
+assert.equal(integrityDash.streak.current, 1, 'Test 3: Plan streak changed 0 -> 1')
+assert.equal(integrityDash.progression.totalXp, 20, 'Test 3: XP unchanged after 0 -> 1 streak repair')
+assert.equal(integrityDash.progression.level, 1, 'Test 8: Level unchanged after streak repair')
+assert.equal(integrityDash.progression.rank.id, 'recruit', 'Test 9: Rank unchanged after streak repair')
+
+// Test 4: Two historical workouts can change streak 0 → 2 while XP remains unchanged (Scenario 3)
+await db.workouts.put({
+  id: 'workout:sep24',
+  nameSnapshot: 'Workout Sep 24',
+  status: 'completed',
+  startedAt: '2026-09-24T09:00:00.000Z',
+  completedAt: '2026-09-24T10:00:00.000Z',
+  durationSeconds: 3600,
+  createdAt: '2026-09-24T09:00:00.000Z',
+  updatedAt: '2026-09-24T10:00:00.000Z',
+})
+await db.xpEvents.put({
+  id: 'workout:workout:sep24',
+  sourceKey: 'workout:workout:sep24',
+  type: 'unplanned_workout',
+  amount: 20,
+  occurredAt: '2026-09-24T10:00:00.000Z',
+  createdAt: '2026-09-24T10:00:00.000Z',
+  updatedAt: '2026-09-24T10:00:00.000Z',
+})
+
+integrityDash = await reconcileGamification(new Date('2026-09-25T12:00:00.000Z'))
+assert.equal(integrityDash.streak.current, 2, 'Test 4: Two historical workouts change streak to 2')
+assert.equal(integrityDash.progression.totalXp, 40, 'Test 4: XP unchanged at 40')
+assert.equal(integrityDash.progression.level, 1, 'Test 8: Level remains 1')
+assert.equal(integrityDash.progression.rank.id, 'recruit', 'Test 9: Rank remains recruit')
+
+// Test 5: Repeated reconciliation does not change XP
+integrityDash = await reconcileGamification(new Date('2026-09-25T12:00:00.000Z'))
+integrityDash = await reconcileGamification(new Date('2026-09-25T12:00:00.000Z'))
+assert.equal(integrityDash.progression.totalXp, 40, 'Test 5: Repeated reconciliation does not change XP')
+
+// Test 6: Reload after reconciliation does not change XP
+integrityDash = await loadGamificationDashboard('2026-09-25', true)
+assert.equal(integrityDash.progression.totalXp, 40, 'Test 6: Reload after reconciliation does not change XP')
+
+// Test 10: Historical achievement reconciliation does not create retroactive XP
+assert.equal(await db.achievementUnlocks.where('achievementId').equals('first-workout').count(), 1, 'Achievement unlock state reconciled')
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:first-workout').count(), 0, 'Test 10: Retrospective reconciliation created NO achievement XP event')
+
+// Tests 1, 2, 7, 13, 14: Backup Restore & Idempotency
+await resetGamificationState()
+const baseTime = '2026-08-20T10:00:00.000Z'
+await db.settings.put({
+  id: 'settings',
+  gamificationInitializedAt: baseTime,
+  createdAt: baseTime,
+  updatedAt: baseTime,
+})
+
+await db.workouts.put({
+  id: 'workout:backup-1',
+  nameSnapshot: 'Historical Workout',
+  status: 'completed',
+  startedAt: '2026-08-21T09:00:00.000Z',
+  completedAt: '2026-08-21T10:00:00.000Z',
+  durationSeconds: 3600,
+  createdAt: '2026-08-21T09:00:00.000Z',
+  updatedAt: '2026-08-21T10:00:00.000Z',
+})
+await db.workoutExercises.put({
+  id: 'we:backup-1',
+  workoutId: 'workout:backup-1',
+  exerciseId: 'exercise:bench',
+  exerciseNameSnapshot: 'Bench Press',
+  order: 0,
+  createdAt: '2026-08-21T09:00:00.000Z',
+  updatedAt: '2026-08-21T10:00:00.000Z',
+})
+await db.workoutSets.put({
+  id: 'ws:backup-1',
+  workoutExerciseId: 'we:backup-1',
+  order: 0,
+  weight: 80,
+  reps: 10,
+  completed: true,
+  createdAt: '2026-08-21T09:00:00.000Z',
+  updatedAt: '2026-08-21T10:00:00.000Z',
+})
+await db.achievementUnlocks.bulkPut([
+  { id: 'achievement:first-workout', achievementId: 'first-workout', unlockedAt: '2026-08-21T10:00:00.000Z', createdAt: '2026-08-21T10:00:00.000Z', updatedAt: '2026-08-21T10:00:00.000Z' },
+  { id: 'achievement:first-exercise', achievementId: 'first-exercise', unlockedAt: '2026-08-21T10:00:00.000Z', createdAt: '2026-08-21T10:00:00.000Z', updatedAt: '2026-08-21T10:00:00.000Z' },
+  { id: 'achievement:first-pr', achievementId: 'first-pr', unlockedAt: '2026-08-21T10:00:00.000Z', createdAt: '2026-08-21T10:00:00.000Z', updatedAt: '2026-08-21T10:00:00.000Z' },
+])
+await db.xpEvents.put({
+  id: 'workout:workout:backup-1',
+  sourceKey: 'workout:workout:backup-1',
+  type: 'unplanned_workout',
+  amount: 20,
+  occurredAt: '2026-08-21T10:00:00.000Z',
+  createdAt: '2026-08-21T10:00:00.000Z',
+  updatedAt: '2026-08-21T10:00:00.000Z',
+  metadata: { workoutId: 'workout:backup-1' },
+})
+await db.xpEvents.put({
+  id: 'xp:bulk-ledger',
+  sourceKey: 'xp:bulk-ledger',
+  type: 'planned_routine',
+  amount: 980,
+  occurredAt: '2026-08-21T10:00:00.000Z',
+  createdAt: '2026-08-21T10:00:00.000Z',
+  updatedAt: '2026-08-21T10:00:00.000Z',
+})
+
+const preBackupDash = await loadGamificationDashboard('2026-08-22', false)
+assert.equal(preBackupDash.progression.totalXp, 1000, 'Starting XP is 1,000')
+
+const backup = await createFitDexBackup('1.1.0', new Date('2026-08-22T12:00:00.000Z'), db)
+const validated = validateFitDexBackup(backup)
+
+// Restore 1
+await restoreFitDexBackup(validated, db)
+let dashAfterRestore = await loadGamificationDashboard('2026-08-22', false)
+assert.equal(dashAfterRestore.progression.totalXp, 1000, 'XP after restore is 1,000')
+
+let dashReconciled = await reconcileGamification(new Date('2026-08-22T12:00:00.000Z'))
+assert.equal(dashReconciled.progression.totalXp, 1000, 'Test 1 & 2: Historical workout & sets do NOT award XP again')
+
+// Reload
+integrityDash = await loadGamificationDashboard('2026-08-22', true)
+assert.equal(integrityDash.progression.totalXp, 1000, 'Reload retains 1,000 XP')
+
+// Restore 2 (Test 7)
+await restoreFitDexBackup(validated, db)
+integrityDash = await loadGamificationDashboard('2026-08-22', false)
+assert.equal(integrityDash.progression.totalXp, 1000, 'XP after second restore is 1,000')
+
+integrityDash = await reconcileGamification(new Date('2026-08-22T12:00:00.000Z'))
+assert.equal(integrityDash.progression.totalXp, 1000, 'Test 7: XP remains 1,000 after second restore and reconcile (never 1,040)')
+
+// Test 13: Existing XP event/source keys remain preserved through backup restore
+const preservedEvent = await db.xpEvents.get('workout:workout:backup-1')
+assert.ok(preservedEvent, 'Test 13: Preserved workout XP event exists')
+assert.equal(preservedEvent.sourceKey, 'workout:workout:backup-1')
+assert.equal(preservedEvent.amount, 20)
+
+// Test 14: No duplicate XP events are created
+const allEvents = await db.xpEvents.toArray()
+const sourceKeys = allEvents.map((e) => e.sourceKey)
+assert.equal(new Set(sourceKeys).size, sourceKeys.length, 'Test 14: All source keys are unique, no duplicates')
+
+// Tests 11 & 12: New activity AFTER restore awards normal XP and achievements
+await db.exercises.put({
+  id: 'exercise:bench',
+  name: 'Bench Press',
+  aliases: [],
+  category: 'Chest',
+  categories: ['Chest'],
+  primaryCategory: 'Chest',
+  primaryMuscles: ['Chest'],
+  secondaryMuscles: [],
+  muscleRegions: ['Chest'],
+  equipment: 'Barbell',
+  trackingType: 'weight_reps',
+  movementPattern: 'Horizontal Push',
+  source: 'custom',
+  archived: false,
+  createdAt: '2026-08-23T00:00:00.000Z',
+  updatedAt: '2026-08-23T00:00:00.000Z',
+})
+
+await db.workouts.put({
+  id: 'workout:new-after-restore',
+  nameSnapshot: 'New Workout After Restore',
+  status: 'active',
+  startedAt: '2026-08-23T10:00:00.000Z',
+  createdAt: '2026-08-23T10:00:00.000Z',
+  updatedAt: '2026-08-23T10:00:00.000Z',
+})
+await db.workoutExercises.put({
+  id: 'we:new-1',
+  workoutId: 'workout:new-after-restore',
+  exerciseId: 'exercise:bench',
+  exerciseNameSnapshot: 'Bench Press',
+  exerciseCategorySnapshot: 'Chest',
+  trackingTypeSnapshot: 'weight_reps',
+  order: 0,
+  createdAt: '2026-08-23T10:00:00.000Z',
+  updatedAt: '2026-08-23T10:00:00.000Z',
+})
+await db.workoutSets.put({
+  id: 'ws:new-1',
+  workoutExerciseId: 'we:new-1',
+  order: 0,
+  weight: 85,
+  reps: 10,
+  completed: true,
+  createdAt: '2026-08-23T10:00:00.000Z',
+  updatedAt: '2026-08-23T10:00:00.000Z',
+})
+
+await finishWorkout('workout:new-after-restore', new Date('2026-08-23T11:00:00.000Z').getTime())
+
+const dashAfterNewWorkout = await loadGamificationDashboard('2026-08-23', false)
+assert.ok(dashAfterNewWorkout.progression.totalXp > 1000, 'Test 11: New workout completed AFTER restore awards XP')
+assert.equal(dashAfterNewWorkout.progression.totalXp, 1065, 'Test 11: Exactly 1,000 + 20 (unplanned) + 45 (PRs) = 1,065 XP')
+const dashAfterReload = await loadGamificationDashboard('2026-08-23', true)
+assert.equal(dashAfterReload.progression.totalXp, 1065, 'XP after reload remains exactly 1,065')
+
+// Test 12: New achievement earned from genuine future activity awards its normal XP (+50)
+for (let i = 2; i <= 5; i++) {
+  await db.exercises.put({
+    id: `exercise:new-${i}`,
+    name: `New Exercise ${i}`,
+    aliases: [],
+    category: 'Chest',
+    categories: ['Chest'],
+    primaryCategory: 'Chest',
+    primaryMuscles: ['Chest'],
+    secondaryMuscles: [],
+    muscleRegions: ['Chest'],
+    equipment: 'Bodyweight',
+    trackingType: 'reps_only',
+    movementPattern: 'Horizontal Push',
+    source: 'custom',
+    archived: false,
+    createdAt: '2026-08-24T00:00:00.000Z',
+    updatedAt: '2026-08-24T00:00:00.000Z',
+  })
+}
+
+await db.workouts.put({
+  id: 'workout:achieve-future',
+  nameSnapshot: 'Future Achievement Workout',
+  status: 'active',
+  startedAt: '2026-08-24T10:00:00.000Z',
+  createdAt: '2026-08-24T10:00:00.000Z',
+  updatedAt: '2026-08-24T10:00:00.000Z',
+})
+for (let i = 2; i <= 5; i++) {
+  await db.workoutExercises.put({
+    id: `we:achieve-${i}`,
+    workoutId: 'workout:achieve-future',
+    exerciseId: `exercise:new-${i}`,
+    exerciseNameSnapshot: `New Exercise ${i}`,
+    exerciseCategorySnapshot: 'Chest',
+    trackingTypeSnapshot: 'reps_only',
+    order: i,
+    createdAt: '2026-08-24T10:00:00.000Z',
+    updatedAt: '2026-08-24T10:00:00.000Z',
+  })
+  await db.workoutSets.put({
+    id: `ws:achieve-${i}`,
+    workoutExerciseId: `we:achieve-${i}`,
+    order: 0,
+    reps: 10,
+    completed: true,
+    createdAt: '2026-08-24T10:00:00.000Z',
+    updatedAt: '2026-08-24T10:00:00.000Z',
+  })
+}
+
+await finishWorkout('workout:achieve-future', new Date('2026-08-24T11:00:00.000Z').getTime())
+assert.equal(await db.achievementUnlocks.where('achievementId').equals('5-different-exercises').count(), 1, 'Achievement unlocked')
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:5-different-exercises').count(), 1, 'Achievement XP event created')
+assert.equal((await db.xpEvents.get('achievement:5-different-exercises'))?.amount, 50, 'Achievement XP amount is 50')
+
+// Verify Forward Nutrition XP after restore:
+const xpBeforeFood = (await loadGamificationDashboard('2026-08-24', false)).progression.totalXp
+const { addFoodLog } = await import('../food/foodRepository.ts')
+const foodDate = '2026-08-25'
+await addFoodLog(foodDate, 'breakfast', { name: 'Oats', categoryId: 'grains-rice', kcal: 300, protein: 10 })
+await addFoodLog(foodDate, 'lunch', { name: 'Chicken Salad', categoryId: 'chicken', kcal: 450, protein: 40 })
+await addFoodLog(foodDate, 'supper', { name: 'Apple', categoryId: 'fruits', kcal: 80, carbs: 20 })
+await addFoodLog(foodDate, 'dinner', { name: 'Salmon and Veggies', categoryId: 'fish-seafood', kcal: 500, protein: 45 })
+
+const dashAfterFood = await loadGamificationDashboard(foodDate, false)
+// Full food log awards +5 XP and triggers 'first-fully-logged-day' achievement (+50 XP) forward:
+assert.equal(dashAfterFood.progression.totalXp, xpBeforeFood + 5 + 50, 'Full food log awards +5 XP and +50 achievement XP forward')
+assert.equal(await db.xpEvents.where('sourceKey').equals(`full-food-log:${foodDate}`).count(), 1, 'Full food log XP event recorded exactly once')
+assert.equal(await db.achievementUnlocks.where('achievementId').equals('first-fully-logged-day').count(), 1, 'First fully logged day achievement unlocked')
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:first-fully-logged-day').count(), 1, 'First fully logged day achievement XP awarded')
+
+// Reload/passive dashboard reconciliation check:
+const dashAfterFoodReload = await loadGamificationDashboard(foodDate, true)
+assert.equal(dashAfterFoodReload.progression.totalXp, dashAfterFood.progression.totalXp, 'Passive dashboard reconciliation preserves forward food and achievement XP')
+assert.equal(await db.xpEvents.where('sourceKey').equals(`full-food-log:${foodDate}`).count(), 1, 'No duplicate food XP on passive reload')
+assert.equal(await db.xpEvents.where('sourceKey').equals('achievement:first-fully-logged-day').count(), 1, 'No duplicate achievement XP on passive reload')
+
 await db.close()
 await Dexie.delete('fitdex')
 
-console.log('Gamification tests passed: 52 achievements, progression/rank boundaries, streak semantics, automatic Freeze/no-Freeze outcomes, Pause limits, plan-change identity, repeat-safe planned XP reconciliation, scalable Freeze balance UX, and achievement +50 XP awards')
-
+console.log('Gamification tests passed: 52 achievements, progression/rank boundaries, streak semantics, automatic Freeze/no-Freeze outcomes, Pause limits, repeat-safe planned XP reconciliation, scalable Freeze balance UX, achievement +50 XP awards, and 14 gamification integrity/restore tests')

@@ -4,7 +4,7 @@ import { Panel } from '../components/ui/Panel'
 import { RetroLoader } from '../components/ui/RetroLoader'
 import { ContextRail } from '../components/ui/ContextRail'
 import { PageFrame } from '../components/layout/PageFrame'
-import type { Exercise, RoutineExercise, WorkoutRoutine } from '../data/models'
+import type { Exercise, RoutineExercise, WeeklyPlanFeedback, WorkoutRoutine } from '../data/models'
 import { ExerciseDex } from '../features/exerciseDex/ExerciseDex'
 import { ensureBuiltInExercises } from '../features/exerciseDex/seedExercises'
 import { ActiveWorkoutView, CompletedWorkoutDetail, WorkoutDeleteDialog } from '../features/workout/WorkoutSessionViews'
@@ -15,9 +15,9 @@ import { ActiveWorkoutExistsError, discardWorkout, getActiveWorkout, listRecentW
 import { GuideDialog } from '../features/help/GuideDialog'
 import { markTutorialSeen } from '../features/help/tutorialPreferences'
 import { workoutTutorialSteps } from '../features/help/tutorialSteps'
-import { WeeklyPlanEditor } from '../features/workout/WeeklyPlanViews'
+import { WeeklyPlanDayTile, WeeklyPlanEditor, WeeklyPlanFeedbackDialog } from '../features/workout/WeeklyPlanViews'
 import { emptyWeeklyPlanDays, loadWeeklyPlan, WEEKDAY_LABELS, weekdayIdForLocalDateKey, weeklyPlanAssignmentLabel, type WeeklyPlan } from '../features/workout/weeklyPlan'
-import { PlanChangeConfirmationRequiredError } from '../features/workout/weeklyPlan'
+import { acknowledgeWeeklyPlanFeedback, listWeeklyPlanFeedback, resolveWeeklyPlanFeedback } from '../features/workout/weeklyPlanFeedback'
 import { useAudio } from '../features/audio/useAudio'
 import { useBackNavigation } from '../features/navigation/useBackNavigation'
 import { loadGamificationDashboard, type GamificationDashboard } from '../features/gamification/gamificationRepository'
@@ -53,9 +53,11 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const [showAllHistory, setShowAllHistory] = useState(false)
   const [preparedExercises, setPreparedExercises] = useState<Exercise[]>([])
   const [showWorkoutLanding, setShowWorkoutLanding] = useState(false)
-  const overlayOpen = Boolean(replacementIntent) || routineChooserOpen || quickLaunchOpen
+  const [planFeedback, setPlanFeedback] = useState<WeeklyPlanFeedback>()
+  const overlayOpen = Boolean(planFeedback) || Boolean(replacementIntent) || routineChooserOpen || quickLaunchOpen
   const navigateBack = useBackNavigation('workout-subview', overlayOpen || view !== 'hub', () => {
-    if (replacementIntent) setReplacementIntent(undefined)
+    if (planFeedback) void keepPlanFeedback()
+    else if (replacementIntent) setReplacementIntent(undefined)
     else if (routineChooserOpen) setRoutineChooserOpen(false)
     else if (quickLaunchOpen) setQuickLaunchOpen(false)
     else { void refresh(); setView('hub') }
@@ -63,14 +65,46 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
   async function refresh() {
     await ensureBuiltInExercises()
-    const [nextRoutines, recent, active, nextPlan, nextGamification] = await Promise.all([loadRoutines(), listRecentWorkouts(), getActiveWorkout(), loadWeeklyPlan(), loadGamificationDashboard()])
+    const nextGamification = await loadGamificationDashboard()
+    const [nextRoutines, recent, active, nextPlan, pendingFeedback] = await Promise.all([loadRoutines(), listRecentWorkouts(), getActiveWorkout(), loadWeeklyPlan(), listWeeklyPlanFeedback()])
     setRoutines(nextRoutines)
     setRecentWorkouts(recent)
     setActiveWorkoutDetail(active)
     setWeeklyPlan(nextPlan)
     setGamification(nextGamification)
+    setPlanFeedback(pendingFeedback[0])
     setLoading(false)
   }
+
+  async function viewFeedbackPlan() {
+    if (!planFeedback) return
+    await acknowledgeWeeklyPlanFeedback(planFeedback.id)
+    setPlanFeedback(undefined)
+    await refresh()
+    setView('plan')
+  }
+
+  async function keepPlanFeedback() {
+    if (!planFeedback) return
+    await resolveWeeklyPlanFeedback(planFeedback.id, 'keep')
+    setPlanFeedback(undefined)
+    await refresh()
+  }
+
+  async function updatePlanFromFeedback() {
+    if (!planFeedback) return
+    try {
+      await resolveWeeklyPlanFeedback(planFeedback.id, 'update')
+      playEffect('add')
+      setPlanFeedback(undefined)
+      await refresh()
+      setView('hub')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Weekly Plan could not be updated.')
+    }
+  }
+
+  const feedbackDialog = planFeedback ? <WeeklyPlanFeedbackDialog feedback={planFeedback} onViewPlan={() => void viewFeedbackPlan()} onDismiss={() => void keepPlanFeedback()} onUpdate={() => void updatePlanFromFeedback()} /> : null
 
   // Initial state is restored from IndexedDB; later mutations call refresh explicitly.
   // oxlint-disable-next-line react-hooks/exhaustive-deps, react/set-state-in-effect
@@ -179,7 +213,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   }
 
   if (view === 'active' && activeWorkoutId) return <ActiveWorkoutView workoutId={activeWorkoutId} onExit={() => { void refresh(); setView('hub') }} onCompleted={(workoutId) => { setHistoryWorkoutId(workoutId); setActiveWorkoutDetail(undefined); void refresh(); setView('history') }} />
-  if (view === 'history' && historyWorkoutId) return <CompletedWorkoutDetail workoutId={historyWorkoutId} onBack={() => { void navigateBack() }} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== historyWorkoutId)); setHistoryWorkoutId(undefined); setView('hub'); void refresh() }} />
+  if (view === 'history' && historyWorkoutId) return <><CompletedWorkoutDetail workoutId={historyWorkoutId} onBack={() => { void navigateBack() }} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== historyWorkoutId)); setHistoryWorkoutId(undefined); setView('hub'); void refresh() }} />{feedbackDialog}</>
   if (view === 'plan') return <WeeklyPlanEditor plan={weeklyPlan} routines={routines} onChanged={setWeeklyPlan} onBack={() => setView('hub')} onCreateRoutine={() => setView('create')} />
 
   if (view === 'prepare-picker') return <div className="page-stack workout-page"><ExerciseDex picker={{
@@ -273,7 +307,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
           const snapshot = gamification?.snapshots.find((item) => item.localDate === dateKey)
           const done = snapshot?.result === 'success'
           const rest = assignment.type === 'rest_day'
-          return <div className={`workout-day-chip${day === todayId ? ' is-today' : ''}${done ? ' is-done' : ''}${rest ? ' is-rest' : ''}`} key={day}><strong>{WEEKDAY_LABELS[day].slice(0, 3)}</strong><span>{done ? '✓ ' : ''}{weeklyPlanAssignmentLabel(assignment, routines.map((entry) => entry.routine))}</span></div>
+          return <WeeklyPlanDayTile key={day} day={day} label={weeklyPlanAssignmentLabel(assignment, routines.map((entry) => entry.routine))} today={day === todayId} completed={done} rest={rest} />
         })}</div>
       </section>
 
@@ -319,6 +353,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
     {deleteWorkoutSummary ? <WorkoutDeleteDialog workoutId={deleteWorkoutSummary.workout.id} workoutName={deleteWorkoutSummary.workout.nameSnapshot} onCancel={() => setDeleteWorkoutSummary(undefined)} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== deleteWorkoutSummary.workout.id)); setDeleteWorkoutSummary(undefined); void refresh() }} /> : null}
     {tutorialOpen ? <GuideDialog eyebrow="How Workouts Work" steps={workoutTutorialSteps} onClose={closeTutorial} /> : null}
+    {feedbackDialog}
   </PageFrame>
 }
 
@@ -340,10 +375,10 @@ function CreateRoutine({ onCancel, onCreated }: { onCancel: () => void; onCreate
 }
 
 function RoutineEditor({ entry, replacementOptions, message, onBack, onChanged, onAddExercise, onStart, onDeleted }: { entry: RoutineWithItems; replacementOptions: RoutineWithItems[]; message: string; onBack: () => void; onChanged: () => Promise<void>; onAddExercise: () => void; onStart: () => void; onDeleted: () => Promise<void> }) {
-  const [name, setName] = useState(entry.routine.name); const [confirmDelete, setConfirmDelete] = useState(false); const [confirmPlanReset, setConfirmPlanReset] = useState(false); const [scheduledDays, setScheduledDays] = useState<string[]>([]); const [replacementId, setReplacementId] = useState(''); const [pendingReplacementId, setPendingReplacementId] = useState<string>(); const [feedback, setFeedback] = useState(message)
+  const [name, setName] = useState(entry.routine.name); const [confirmDelete, setConfirmDelete] = useState(false); const [scheduledDays, setScheduledDays] = useState<string[]>([]); const [replacementId, setReplacementId] = useState(''); const [feedback, setFeedback] = useState(message)
   async function run(action: () => Promise<unknown>, success?: string) { try { await action(); await onChanged(); if (success) setFeedback(success) } catch (error) { setFeedback(error instanceof Error ? error.message : 'Routine could not be updated.') } }
-  async function removeRoutine(forceReset = false, replacementRoutineId?: string) { const resolvedReplacementId = forceReset && replacementRoutineId === undefined ? pendingReplacementId : replacementRoutineId; try { await deleteRoutine(entry.routine.id, { confirmPlanReset: forceReset, replacementRoutineId: resolvedReplacementId }); await onDeleted() } catch (error) { if (error instanceof PlanChangeConfirmationRequiredError) { setPendingReplacementId(resolvedReplacementId); setConfirmPlanReset(true) } else setFeedback(error instanceof Error ? error.message : 'Routine could not be deleted.') } }
-  return <div className="page-stack workout-page"><Panel className="workout-flow-panel routine-editor"><FlowHeading title={entry.routine.name} onBack={onBack} /><button className="secondary-button routine-top-add" type="button" onClick={onAddExercise}><Plus size={17} aria-hidden="true" /> Add exercise</button><form className="routine-rename" onSubmit={(event) => { event.preventDefault(); void run(() => renameRoutine(entry.routine, name), 'Routine renamed.') }}><label><span className="visually-hidden">Routine name</span><input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} /></label><button className="secondary-button" type="submit">Rename</button></form>{entry.items.length ? <ol className="routine-exercise-list">{entry.items.map((item, index) => <RoutineItemRow key={item.id} item={item} first={index === 0} last={index === entry.items.length - 1} onSets={(sets) => run(() => updateRoutineItemSets(entry.routine.id, item.id, sets))} onMove={(direction) => run(() => reorderRoutineItem(entry.routine.id, item.id, direction))} onRemove={() => run(() => deleteRoutineItem(entry.routine.id, item.id), 'Exercise removed from routine.')} />)}</ol> : <WorkoutEmpty title="No exercises yet" body="Add exercises from the existing Exercise Dex picker." />}<button className="secondary-button" type="button" onClick={onAddExercise}><Plus size={17} aria-hidden="true" /> Add exercise</button><button className="primary-button" type="button" onClick={onStart}><Dumbbell size={17} aria-hidden="true" /> Start workout</button>{feedback ? <p className="workout-feedback" role="status">{feedback}</p> : null}{confirmDelete ? <div className="routine-delete-confirm"><p>Delete this routine template? Completed workout snapshots will remain untouched.</p>{scheduledDays.length ? <><p><strong>Active plan affected:</strong> this routine is scheduled on {scheduledDays.join(', ')}. Continuing is treated as a material Plan Change.</p>{replacementOptions.length ? <div className="routine-replacement"><label><span>Replace Routine</span><select value={replacementId} onChange={(event) => setReplacementId(event.target.value)}><option value="">Choose a saved routine</option>{replacementOptions.map((candidate) => <option value={candidate.routine.id} key={candidate.routine.id}>{candidate.routine.name}</option>)}</select></label><button className="secondary-button" type="button" disabled={!replacementId} onClick={() => void removeRoutine(false, replacementId)}>Replace Routine &amp; Delete</button></div> : null}</> : null}<button className="secondary-button" type="button" onClick={() => setConfirmDelete(false)}>Keep routine</button><button className="danger-button" type="button" onClick={() => void removeRoutine(false, undefined)}>Continue as Plan Change</button></div> : <button className="text-button routine-delete-button" type="button" onClick={() => { setConfirmDelete(true); void routineScheduledDays(entry.routine.id).then(setScheduledDays) }}><Trash2 size={16} aria-hidden="true" /> Delete routine</button>}</Panel>{confirmPlanReset ? <div className="workout-finish-backdrop"><section className="panel plan-change-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-plan-reset-title"><p className="eyebrow">Plan commitment</p><h2 id="delete-plan-reset-title">Delete &amp; reset streak?</h2><p>Your protected Plan Change has already been used. Deleting this scheduled routine will update the Weekly Plan and reset only your current Plan Streak.</p><button className="secondary-button" type="button" onClick={() => setConfirmPlanReset(false)}>Cancel</button><button className="danger-button" type="button" onClick={() => void removeRoutine(true)}>Delete &amp; Reset Streak</button></section></div> : null}</div>
+  async function removeRoutine(replacementRoutineId?: string) { try { await deleteRoutine(entry.routine.id, { replacementRoutineId }); await onDeleted() } catch (error) { setFeedback(error instanceof Error ? error.message : 'Routine could not be deleted.') } }
+  return <div className="page-stack workout-page"><Panel className="workout-flow-panel routine-editor"><FlowHeading title={entry.routine.name} onBack={onBack} /><button className="secondary-button routine-top-add" type="button" onClick={onAddExercise}><Plus size={17} aria-hidden="true" /> Add exercise</button><form className="routine-rename" onSubmit={(event) => { event.preventDefault(); void run(() => renameRoutine(entry.routine, name), 'Routine renamed.') }}><label><span className="visually-hidden">Routine name</span><input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} /></label><button className="secondary-button" type="submit">Rename</button></form>{entry.items.length ? <ol className="routine-exercise-list">{entry.items.map((item, index) => <RoutineItemRow key={item.id} item={item} first={index === 0} last={index === entry.items.length - 1} onSets={(sets) => run(() => updateRoutineItemSets(entry.routine.id, item.id, sets))} onMove={(direction) => run(() => reorderRoutineItem(entry.routine.id, item.id, direction))} onRemove={() => run(() => deleteRoutineItem(entry.routine.id, item.id), 'Exercise removed from routine.')} />)}</ol> : <WorkoutEmpty title="No exercises yet" body="Add exercises from the existing Exercise Dex picker." />}<button className="secondary-button" type="button" onClick={onAddExercise}><Plus size={17} aria-hidden="true" /> Add exercise</button><button className="primary-button" type="button" onClick={onStart}><Dumbbell size={17} aria-hidden="true" /> Start workout</button>{feedback ? <p className="workout-feedback" role="status">{feedback}</p> : null}{confirmDelete ? <div className="routine-delete-confirm"><p>Delete this routine template? Completed workout snapshots will remain untouched.</p>{scheduledDays.length ? <><p><strong>Weekly Plan:</strong> this routine is scheduled on {scheduledDays.join(', ')}. Replace it or clear those days.</p>{replacementOptions.length ? <div className="routine-replacement"><label><span>Replace Routine</span><select value={replacementId} onChange={(event) => setReplacementId(event.target.value)}><option value="">Choose a saved routine</option>{replacementOptions.map((candidate) => <option value={candidate.routine.id} key={candidate.routine.id}>{candidate.routine.name}</option>)}</select></label><button className="secondary-button" type="button" disabled={!replacementId} onClick={() => void removeRoutine(replacementId)}>Replace Routine &amp; Delete</button></div> : null}</> : null}<button className="secondary-button" type="button" onClick={() => setConfirmDelete(false)}>Keep routine</button><button className="danger-button" type="button" onClick={() => void removeRoutine()}>Clear Scheduled Days &amp; Delete</button></div> : <button className="text-button routine-delete-button" type="button" onClick={() => { setConfirmDelete(true); void routineScheduledDays(entry.routine.id).then(setScheduledDays) }}><Trash2 size={16} aria-hidden="true" /> Delete routine</button>}</Panel></div>
 }
 
 function RoutineItemRow({ item, first, last, onSets, onMove, onRemove }: { item: RoutineExercise; first: boolean; last: boolean; onSets: (sets: number) => Promise<void>; onMove: (direction: -1 | 1) => Promise<void>; onRemove: () => Promise<void> }) {

@@ -3,6 +3,8 @@ import { PREDEFINED_FOOD_CATEGORY_IDS, type CustomFoodCategory, type FoodLogEntr
 import { createId } from '../../utils/createId.ts'
 import { categoryName, normalizeFoodName, nutritionTotals, validateNutrition } from './foodModel.ts'
 import { reconcileFoodGamification } from '../gamification/gamificationRepository.ts'
+import { reconcileNotificationSchedules } from '../notifications/notificationScheduler.ts'
+import { getLocalSettingsRecord } from '../settings/settingsRepository.ts'
 
 export interface FoodDraft extends FoodNutrition {
   name: string
@@ -102,6 +104,8 @@ export async function addFoodLog(date: string, meal: FoodMeal, draft: FoodDraft)
     return entry
   })
   await reconcileFoodGamification()
+  const family = (await getLocalSettingsRecord())?.themeFamily === 'amazonians' ? 'amazonians' : 'spartans'
+  await reconcileNotificationSchedules(family)
   return entry
 }
 
@@ -128,10 +132,12 @@ export async function editFoodLog(id: string, draft: FoodDraft) {
     return updated
   })
   await reconcileFoodGamification()
+  const family = (await getLocalSettingsRecord())?.themeFamily === 'amazonians' ? 'amazonians' : 'spartans'
+  await reconcileNotificationSchedules(family)
   return updated
 }
 
-export async function deleteFoodLog(id: string) { await db.foodLogEntries.delete(id); await reconcileFoodGamification() }
+export async function deleteFoodLog(id: string) { await db.foodLogEntries.delete(id); await reconcileFoodGamification(); const family = (await getLocalSettingsRecord())?.themeFamily === 'amazonians' ? 'amazonians' : 'spartans'; await reconcileNotificationSchedules(family) }
 
 export async function listCustomCategories() { return db.customFoodCategories.orderBy('name').toArray() }
 

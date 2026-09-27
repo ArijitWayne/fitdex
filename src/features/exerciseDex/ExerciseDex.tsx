@@ -416,22 +416,23 @@ function ExerciseRows({
   )
 }
 
-function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker, pending, onToggleExercise, onAddToRoutine }: {
+export function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker, pending, onToggleExercise, onAddToRoutine, backLabel }: {
   exercise: Exercise
-  favourite: boolean
+  favourite?: boolean
   onBack: () => void
-  onToggleFavourite: () => void
+  onToggleFavourite?: () => void
   picker?: ExerciseDexPicker
-  pending: boolean
-  onToggleExercise: () => void
+  pending?: boolean
+  onToggleExercise?: () => void
   onAddToRoutine?: (exercise: Exercise) => void
+  backLabel?: string
 }) {
   const content = getExerciseContent(exercise.id)
 
   return (
     <Panel className="exercise-detail-panel exercise-record-sheet">
       <div className="exercise-detail-header">
-        <button className="dex-back-button" type="button" onClick={onBack} aria-label="Back to exercise list"><ArrowLeft size={20} aria-hidden="true" /></button>
+        <button className="dex-back-button" type="button" onClick={onBack} aria-label={backLabel ?? "Back to exercise list"}><ArrowLeft size={20} aria-hidden="true" /></button>
         <div>
           <p className="eyebrow">Exercise record</p>
           <h2>{exercise.name}</h2>
@@ -440,7 +441,7 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
             {exercise.movementPattern ? ` · ${exercise.movementPattern}` : ''}
           </p>
         </div>
-        {!picker ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
+        {!picker && onToggleFavourite ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
       </div>
       {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseId={exercise.id} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : null}
       <dl className="exercise-detail-list">
@@ -475,6 +476,8 @@ function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite, picker
         </div>
       ) : onAddToRoutine ? (
         <div className="exercise-detail-action"><button className="primary-button" type="button" onClick={() => onAddToRoutine(exercise)}>Add to routine</button></div>
+      ) : backLabel ? (
+        <div className="exercise-detail-action"><button className="primary-button btn-return-workout" type="button" onClick={onBack}>{backLabel}</button></div>
       ) : null}
     </Panel>
   )

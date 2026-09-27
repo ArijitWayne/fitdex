@@ -17,6 +17,8 @@ export interface SettingsRecord extends EntityRecord {
   units?: 'metric' | 'imperial'
   weeklyPlan?: Partial<Record<WeekdayId, WeeklyPlanAssignment>>
   weeklyPlanConfigured?: boolean
+  /** Date boundary for recurring-plan expectations; older dates remain historical no-plan days unless snapshotted. */
+  weeklyPlanConfiguredAt?: string
   workoutTutorialSeen?: boolean
   foodTutorialSeen?: boolean
   /** Local activation boundary. XP is intentionally not back-awarded before this instant. */
@@ -31,12 +33,32 @@ export interface SettingsRecord extends EntityRecord {
   nutritionTargetsEligibleFrom?: string
   /** Optional, additive acknowledgement state for contextual first-use teaching. */
   firstUseGuidance?: FirstUseGuidanceState
+  /** Durable, one-shot Workout Hub feedback. Entries are removed when acknowledged. */
+  weeklyPlanFeedback?: WeeklyPlanFeedback[]
+  /** Additive local Notification V1 preferences; absent records retain safe defaults. */
+  notifications?: NotificationPreferences
+}
+
+export type NotificationPermissionState = 'unrequested' | 'granted' | 'denied' | 'unsupported'
+
+export interface NotificationPreferences {
+  enabled: boolean
+  updateEnabled: boolean
+  workoutEnabled: boolean
+  workoutReminderTime: string
+  nutritionEnabled: boolean
+  nutritionReminderTime: string
+  permissionState?: NotificationPermissionState
+  lastNotifiedUpdateVersion?: string
+  lastWorkoutReminderDate?: string
+  lastNutritionReminderDate?: string
 }
 
 export interface FirstUseGuidanceState {
   nutritionSetup?: 'completed' | 'skipped'
   workoutLanding?: boolean
   workoutTimer?: boolean
+  workoutPause?: boolean
   workoutRest?: boolean
   weeklyPlan?: boolean
   streakProtection?: boolean
@@ -75,6 +97,20 @@ export type WeeklyPlanAssignment =
   | { type: 'workout_day' }
   | { type: 'rest_day' }
   | { type: 'no_plan' }
+
+interface WeeklyPlanFeedbackBase {
+  id: string
+  workoutId?: string
+  weekday?: WeekdayId
+  createdAt: string
+}
+
+export type WeeklyPlanFeedback =
+  | (WeeklyPlanFeedbackBase & { type: 'inferred_routine'; workoutId: string; weekday: WeekdayId; routineId: string; routineName: string; streakBefore: number; streakAfter: number })
+  | (WeeklyPlanFeedbackBase & { type: 'inferred_workout_day'; workoutId: string; weekday: WeekdayId; streakBefore: number; streakAfter: number })
+  | (WeeklyPlanFeedbackBase & { type: 'historical_reconciliation'; restoredDays: number; streakBefore: number; streakAfter: number })
+  | (WeeklyPlanFeedbackBase & { type: 'rest_day_decision'; workoutId: string; weekday: WeekdayId; routineId?: string; routineName?: string; streakBefore: number; streakAfter: number })
+  | (WeeklyPlanFeedbackBase & { type: 'different_routine_decision'; workoutId: string; weekday: WeekdayId; plannedRoutineId: string; plannedRoutineName: string; completedRoutineId: string; completedRoutineName: string })
 
 export type ExerciseCategory = 'Chest' | 'Back' | 'Shoulders' | 'Legs' | 'Gluteal' | 'Biceps' | 'Triceps' | 'Forearms' | 'Abs'
 

@@ -9,7 +9,7 @@
 
   [![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)](https://github.com/ArijitWayne/fitdex)
   [![Storage](https://img.shields.io/badge/Storage-Local--First%20(IndexedDB)-1f8582?style=flat-square)](https://github.com/ArijitWayne/fitdex)
-  [![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)](package.json)
+  [![Version](https://img.shields.io/badge/Version-1.1.0-blue?style=flat-square)](package.json)
   [![PWA](https://img.shields.io/badge/Web%20App-PWA%20Live-orange?style=flat-square)](https://fitdex.fitdexapp.workers.dev/)
   [![License](https://img.shields.io/badge/License-Source--Available%20(PolyForm%20%7C%20MIT)-blue?style=flat-square)](LICENSING.md)
 

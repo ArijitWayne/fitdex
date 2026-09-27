@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { BackgroundMusicPreference, NutritionActivityLevel, NutritionGoal, NutritionSex, NutritionTargets } from '../../data/models'
+import type { BackgroundMusicPreference, NotificationPreferences, NutritionActivityLevel, NutritionGoal, NutritionSex, NutritionTargets } from '../../data/models'
 import { brandingForTheme } from '../../branding/branding'
 import { supportsNativeAndroidLauncherBranding } from '../../branding/nativeBranding'
 import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion'
@@ -24,6 +24,10 @@ import { displayNameLength, isValidDisplayName, limitDisplayNameInput, MAX_DISPL
 import { useProfile } from '../profile/useProfile'
 import { getLocalSettingsRecord, updateLocalSettings } from './settingsRepository'
 import type { UnitPreference } from '../../utils/units'
+import { formatReminderTime, notificationPermissionLabel, resolveNotificationPreferences } from '../notifications/notificationModel'
+import { loadNotificationPreferences, saveNotificationPreferences } from '../notifications/notificationRepository'
+import { currentNotificationPermission, requestNotificationPermission } from '../notifications/notificationDelivery'
+import { reconcileNotificationSchedules } from '../notifications/notificationScheduler'
 
 const brightnessOptions: Array<{ value: BrightnessPreference; label: string }> = [
   { value: 'system', label: 'System' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' },
@@ -36,7 +40,7 @@ const musicOptions: Array<{ value: BackgroundMusicPreference; label: string }> =
 ]
 const musicLabels = Object.fromEntries(musicOptions.map((option) => [option.value, option.label])) as Record<BackgroundMusicPreference, string>
 const targetDefaults: Omit<NutritionTargets, 'updatedAt'> = { enabled: true, goal: 'lose', age: 30, sex: 'female', heightCm: 165, weightKg: 65, activityLevel: 'moderate', calorieTarget: 1800, proteinTargetGrams: 0, calorieTargetSource: 'calculated' }
-type SettingsView = 'hub' | 'profile' | 'appearance' | 'units' | 'audio' | 'nutrition' | 'media' | 'backup' | 'about'
+type SettingsView = 'hub' | 'profile' | 'appearance' | 'units' | 'audio' | 'notifications' | 'nutrition' | 'media' | 'backup' | 'about'
 type NutritionTargetDraft = Record<'age' | 'heightCm' | 'weightKg' | 'calorieTarget' | 'proteinTargetGrams', string>
 
 function FactionChangeDialog({ family, onCancel, onConfirm }: { family: ThemeFamily; onCancel: () => void; onConfirm: () => void }) {
@@ -44,13 +48,13 @@ function FactionChangeDialog({ family, onCancel, onConfirm }: { family: ThemeFam
   return <div className="guide-backdrop faction-change-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel() }}><section className="faction-change-dialog" role="alertdialog" aria-modal="true" aria-labelledby="faction-change-title" aria-describedby="faction-change-description"><p className="eyebrow">FACTION CHANGE</p><h2 id="faction-change-title">SWITCH TO {destination} THEME?</h2><p id="faction-change-description">Changing faction will update your launcher icon.<br />FitDex will briefly relaunch to apply the change.</p><div className="faction-change-actions"><button className="secondary-button" type="button" onClick={onCancel}>CANCEL</button><button className="primary-button" type="button" onClick={onConfirm}>SWITCH &amp; RELAUNCH</button></div></section></div>
 }
 
-export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void; onReplayTutorial: () => void }) {
+export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack: () => void; onReplayTutorial: () => void; initialView?: SettingsView }) {
   const { family, brightness, setFamily, setBrightness } = useTheme()
   const { selectedAvatar } = useAvatar()
   const { displayName, ready: profileReady, saveDisplayName } = useProfile()
   const { ready: audioReady, soundEffectsEnabled, backgroundMusic, playEffect, setSoundEffectsEnabled, setBackgroundMusic } = useAudio()
   const [units, setUnits] = useState<UnitPreference>('metric')
-  const [view, setView] = useState<SettingsView>('hub')
+  const [view, setView] = useState<SettingsView>(initialView ?? 'hub')
   const [choosingAvatar, setChoosingAvatar] = useState(false)
   const [nutritionSummary, setNutritionSummary] = useState<Omit<NutritionTargets, 'updatedAt'>>(targetDefaults)
   const [downloadCount, setDownloadCount] = useState<number>()
@@ -216,6 +220,10 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
     )
   }
 
+  if (view === 'notifications') {
+    return <NotificationSettings family={family} onBack={backToHub} />
+  }
+
   if (view === 'nutrition') {
     return (
       <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
@@ -331,6 +339,12 @@ export function SettingsPage({ onBack, onReplayTutorial }: { onBack: () => void;
             description="Sound effects and battle music"
             value={`${soundEffectsEnabled ? 'SFX on' : 'SFX off'} · ${musicLabels[backgroundMusic]}`}
             onClick={() => openView('audio')}
+          />
+          <SettingsRow
+            title="Notifications"
+            description="Workout, nutrition, and update reminders"
+            value="Manage"
+            onClick={() => openView('notifications')}
           />
         </SettingsGroup>
 
@@ -520,6 +534,230 @@ function AboutSettings({ family, onBack }: { family: ThemeFamily; onBack: () => 
   )
 }
 
+function NotificationSettings({ family, onBack }: { family: ThemeFamily; onBack: () => void }) {
+  const { playEffect } = useAudio()
+  const [preferences, setPreferences] = useState<NotificationPreferences>(resolveNotificationPreferences())
+  const [ready, setReady] = useState(false)
+  const [permissionOpen, setPermissionOpen] = useState(false)
+  const [timeCategory, setTimeCategory] = useState<'workout' | 'nutrition'>()
+
+  useEffect(() => {
+    void loadNotificationPreferences().then((saved) => {
+      const detected = currentNotificationPermission()
+      const permissionState = detected === 'unrequested' ? saved.permissionState ?? detected : detected
+      const next = { ...saved, permissionState, enabled: permissionState === 'denied' || permissionState === 'unsupported' ? false : saved.enabled }
+      setPreferences(next)
+      setReady(true)
+    })
+  }, [])
+
+  const persist = async (patch: Partial<NotificationPreferences>) => {
+    const next = await saveNotificationPreferences(patch)
+    setPreferences(next)
+    await reconcileNotificationSchedules(family)
+  }
+
+  const changeMaster = () => {
+    playEffect('select')
+    if (preferences.enabled) void persist({ enabled: false })
+    else if (preferences.permissionState === 'granted') void persist({ enabled: true })
+    else if (preferences.permissionState === 'denied' || preferences.permissionState === 'unsupported') void persist({ enabled: false })
+    else setPermissionOpen(true)
+  }
+
+  const enableNotifications = async () => {
+    playEffect('select')
+    const permissionState = await requestNotificationPermission()
+    setPermissionOpen(false)
+    await persist({ enabled: permissionState === 'granted', permissionState })
+  }
+
+  const notNow = async () => {
+    playEffect('select')
+    setPermissionOpen(false)
+    await persist({ enabled: false, permissionState: 'unrequested' })
+  }
+
+  const interactive = ready && preferences.enabled && preferences.permissionState === 'granted'
+  const setCategory = (category: 'update' | 'workout' | 'nutrition', enabled: boolean) => {
+    playEffect('select')
+    void persist({ [category === 'update' ? 'updateEnabled' : category === 'workout' ? 'workoutEnabled' : 'nutritionEnabled']: enabled })
+  }
+
+  return (
+    <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <SettingsSubheader eyebrow="Settings / Your System" title="Notifications" description="Choose FitDex reminders for this device." onBack={onBack} />
+
+      <section className="settings-detail-card notification-master-card">
+        <label className="settings-switch-row notification-master-row">
+          <span>
+            <small className="notification-master-kicker">MASTER CONTROL</small>
+            <strong>Notifications</strong>
+            <small>Controls all FitDex notification categories.</small>
+          </span>
+          <input type="checkbox" role="switch" checked={preferences.enabled} disabled={!ready || preferences.permissionState === 'unsupported'} onChange={changeMaster} />
+          <i aria-hidden="true" />
+        </label>
+        <NotificationPermissionStatus preferences={preferences} onEnable={() => setPermissionOpen(true)} />
+      </section>
+
+      <div className={`notification-categories-stack ${!interactive ? 'is-disabled' : ''}`} aria-disabled={!interactive}>
+        {/* APP */}
+        <section className="notification-section-card">
+          <header className="group-heading notification-card-eyebrow">
+            <span>APP</span>
+          </header>
+          <NotificationCategoryRow
+            title="New FitDex updates"
+            helper="Notify me when a newer stable FitDex version is available."
+            checked={preferences.updateEnabled}
+            disabled={!interactive}
+            onChange={(enabled) => setCategory('update', enabled)}
+          />
+          <details className="notification-rule-note">
+            <summary>WHEN IT SENDS</summary>
+            <p>Sends a notification when a newer stable release of FitDex is available for your device.</p>
+          </details>
+        </section>
+
+        {/* WORKOUT */}
+        <section className="notification-section-card">
+          <header className="group-heading notification-card-eyebrow">
+            <span>WORKOUT</span>
+          </header>
+          <NotificationCategoryRow
+            title="Today's planned workout"
+            helper="Notify me when I have a workout planned for today."
+            checked={preferences.workoutEnabled}
+            disabled={!interactive}
+            onChange={(enabled) => setCategory('workout', enabled)}
+          />
+          <ReminderTimeRow
+            value={preferences.workoutReminderTime}
+            disabled={!interactive || !preferences.workoutEnabled}
+            onClick={() => { playEffect('select'); setTimeCategory('workout') }}
+          />
+          <details className="notification-rule-note">
+            <summary>WHEN IT SENDS</summary>
+            <p>Sends at your selected reminder time when today's Weekly Plan includes a workout that hasn't been completed yet.</p>
+          </details>
+        </section>
+
+        {/* NUTRITION */}
+        <section className="notification-section-card">
+          <header className="group-heading notification-card-eyebrow">
+            <span>NUTRITION</span>
+          </header>
+          <NotificationCategoryRow
+            title="Calories below daily target"
+            helper="Notify me when my logged calories are still meaningfully below today's target."
+            checked={preferences.nutritionEnabled}
+            disabled={!interactive}
+            onChange={(enabled) => setCategory('nutrition', enabled)}
+          />
+          <ReminderTimeRow
+            value={preferences.nutritionReminderTime}
+            disabled={!interactive || !preferences.nutritionEnabled}
+            onClick={() => { playEffect('select'); setTimeCategory('nutrition') }}
+          />
+          <details className="notification-rule-note">
+            <summary>WHEN IT SENDS</summary>
+            <p>Sends at your selected reminder time when your logged calories are still meaningfully below today's target. No reminder once your target is reached or exceeded.</p>
+          </details>
+        </section>
+      </div>
+
+      {permissionOpen ? (
+        <div className="guide-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) void notNow() }}>
+          <section className="faction-change-dialog notification-permission-dialog" role="dialog" aria-modal="true" aria-labelledby="notification-permission-title">
+            <p className="eyebrow">Settings / Notifications</p>
+            <h2 id="notification-permission-title">Enable notifications</h2>
+            <p>FitDex can remind you about planned workouts, unfinished calorie targets, and new app updates.</p>
+            <div className="faction-change-actions">
+              <button className="secondary-button" type="button" onClick={() => void notNow()}>Not now</button>
+              <button className="primary-button" type="button" onClick={() => void enableNotifications()}>Enable notifications</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {timeCategory ? (
+        <ReminderTimePicker
+          category={timeCategory}
+          value={timeCategory === 'workout' ? preferences.workoutReminderTime : preferences.nutritionReminderTime}
+          onCancel={() => setTimeCategory(undefined)}
+          onSave={(value) => {
+            playEffect('select')
+            setTimeCategory(undefined)
+            void persist({ [timeCategory === 'workout' ? 'workoutReminderTime' : 'nutritionReminderTime']: value })
+          }}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+function NotificationPermissionStatus({ preferences, onEnable }: { preferences: NotificationPreferences; onEnable: () => void }) {
+  if (preferences.permissionState === 'granted' || (preferences.permissionState === 'unrequested' && !preferences.enabled)) {
+    return null
+  }
+  const isBlocked = preferences.permissionState === 'denied'
+  const isUnavailable = preferences.permissionState === 'unsupported'
+  const message = isBlocked
+    ? 'Notifications are blocked by your browser or device. Enable them in system or browser settings.'
+    : isUnavailable
+    ? 'This browser or device does not support notifications.'
+    : 'Permission has not been granted yet.'
+
+  return (
+    <div className={`notification-permission-status ${isBlocked || isUnavailable ? 'is-warning' : ''}`}>
+      <div className="notification-permission-text">
+        <strong>{notificationPermissionLabel(preferences.permissionState ?? 'unrequested')}</strong>
+        <small>{message}</small>
+      </div>
+      {preferences.enabled && preferences.permissionState === 'unrequested' ? (
+        <button type="button" className="secondary-button" onClick={onEnable}>Enable</button>
+      ) : null}
+    </div>
+  )
+}
+
+function NotificationCategoryRow({ title, helper, checked, disabled, onChange }: { title: string; helper: string; checked: boolean; disabled: boolean; onChange: (enabled: boolean) => void }) {
+  return (
+    <label className="settings-switch-row notification-category-row">
+      <span className="notification-row-copy">
+        <strong>{title}</strong>
+        <small>{helper}</small>
+      </span>
+      <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />
+      <i aria-hidden="true" />
+    </label>
+  )
+}
+
+function ReminderTimeRow({ value, disabled, onClick }: { value: string; disabled: boolean; onClick: () => void }) {
+  return (
+    <button type="button" className="notification-time-row" disabled={disabled} onClick={onClick}>
+      <span className="notification-time-label">REMINDER TIME</span>
+      <span className="notification-time-end">
+        <strong>{formatReminderTime(value)}</strong>
+        <span className="settings-chev" aria-hidden="true">›</span>
+      </span>
+    </button>
+  )
+}
+
+function ReminderTimePicker({ category, value, onCancel, onSave }: { category: 'workout' | 'nutrition'; value: string; onCancel: () => void; onSave: (value: string) => void }) {
+  const { playEffect } = useAudio()
+  const [rawHour, rawMinute] = value.split(':').map(Number)
+  const [hour, setHour] = useState(rawHour % 12 || 12)
+  const [minute, setMinute] = useState(String(rawMinute).padStart(2, '0'))
+  const [period, setPeriod] = useState(rawHour >= 12 ? 'PM' : 'AM')
+  useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onCancel() }; window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close) }, [onCancel])
+  const save = () => onSave(`${String((hour % 12) + (period === 'PM' ? 12 : 0)).padStart(2, '0')}:${minute}`)
+  return <div className="guide-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel() }}><section className="faction-change-dialog notification-time-dialog" role="dialog" aria-modal="true" aria-labelledby="notification-time-title"><p className="eyebrow">Settings / {category}</p><h2 id="notification-time-title">Set reminder time</h2><p className="notification-time-preview">{String(hour).padStart(2, '0')} : {minute} <b>{period}</b></p><div className="notification-time-fields"><label>Hour<select value={hour} onChange={(event) => { playEffect('select'); setHour(Number(event.target.value)) }}>{Array.from({ length: 12 }, (_, index) => index + 1).map((item) => <option key={item} value={item}>{String(item).padStart(2, '0')}</option>)}</select></label><label>Minute<select value={minute} onChange={(event) => { playEffect('select'); setMinute(event.target.value) }}>{['00', '15', '30', '45'].map((item) => <option key={item} value={item}>{item}</option>)}</select></label></div><div className="settings-segmented"><button type="button" aria-pressed={period === 'AM'} onClick={() => { playEffect('select'); setPeriod('AM') }}>AM</button><button type="button" aria-pressed={period === 'PM'} onClick={() => { playEffect('select'); setPeriod('PM') }}>PM</button></div><div className="faction-change-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); onCancel() }}>Cancel</button><button className="primary-button" type="button" onClick={save}>Set time</button></div></section></div>
+}
+
 function AudioSettings({
   ready,
   soundEffectsEnabled,
@@ -659,7 +897,7 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
   const parsed = parseNutritionTargetDraft(draft)
   const rmr = parsed ? safeRmr({ ...targets, ...parsed }) : 0
   const tdee = rmr ? calculateTdee(rmr, targets.activityLevel) : 0
-  const suggestions = tdee ? calculateSuggestedCalorieTargets(tdee, targets.goal) : undefined
+  const suggestions = tdee && parsed ? calculateSuggestedCalorieTargets(tdee, targets.goal, parsed.weightKg) : undefined
 
   const weightNum = Number(draft.weightKg)
   const suggestedProtein = Number.isFinite(weightNum) && weightNum > 0
@@ -701,8 +939,8 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
       return
     }
     try {
-      await saveNutritionTargets({ ...targets, ...parsed })
-      const saved = { ...targets, ...parsed }
+      const savedRecord = await saveNutritionTargets({ ...targets, ...parsed })
+      const { updatedAt: _, ...saved } = savedRecord.nutritionTargets!
       onLoaded(saved)
       playEffect('add')
       setStatus('Nutrition targets saved. Food updates live.')

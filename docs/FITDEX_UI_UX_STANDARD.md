@@ -204,7 +204,7 @@ Android system Back and gesture navigation are managed centrally via `useAppBack
 In-page state updates, tab switches, period filter changes (e.g., 7D/30D/90D/All in Progress), and category toggles must **never** unexpectedly jump the viewport scroll to the top of the page. Only explicit navigation transitions between distinct subviews may reset scroll position.
 
 ### 2.12 Prototype Lifecycle
-The former `prototypes/` workspace was a temporary exploratory sandbox and has been removed after approved decisions were migrated. Production code and production Markdown now retain the finalized designs, interaction contracts, and styling rules. Any future exploratory work remains disposable and must be migrated before deletion.
+Former `prototypes/` and `.temp-prototypes/` workspaces were temporary exploratory sandboxes and are removed after approved decisions migrate. Production code and production Markdown retain finalized designs, interaction contracts, and styling rules. Future exploratory work remains disposable and must migrate before deletion.
 
 ### 2.13 Guided First Use and Context Rails
 
@@ -271,7 +271,8 @@ The former `prototypes/` workspace was a temporary exploratory sandbox and has b
 ### 4.6 Settings & Preferences (V2 Profile / Loadout)
 - **Player Profile Hero**: Prominently renders the user's active champion avatar (`AvatarPortrait` with pixel art rendering), required local `displayName`, archetype label, and direct `Change` trigger at the top of the Settings Hub.
 - **3-Column Status Grid**: At-a-glance summary cards above setting categories: `Theme` (family + brightness), `Units` (Metric/Imperial), and `Targets` (Daily kcal + protein summary).
-- **Grouped Category Cards**: Organized into `Personalize` (Display Name & Avatar, Appearance), `Your System` (Units, Audio, Nutrition Targets), and `Data & Help` (Exercise Media, Backup & Restore, Field Guide, Gamification Guide, About FitDex).
+- **Grouped Category Cards**: Organized into `Personalize` (Display Name & Avatar, Appearance), `Your System` (Units, Audio, Nutrition Targets, Notifications), and `Data & Help` (Exercise Media, Backup & Restore, Field Guide, Gamification Guide, About FitDex).
+- **Notifications V1**: Master control plus App Updates, Today's Planned Workout, and Calories Below Daily Target only. Built with authoritative full bordered-card retro panels, dedicated category header bands (`APP`, `WORKOUT`, `NUTRITION`), and compact expandable `WHEN IT SENDS` disclosures (`▸` collapsed / `▾` open). Category rows never expose sound names, sound pickers, or previews (internal sounds: Workout → `morning_notification.mp3`, Nutrition → `warning_notification.mp3`, Update → `update_notification.mp3`). Workout/Nutrition use compact custom 12-hour time dialogs. Permission follows explicit master intent; `NOT NOW` restores Off. Developer-only test controls never ship in release UI.
 - **Inline Summary Badges**: Display verified current state inline in navigation rows (`Arijit · Leonidas`, `Spartan · Dark`, `Metric`, `SFX On · Warrior`, `1,800 kcal · Protein off`).
 - **Unified Audio Entry**: Sound Effects switch and Background Music track options (`Warrior`, `Hardened`, `Villain`, `None`) consolidated in a dedicated subview.
 - **Units Management**: Direct selection between Metric (`kg · km`) and Imperial (`lb · mi`) backed by `SettingsRecord.units` in Dexie.

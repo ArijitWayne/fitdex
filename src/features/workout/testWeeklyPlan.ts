@@ -26,15 +26,15 @@ assert.equal(weekdayIdForLocalDateKey('2026-08-24'), 'monday')
 
 const routine = await routines.createRoutine('Routine A')
 plan = await saveWeeklyPlanDay('thursday', { type: 'routine', routineId: routine.id })
-assert.equal(await db.planChangeEvents.where('type').equals('protected').count(), 1, 'first material change uses protected allowance')
+assert.equal(await db.planChangeEvents.count(), 0, 'editing Weekly Plan creates no policy event')
 assert.equal(weeklyPlanAssignmentLabel(plan.days.thursday, [routine]), 'Routine A')
 const renamed = await routines.renameRoutine(routine, 'Push Day')
 assert.equal(weeklyPlanAssignmentLabel(plan.days.thursday, [renamed]), 'Push Day', 'schedule resolves the live routine name')
 
 const completed: Workout = { id: 'completed:scheduled', routineId: routine.id, routineNameSnapshot: 'Routine A', nameSnapshot: 'Routine A', status: 'completed', startedAt: '2026-08-24T18:20:00.000Z', completedAt: '2026-08-24T19:00:00.000Z', durationSeconds: 2400, createdAt: timestamp, updatedAt: timestamp }
 await db.workouts.add(completed)
-await routines.deleteRoutine(routine.id, { confirmPlanReset: true })
-assert.equal(await db.planChangeEvents.where('type').equals('reset').count(), 1, 'later scheduled-routine deletion records a streak reset')
+await routines.deleteRoutine(routine.id)
+assert.equal(await db.planChangeEvents.count(), 0, 'scheduled-routine deletion creates no streak reset')
 plan = await loadWeeklyPlan()
 assert.equal(plan.days.thursday.type, 'no_plan', 'routine deletion clears its assignments safely')
 assert.ok(await db.workouts.get(completed.id), 'routine deletion never rewrites completed history')
@@ -47,7 +47,7 @@ assert.equal((await workouts.getCompletedWorkoutsForStartDate('2026-08-25')).som
 
 const active = await workouts.startEmptyWorkout('Active Snapshot')
 plan = await loadWeeklyPlan()
-await saveWeeklyPlan({ ...plan.days, friday: { type: 'workout_day' } }, { confirmReset: true })
+await saveWeeklyPlan({ ...plan.days, friday: { type: 'workout_day' } })
 assert.equal((await db.workouts.get(active.workout.id))?.nameSnapshot, 'Active Snapshot', 'schedule editing does not mutate the active workout')
 await workouts.discardWorkout(active.workout.id)
 

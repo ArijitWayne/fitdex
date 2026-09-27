@@ -21,7 +21,7 @@ assert.equal(home.todayAssignment.type, 'no_plan')
 
 async function setMonday(assignment: Parameters<typeof saveWeeklyPlan>[0]['monday']) {
   const plan = await loadWeeklyPlan()
-  await saveWeeklyPlan({ ...plan.days, monday: assignment! }, { confirmReset: true, now: new Date(`${monday}T12:00:00`) })
+  await saveWeeklyPlan({ ...plan.days, monday: assignment! }, { now: new Date(`${monday}T12:00:00`) })
 }
 
 await setMonday({ type: 'workout_day' })
@@ -60,7 +60,7 @@ home = await loadHomeDashboard(monday)
 assert.equal(home.todayAssignment.type, 'routine', 'a finalized historical plan snapshot is not rewritten by a later template edit')
 assert.equal(home.completedByStartDate.length, 1, 'activity does not convert the Rest Day assignment')
 await setMonday({ type: 'routine', routineId: routine.id })
-await deleteRoutine(routine.id, { confirmPlanReset: true })
+await deleteRoutine(routine.id)
 home = await loadHomeDashboard(monday)
 assert.equal(home.todayAssignment.type, 'no_plan')
 assert.equal(home.completedByStartDate.length, 1, 'schedule edits and routine deletion preserve history')

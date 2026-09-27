@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AppShell } from '../components/layout/AppShell'
 import { AvatarProvider } from '../features/avatar/AvatarProvider'
 import { Onboarding } from '../features/onboarding/Onboarding'
@@ -29,6 +29,8 @@ import { resolveProfileGate } from '../features/profile/profileGateModel'
 
 import { useTheme } from '../theme/useTheme'
 import { AppBootSequence } from '../features/boot/AppBootSequence'
+import { onNotificationRoute } from '../features/notifications/notificationDelivery'
+import { reconcileNotificationSchedules } from '../features/notifications/notificationScheduler'
 
 const rootLocation: AppLocation = { destination: 'home', settingsOpen: false, workoutEntry: 'hub', progressEntry: 'overview' }
 
@@ -51,6 +53,7 @@ function AppContent() {
   const [historyDepth, setHistoryDepth] = useState(0)
   const [tutorialCompleted, setTutorialCompleted] = useState(hasCompletedTutorial)
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [notificationSettingsView, setNotificationSettingsView] = useState<'about' | undefined>()
 
   const settingsOriginRef = useRef<SettingsOrigin | null>(null)
   const pendingScrollRestoreRef = useRef<number | null>(null)
@@ -135,6 +138,21 @@ function AppContent() {
     }
   }, [location])
 
+  useEffect(() => {
+    void reconcileNotificationSchedules(family)
+    return onNotificationRoute((category) => {
+      if (category === 'update') {
+        setNotificationSettingsView('about')
+        navigate({ ...location, destination: 'home', settingsOpen: true })
+      } else {
+        setNotificationSettingsView(undefined)
+        const destination = category === 'workout' ? 'workout' : 'food'
+        settingsOriginRef.current = null
+        navigate({ destination, settingsOpen: false, workoutEntry: destination === 'workout' ? 'hub' : location.workoutEntry, progressEntry: location.progressEntry })
+      }
+    })
+  }, [family, location])
+
   const profileGate = profileReady ? resolveProfileGate(displayName, tutorialCompleted) : 'none'
 
   if (!bootCompleted) {
@@ -164,8 +182,10 @@ function AppContent() {
       >
         {location.settingsOpen ? (
           <SettingsPage
+            key={notificationSettingsView ?? 'hub'}
             onBack={closeSettingsToOrigin}
             onReplayTutorial={() => setTutorialOpen(true)}
+            initialView={notificationSettingsView}
           />
         ) : location.destination === 'home' ? (
           <HomePage onNavigate={navigateDestination} onOpenAchievements={() => navigate({ ...location, destination: 'progress', settingsOpen: false, progressEntry: 'achievements' })} onOpenWorkout={(entry, targetId) => navigate({ ...location, destination: 'workout', settingsOpen: false, workoutEntry: entry, workoutTargetId: targetId })} onOpenFieldGuide={() => setTutorialOpen(true)} />

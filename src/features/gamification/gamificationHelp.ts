@@ -26,15 +26,11 @@ export const gamificationHelpSteps: readonly GuideStep[] = [{
     },
     {
       label: 'Plan Streak',
-      text: 'Only successful planned training days increase your streak. Rest Days and No Plan preserve it without increasing it.',
+      text: 'Successful planned training days increase your streak. Completed workouts on No Plan days also count. Rest Days preserve it.',
     },
     {
       label: 'Protection',
       text: 'You start with 2 Streak Freezes and earn +1 every 15 successful planned training days, with no balance cap. A Freeze automatically protects one missed planned training day. A Travel/Sickness Pause protects 1–7 days, up to twice per rolling 12 months. Both preserve your streak without adding XP or progress.',
-    },
-    {
-      label: 'Plan commitment',
-      text: 'Initial setup is free. One material Weekly Plan change per rolling 12 months preserves your streak. A later material change requires confirmation and resets the current streak.',
     },
     {
       label: 'Daily Quests',

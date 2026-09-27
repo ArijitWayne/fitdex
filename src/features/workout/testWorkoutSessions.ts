@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import Dexie from 'dexie'
 import type { Exercise, RoutineExercise, WorkoutRoutine } from '../../data/models.ts'
 import { builtInExercises, BUILT_IN_EXERCISE_DATASET_VERSION } from '../exerciseDex/exerciseData.ts'
-import { getTrackingFields, parseWorkoutNumber } from './workoutModel.ts'
+import { getTrackingFields, isPauseTimerGuidanceEligible, isRestTimerGuidanceEligible, parseWorkoutNumber } from './workoutModel.ts'
 
 await Dexie.delete('fitdex')
 const { DATABASE_SCHEMA_VERSION, db } = await import('../../data/database.ts')
@@ -23,6 +23,14 @@ assert.deepEqual(getTrackingFields('distance_duration'), { weight: false, reps: 
 assert.deepEqual(getTrackingFields('duration_optional_distance'), { weight: false, reps: false, duration: true, distance: true })
 assert.deepEqual(getTrackingFields('weight_distance'), { weight: true, reps: false, duration: false, distance: true })
 assert.deepEqual(getTrackingFields('duration_reps'), { weight: false, reps: true, duration: true, distance: false })
+assert.equal(isPauseTimerGuidanceEligible(true, true, true), false, 'Pause Timer guide waits for Start Timer acknowledgement')
+assert.equal(isPauseTimerGuidanceEligible(false, true, false), false, 'Pause Timer guide waits for the workout timer to start')
+assert.equal(isPauseTimerGuidanceEligible(false, true, true), true, 'Pause Timer guide appears after Start Timer acknowledgement and timer start')
+assert.equal(isPauseTimerGuidanceEligible(false, false, true), false, 'acknowledged Pause Timer guide does not return')
+assert.equal(isRestTimerGuidanceEligible(true, false, true), false, 'Rest Timer guide waits for Start Timer acknowledgement')
+assert.equal(isRestTimerGuidanceEligible(false, true, true), false, 'Rest Timer guide waits for Pause Timer acknowledgement')
+assert.equal(isRestTimerGuidanceEligible(false, false, true), true, 'Rest Timer guide appears immediately after Pause Timer acknowledgement')
+assert.equal(isRestTimerGuidanceEligible(false, false, false), false, 'acknowledged Rest Timer guide does not return')
 
 const timestamp = '2026-08-23T10:00:00.000Z'
 const strength = builtInExercises.find((exercise) => exercise.trackingType === 'weight_reps')
@@ -102,7 +110,10 @@ assert.equal(active.exercises[0].sets.length, 3)
 assert.equal(active.exercises.flatMap((item) => item.sets).length, 3)
 await assert.rejects(() => repository.finishWorkout(first.workout.id), repository.IncompleteWorkoutError, 'a newly added empty set makes a clean workout ineligible')
 await repository.removeWorkoutSet(active.exercises[0].sets[2].id)
-assert.equal((await repository.getWorkoutDetail(first.workout.id)).exercises.flatMap((item) => item.sets).length, 2)
+const afterSetRemoval = await repository.getWorkoutDetail(first.workout.id)
+assert.equal(afterSetRemoval.exercises.length, 1, 'deleting one set keeps its exercise')
+assert.equal(afterSetRemoval.exercises[0].sets.length, 2, 'deleting one set removes only its target')
+assert.deepEqual(afterSetRemoval.exercises[0].sets.map((set) => set.order), [0, 1], 'remaining sets renumber after deletion')
 await repository.addExercisesToWorkout(first.workout.id, [custom])
 await assert.rejects(() => repository.addExercisesToWorkout(first.workout.id, [custom]), /already in this workout/)
 active = await repository.getWorkoutDetail(first.workout.id)
@@ -156,6 +167,27 @@ assert.equal((await repository.listRecentWorkouts()).length, 1)
 assert.equal((await repository.getPreviousPerformance(strength.id))?.workout.id, first.workout.id)
 assert.equal(await repository.getActiveWorkout(), undefined)
 
+// Copying previous values uses the same active-set update path as manual input.
+// It must survive a fresh active-session read, preserve each set independently,
+// and still retain later manual edits.
+const copyTarget = await repository.startEmptyWorkout('Copy Persistence')
+await repository.addExercisesToWorkout(copyTarget.workout.id, [strength])
+let copiedDetail = await repository.getWorkoutDetail(copyTarget.workout.id)
+const copiedSets = copiedDetail.exercises[0].sets
+await repository.updateWorkoutSet(copiedSets[0].id, { weight: 50.5, reps: 10 })
+await repository.updateWorkoutSet(copiedSets[1].id, { weight: 45, reps: 8 })
+copiedDetail = await repository.getWorkoutDetail(copyTarget.workout.id)
+assert.deepEqual(
+  copiedDetail.exercises[0].sets.slice(0, 2).map(({ weight, reps, completed }) => ({ weight, reps, completed })),
+  [{ weight: 50.5, reps: 10, completed: true }, { weight: 45, reps: 8, completed: true }],
+  'copied values persist independently through active-session reloads',
+)
+await repository.updateWorkoutSet(copiedSets[0].id, { reps: 12 })
+copiedDetail = await repository.getWorkoutDetail(copyTarget.workout.id)
+assert.equal(copiedDetail.exercises[0].sets[0].reps, 12, 'manual edit after copy persists through reload')
+assert.equal(copiedDetail.exercises[0].sets[0].completed, true, 'a copied set keeps normal logging behavior')
+await repository.discardWorkout(copyTarget.workout.id)
+
 // Transient preparation becomes durable only through the explicit repository start.
 const prepared = await repository.startPreparedWorkout([strength, custom], 'Prepared Session')
 assert.equal(prepared.workout.nameSnapshot, 'Prepared Session')
@@ -188,6 +220,92 @@ autoPauseDetail = await repository.getWorkoutDetail(autoPauseSession.workout.id)
 assert.equal(autoPauseDetail.exercises.length, 0)
 assert.equal(autoPauseDetail.workout.timerState, 'paused')
 await repository.discardWorkout(autoPauseSession.workout.id)
+
+// Reorder exercises in active workout:
+// Verifies top-to-bottom, bottom-to-top, middle reorder, data integrity of sets/notes,
+// and confirms that saved routines remain completely untouched.
+const thirdExercise: Exercise = {
+  ...strength,
+  id: 'custom-exercise:third-exercise',
+  name: 'Third Exercise',
+  source: 'custom',
+  aliases: [],
+  trackingType: 'weight_reps',
+  createdAt: timestamp,
+  updatedAt: timestamp,
+}
+await db.exercises.add(thirdExercise)
+
+const reorderRoutine: WorkoutRoutine = { id: 'routine:reorder-test', name: 'Original Routine Order', createdAt: timestamp, updatedAt: timestamp }
+const reorderItem1: RoutineExercise = {
+  id: 'routine-exercise:item-1', routineId: reorderRoutine.id, exerciseId: strength.id,
+  exerciseNameSnapshot: strength.name, order: 0, plannedSets: 3, createdAt: timestamp, updatedAt: timestamp,
+}
+const reorderItem2: RoutineExercise = {
+  id: 'routine-exercise:item-2', routineId: reorderRoutine.id, exerciseId: custom.id,
+  exerciseNameSnapshot: custom.name, order: 1, plannedSets: 2, createdAt: timestamp, updatedAt: timestamp,
+}
+const reorderItem3: RoutineExercise = {
+  id: 'routine-exercise:item-3', routineId: reorderRoutine.id, exerciseId: thirdExercise.id,
+  exerciseNameSnapshot: thirdExercise.name, order: 2, plannedSets: 1, createdAt: timestamp, updatedAt: timestamp,
+}
+await db.workoutRoutines.add(reorderRoutine)
+await db.routineExercises.bulkAdd([reorderItem1, reorderItem2, reorderItem3])
+
+const activeForReorder = await repository.startWorkoutFromRoutine(reorderRoutine.id)
+assert.equal(activeForReorder.exercises.length, 3)
+assert.equal(activeForReorder.exercises[0].exercise.exerciseId, strength.id)
+assert.equal(activeForReorder.exercises[1].exercise.exerciseId, custom.id)
+assert.equal(activeForReorder.exercises[2].exercise.exerciseId, thirdExercise.id)
+
+// Log a set on the middle exercise before reordering
+const middleSet = activeForReorder.exercises[1].sets[0]
+await repository.updateWorkoutSet(middleSet.id, { durationSeconds: 60, distance: 100 })
+
+const exerciseId0 = activeForReorder.exercises[0].exercise.id
+const exerciseId1 = activeForReorder.exercises[1].exercise.id
+const exerciseId2 = activeForReorder.exercises[2].exercise.id
+
+// Test reorder: move middle (index 1) to top -> [1, 0, 2]
+await repository.reorderWorkoutExercises(activeForReorder.workout.id, [exerciseId1, exerciseId0, exerciseId2])
+
+let reorderedDetail = await repository.getWorkoutDetail(activeForReorder.workout.id)
+assert.equal(reorderedDetail.exercises[0].exercise.id, exerciseId1)
+assert.equal(reorderedDetail.exercises[1].exercise.id, exerciseId0)
+assert.equal(reorderedDetail.exercises[2].exercise.id, exerciseId2)
+assert.equal(reorderedDetail.exercises[0].exercise.order, 0)
+assert.equal(reorderedDetail.exercises[1].exercise.order, 1)
+assert.equal(reorderedDetail.exercises[2].exercise.order, 2)
+// Data integrity: the logged set on custom exercise is preserved
+assert.equal(reorderedDetail.exercises[0].sets[0].completed, true)
+assert.equal(reorderedDetail.exercises[0].sets[0].durationSeconds, 60)
+assert.equal(reorderedDetail.exercises[0].sets[0].distance, 100)
+
+// Test bottom-to-top reorder: [2, 1, 0]
+await repository.reorderWorkoutExercises(activeForReorder.workout.id, [exerciseId2, exerciseId1, exerciseId0])
+reorderedDetail = await repository.getWorkoutDetail(activeForReorder.workout.id)
+assert.equal(reorderedDetail.exercises[0].exercise.id, exerciseId2)
+assert.equal(reorderedDetail.exercises[1].exercise.id, exerciseId1)
+assert.equal(reorderedDetail.exercises[2].exercise.id, exerciseId0)
+
+// Top-to-bottom reorder: [1, 0, 2]
+await repository.reorderWorkoutExercises(activeForReorder.workout.id, [exerciseId1, exerciseId0, exerciseId2])
+reorderedDetail = await repository.getWorkoutDetail(activeForReorder.workout.id)
+assert.equal(reorderedDetail.exercises[0].exercise.id, exerciseId1)
+assert.equal(reorderedDetail.exercises[1].exercise.id, exerciseId0)
+assert.equal(reorderedDetail.exercises[2].exercise.id, exerciseId2)
+
+// Verify that the saved routine order remains completely UNTOUCHED
+const savedRoutineExercises = await db.routineExercises.where('routineId').equals(reorderRoutine.id).sortBy('order')
+assert.equal(savedRoutineExercises.length, 3)
+assert.equal(savedRoutineExercises[0].exerciseId, strength.id)
+assert.equal(savedRoutineExercises[0].order, 0)
+assert.equal(savedRoutineExercises[1].exerciseId, custom.id)
+assert.equal(savedRoutineExercises[1].order, 1)
+assert.equal(savedRoutineExercises[2].exerciseId, thirdExercise.id)
+assert.equal(savedRoutineExercises[2].order, 2)
+
+await repository.discardWorkout(activeForReorder.workout.id)
 
 db.close()
 await Dexie.delete('fitdex')

@@ -127,7 +127,7 @@ function FirstLaunchMission({ onClose }: { onClose: () => void }) {
   let calculated: { calorieTarget: number; proteinTargetGrams: number; tdee: number } | undefined
   try {
     const tdee = calculateTdee(calculateRmr(values), activityLevel)
-    calculated = { tdee, calorieTarget: calculateSuggestedCalorieTargets(tdee, goal).defaultTarget, proteinTargetGrams: calculateSuggestedProteinTarget(values.weightKg, activityLevel) }
+    calculated = { tdee, calorieTarget: calculateSuggestedCalorieTargets(tdee, goal, values.weightKg).defaultTarget, proteinTargetGrams: calculateSuggestedProteinTarget(values.weightKg, activityLevel) }
   } catch { calculated = undefined }
 
   const skipNutrition = async () => {

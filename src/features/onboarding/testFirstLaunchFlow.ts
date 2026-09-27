@@ -90,7 +90,7 @@ assert.match(cssSrc, /\.mission-actions-stacked \.mission-secondary-row \.cmd-bt
 // -----------------------------------------------------------------------------
 const profileInputs = { age: 30, sex: 'female' as const, heightCm: 165, weightKg: 65, activityLevel: 'moderate' as const }
 const tdee = calculateTdee(calculateRmr(profileInputs), profileInputs.activityLevel)
-const calorieTarget = calculateSuggestedCalorieTargets(tdee, 'maintain').defaultTarget
+const calorieTarget = calculateSuggestedCalorieTargets(tdee, 'maintain', profileInputs.weightKg).defaultTarget
 const proteinTargetGrams = calculateSuggestedProteinTarget(profileInputs.weightKg, profileInputs.activityLevel)
 
 assert.ok(calorieTarget > 1500, 'Calculated calorie target is reasonable')

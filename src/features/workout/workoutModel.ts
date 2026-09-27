@@ -3,6 +3,14 @@ import { displayDistanceFromKm, displayWeightFromKg } from '../../utils/units.ts
 
 export const DEFAULT_AD_HOC_SETS = 3
 export const DEFAULT_REST_SECONDS = 90
+
+export function isPauseTimerGuidanceEligible(timerGuidanceActive: boolean, pauseGuidancePending: boolean, timerHasStarted: boolean) {
+  return !timerGuidanceActive && pauseGuidancePending && timerHasStarted
+}
+
+export function isRestTimerGuidanceEligible(timerGuidanceActive: boolean, pauseGuidancePending: boolean, restGuidancePending: boolean) {
+  return !timerGuidanceActive && !pauseGuidancePending && restGuidancePending
+}
 export const MAX_WORKOUT_NAME_LENGTH = 80
 
 export interface TrackingFields {
@@ -199,4 +207,19 @@ export function formatPreviousSet(set: WorkoutSet | undefined, type: ExerciseTra
   if (fields.duration && set.durationSeconds !== undefined) parts.push(`${set.durationSeconds} sec`)
   if (fields.distance && set.distance !== undefined) parts.push(`${Number(displayDistanceFromKm(set.distance, distanceUnit === 'mi' ? 'imperial' : 'metric').toFixed(2))} ${distanceUnit}`)
   return parts.length ? parts.join(' · ') : '—'
+}
+
+export type SetDraft = Partial<Record<WorkoutSetMetric, string>>
+
+function previewDraftNumber(value: string) {
+  if (value.trim() === '') return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : Number.NaN
+}
+
+export function applySetDraft(set: WorkoutSet, draft: SetDraft | undefined): WorkoutSet {
+  if (!draft) return set
+  const next = { ...set }
+  for (const field of Object.keys(draft) as WorkoutSetMetric[]) next[field] = previewDraftNumber(draft[field] ?? '')
+  return next
 }

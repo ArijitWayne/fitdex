@@ -1,12 +1,19 @@
 import assert from 'node:assert/strict'
-import { ACTIVITY_FACTORS, CALORIE_SAFETY_FLOOR, PROTEIN_MULTIPLIERS, calculateProteinDerivedMetrics, calculateRmr, calculateSuggestedCalorieTargets, calculateSuggestedProteinTarget, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from './nutritionTargetCalculator.ts'
+import { ACTIVITY_FACTORS, CALORIE_SAFETY_FLOOR, MAX_WEEKLY_LOSS_RATE, PROTEIN_MULTIPLIERS, calculateProteinDerivedMetrics, calculateRateBasedCalorieFloor, calculateRmr, calculateSuggestedCalorieTargets, calculateSuggestedProteinTarget, calculateTdee, evaluateCalorieDay, evaluateProteinDay } from './nutritionTargetCalculator.ts'
 
 assert.equal(calculateRmr({ age: 30, sex: 'male', heightCm: 180, weightKg: 80 }), 1780)
 assert.equal(calculateRmr({ age: 30, sex: 'female', heightCm: 165, weightKg: 60 }), 1320)
 for (const [level, factor] of Object.entries(ACTIVITY_FACTORS)) assert.equal(calculateTdee(1000, level as keyof typeof ACTIVITY_FACTORS), Math.round(1000 * factor))
-assert.deepEqual(calculateSuggestedCalorieTargets(2500, 'lose'), { moderate: 2000, higher: 1750, defaultTarget: 2000 })
-assert.equal(calculateSuggestedCalorieTargets(2500, 'maintain').defaultTarget, 2500)
-assert.equal(calculateSuggestedCalorieTargets(2500, 'gain').defaultTarget, 2750)
+assert.equal(MAX_WEEKLY_LOSS_RATE, 0.0075)
+assert.equal(calculateRateBasedCalorieFloor(2600, 70), 2022.5)
+assert.deepEqual(calculateSuggestedCalorieTargets(2500, 'lose', 70), { moderate: 2000, higher: 1923, defaultTarget: 2000 })
+assert.deepEqual(calculateSuggestedCalorieTargets(2600, 'lose', 70), { moderate: 2100, higher: 2023, defaultTarget: 2100 })
+assert.ok(calculateSuggestedCalorieTargets(1200, 'lose', 40).defaultTarget > 0)
+assert.ok(calculateSuggestedCalorieTargets(5000, 'lose', 150).defaultTarget > 0)
+assert.equal(calculateSuggestedCalorieTargets(2500, 'maintain', 70).defaultTarget, 2500)
+assert.equal(calculateSuggestedCalorieTargets(2500, 'gain', 70).defaultTarget, 2750)
+assert.throws(() => calculateSuggestedCalorieTargets(2500, 'lose', 0))
+assert.throws(() => calculateRateBasedCalorieFloor(Number.NaN, 70))
 const lose = { goal: 'lose' as const, calorieTarget: 2000 }
 assert.equal(evaluateCalorieDay(lose, 2000, 2500).achievementEligible, true)
 assert.equal(evaluateCalorieDay(lose, 1750, 2500).achievementEligible, true)
