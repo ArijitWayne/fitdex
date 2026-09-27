@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { AppRelease } from './updaterModel';
 import { handoffApkDownload } from './updaterService';
 import { parseReleaseNotes, parseInlineMarkdown, type InlineToken } from './releaseNotesParser';
+import { type UpdateDownloadProgress } from './nativeAppInstaller';
 import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion';
 import { useBackNavigation } from '../navigation/useBackNavigation';
 import { Capacitor } from '@capacitor/core';
@@ -10,6 +11,8 @@ interface UpdateDetailsModalProps {
   release: AppRelease;
   onClose: () => void;
 }
+
+type ModalUpdateState = 'idle' | 'downloading' | 'verifying' | 'ready' | 'error' | 'checksum_error';
 
 function renderTokens(tokens: InlineToken[]): React.ReactNode {
   return tokens.map((token, idx) => {
@@ -27,8 +30,9 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
   release,
   onClose,
 }) => {
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [updateState, setUpdateState] = useState<ModalUpdateState>('idle');
+  const [downloadProgress, setDownloadProgress] = useState<UpdateDownloadProgress | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useBackNavigation('update-details-dialog', true, onClose, 100);
@@ -37,21 +41,44 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
     closeButtonRef.current?.focus();
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        if (updateState !== 'downloading' && updateState !== 'verifying') {
+          onClose();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, updateState]);
 
   const handleDownload = async () => {
-    setDownloading(true);
-    setDownloadError(null);
-    const result = await handoffApkDownload(release);
-    if (!result.success && result.error) {
-      setDownloadError(result.error);
+    setUpdateState('downloading');
+    setErrorMessage(null);
+    setDownloadProgress(null);
+
+    const result = await handoffApkDownload(
+      release,
+      (progress) => {
+        setDownloadProgress(progress);
+      },
+      (status) => {
+        setUpdateState(status);
+      },
+    );
+
+    if (result.success) {
+      if (Capacitor.isNativePlatform()) {
+        setUpdateState('ready');
+      } else {
+        setUpdateState('idle');
+      }
+    } else {
+      setErrorMessage(result.error || 'Update failed.');
+      if (result.checksumMismatch) {
+        setUpdateState('checksum_error');
+      } else {
+        setUpdateState('error');
+      }
     }
-    setDownloading(false);
   };
 
   const formattedDate = release.publishedAt
@@ -71,6 +98,8 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
     return parseReleaseNotes(release.releaseNotes);
   }, [release.releaseNotes]);
 
+  const isBusy = updateState === 'downloading' || updateState === 'verifying';
+
   return (
     <div className="guide-backdrop active" role="presentation">
       <section
@@ -89,6 +118,7 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
             type="button"
             className="dialog-close-btn update-close-btn"
             onClick={onClose}
+            disabled={isBusy}
             aria-label="Close update details"
           >
             ✕
@@ -120,6 +150,69 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
         </div>
 
         <div className="update-dialog-body">
+          {updateState === 'downloading' && (
+            <div className="update-progress-panel" role="status" aria-live="polite">
+              <div className="update-progress-header">
+                <span className="update-progress-label">DOWNLOADING UPDATE</span>
+                <strong className="update-progress-percent">
+                  {downloadProgress ? `${downloadProgress.percent}%` : 'CONNECTING...'}
+                </strong>
+              </div>
+              <div className="update-progress-track">
+                <div
+                  className="update-progress-fill"
+                  style={{ width: `${downloadProgress ? downloadProgress.percent : 0}%` }}
+                />
+              </div>
+              <div className="update-progress-meta">
+                <span>
+                  {downloadProgress?.bytes
+                    ? `${(downloadProgress.bytes / (1024 * 1024)).toFixed(1)} MB${
+                        downloadProgress.totalBytes
+                          ? ` / ${(downloadProgress.totalBytes / (1024 * 1024)).toFixed(1)} MB`
+                          : ''
+                      }`
+                    : 'Preparing stream...'}
+                </span>
+                <span>STREAMING TO DISK</span>
+              </div>
+            </div>
+          )}
+
+          {updateState === 'verifying' && (
+            <div className="update-status-box verifying" role="status" aria-live="polite">
+              <span className="update-status-icon" aria-hidden="true">🛡️</span>
+              <div className="update-status-text">
+                <strong>VERIFYING UPDATE INTEGRITY</strong>
+                <p>Checking SHA-256 checksum against official release metadata...</p>
+              </div>
+            </div>
+          )}
+
+          {updateState === 'ready' && (
+            <div className="update-status-box ready" role="status" aria-live="polite">
+              <span className="update-status-icon" aria-hidden="true">✓</span>
+              <div className="update-status-text">
+                <strong>READY TO INSTALL</strong>
+                <p>Android Package Installer opened. Confirm the update in the system dialog.</p>
+              </div>
+            </div>
+          )}
+
+          {updateState === 'checksum_error' && (
+            <div className="update-error-banner checksum-error" role="alert">
+              <strong>UPDATE VERIFICATION FAILED</strong>
+              <p>The downloaded APK checksum does not match published release metadata. For security, installation was blocked.</p>
+            </div>
+          )}
+
+          {updateState === 'error' && errorMessage && (
+            <div className="update-error-banner" role="alert">
+              <strong>UPDATE DOWNLOAD FAILED</strong>
+              <p>{errorMessage}</p>
+            </div>
+          )}
+
           {parsedNotes.summary.length > 0 && (
             <div className="update-summary-box">
               {parsedNotes.summary.map((paragraph, idx) => (
@@ -175,12 +268,6 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
               <code className="update-checksum-code">{release.sha256}</code>
             </div>
           )}
-
-          {downloadError && (
-            <div className="update-error-banner" role="alert">
-              {downloadError}
-            </div>
-          )}
         </div>
 
         <footer className="update-dialog-footer">
@@ -188,18 +275,25 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
             type="button"
             className="cmd-btn primary update-primary-btn"
             onClick={handleDownload}
-            disabled={downloading}
+            disabled={isBusy}
           >
-            {downloading
-              ? 'HANDING OFF TO INSTALLER...'
-              : isNative
-                ? 'DOWNLOAD & INSTALL APK'
-                : 'DOWNLOAD ANDROID APK (.APK)'}
+            {updateState === 'downloading'
+              ? `DOWNLOADING... ${downloadProgress ? `${downloadProgress.percent}%` : ''}`
+              : updateState === 'verifying'
+                ? 'VERIFYING CHECKSUM...'
+                : updateState === 'ready'
+                  ? 'RE-OPEN INSTALLER'
+                  : updateState === 'error' || updateState === 'checksum_error'
+                    ? 'RETRY DOWNLOAD'
+                    : isNative
+                      ? 'DOWNLOAD & INSTALL APK'
+                      : 'DOWNLOAD ANDROID APK (.APK)'}
           </button>
           <button
             type="button"
             className="cmd-btn secondary update-secondary-btn"
             onClick={onClose}
+            disabled={isBusy}
           >
             DISMISS / CLOSE
           </button>

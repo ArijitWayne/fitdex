@@ -1,5 +1,18 @@
 # FitDex Release Notes
 
+## v1.1.1
+
+Released: September 27, 2026
+Android versionCode: 5
+
+### FIXES
+
+- Android updates now download directly inside FitDex instead of handing APK downloads off to the browser.
+- Added reliable in-app download progress, SHA-256 verification, retry handling, and native Android installer launch.
+- Improved handling for Android's "Install unknown apps" permission flow.
+
+---
+
 ## v1.1.0
 
 Released: September 27, 2026  

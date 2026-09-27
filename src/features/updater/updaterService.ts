@@ -1,14 +1,21 @@
-import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion';
-import { isNewerRelease } from './semver';
+import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion.ts';
+import { isNewerRelease } from './semver.ts';
 import {
   type AppRelease,
   type UpdateCheckResult,
   normalizeGitHubReleases,
   isValidReleaseDownloadUrl,
-} from './updaterModel';
-import { Capacitor } from '@capacitor/core';
-import { getLocalSettingsRecord } from '../settings/settingsRepository';
-import { notifyUpdateAvailable } from '../notifications/notificationScheduler';
+} from './updaterModel.ts';
+import { getLocalSettingsRecord } from '../settings/settingsRepository.ts';
+import { notifyUpdateAvailable } from '../notifications/notificationScheduler.ts';
+import {
+  isNativeAndroid,
+  downloadUpdateApk,
+  verifyDownloadedApk,
+  launchApkInstaller,
+  cleanStaleUpdateApks,
+  type UpdateDownloadProgress,
+} from './nativeAppInstaller.ts';
 
 const GITHUB_RELEASES_API = 'https://api.github.com/repos/ArijitWayne/fitdex/releases';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -158,11 +165,17 @@ export async function fetchReleaseHistory(): Promise<AppRelease[]> {
   }
 }
 
+
 /**
  * Handles APK download or install handoff safely.
- * Validates download URL originates from official repository releases.
+ * For web/PWA: triggers direct file download in new tab.
+ * For native Android: downloads via native streaming, checks SHA-256, and invokes package installer.
  */
-export async function handoffApkDownload(release: AppRelease): Promise<{ success: boolean; error?: string }> {
+export async function handoffApkDownload(
+  release: AppRelease,
+  onProgress?: (progress: UpdateDownloadProgress) => void,
+  onStatusChange?: (status: 'downloading' | 'verifying' | 'ready' | 'error') => void,
+): Promise<{ success: boolean; error?: string; checksumMismatch?: boolean }> {
   const url = release.apkDownloadUrl || release.githubReleaseUrl;
 
   if (!url) {
@@ -175,11 +188,30 @@ export async function handoffApkDownload(release: AppRelease): Promise<{ success
   }
 
   try {
-    const isNative = Capacitor.isNativePlatform();
+    if (isNativeAndroid()) {
+      onStatusChange?.('downloading');
+      const downloadRes = await downloadUpdateApk(url, onProgress);
+      if (!downloadRes.success || !downloadRes.localPath) {
+        return { success: false, error: downloadRes.error || 'Failed to download update APK.' };
+      }
 
-    if (isNative) {
-      // In Android Capacitor context, open system browser / installer flow
-      window.open(url, '_system');
+      onStatusChange?.('verifying');
+      const verifyRes = await verifyDownloadedApk(downloadRes.localPath, release.sha256);
+      if (!verifyRes.matches) {
+        await cleanStaleUpdateApks().catch(() => undefined);
+        return {
+          success: false,
+          checksumMismatch: true,
+          error: `Checksum verification failed. Downloaded APK does not match release SHA-256.`,
+        };
+      }
+
+      onStatusChange?.('ready');
+      const installRes = await launchApkInstaller(downloadRes.localPath);
+      if (!installRes.success) {
+        return { success: false, error: installRes.error || 'Failed to launch installer.' };
+      }
+
       return { success: true };
     } else {
       // In PWA / web browser context, open download in new tab or trigger file save
@@ -187,7 +219,7 @@ export async function handoffApkDownload(release: AppRelease): Promise<{ success
       return { success: true };
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Failed to launch installer.';
+    const message = err instanceof Error ? err.message : 'Failed to process update.';
     return { success: false, error: message };
   }
 }

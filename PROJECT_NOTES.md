@@ -926,8 +926,15 @@ The main application runtime is independent of Vercel and never blocks on the ma
 - **Version Comparison**: Strict semantic version comparison (`semver.ts`) supporting `1.10.0 > 1.9.9`, `2.0.0 > 1.99.99`. Identical semantic versions use Android `versionCode` as a tiebreaker.
 - **Non-Blocking Background Check**: Initiated asynchronously after Home renders. Session cache with 5-minute TTL (`updaterService.ts`) prevents redundant API requests.
 - **Update Available UI**: Non-blocking retro notification banner (`UpdateBanner.tsx`) displayed on Home with "VIEW RELEASE DETAILS" and "LATER" actions. Never blocks training, food logging, or offline usage.
-- **Update Details Modal** (`UpdateDetailsModal.tsx`): Displays new version, build, release date, package size, formatted release notes, SHA-256 verification checksum, and explicit installer CTA.
-- **Android APK Handoff**: Explicit user action triggers `handoffApkDownload()`. In Android Capacitor, passes intent to system installer via `window.open(url, '_system')`. In browser/PWA, opens download safely. Security check restricts downloads to official `github.com/ArijitWayne/fitdex` release endpoints.
+- **Update Details Modal** (`UpdateDetailsModal.tsx`): Displays new version, build, release date, package size, semantic release notes, SHA-256 verification checksum, real-time in-app download progress, and explicit installer CTA.
+- **Android In-App Update Pipeline**: Explicit user action triggers `handoffApkDownload()` via `nativeAppInstaller.ts`:
+  - **Streaming Download**: Streams APK from GitHub asset URL directly to `Directory.Cache` (`updates/fitdex-update.apk`) via `@capacitor/file-transfer` with zero JS memory buffering.
+  - **Live Progress**: Emits byte-level progress updates to the Cartridge Upgrade modal.
+  - **Native Checksum Verification**: Computes SHA-256 via native `AppInstallerPlugin` streaming `MessageDigest` and verifies against published release metadata.
+  - **Package Installer Launch**: Creates a secure `FileProvider` content URI (`content://com.fitdex.app.fileprovider/...`) and launches `Intent.ACTION_VIEW` with `application/vnd.android.package-archive` and `FLAG_GRANT_READ_URI_PERMISSION`.
+  - **Permission Flow**: Checks `REQUEST_INSTALL_PACKAGES` and routes to `Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES` if required.
+  - **Web/PWA Fallback**: In browser context, safely triggers external download tab.
+  - **Security Check**: Enforces official `github.com/ArijitWayne/fitdex` download origin.
 - **Settings & About Additions**:
   - Displays `Version 1.0.0 · Build 2`.
   - Manual `CHECK FOR UPDATES` button supporting 5 distinct states: `CHECKING`, `UP TO DATE`, `UPDATE AVAILABLE`, `OFFLINE`, and `ERROR`.

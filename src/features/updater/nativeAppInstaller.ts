@@ -1,0 +1,181 @@
+import { Capacitor, registerPlugin } from '@capacitor/core';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { FileTransfer } from '@capacitor/file-transfer';
+import { isValidReleaseDownloadUrl } from './updaterModel.ts';
+
+export interface AppInstallerPlugin {
+  canRequestPackageInstalls(): Promise<{ canInstall: boolean }>;
+  openInstallPermissionSettings(): Promise<void>;
+  verifyApkChecksum(options: { path: string; expectedSha256?: string }): Promise<{
+    matches: boolean;
+    actualSha256: string;
+    sizeBytes: number;
+  }>;
+  installApk(options: { path: string }): Promise<{ success: boolean }>;
+}
+
+export const AppInstaller = registerPlugin<AppInstallerPlugin>('AppInstaller');
+
+export interface UpdateDownloadProgress {
+  bytes: number;
+  totalBytes?: number;
+  percent: number;
+}
+
+export const UPDATER_CACHE_DIR = 'updates';
+export const UPDATER_APK_FILENAME = 'fitdex-update.apk';
+export const UPDATER_RELATIVE_PATH = `${UPDATER_CACHE_DIR}/${UPDATER_APK_FILENAME}`;
+
+export function isNativeAndroid(): boolean {
+  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+}
+
+/**
+ * Removes any temporary update APK files from previous download attempts.
+ */
+export async function cleanStaleUpdateApks(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await Filesystem.deleteFile({
+      path: UPDATER_RELATIVE_PATH,
+      directory: Directory.Cache,
+    });
+  } catch {
+    // Ignore non-existent file errors
+  }
+}
+
+/**
+ * Downloads the APK directly from the GitHub asset URL to local cache storage.
+ * Streams directly to disk without buffering the file in JS memory.
+ */
+export async function downloadUpdateApk(
+  apkUrl: string,
+  onProgress?: (progress: UpdateDownloadProgress) => void,
+): Promise<{ success: boolean; localPath?: string; error?: string }> {
+  if (!isNativeAndroid()) {
+    return { success: false, error: 'Native update download is only supported on Android.' };
+  }
+
+  if (!isValidReleaseDownloadUrl(apkUrl)) {
+    return { success: false, error: 'Untrusted download source rejected.' };
+  }
+
+  try {
+    await cleanStaleUpdateApks();
+    await Filesystem.mkdir({
+      path: UPDATER_CACHE_DIR,
+      directory: Directory.Cache,
+      recursive: true,
+    });
+
+    const destination = await Filesystem.getUri({
+      path: UPDATER_RELATIVE_PATH,
+      directory: Directory.Cache,
+    });
+
+    let reportedPercent = 0;
+    const progressListener = await FileTransfer.addListener('progress', (event) => {
+      if (event.type === 'download' && event.url === apkUrl) {
+        const total = event.lengthComputable && event.contentLength > 0 ? event.contentLength : undefined;
+        let pct = total ? Math.min(100, Math.max(0, Math.round((event.bytes / total) * 100))) : 0;
+        if (pct < reportedPercent) pct = reportedPercent;
+        reportedPercent = pct;
+
+        onProgress?.({
+          bytes: event.bytes,
+          totalBytes: total,
+          percent: pct,
+        });
+      }
+    });
+
+    try {
+      await FileTransfer.downloadFile({
+        url: apkUrl,
+        path: destination.uri,
+        progress: true,
+      });
+
+      const stat = await Filesystem.stat({
+        path: UPDATER_RELATIVE_PATH,
+        directory: Directory.Cache,
+      });
+
+      if (!stat.size || stat.size === 0) {
+        throw new Error('Downloaded APK file is empty.');
+      }
+
+      onProgress?.({
+        bytes: stat.size,
+        totalBytes: stat.size,
+        percent: 100,
+      });
+
+      return { success: true, localPath: destination.uri };
+    } finally {
+      await progressListener.remove();
+    }
+  } catch (err: unknown) {
+    await cleanStaleUpdateApks().catch(() => undefined);
+    const message = err instanceof Error ? err.message : 'Download failed.';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Computes the SHA-256 checksum of the downloaded file using the native streaming hasher.
+ */
+export async function verifyDownloadedApk(
+  path: string,
+  expectedSha256?: string,
+): Promise<{ matches: boolean; actualSha256: string; sizeBytes: number }> {
+  if (!isNativeAndroid()) {
+    return { matches: true, actualSha256: '', sizeBytes: 0 };
+  }
+
+  return AppInstaller.verifyApkChecksum({
+    path,
+    expectedSha256,
+  });
+}
+
+/**
+ * Checks if the app has permission to install unknown apps.
+ */
+export async function canInstallPackages(): Promise<boolean> {
+  if (!isNativeAndroid()) return true;
+  try {
+    const result = await AppInstaller.canRequestPackageInstalls();
+    return result.canInstall;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Opens Android system settings for granting unknown app install permissions.
+ */
+export async function openInstallSettings(): Promise<void> {
+  if (!isNativeAndroid()) return;
+  await AppInstaller.openInstallPermissionSettings();
+}
+
+/**
+ * Launches the native Android Package Installer for the downloaded and verified APK.
+ */
+export async function launchApkInstaller(
+  path: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!isNativeAndroid()) {
+    return { success: false, error: 'Package installer is only available on Android.' };
+  }
+
+  try {
+    const result = await AppInstaller.installApk({ path });
+    return { success: result.success };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to launch installer.';
+    return { success: false, error: message };
+  }
+}

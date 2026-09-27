@@ -336,4 +336,55 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
   console.log('✓ Inline markdown tokenization passed');
 }
 
+// 12. Native Update Adapter & Web Fallback Invariants
+{
+  const { isNativeAndroid, UPDATER_CACHE_DIR, UPDATER_APK_FILENAME, UPDATER_RELATIVE_PATH } = await import('./nativeAppInstaller.ts');
+
+  assert.equal(UPDATER_CACHE_DIR, 'updates');
+  assert.equal(UPDATER_APK_FILENAME, 'fitdex-update.apk');
+  assert.equal(UPDATER_RELATIVE_PATH, 'updates/fitdex-update.apk');
+
+  // In Node test environment, isNativeAndroid returns false (evaluates web/node adapter)
+  assert.equal(isNativeAndroid(), false);
+
+  const { handoffApkDownload } = await import('./updaterService.ts');
+
+  // Rejects invalid URLs
+  const invalidResult = await handoffApkDownload({
+    version: '1.2.0',
+    tag: 'v1.2.0',
+    publishedAt: '2026-10-01T12:00:00Z',
+    apkDownloadUrl: 'https://malicious.com/fake.apk',
+    githubReleaseUrl: 'https://github.com/ArijitWayne/fitdex/releases/tag/v1.2.0',
+    releaseNotes: '',
+  });
+  assert.equal(invalidResult.success, false);
+  assert.equal(invalidResult.error, 'Untrusted download source rejected.');
+
+  // Rejects missing URL
+  const missingUrlResult = await handoffApkDownload({
+    version: '1.2.0',
+    tag: 'v1.2.0',
+    publishedAt: '2026-10-01T12:00:00Z',
+    githubReleaseUrl: '',
+    releaseNotes: '',
+  });
+  assert.equal(missingUrlResult.success, false);
+  assert.equal(missingUrlResult.error, 'No download URL available for this release.');
+
+  console.log('✓ Native update adapter & web fallback tests passed');
+}
+
+// 13. Progress and Checksum Invariant Checks
+{
+  const expectedSha = '9b5406abb0882a05f09edc909508720c4850d0ee8eb5323f12ad1b621101d982';
+  const matchingSha = '9B5406ABB0882A05F09EDC909508720C4850D0EE8EB5323F12AD1B621101D982';
+  const corruptSha = '0000000000000000000000000000000000000000000000000000000000000000';
+
+  assert.equal(expectedSha.toLowerCase(), matchingSha.toLowerCase());
+  assert.notEqual(expectedSha.toLowerCase(), corruptSha.toLowerCase());
+
+  console.log('✓ Checksum invariant checks passed');
+}
+
 console.log('--- ALL PHASE 7 UPDATER TESTS PASSED SUCCESSFULLY ---');

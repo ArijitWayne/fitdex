@@ -467,7 +467,7 @@ The Exercise Record uses the reference-first RPG Codex layout:
   - Strict semantic version comparison (`semver.ts`) with Android `versionCode` tiebreaker.
   - Network never gates startup; offline devices retain 100% full local functionality.
 - **Restrained Update UI**: Non-blocking `UpdateBanner.tsx` on Home, `UpdateDetailsModal.tsx` with release notes, package size, and SHA-256 verification digest.
-- **Android APK Handoff**: `handoffApkDownload()` routes to system package installer on Android (`window.open(url, '_system')`) and safe browser download on PWA. Enforces strict URL origin check (`github.com/ArijitWayne/fitdex/releases/`).
+- **Android In-App Update Engine**: `handoffApkDownload()` streams APK directly to device cache via `@capacitor/file-transfer`, renders in-app live progress, validates SHA-256 via native `AppInstallerPlugin`, and opens system package installer via `FileProvider` with `REQUEST_INSTALL_PACKAGES` permission handling. Web/PWA falls back to external browser download. Enforces strict URL origin check (`github.com/ArijitWayne/fitdex/releases/`).
 - **Settings & About Controls**:
   - Displays `Version 1.0.0 · Build 2`.
   - Manual `CHECK FOR UPDATES` button supporting 5 distinct states: `CHECKING`, `UP TO DATE`, `UPDATE AVAILABLE`, `OFFLINE`, and `ERROR`.
