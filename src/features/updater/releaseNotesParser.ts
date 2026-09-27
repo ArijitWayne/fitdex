@@ -53,11 +53,24 @@ export function classifyHeading(headingText: string): { type: ReleaseSectionType
 export function isMetadataOrNoiseLine(line: string): boolean {
   const trimmed = line.trim();
   if (!trimmed) return true;
-  if (/^---+$|^\*\*\*+$/.test(trimmed)) return true;
-  if (/^(released|date|android\s+versioncode|versioncode|apk|sha-256|sha256|release\s*url|build\s+number):\s*/i.test(trimmed)) {
-    return true;
-  }
-  return false;
+  if (/^---+|^\*\*\*+$/.test(trimmed)) return true;
+
+  const clean = trimmed
+    .replace(/^[-*•]\s+/, '')
+    .replace(/^\d+\.\s+/, '')
+    .replace(/[`*_]/g, '')
+    .trim();
+
+  if (!clean) return true;
+
+  return (
+    /^(?:android\s+)?versioncode[:\s]+\d+$/i.test(clean) ||
+    /^build(?:\s+number)?[:\s]+\d+$/i.test(clean) ||
+    /^(?:sha[-_]?256(?:\s+checksum)?|checksum|sha)[:\s]+[a-f0-9]{32,64}$/i.test(clean) ||
+    /^[a-f0-9]{64}$/i.test(clean) ||
+    /^(?:package\s*(?:id|name)?|application\s*id)[:\s]+[a-z0-9._]+$/i.test(clean) ||
+    /^(?:released|date|apk|release\s*url)[:\s]+.*$/i.test(clean)
+  );
 }
 
 export function parseReleaseNotes(notes: string): ParsedReleaseNotes {

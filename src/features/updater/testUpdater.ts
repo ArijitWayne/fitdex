@@ -314,7 +314,48 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
   const emptyParsed = parseReleaseNotes('');
   assert.deepEqual(emptyParsed, { summary: [], sections: [] });
 
-  console.log('✓ Semantic release notes parser passed');
+  // Technical metadata filtering tests (v1.1.1 real body structure)
+  const v111Notes = `
+### FIXES
+
+- Android updates now download directly inside FitDex instead of handing APK downloads off to the browser.
+- Added reliable in-app download progress, SHA-256 verification, retry handling, and native Android installer launch.
+- Improved handling for Android's "Install unknown apps" permission flow.
+
+### NOTES
+
+- Android versionCode: 5
+- Build: 5
+- SHA-256: bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07
+- versionCode: 5
+- bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07
+`;
+
+  const parsedV111 = parseReleaseNotes(v111Notes);
+  // Only FIXES section should remain; NOTES section must be completely excluded because all items were technical metadata
+  assert.equal(parsedV111.sections.length, 1);
+  assert.equal(parsedV111.sections[0].type, 'fixes');
+  assert.equal(parsedV111.sections[0].items.length, 3);
+  assert.ok(parsedV111.sections[0].items.some((item) => item.includes('SHA-256 verification')));
+  assert.equal(parsedV111.sections.some((s) => s.title === 'NOTES'), false, 'Empty technical-only NOTES section must not render');
+
+  // Genuine nontechnical notes still render
+  const notesWithGenuineContent = `
+### FIXES
+- Fixed bug
+
+### NOTES
+- User-facing special note: please restart app after updating.
+- Build: 5
+`;
+  const parsedGenuine = parseReleaseNotes(notesWithGenuineContent);
+  assert.equal(parsedGenuine.sections.length, 2);
+  assert.equal(parsedGenuine.sections[1].type, 'general');
+  assert.equal(parsedGenuine.sections[1].title, 'NOTES');
+  assert.equal(parsedGenuine.sections[1].items.length, 1);
+  assert.equal(parsedGenuine.sections[1].items[0], 'User-facing special note: please restart app after updating.');
+
+  console.log('✓ Semantic release notes parser & technical metadata filter passed');
 }
 
 // 11. Inline Markdown Tokenization
