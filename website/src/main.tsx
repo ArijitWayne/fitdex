@@ -29,7 +29,7 @@ export const release: ReleaseMetadata = {
   apk: 'fitdex.1.1.1.apk',
   apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.1.1/fitdex.1.1.1.apk',
   checksum: 'fitdex.1.1.1.apk.sha256',
-  sha256: 'fdfa0053839d3e4b1c1b3757a58218c32cb584867bdc8c1a93273bf9cbfb85ef',
+  sha256: 'bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07',
   releaseNotes: 'RELEASE_NOTES.md',
   publishedAt: '2026-09-27T10:50:51Z',
 }
