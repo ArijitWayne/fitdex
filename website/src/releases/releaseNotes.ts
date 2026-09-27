@@ -13,19 +13,27 @@ function cleanLine(raw: string): string {
     .trim()
 }
 
-function detectSection(line: string): Section {
-  const trimmed = cleanLine(line)
+function detectSection(rawLine: string): Section {
+  const rawTrimmed = rawLine.trim()
+  if (!rawTrimmed) return null
+
+  // Bullet items (e.g. "- Android updates...") are content lines, never section headings
+  if (/^[-*+]\s+/.test(rawTrimmed) || /^\d+\.\s+/.test(rawTrimmed)) {
+    return null
+  }
+
+  const isMarkdownHeader = /^#{1,6}\s+/.test(rawTrimmed)
+  const trimmed = cleanLine(rawTrimmed)
   if (!trimmed) return null
 
   const headingText = trimmed.replace(/:$/, '').toLowerCase()
   if (headingText === 'first public release' || headingText === 'summary') return 'summary'
-  if (headingText === 'highlights') return 'new'
+  if (headingText === 'highlights' || headingText === 'release highlights') return 'new'
 
   if (
     headingText === "what's new" ||
     headingText === 'new' ||
-    headingText.startsWith("what's new") ||
-    headingText.startsWith('new features') ||
+    headingText === 'new features' ||
     headingText === 'features'
   ) {
     return 'new'
@@ -34,7 +42,7 @@ function detectSection(line: string): Section {
   if (
     headingText === 'improvements' ||
     headingText === 'improved' ||
-    headingText.startsWith('improvement')
+    headingText === 'improvement'
   ) {
     return 'improved'
   }
@@ -43,7 +51,7 @@ function detectSection(line: string): Section {
     headingText === 'fixes' ||
     headingText === 'fixed' ||
     headingText === 'bug fixes' ||
-    headingText.startsWith('bug fix')
+    headingText === 'bug fix'
   ) {
     return 'fixed'
   }
@@ -52,14 +60,36 @@ function detectSection(line: string): Section {
     headingText === 'notes' ||
     headingText === 'other' ||
     headingText === 'misc' ||
-    headingText.startsWith('other changes')
+    headingText === 'other changes' ||
+    headingText === 'release notes'
   ) {
     return 'other'
   }
 
-  if (headingText === 'android' || headingText.startsWith('android ')) return 'android'
+  if (headingText === 'android' || headingText === 'android platform') return 'android'
+
+  if (isMarkdownHeader) {
+    if (headingText.startsWith("what's new") || headingText.startsWith('new')) return 'new'
+    if (headingText.startsWith('improvement')) return 'improved'
+    if (headingText.startsWith('bug fix') || headingText.startsWith('fix')) return 'fixed'
+    if (headingText.startsWith('other')) return 'other'
+    if (headingText.startsWith('android')) return 'android'
+  }
 
   return null
+}
+
+export function isTechnicalMetadataLine(line: string): boolean {
+  const cleaned = cleanLine(line)
+  if (!cleaned) return false
+
+  return (
+    /^(?:android\s+)?versioncode[:\s]+\d+$/i.test(cleaned) ||
+    /^build(?:\s+number)?[:\s]+\d+$/i.test(cleaned) ||
+    /^(?:sha[-_]?256(?:\s+checksum)?|checksum|sha)[:\s]+[a-f0-9]{32,64}$/i.test(cleaned) ||
+    /^[a-f0-9]{64}$/i.test(cleaned) ||
+    /^(?:package\s*(?:id|name)?|application\s*id)[:\s]+[a-z0-9._]+$/i.test(cleaned)
+  )
 }
 
 export function parseReleaseNotes(bodyText: string): ReleaseNotes {
@@ -96,6 +126,11 @@ export function parseReleaseNotes(bodyText: string): ReleaseNotes {
     const cleaned = cleanLine(trimmed)
     if (!cleaned) continue
 
+    // Ignore standalone technical metadata lines from highlights and changelog lists
+    if (isTechnicalMetadataLine(cleaned)) {
+      continue
+    }
+
     if (currentSection === 'summary') {
       summary ||= cleaned
       continue
@@ -116,7 +151,9 @@ export function parseReleaseNotes(bodyText: string): ReleaseNotes {
   if (categories.other.length > 0) result.other = categories.other
 
   if (!result.highlights && !result.summary) {
-    const fallbackLines = lines.map((l) => cleanLine(l)).filter(Boolean)
+    const fallbackLines = lines
+      .map((l) => cleanLine(l))
+      .filter((l) => Boolean(l) && !isTechnicalMetadataLine(l))
     if (fallbackLines.length > 0) {
       result.other = fallbackLines
       result.highlights = fallbackLines.map((text) => ({ category: 'other', text }))

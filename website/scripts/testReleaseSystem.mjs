@@ -186,6 +186,38 @@ const currentRelease = normalizeGitHubReleases([{
 assert.equal(currentRelease.versionCode, 3, 'Published build metadata must enrich the current GitHub release')
 assert.equal(currentRelease.sha256, 'cd97b77e97c79e9a0abebaee4e687cccf88d402566736a0f411c31e9a5638400', 'APK digest must provide SHA-256 when release body omits it')
 
+// 8c. Technical metadata (Build, versionCode, SHA-256) excluded from highlights while preserving feature sentences
+const v111ReleaseBody = `### FIXES
+
+- Android updates now download directly inside FitDex instead of handing APK downloads off to the browser.
+- Added reliable in-app download progress, SHA-256 verification, retry handling, and native Android installer launch.
+- Improved handling for Android's "Install unknown apps" permission flow.
+
+### NOTES
+
+- Android versionCode: 5
+- Build: 5
+- SHA-256: bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07`
+
+const parsedV111Notes = parseReleaseNotes(v111ReleaseBody)
+assert.equal(parsedV111Notes.fixed?.length, 3, 'Must parse 3 user-facing fixes')
+assert.ok(parsedV111Notes.fixed.some((item) => item.includes('SHA-256 verification')), 'Sentence with SHA-256 verification must remain visible')
+assert.equal(parsedV111Notes.other, undefined, 'Technical metadata in NOTES must be excluded from other category')
+assert.ok(
+  parsedV111Notes.highlights?.every((h) => !/^Build:\s*\d+$/i.test(h.text) && !/^SHA-256:/i.test(h.text) && !/versionCode/i.test(h.text)),
+  'Highlights must exclude standalone Build, SHA-256, and versionCode lines'
+)
+
+const normalizedV111 = normalizeGitHubReleases([{
+  tag_name: 'v1.1.1', draft: false, prerelease: false, published_at: '2026-09-27T10:50:51Z',
+  html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v1.1.1', body: v111ReleaseBody,
+  assets: [{ name: 'fitdex.1.1.1.apk', size: 64005821, digest: 'sha256:bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07', browser_download_url: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.1.1/fitdex.1.1.1.apk' }],
+}])[0]
+assert.equal(normalizedV111.version, '1.1.1')
+assert.equal(normalizedV111.versionCode, 5, 'VersionCode 5 extracted from body')
+assert.equal(normalizedV111.sha256, 'bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07', 'SHA-256 hash extracted from body')
+assert.equal(normalizedV111.releaseNotes.fixed?.length, 3, 'User-facing fixes intact in normalized release')
+
 // 9. Fallback 'other' notes when headings not recognized
 const rawNotes = `This is a raw unstructured changelog.\nSecond line of changes.`
 const parsedRaw = parseReleaseNotes(rawNotes)
