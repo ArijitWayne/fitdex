@@ -209,4 +209,131 @@ SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
   console.log('✓ Empty public feed preserves local baseline without fabricated release');
 }
 
+// 9. Release Notes Heading Classification
+{
+  const { classifyHeading } = await import('./releaseNotesParser.ts');
+
+  assert.deepEqual(classifyHeading('### RELEASE HIGHLIGHTS'), {
+    type: 'highlights',
+    title: 'RELEASE HIGHLIGHTS',
+  });
+  assert.deepEqual(classifyHeading('### NEW'), {
+    type: 'new',
+    title: "WHAT'S NEW",
+  });
+  assert.deepEqual(classifyHeading("## WHAT'S NEW"), {
+    type: 'new',
+    title: "WHAT'S NEW",
+  });
+  assert.deepEqual(classifyHeading('### IMPROVEMENTS'), {
+    type: 'improvements',
+    title: 'IMPROVEMENTS',
+  });
+  assert.deepEqual(classifyHeading('### FIXES'), {
+    type: 'fixes',
+    title: 'FIXES',
+  });
+  assert.deepEqual(classifyHeading('### BUG FIXES'), {
+    type: 'fixes',
+    title: 'FIXES',
+  });
+  assert.deepEqual(classifyHeading('### CUSTOM PATCHES'), {
+    type: 'general',
+    title: 'CUSTOM PATCHES',
+  });
+
+  // Top-level / document headers should be ignored
+  assert.equal(classifyHeading('# FitDex Release Notes'), null);
+  assert.equal(classifyHeading('## v1.1.0'), null);
+  console.log('✓ Release note heading classification passed');
+}
+
+// 10. Semantic Release Notes Parsing
+{
+  const { parseReleaseNotes } = await import('./releaseNotesParser.ts');
+
+  const testNotes = `
+# FitDex Release Notes
+## v1.1.0
+Released: September 27, 2026
+Android versionCode: 4
+SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+APK: fitdex.1.1.0.apk
+---
+
+### RELEASE HIGHLIGHTS
+
+Smarter Weekly Plans and streak handling pair with a stronger Active Workout experience.
+
+### NEW
+
+- Notifications V1: optional reminders and custom sounds.
+- Open **HOW TO PERFORM** from active workout.
+
+### IMPROVEMENTS
+
+- Weekly Plan now shows completed days more clearly.
+
+### FIXES
+
+- Fixed completed historical workouts not receiving Plan Streak credit.
+`;
+
+  const parsed = parseReleaseNotes(testNotes);
+
+  // Summary should not contain metadata noise or raw Markdown headers
+  assert.equal(parsed.summary.length, 0);
+
+  // Sections
+  assert.equal(parsed.sections.length, 4);
+
+  // Highlights section
+  assert.equal(parsed.sections[0].type, 'highlights');
+  assert.equal(parsed.sections[0].title, 'RELEASE HIGHLIGHTS');
+  assert.equal(parsed.sections[0].paragraphs.length, 1);
+  assert.ok(parsed.sections[0].paragraphs[0].includes('Smarter Weekly Plans'));
+
+  // New section
+  assert.equal(parsed.sections[1].type, 'new');
+  assert.equal(parsed.sections[1].title, "WHAT'S NEW");
+  assert.equal(parsed.sections[1].items.length, 2);
+  assert.equal(parsed.sections[1].items[0], 'Notifications V1: optional reminders and custom sounds.');
+  assert.equal(parsed.sections[1].items[1], 'Open **HOW TO PERFORM** from active workout.');
+
+  // Improvements section
+  assert.equal(parsed.sections[2].type, 'improvements');
+  assert.equal(parsed.sections[2].items.length, 1);
+  assert.equal(parsed.sections[2].items[0], 'Weekly Plan now shows completed days more clearly.');
+
+  // Fixes section
+  assert.equal(parsed.sections[3].type, 'fixes');
+  assert.equal(parsed.sections[3].items.length, 1);
+  assert.equal(parsed.sections[3].items[0], 'Fixed completed historical workouts not receiving Plan Streak credit.');
+
+  // Empty / fallback handling
+  const emptyParsed = parseReleaseNotes('');
+  assert.deepEqual(emptyParsed, { summary: [], sections: [] });
+
+  console.log('✓ Semantic release notes parser passed');
+}
+
+// 11. Inline Markdown Tokenization
+{
+  const { parseInlineMarkdown } = await import('./releaseNotesParser.ts');
+
+  const tokens = parseInlineMarkdown('Check out **Notifications V1** with `sound.mp3` file and normal text.');
+  assert.deepEqual(tokens, [
+    { type: 'text', text: 'Check out ' },
+    { type: 'bold', text: 'Notifications V1' },
+    { type: 'text', text: ' with ' },
+    { type: 'code', text: 'sound.mp3' },
+    { type: 'text', text: ' file and normal text.' },
+  ]);
+
+  const plainTokens = parseInlineMarkdown('Simple plain string without formatting');
+  assert.deepEqual(plainTokens, [{ type: 'text', text: 'Simple plain string without formatting' }]);
+
+  console.log('✓ Inline markdown tokenization passed');
+}
+
 console.log('--- ALL PHASE 7 UPDATER TESTS PASSED SUCCESSFULLY ---');
