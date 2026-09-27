@@ -72,6 +72,7 @@
   flex-direction: column;
   overflow: hidden;
   animation: dialogPop 160ms var(--ease-out, ease-out);
+  min-width: 0;
 }
 
 .update-dialog-header {
@@ -186,9 +187,11 @@
 .update-dialog-body {
   padding: 12px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 .update-summary-box {
@@ -199,12 +202,14 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .update-sections-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
 
 .update-release-section {
@@ -215,6 +220,7 @@
   background: var(--color-surface-subtle, #0a1110);
   border: 1px solid var(--color-border, #1f2d2a);
   border-left: 3px solid var(--color-border-strong, #2c3e3a);
+  min-width: 0;
 }
 
 .update-release-section.section-highlights {
@@ -257,12 +263,17 @@
   line-height: 1.45;
   color: var(--color-text, #f0f6f5);
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .update-release-paragraph strong,
 .update-release-item strong {
   color: var(--color-primary-text, #4ecdc4);
   font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .update-release-list {
@@ -271,12 +282,16 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 
 .update-release-item {
   font-size: 0.74rem;
   line-height: 1.4;
   color: var(--color-text, #f0f6f5);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .inline-code {
@@ -286,6 +301,8 @@
   padding: 1px 4px;
   border: 1px solid var(--color-border, #1f2d2a);
   color: var(--color-text, #f0f6f5);
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .update-release-empty {
@@ -305,7 +322,11 @@
   white-space: pre-wrap;
   max-height: 220px;
   overflow-y: auto;
+  overflow-x: hidden;
   font-family: var(--font-mono, monospace);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  min-width: 0;
 }
 
 .update-checksum-box {
@@ -315,6 +336,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 }
 
 .update-checksum-label {
@@ -328,9 +350,12 @@
 .update-checksum-code {
   font: 700 0.62rem var(--font-mono, monospace);
   color: var(--color-text-muted, #7c9893);
+  overflow-wrap: anywhere;
   word-break: break-all;
   display: block;
   line-height: 1.35;
+  user-select: all;
+  min-width: 0;
 }
 
 .update-progress-panel {
@@ -581,11 +606,15 @@
   font-size: 0.78rem;
   line-height: 1.45;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .release-archive-section {
   border-left: 3px solid var(--color-border, #1f2d2a);
   padding-left: 9px;
+  min-width: 0;
 }
 
 .release-archive-section h3 {
@@ -606,6 +635,9 @@
   color: var(--color-text, #f0f6f5);
   font: 0.74rem/1.45 var(--font-body, sans-serif);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .release-archive-section ul {

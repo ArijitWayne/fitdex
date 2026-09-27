@@ -193,4 +193,11 @@ assert.match(backup, /Back Up Current Data First/)
 assert.match(exerciseMedia, /Remove all exercise downloads\?/)
 assert.match(exerciseMedia, /Exercise data, routines, and workout history are not affected\./)
 
-console.log('Responsive UI assertions passed: fluid root, landscape-capable PWA, safe areas, dynamic-height dialogs, compact workout rows, wrapping, touch targets, media, charts, search focus, avatars, and precache safety')
+const updaterCss = fs.readFileSync('src/styles/updater.css', 'utf8')
+assert.match(updaterCss, /\.update-details-dialog\s*\{[^}]*min-width:\s*0/s)
+assert.match(updaterCss, /\.update-dialog-body\s*\{[^}]*overflow-x:\s*hidden[^}]*min-width:\s*0/s)
+assert.match(updaterCss, /\.update-checksum-code\s*\{[^}]*overflow-wrap:\s*anywhere[^}]*word-break:\s*break-all/s)
+assert.match(updaterCss, /\.update-release-paragraph\s*\{[^}]*overflow-wrap:\s*anywhere[^}]*word-break:\s*break-word/s)
+assert.match(updaterCss, /\.inline-code\s*\{[^}]*overflow-wrap:\s*anywhere[^}]*word-break:\s*break-all/s)
+
+console.log('Responsive UI assertions passed: fluid root, landscape-capable PWA, safe areas, dynamic-height dialogs, compact workout rows, wrapping, touch targets, media, charts, search focus, avatars, updater modal wrapping, and precache safety')
