@@ -5,6 +5,7 @@ type Section = CategoryKey | 'summary' | null
 
 function cleanLine(raw: string): string {
   return raw
+    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/^[-*+]\s+/, '')
     .replace(/^\d+\.\s+/, '')
     .replace(/^#{1,6}\s+/, '')
@@ -61,7 +62,11 @@ function detectSection(rawLine: string): Section {
     headingText === 'other' ||
     headingText === 'misc' ||
     headingText === 'other changes' ||
-    headingText === 'release notes'
+    headingText === 'release notes' ||
+    headingText === 'release info' ||
+    headingText === 'release metadata' ||
+    headingText === 'upgrade notice' ||
+    headingText === 'notice'
   ) {
     return 'other'
   }
@@ -72,8 +77,8 @@ function detectSection(rawLine: string): Section {
     if (headingText.startsWith("what's new") || headingText.startsWith('new')) return 'new'
     if (headingText.startsWith('improvement')) return 'improved'
     if (headingText.startsWith('bug fix') || headingText.startsWith('fix')) return 'fixed'
-    if (headingText.startsWith('other')) return 'other'
     if (headingText.startsWith('android')) return 'android'
+    return 'other'
   }
 
   return null
@@ -84,11 +89,19 @@ export function isTechnicalMetadataLine(line: string): boolean {
   if (!cleaned) return false
 
   return (
-    /^(?:android\s+)?versioncode[:\s]+\d+$/i.test(cleaned) ||
+    /^(?:android\s+)?version\s*code[:\s]+\d+$/i.test(cleaned) ||
+    /^version[:\s]+v?\d+\.\d+\.\d+/i.test(cleaned) ||
     /^build(?:\s+number)?[:\s]+\d+$/i.test(cleaned) ||
+    /^released[:\s]+[a-z0-9,\s]+/i.test(cleaned) ||
     /^(?:sha[-_]?256(?:\s+checksum)?|checksum|sha)[:\s]+[a-f0-9]{32,64}$/i.test(cleaned) ||
     /^[a-f0-9]{64}$/i.test(cleaned) ||
-    /^(?:package\s*(?:id|name)?|application\s*id)[:\s]+[a-z0-9._]+$/i.test(cleaned)
+    /^(?:package\s*(?:id|name)?|application\s*id)[:\s]+[a-z0-9._]+$/i.test(cleaned) ||
+    /^(?:apk(?:\s+artifact|\s+filename|\s+file)?|artifact)[:\s]+[a-z0-9._-]+$/i.test(cleaned) ||
+    /^fitdex[._\-\d\w]*\.(?:apk|sha256)$/i.test(cleaned) ||
+    /^exercise\s+dex[:\s]+\d+\s+active\s+movements/i.test(cleaned) ||
+    /^(?:release\s+info(?:rmation)?|release\s+metadata|integrity|upgrade\s+notice|support\s+notice)[:\s]*$/i.test(cleaned) ||
+    /^fitdex\s+1\.x\s+(?:is\s+no\s+longer\s+supported|may\s+use\s+outdated)/i.test(cleaned) ||
+    /^upgrade\s+to\s+fitdex\s+2\.0\+/i.test(cleaned)
   )
 }
 

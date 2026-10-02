@@ -1,16 +1,50 @@
 # FitDex Release Notes
 
-## v2.0.0 — Release candidate
+## v2.0.0
 
-### RELEASE HIGHLIGHTS
+Released: October 2, 2026  
+Android versionCode: 6
 
-- Premium shared shell and redesigned Home, Workout, Exercise Dex, Food, Journal, Progress, Consistency, and Settings surfaces.
-- Exercise Dex now ships 802 active canonical exercises with refined tracking methods and remote on-demand demonstration media.
-- Exercise media is external to app assets at `https://fitdex-media.fitdexapp.workers.dev/exercises/`.
+### New Features
 
-### DEFERRED
+- **Unified Retro Handheld Shell**: Comprehensive UI modernization across Home, Workout, Food, Journal, Progress, and Settings inside a tactile shared page frame.
+- **Standalone Exercise Codex**: Dedicated RPG Codex library with persistent search, theme-family muscle anatomy cards, and reference-first exercise detail records.
+- **Journal Field Notes**: Symmetric dual-dimension daily activity ledger displaying completed workouts and logged meals with empty-state suppression.
+- **Settings Command Hub**: Modular settings center with active avatar hero, evidence-based nutrition target calculators, and offline media controls.
+- **Active Drag-and-Drop Reordering**: Dedicated touch-friendly exercise reordering engine for active workout sessions without mutating saved routine templates.
 
-- Level and Rank polish, achievement polish, Settings detail-screen polish, and minor visual refinements remain future patch work.
+### Improvements
+
+- **Refined 802-Movement Catalog**: Cleaned and validated the Exercise Dex catalog to 802 active canonical movements with comprehensive instructions and muscle targets.
+- **Remote On-Demand Media Architecture**: Moved video demonstrations to remote CDN streaming with Android caching, drastically reducing APK and app installation size.
+- **Exercise Detail Hierarchy**: Reordered Exercise Record structure to present verified facts (muscles, equipment, tracking method) directly before execution instructions.
+- **Food & Nutrition Daily Hub**: Streamlined Goal-First daily overview with macronutrient bars, recent/frequent suggestions, and rapid one-tap Quick Log.
+- **Workout & Routine Engine**: Refined active workout logger, separated set deletion controls with confirmation guards, and enhanced rest timer continuity.
+- **Progress & Character Analytics**: Cleaned period comparisons (7D, 30D, 90D, All), accurate resistance volume tonnage metrics, and multi-metric Personal Record archives.
+- **Faction-Aware Visual System**: Refined Spartan and Amazonian palettes, crisp typography, Style B Pixel Command tactile controls, and high-contrast Dark and Light modes.
+- **Local-First Data Integrity**: Maintained 100% on-device Dexie persistence and full backward compatibility for `.fitdex` backup and restore archives.
+
+### Fixes
+
+- **Exercise Tracking Methods**: Fixed tracking-method mismatches and edge cases that previously prevented logging sets on specific exercise types.
+- **Exercise Catalog & Media Cleanup**: Resolved catalog inconsistencies, duplicate aliases, broken slugs, and outdated demonstration links.
+- **Workout Session Isolation**: Ensured active session reordering and set modifications remain strictly isolated to the active session without affecting saved routines.
+- **Journal Activity Ledger Display**: Fixed empty meal card rendering on workout-only days by properly suppressing unpopulated meal groups.
+- **Equipment & Instruction Fallbacks**: Fixed equipment typing and execution instruction fallbacks for custom and legacy exercises.
+- **Navigation & Scroll Stability**: Resolved view-transition jitter and preserved viewport scroll position during in-page tab and filter switching.
+
+### Release Info
+
+- Version: 2.0.0
+- Version Code: 6
+- Package ID: com.fitdex.app
+- Exercise Dex: 802 active movements
+- APK: fitdex.2.0.0.apk
+- SHA-256: 8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67
+
+### Upgrade Notice
+
+FitDex 1.x is no longer supported. Upgrade to FitDex 2.0+ for the current Exercise Dex and tracking system.
 
 ---
 
