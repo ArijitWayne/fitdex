@@ -246,9 +246,11 @@ assert.equal(normNoApk.apkDownloadUrl, undefined, 'Missing APK asset must leave 
 // 12. Missing checksum behavior
 assert.equal(normNoApk.sha256, undefined, 'Missing checksum must not be fabricated')
 
-// 13. Published-release fallback must not claim a release is pending.
-assert.match(mainSource, /RELEASE FEED UNAVAILABLE/, 'Release-feed fallback must exist in main.tsx')
-assert.doesNotMatch(mainSource, /PUBLIC RELEASE COMING SOON/, 'Landing page must not claim the public release is pending')
+// 13. Upcoming baseline must remain truthful before public publication.
+assert.match(mainSource, /const upcomingRelease = '2\.0\.0'/, 'Landing page must declare FitDex 2.0.0 as upcoming baseline')
+assert.match(mainSource, /PUBLICATION PENDING/, 'Landing page must state publication is pending')
+assert.match(mainSource, /FitDex 1\.x may use outdated exercise data, tracking rules, and media links\./, 'Landing page must explain legacy support status')
+assert.doesNotMatch(mainSource, /href=\{latest\.apkDownloadUrl\}/, 'Landing page must not label an older APK as FitDex 2.0.0')
 
 // 14. /changelog empty state in ChangelogView.tsx
 assert.match(changelogSource, /NO PUBLIC RELEASES YET\./, 'Empty archive title must exist in ChangelogView.tsx')
@@ -275,10 +277,12 @@ assert.match(mainSource, /VIEW CHANGELOG/, 'Hero must contain VIEW CHANGELOG act
 assert.match(mainSource, /href="\/changelog"/, 'VIEW CHANGELOG must route to /changelog')
 assert.doesNotMatch(mainSource, /<dd>Achievements<\/dd>/, 'Hero must no longer use Achievements metric')
 assert.doesNotMatch(mainSource, /<dd>Named ranks<\/dd>/, 'Hero must no longer use Named ranks metric')
-assert.match(mainSource, /<dt>804<\/dt><dd>EXERCISES<\/dd>/, 'Hero must contain 804 EXERCISES')
+assert.match(mainSource, /<dt>802<\/dt><dd>EXERCISES<\/dd>/, 'Hero must contain 802 EXERCISES')
 assert.match(mainSource, /<dt>LOCAL<\/dt><dd>FIRST STORAGE<\/dd>/, 'Hero must contain LOCAL FIRST STORAGE')
 assert.match(mainSource, /<dt>\$0<\/dt><dd>FOREVER FREE<\/dd>/, 'Hero must contain $0 FOREVER FREE')
 assert.doesNotMatch(mainSource, /LATEST RELEASE<\/a>/, 'Pre-release hero must not claim LATEST RELEASE as action')
+assert.match(mainSource, /FITDEX 2\.0 STATUS/, 'Hero must present FitDex 2.0 release status')
+assert.match(mainSource, /802 active exercises\. Local-first data\. Demos load on demand\./, 'Hero must state accurate media positioning')
 
 // 18. Standalone screenshots section removed while contextual screenshots remain
 assert.doesNotMatch(mainSource, /id="screenshots"/, 'Standalone screenshots section id="screenshots" must be absent')
@@ -303,27 +307,27 @@ const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf
 const socialPreviewAsset = await readFile(new URL('../public/branding/social-preview.jpg', import.meta.url))
 assert.ok(socialPreviewAsset.length > 0, 'social-preview.jpg must exist in public/branding/')
 
-assert.match(indexHtml, /<title>FitDex — Train\. Track\. Level Up\.<\/title>/, 'Title tag must match approved text')
-assert.match(indexHtml, /<meta name="description" content="A free, local-first Android fitness tracker built like a retro RPG\." \/>/, 'Description meta must match')
+assert.match(indexHtml, /<title>FitDex 2\.0 — Train\. Track\. Evolve\.<\/title>/, 'Title tag must reflect FitDex 2.0')
+assert.match(indexHtml, /<meta name="description" content="FitDex 2\.0 is a local-first Android fitness tracker with 802 active exercises and refined tracking\." \/>/, 'Description meta must reflect verified release positioning')
 assert.match(indexHtml, /<meta name="theme-color" content="#0e1212" \/>/, 'Theme color must match Spartan dark background')
 assert.match(indexHtml, /<link rel="canonical" href="https:\/\/fitdexinfo\.vercel\.app\/" \/>/, 'Canonical link must point to production domain')
 
 assert.match(indexHtml, /<meta property="og:type" content="website" \/>/, 'og:type must be website')
 assert.match(indexHtml, /<meta property="og:site_name" content="FitDex" \/>/, 'og:site_name must be FitDex')
-assert.match(indexHtml, /<meta property="og:title" content="FitDex — Train\. Track\. Level Up\." \/>/, 'og:title must match')
-assert.match(indexHtml, /<meta property="og:description" content="A free, local-first Android fitness tracker built like a retro RPG\." \/>/, 'og:description must match')
+assert.match(indexHtml, /<meta property="og:title" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'og:title must reflect FitDex 2.0')
+assert.match(indexHtml, /<meta property="og:description" content="A local-first Android fitness tracker with 802 active exercises and refined tracking\." \/>/, 'og:description must reflect verified release positioning')
 assert.match(indexHtml, /<meta property="og:url" content="https:\/\/fitdexinfo\.vercel\.app\/" \/>/, 'og:url must match')
 assert.match(indexHtml, /<meta property="og:image" content="https:\/\/fitdexinfo\.vercel\.app\/branding\/social-preview\.jpg" \/>/, 'og:image must match')
-assert.match(indexHtml, /<meta property="og:image:alt" content="FitDex — Train\. Track\. Level Up\." \/>/, 'og:image:alt must match')
+assert.match(indexHtml, /<meta property="og:image:alt" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'og:image:alt must reflect FitDex 2.0')
 assert.match(indexHtml, /<meta property="og:image:type" content="image\/jpeg" \/>/, 'og:image:type must be image/jpeg')
 assert.match(indexHtml, /<meta property="og:image:width" content="1774" \/>/, 'og:image:width must be 1774')
 assert.match(indexHtml, /<meta property="og:image:height" content="887" \/>/, 'og:image:height must be 887')
 
 assert.match(indexHtml, /<meta name="twitter:card" content="summary_large_image" \/>/, 'twitter:card must be summary_large_image')
-assert.match(indexHtml, /<meta name="twitter:title" content="FitDex — Train\. Track\. Level Up\." \/>/, 'twitter:title must match')
-assert.match(indexHtml, /<meta name="twitter:description" content="A free, local-first Android fitness tracker built like a retro RPG\." \/>/, 'twitter:description must match')
+assert.match(indexHtml, /<meta name="twitter:title" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'twitter:title must reflect FitDex 2.0')
+assert.match(indexHtml, /<meta name="twitter:description" content="A local-first Android fitness tracker with 802 active exercises and refined tracking\." \/>/, 'twitter:description must reflect verified release positioning')
 assert.match(indexHtml, /<meta name="twitter:image" content="https:\/\/fitdexinfo\.vercel\.app\/branding\/social-preview\.jpg" \/>/, 'twitter:image must match')
-assert.match(indexHtml, /<meta name="twitter:image:alt" content="FitDex — Train\. Track\. Level Up\." \/>/, 'twitter:image:alt must match')
+assert.match(indexHtml, /<meta name="twitter:image:alt" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'twitter:image:alt must reflect FitDex 2.0')
 
 assert.match(indexHtml, /<link rel="icon" href="\/branding\/fitdex-icon-spartan\.png" type="image\/png" \/>/, 'Favicon link must remain Spartan icon')
 

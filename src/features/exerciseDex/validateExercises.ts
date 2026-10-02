@@ -6,13 +6,14 @@ import { FITDEX_EXERCISES } from './fitDexExercises.generated.ts'
 
 const trackingTypes = new Set<ExerciseTrackingType>([
   'weight_reps', 'bodyweight_reps', 'assisted_bodyweight', 'reps_only', 'duration',
-  'distance_duration', 'duration_optional_distance', 'weight_distance', 'duration_reps',
+  'distance_duration', 'duration_optional_distance', 'weight_distance', 'duration_reps', 'weight_duration',
 ])
 const equipment = new Set<ExerciseEquipment>([
   'Barbell', 'Dumbbell', 'EZ Bar', 'Cable', 'Machine', 'Smith Machine', 'Bodyweight',
-  'Pull-Up Bar', 'Bench', 'Resistance Band', 'Kettlebell', 'Medicine Ball',
+  'Pull-Up Bar', 'Bench', 'Resistance Band', 'Kettlebell', 'Medicine Ball', 'Swiss Ball',
   'Suspension Trainer', 'Weight Plate', 'Landmine', 'Sled', 'Battle Rope',
   'Cardio Machine', 'Other', 'Back Extension Bench', 'Trap Bar', 'Rings', 'Sandbag', 'GHD',
+  'Ab Wheel', 'Bulgarian Bag', 'Foam Roller', 'Slider', 'Chains', 'Jump Rope', 'Dip Bar',
 ])
 const movementPatterns = new Set<MovementPattern>([
   'Horizontal Push', 'Vertical Push', 'Horizontal Pull', 'Vertical Pull', 'Squat', 'Hinge', 'Lunge', 'Carry',
@@ -32,9 +33,9 @@ const activeMembershipCount = (category: ExerciseCategory) => ACTIVE_FITDEX_EXER
 )
 
 if (BUILT_IN_EXERCISE_DATASET_VERSION !== 4) errors.push(`Expected dataset version 4, got ${BUILT_IN_EXERCISE_DATASET_VERSION}`)
-if (builtInExercises.length !== 804) errors.push(`Expected 804 active built-ins, got ${builtInExercises.length}`)
+if (builtInExercises.length !== 802) errors.push(`Expected 802 active built-ins, got ${builtInExercises.length}`)
 if (builtInExercises.length !== ACTIVE_FITDEX_EXERCISES.length) errors.push('Canonical/source inventory count mismatch')
-if (RETIRED_FITDEX_EXERCISE_SLUGS.length !== 9) errors.push(`Expected 9 retired media-less exercises, got ${RETIRED_FITDEX_EXERCISE_SLUGS.length}`)
+if (RETIRED_FITDEX_EXERCISE_SLUGS.length !== 10) errors.push(`Expected 10 retired media-less exercises, got ${RETIRED_FITDEX_EXERCISE_SLUGS.length}`)
 if (FITDEX_EXERCISES.filter((definition) => definition.mediaStatus !== 'available').some((definition) => !RETIRED_FITDEX_EXERCISE_SLUGS.includes(definition.slug as typeof RETIRED_FITDEX_EXERCISE_SLUGS[number]))) errors.push('An exercise without verified media remains active')
 
 for (const exercise of builtInExercises) {

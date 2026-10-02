@@ -11,7 +11,7 @@ export const workoutTutorialSteps: readonly GuideStep[] = [
   { title: 'Workout Timer', sections: [{ text: 'Start the timer when you begin training. Pause it whenever you need a break, then resume when you are ready to continue.' }] },
   { title: 'Finishing a Workout', sections: [{ text: 'Every remaining exercise needs a set, and every remaining set must be valid. Fill or delete empty sets and remove unused exercises. FitDex identifies anything that still needs attention.' }] },
   { title: 'Workout History', sections: [{ text: 'Completed workouts appear under Recent Workouts. Review exercises, sets, and duration, or delete a session.' }, { text: 'Deleting a completed workout automatically updates Journal, Progress, and Personal Records.' }] },
-  { title: 'Exercise Dex', sections: [{ text: 'Browse 804 exercises using search, categories, demonstrations, instructions, and Favorites. Tap ★ to keep an exercise in your shortlist.' }] },
+  { title: 'Exercise Dex', sections: [{ text: 'Browse 802 exercises using search, categories, demonstrations, instructions, and Favorites. Tap ★ to keep an exercise in your shortlist.' }] },
   { title: 'Workouts on Home', sections: [{ label: 'No Plan', text: 'Start empty or create a routine.' }, { label: 'Workout Day', text: 'Train and choose exercises as you go.' }, { label: 'Routine Day', text: "Start today's assigned routine." }, { label: 'Rest Day', text: 'Home shows planned recovery.' }, { label: 'Completed', text: "Home shows today's completed activity." }, { text: 'Your workout data automatically feeds Home, Journal and Progress.' }] },
 ]
 

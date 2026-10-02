@@ -16,12 +16,94 @@ export function WeeklyPlanPanel({ plan, routines, onEdit }: { plan: WeeklyPlan; 
   </Panel>
 }
 
-export function WeeklyPlanDayTile({ day, label, today, completed, rest }: { day: WeekdayId; label: string; today: boolean; completed: boolean; rest: boolean }) {
-  return <div className={`workout-day-chip${today ? ' is-today' : ''}${completed ? ' is-done' : ''}${rest ? ' is-rest' : ''}`}>
-    <strong>{WEEKDAY_LABELS[day].slice(0, 3)}</strong>
-    <span>{label}</span>
-    {completed ? <small className="workout-day-complete">✓ DONE{today ? ' · TODAY' : ''}</small> : today ? <small className="workout-day-today">TODAY</small> : null}
-  </div>
+export type WeeklyTileStateKey = 'done' | 'plan' | 'freeze' | 'miss' | 'rest' | 'noplan'
+
+export const WEEKDAY_INITIALS: Record<WeekdayId, string> = {
+  monday: 'M',
+  tuesday: 'T',
+  wednesday: 'W',
+  thursday: 'T',
+  friday: 'F',
+  saturday: 'S',
+  sunday: 'S',
+}
+
+export function BrickWallTileSvg({ stateKey, isToday: _isToday }: { stateKey: WeeklyTileStateKey; isToday?: boolean }) {
+  const p = stateKey === 'done' ? '--done'
+    : stateKey === 'plan' ? '--plan'
+    : stateKey === 'freeze' ? '--freeze'
+    : stateKey === 'miss' ? '--miss'
+    : stateKey === 'rest' ? '--rest'
+    : stateKey === 'noplan' ? '--noplan'
+    : '--wall-base'
+  const isInactive = stateKey === 'noplan'
+
+  return (
+    <svg className="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none" aria-hidden="true">
+      {/* Outer Mortar Foundation */}
+      <rect x="1" y="2" width="46" height="51" fill={`var(${p}-shadow)`} />
+      <rect x="1" y="1" width="46" height="50" fill={`var(${p}-mortar)`} />
+      {/* COURSE 1 (Top Bricks) */}
+      <rect x="3" y="3" width="18" height="13" fill={`var(${p}-mid)`} stroke={`var(${p}-mortar)`} strokeWidth="0.75" />
+      <path d="M 3 3 L 21 3 L 21 5 L 5 5 L 5 16 L 3 16 Z" fill={`var(${p}-highlight)`} opacity={isInactive ? 0.2 : 0.45} />
+      <rect x="23" y="3" width="22" height="13" fill={`var(${p}-mid)`} stroke={`var(${p}-mortar)`} strokeWidth="0.75" />
+      <path d="M 23 3 L 45 3 L 45 5 L 25 5 L 25 16 L 23 16 Z" fill={`var(${p}-highlight)`} opacity={isInactive ? 0.2 : 0.45} />
+
+      {/* COURSE 2 (Center Main Brick Plate for Letter) */}
+      <rect x="3" y="18" width="42" height="18" fill={`var(${p}-light)`} stroke={`var(${p}-mortar)`} strokeWidth="0.75" />
+      <path d="M 3 18 L 45 18 L 45 20 L 5 20 L 5 36 L 3 36 Z" fill={`var(${p}-highlight)`} opacity={isInactive ? 0.2 : 0.4} />
+      <path d="M 45 18 L 45 36 L 3 36 L 5 34 L 43 34 L 43 20 Z" fill={`var(${p}-shadow)`} opacity={0.55} />
+
+      {/* COURSE 3 (Bottom Bricks) */}
+      <rect x="3" y="38" width="24" height="11" fill={`var(${p}-mid)`} stroke={`var(${p}-mortar)`} strokeWidth="0.75" />
+      <path d="M 3 38 L 27 38 L 27 40 L 5 40 L 5 49 L 3 49 Z" fill={`var(${p}-highlight)`} opacity={isInactive ? 0.2 : 0.45} />
+      <rect x="29" y="38" width="16" height="11" fill={`var(${p}-mid)`} stroke={`var(${p}-mortar)`} strokeWidth="0.75" />
+      <path d="M 29 38 L 45 38 L 45 40 L 31 40 L 31 49 L 29 49 Z" fill={`var(${p}-highlight)`} opacity={isInactive ? 0.2 : 0.45} />
+
+      {/* Outer Bevel Perimeter */}
+      <rect x="2" y="2" width="44" height="48" fill="none" stroke={`var(${p}-mortar)`} strokeWidth="1" />
+
+      {/* Inactive Tile Soft Mortar Hatch */}
+      {isInactive ? (
+        <rect x="3" y="3" width="42" height="46" fill="none" stroke="var(--noplan-mortar)" strokeWidth="1" strokeDasharray="2 2" opacity={0.5} />
+      ) : null}
+
+      {/* Today Focus Rim */}
+      <rect className="today-focus-rim" x="1" y="1" width="46" height="50" rx="1" fill="none" stroke="transparent" strokeWidth="1.5" opacity={0} />
+    </svg>
+  )
+}
+
+export function WeeklyPlanDayTile({
+  day: _day,
+  initial,
+  stateKey,
+  today,
+  selected,
+  accessibleLabel,
+  onClick,
+}: {
+  day: WeekdayId
+  initial: string
+  stateKey: WeeklyTileStateKey
+  today: boolean
+  selected?: boolean
+  accessibleLabel: string
+  onClick?: () => void
+}) {
+  const isNoPlan = stateKey === 'noplan'
+  return (
+    <button
+      type="button"
+      className={`pixel-wall-tile${isNoPlan ? ' state-noplan' : ''}${today ? ' is-today' : ''}${selected ? ' is-selected' : ''}`}
+      onClick={onClick}
+      aria-label={accessibleLabel}
+      title={accessibleLabel}
+    >
+      <BrickWallTileSvg stateKey={stateKey} isToday={today} />
+      <span className="wall-face-letter" aria-hidden="true">{initial}</span>
+    </button>
+  )
 }
 
 export function WeeklyPlanFeedbackDialog({ feedback, onViewPlan, onDismiss, onUpdate }: {

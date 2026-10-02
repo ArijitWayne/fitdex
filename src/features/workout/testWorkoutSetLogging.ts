@@ -19,6 +19,7 @@ const cases: Array<{ type: ExerciseTrackingType; incomplete: Partial<WorkoutSet>
   { type: 'duration_optional_distance', incomplete: { distance: 2 }, logged: { durationSeconds: 600 } },
   { type: 'weight_distance', incomplete: { weight: 40 }, logged: { weight: 40, distance: 0.1 } },
   { type: 'duration_reps', incomplete: { durationSeconds: 60 }, logged: { durationSeconds: 60, reps: 20 } },
+  { type: 'weight_duration', incomplete: { weight: 15 }, logged: { weight: 15, durationSeconds: 45 } },
 ]
 
 for (const entry of cases) {

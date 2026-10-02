@@ -224,8 +224,8 @@
 }
 
 .update-release-section.section-highlights {
-  border-left-color: var(--color-xp, #ffb300);
-  background: rgba(255, 179, 0, 0.04);
+  border-left-color: var(--color-theme-accent, #2e9895);
+  background: color-mix(in srgb, var(--color-theme-accent, #2e9895) 4%, transparent);
 }
 
 .update-release-section.section-new {
@@ -233,7 +233,7 @@
 }
 
 .update-release-section.section-improvements {
-  border-left-color: var(--color-xp, #ffb300);
+  border-left-color: var(--color-theme-accent, #2e9895);
 }
 
 .update-release-section.section-fixes {
@@ -252,9 +252,9 @@
   text-transform: uppercase;
 }
 
-.update-section-tag.tag-highlights { color: var(--color-xp, #ffb300); }
+.update-section-tag.tag-highlights { color: var(--color-theme-accent, #2e9895); }
 .update-section-tag.tag-new { color: var(--color-primary-text, #4ecdc4); }
-.update-section-tag.tag-improvements { color: var(--color-xp, #ffb300); }
+.update-section-tag.tag-improvements { color: var(--color-theme-accent, #2e9895); }
 .update-section-tag.tag-fixes { color: #64b5f6; }
 .update-section-tag.tag-general { color: var(--color-text-muted, #7c9893); }
 
@@ -417,7 +417,7 @@
 }
 
 .update-status-box.verifying {
-  border-left: 3px solid var(--color-xp, #ffb300);
+  border-left: 3px solid var(--color-warning, #ffb300);
 }
 
 .update-status-box.ready {
@@ -626,8 +626,8 @@
 
 .release-archive-section.new { border-color: var(--color-primary, #2e9895); }
 .release-archive-section.new h3 { color: var(--color-primary-text, #4ecdc4); }
-.release-archive-section.improvements { border-color: var(--color-xp, #ffb300); }
-.release-archive-section.improvements h3 { color: var(--color-xp, #ffb300); }
+.release-archive-section.improvements { border-color: var(--color-theme-accent, #2e9895); }
+.release-archive-section.improvements h3 { color: var(--color-theme-accent, #2e9895); }
 
 .release-archive-section pre,
 .release-archive-section ul {
@@ -676,8 +676,8 @@
 }
 
 .updater-status-pill.status-current {
-  border-color: var(--color-xp, #ffb300);
-  color: var(--color-xp, #ffb300);
+  border-color: var(--color-theme-accent, #2e9895);
+  color: var(--color-theme-accent, #2e9895);
 }
 
 .updater-status-pill.status-error {

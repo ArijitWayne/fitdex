@@ -34,6 +34,7 @@ export const TRACKING_TYPE_LABELS: Record<ExerciseTrackingType, string> = {
   duration_optional_distance: 'Time + Optional Distance',
   weight_distance: 'Weight + Distance',
   duration_reps: 'Time + Reps',
+  weight_duration: 'Weight + Duration',
 }
 
 export function normalizeExerciseSearch(value: string) {

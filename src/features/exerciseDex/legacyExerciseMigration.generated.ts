@@ -277,9 +277,9 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:chest-supported-t-bar-row",
     "legacyName": "Chest-Supported T-Bar Row",
     "legacyCategory": "Back",
-    "successorId": "builtin-exercise:t-bar-chest-suported-row",
+    "successorId": "builtin-exercise:t-bar-chest-supported-row",
     "confidence": "Equivalent",
-    "basis": "verified canonical exercise: t-bar-chest-suported-row"
+    "basis": "verified canonical exercise: t-bar-chest-supported-row"
   },
   {
     "legacyId": "builtin-exercise:machine-row",
@@ -613,9 +613,9 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:cable-curl",
     "legacyName": "Cable Curl",
     "legacyCategory": "Arms",
-    "successorId": "builtin-exercise:bar-cable-biceps-curl",
+    "successorId": "builtin-exercise:cable-biceps-curl",
     "confidence": "Equivalent",
-    "basis": "verified canonical exercise: bar-cable-biceps-curl"
+    "basis": "verified canonical exercise: cable-biceps-curl"
   },
   {
     "legacyId": "builtin-exercise:bayesian-cable-curl",
@@ -1037,9 +1037,9 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:cable-hip-abduction",
     "legacyName": "Cable Hip Abduction",
     "legacyCategory": "Legs",
-    "successorId": "builtin-exercise:cable-hip-abducction",
-    "confidence": "Equivalent",
-    "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
+    "successorId": "builtin-exercise:cable-hip-abduction",
+    "confidence": "Exact",
+    "basis": "verified canonical exercise: cable-hip-abduction"
   },
   {
     "legacyId": "builtin-exercise:machine-hip-adduction",
@@ -1269,7 +1269,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:kettlebell-clean",
     "legacyName": "Kettlebell Clean",
     "legacyCategory": "Full Body",
-    "successorId": "builtin-exercise:kettelbell-clean",
+    "successorId": "builtin-exercise:kettlebell-clean",
     "confidence": "Equivalent",
     "basis": "unique normalized word-order/synonym match in live FitDex inventory"
   },
@@ -1381,7 +1381,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:outdoor-walking",
     "legacyName": "Outdoor Walking",
     "legacyCategory": "Cardio",
-    "successorId": "builtin-exercise:walking-cardio",
+    "successorId": "builtin-exercise:walking",
     "confidence": "Equivalent",
     "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
@@ -1389,7 +1389,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:treadmill-walking",
     "legacyName": "Treadmill Walking",
     "legacyCategory": "Cardio",
-    "successorId": "builtin-exercise:walking-cardio",
+    "successorId": "builtin-exercise:walking",
     "confidence": "Equivalent",
     "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
@@ -1421,15 +1421,15 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:stationary-bike",
     "legacyName": "Stationary Bike",
     "legacyCategory": "Cardio",
-    "successorId": "builtin-exercise:stacionary-bike",
-    "confidence": "Equivalent",
-    "basis": "unique normalized word-order/synonym match in live FitDex inventory"
+    "successorId": "builtin-exercise:stationary-bike",
+    "confidence": "Exact",
+    "basis": "exact canonical slug/name in live FitDex inventory"
   },
   {
     "legacyId": "builtin-exercise:spin-bike",
     "legacyName": "Spin Bike",
     "legacyCategory": "Cardio",
-    "successorId": "builtin-exercise:stacionary-bike",
+    "successorId": "builtin-exercise:stationary-bike",
     "confidence": "Equivalent",
     "basis": "reviewed canonical-name/setup equivalent in live FitDex inventory"
   },
@@ -1437,7 +1437,7 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:air-bike",
     "legacyName": "Air Bike",
     "legacyCategory": "Cardio",
-    "successorId": "builtin-exercise:air-bike",
+    "successorId": "builtin-exercise:air-bicycle-crunch",
     "confidence": "Exact",
     "basis": "exact canonical slug/name in live FitDex inventory"
   },
@@ -2157,9 +2157,9 @@ export const LEGACY_EXERCISE_MIGRATIONS = [
     "legacyId": "builtin-exercise:hand-gripper",
     "legacyName": "Hand Gripper",
     "legacyCategory": "Arms",
-    "successorId": "builtin-exercise:hand-gripper",
-    "confidence": "Exact",
-    "basis": "verified canonical exercise: hand-gripper"
+    "successorId": null,
+    "confidence": "Removed",
+    "basis": "Retired from canonical built-in exercise catalog"
   },
   {
     "legacyId": "builtin-exercise:farmer-hold",

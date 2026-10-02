@@ -1,5 +1,19 @@
 # FitDex Release Notes
 
+## v2.0.0 — Release candidate
+
+### RELEASE HIGHLIGHTS
+
+- Premium shared shell and redesigned Home, Workout, Exercise Dex, Food, Journal, Progress, Consistency, and Settings surfaces.
+- Exercise Dex now ships 802 active canonical exercises with refined tracking methods and remote on-demand demonstration media.
+- Exercise media is external to app assets at `https://fitdex-media.fitdexapp.workers.dev/exercises/`.
+
+### DEFERRED
+
+- Level and Rank polish, achievement polish, Settings detail-screen polish, and minor visual refinements remain future patch work.
+
+---
+
 ## v1.1.1
 
 Released: September 27, 2026
@@ -76,7 +90,7 @@ Release: [v1.0.0](https://github.com/ArijitWayne/fitdex/releases/tag/v1.0.0)
 ### NEW
 
 - Build workout routines, log sets, track active training time, and use independent rest timers.
-- Browse 804 exercises with instructions, muscle targets, and on-demand Android demonstrations.
+- Browse 802 exercises with instructions, muscle targets, and on-demand Android demonstrations.
 - Log meals, nutrition targets, progress, personal records, journal entries, achievements, and RPG progression.
 - Keep fitness data on-device with local storage and portable `.fitdex` backup and restore.
 - Choose Spartan or Amazonian themes with light, dark, and system brightness modes.

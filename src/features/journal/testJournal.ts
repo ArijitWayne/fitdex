@@ -87,6 +87,22 @@ const nearMidnight = new Date(2026, 7, 28, 23, 45)
 await db.workouts.add(workout('workout:late', nearMidnight.toISOString(), 'Late Local Session', 15 * 60))
 assert.equal((await getJournalDay(getLocalDateKey(nearMidnight))).workouts.some((item) => item.workout.id === 'workout:late'), true)
 
+// Note persistence supports saving, updating, and clearing reflections tied to local date.
+const { saveJournalNote } = await import('./journalRepository.ts')
+await saveJournalNote('2026-08-27', 'Felt strong on bench top set')
+const withNote = await getJournalDay('2026-08-27')
+assert.equal(withNote.note, 'Felt strong on bench top set')
+assert.equal(withNote.workouts.length, 2)
+assert.ok(withNote.workouts[0].exerciseDetails !== undefined)
+
+await saveJournalNote('2026-08-27', 'Updated reflection text')
+const updatedNote = await getJournalDay('2026-08-27')
+assert.equal(updatedNote.note, 'Updated reflection text')
+
+await saveJournalNote('2026-08-27', '   ')
+const clearedNote = await getJournalDay('2026-08-27')
+assert.equal(clearedNote.note, undefined)
+
 db.close()
 await Dexie.delete('fitdex')
-console.log('Journal tests passed: empty, food-only, workout-only, mixed, multiple workouts, local dates, snapshots, and orphaned categories')
+console.log('Journal tests passed: empty, food-only, workout-only, mixed, multiple workouts, local dates, snapshots, notes persistence, exercise details, and orphaned categories')

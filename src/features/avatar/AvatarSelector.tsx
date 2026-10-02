@@ -15,6 +15,11 @@ export function AvatarSelector({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={compact ? 'avatar-selector is-compact' : 'avatar-selector'}>
+      <aside className="selected-avatar-detail" aria-live="polite" aria-label={`Selected champion: ${selectedAvatar.name}`}>
+        <AvatarPortrait avatar={selectedAvatar} size="small" />
+        <div><p className="eyebrow">Selected champion</p><strong>{selectedAvatar.name}</strong><span>{selectedAvatar.archetype}</span></div>
+        <blockquote>“{selectedAvatar.tagline}”</blockquote>
+      </aside>
       {groups.map((group) => (
         <fieldset className="avatar-group" key={group.faction}>
           <legend>{group.label}</legend>
@@ -30,11 +35,6 @@ export function AvatarSelector({ compact = false }: { compact?: boolean }) {
           </div>
         </fieldset>
       ))}
-      <aside className="selected-avatar-detail" aria-live="polite" aria-label={`Selected avatar: ${selectedAvatar.name}`}>
-        <p className="eyebrow">Selected champion</p>
-        <div><strong>{selectedAvatar.name}</strong><span>{selectedAvatar.archetype}</span></div>
-        <blockquote>“{selectedAvatar.tagline}”</blockquote>
-      </aside>
     </div>
   )
 }

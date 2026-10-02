@@ -23,10 +23,73 @@ export interface ExercisePersonalRecords {
   exerciseId: string
   exerciseName: string
   aliases: string[]
+  category?: string
   trackingType: ExerciseTrackingType
   metrics: PersonalRecordMetric[]
   lastPrDateKey: string
   lastPrAt: number
+}
+
+export type ChapterId = 'chest' | 'back' | 'shoulders' | 'legs' | 'arms' | 'core' | 'cardio'
+
+export interface ChapterConfig {
+  id: ChapterId
+  name: string
+}
+
+export const CANONICAL_CHAPTERS: readonly ChapterConfig[] = [
+  { id: 'chest', name: 'Chest' },
+  { id: 'back', name: 'Back' },
+  { id: 'shoulders', name: 'Shoulders' },
+  { id: 'legs', name: 'Legs & Glutes' },
+  { id: 'arms', name: 'Arms (Biceps & Triceps)' },
+  { id: 'core', name: 'Core & Abs' },
+  { id: 'cardio', name: 'Cardio & Conditioning' },
+] as const
+
+export function getChapterForRecord(record: ExercisePersonalRecords): ChapterId {
+  const cat = (record.category ?? '').toLowerCase()
+  const name = record.exerciseName.toLowerCase()
+  const type = record.trackingType
+
+  // Check cardio indicators
+  if (cat === 'cardio' || type === 'distance_duration' || type === 'duration_optional_distance' || name.includes('treadmill') || name.includes('running') || name.includes('cycling') || name.includes('bike') || name.includes('rowing machine') || name.includes('jump rope') || name.includes('elliptical')) {
+    return 'cardio'
+  }
+
+  // Chest
+  if (cat === 'chest' || name.includes('bench') || (name.includes('press') && !name.includes('shoulder') && !name.includes('overhead') && !name.includes('leg') && !name.includes('military')) || name.includes('push-up') || name.includes('pushup') || name.includes('chest') || name.includes('fly') || name.includes('pec')) {
+    return 'chest'
+  }
+
+  // Back
+  if (cat === 'back' || name.includes('pull-up') || name.includes('pullup') || name.includes('chin-up') || name.includes('chinup') || name.includes('lat pulldown') || name.includes('deadlift') || name.includes('row') || name.includes('back')) {
+    return 'back'
+  }
+
+  // Shoulders
+  if (cat === 'shoulders' || cat === 'shoulder' || name.includes('shoulder') || name.includes('overhead') || name.includes('military press') || name.includes('lateral raise') || name.includes('front raise') || name.includes('deltoid') || name.includes('arnold press') || name.includes('upright row')) {
+    return 'shoulders'
+  }
+
+  // Legs & Glutes
+  if (cat === 'legs' || cat === 'gluteal' || cat === 'glutes' || name.includes('squat') || name.includes('lunge') || name.includes('leg press') || name.includes('calf') || name.includes('hamstring') || name.includes('quad') || name.includes('wall sit') || name.includes('hip thrust') || name.includes('glute') || name.includes("farmer's walk") || name.includes('farmers walk')) {
+    return 'legs'
+  }
+
+  // Arms
+  if (cat === 'arms' || cat === 'biceps' || cat === 'triceps' || cat === 'forearms' || name.includes('curl') || name.includes('triceps') || name.includes('biceps') || name.includes('dip') || name.includes('skull crusher') || name.includes('arm')) {
+    return 'arms'
+  }
+
+  // Core & Abs
+  if (cat === 'abs' || cat === 'core' || name.includes('plank') || name.includes('ab') || name.includes('crunch') || name.includes('knee raise') || name.includes('leg raise') || name.includes('sit-up') || name.includes('situp') || name.includes('russian twist') || name.includes('hollow')) {
+    return 'core'
+  }
+
+  // Default fallback based on type or core
+  if (type === 'duration' || type === 'duration_reps') return 'core'
+  return 'chest'
 }
 
 interface Candidate {
@@ -38,6 +101,7 @@ interface Candidate {
 interface ExerciseCandidates {
   exerciseId: string
   exerciseName: string
+  category?: string
   trackingType: ExerciseTrackingType
   latestAt: number
   candidates: Candidate[]
@@ -54,9 +118,11 @@ export function derivePersonalRecords(workouts: readonly ProgressWorkoutFact[], 
       const completedSets = sets.filter((set) => isHistoricalWorkoutSetLogged(set, trackingType))
       if (!completedSets.length) continue
       const exerciseName = exercise.exerciseNameSnapshot ?? definition?.name ?? current?.exerciseName ?? 'Historical exercise'
-      const next = current ?? { exerciseId: exercise.exerciseId, exerciseName, trackingType, latestAt: achievedAt, candidates: [] }
+      const category = exercise.exerciseCategorySnapshot ?? definition?.category ?? (definition?.categories?.[0] as string | undefined) ?? current?.category
+      const next = current ?? { exerciseId: exercise.exerciseId, exerciseName, category, trackingType, latestAt: achievedAt, candidates: [] }
       if (achievedAt >= next.latestAt) {
         next.exerciseName = exerciseName
+        next.category = category ?? next.category
         next.trackingType = trackingType
         next.latestAt = achievedAt
       }
@@ -70,10 +136,12 @@ export function derivePersonalRecords(workouts: readonly ProgressWorkoutFact[], 
     const metrics = metricsForTrackingType(group.trackingType, group.candidates)
     if (!metrics.length) continue
     const latest = metrics.reduce((result, metric) => metric.achievedAt > result.achievedAt ? metric : result)
+    const definition = definitions.get(group.exerciseId)
     records.push({
       exerciseId: group.exerciseId,
       exerciseName: group.exerciseName,
-      aliases: definitions.get(group.exerciseId)?.aliases ?? [],
+      aliases: definition?.aliases ?? [],
+      category: group.category ?? definition?.category ?? (definition?.categories?.[0] as string | undefined) ?? 'Other',
       trackingType: group.trackingType,
       metrics,
       lastPrDateKey: latest.dateKey,
@@ -118,6 +186,7 @@ function metricsForTrackingType(type: ExerciseTrackingType, candidates: readonly
     case 'duration_optional_distance': return [...longestDurationMetric(candidates), ...longestDistanceMetric(candidates)]
     case 'weight_distance': return [...heaviestWeightMetric(candidates), ...longestDistanceMetric(candidates)]
     case 'duration_reps': return [...longestDurationMetric(candidates), ...highestRepsMetric(candidates)]
+    case 'weight_duration': return [...heaviestWeightMetric(candidates), ...longestDurationMetric(candidates)]
   }
 }
 

@@ -268,10 +268,11 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
   5. "How it helps" physiological development.
 - **Picker Protection**: Contextual workout exercise picker remains strictly Phase 2 locked with fast Add/Added actions and duplicate prevention.
 
-### 4.6 Settings & Preferences (V2 Profile / Loadout)
-- **Player Profile Hero**: Prominently renders the user's active champion avatar (`AvatarPortrait` with pixel art rendering), required local `displayName`, archetype label, and direct `Change` trigger at the top of the Settings Hub.
-- **3-Column Status Grid**: At-a-glance summary cards above setting categories: `Theme` (family + brightness), `Units` (Metric/Imperial), and `Targets` (Daily kcal + protein summary).
-- **Grouped Category Cards**: Organized into `Personalize` (Display Name & Avatar, Appearance), `Your System` (Units, Audio, Nutrition Targets, Notifications), and `Data & Help` (Exercise Media, Backup & Restore, Field Guide, Gamification Guide, About FitDex).
+### 4.6 Settings & Preferences (Command Hub)
+- **Profile Hero**: Compact unframed active-avatar, display name, archetype, and local-profile summary at top of Settings Hub.
+- **Collapsible Modules**: `Personalize & Appearance`, `Units, Audio & Reminders`, `Nutrition Target Engine`, and `Data & App Information` retain one-tap access to all existing settings actions.
+- **Settings Rows**: Each action uses a compact `icon | content | current value | chevron` card. Rows have no shared divider-list wrapper.
+- **Faction Accent**: Spartan uses teal/cyan and Amazonian uses plum/orchid. Gold remains semantic rank/XP/reward color, green success/recovery, and red destructive/error.
 - **Notifications V1**: Master control plus App Updates, Today's Planned Workout, and Calories Below Daily Target only. Built with authoritative full bordered-card retro panels, dedicated category header bands (`APP`, `WORKOUT`, `NUTRITION`), and compact expandable `WHEN IT SENDS` disclosures (`▸` collapsed / `▾` open). Category rows never expose sound names, sound pickers, or previews (internal sounds: Workout → `morning_notification.mp3`, Nutrition → `warning_notification.mp3`, Update → `update_notification.mp3`). Workout/Nutrition use compact custom 12-hour time dialogs. Permission follows explicit master intent; `NOT NOW` restores Off. Developer-only test controls never ship in release UI.
 - **Inline Summary Badges**: Display verified current state inline in navigation rows (`Arijit · Leonidas`, `Spartan · Dark`, `Metric`, `SFX On · Warrior`, `1,800 kcal · Protein off`).
 - **Unified Audio Entry**: Sound Effects switch and Background Music track options (`Warrior`, `Hardened`, `Villain`, `None`) consolidated in a dedicated subview.
@@ -281,6 +282,7 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
 
 ### 4.7 Primary Page Frame
 - **Shared Enclosure**: Major FitDex surfaces present page-specific content within the retro handheld outer frame established by Home.
+- **CommandPageFrame**: Workout, Food, Progress, Journal, Settings, and detail flows use the shared terminal title/meta/status-dot shell; page logic and navigation remain feature-owned.
 - **Shell Separation**: Global header and bottom navigation remain outside the page frame.
 - **Scroll Ownership**: The frame grows with content and must not introduce fixed-height or nested-scroll containers.
 - **Theme Fidelity**: Border, background, and shadow use semantic theme tokens across Spartan and Amazonian light/dark modes.
@@ -306,7 +308,7 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
   - **Pre-Release / Empty**: When no releases are published, the landing page displays `PUBLIC RELEASE COMING SOON` and `/changelog` displays `NO PUBLIC RELEASES YET.` with a clean `RETURN HOME` action.
   - **Loading**: Tactical status ticker with pulsing indicator; never blocks the entire page.
   - **Error**: Tactical error alert with retry control and direct GitHub fallback link.
-- **Landing Hero Composition**: Hero features public eyebrow `TACTICAL ANDROID FITNESS TRACKER`, headline `TRAIN. TRACK. LEVEL UP.`, value proposition ('804 exercises, deep logging, zero subscription'), pre-release CTA row (`PUBLIC RELEASE COMING SOON`, `VIEW CHANGELOG`, `TRY WEB APP`), and 3 public metrics (`804 EXERCISES`, `LOCAL FIRST STORAGE`, `$0 FOREVER FREE`). The 3-card screenshot hover stack preserves its fixed left/center/right interaction zones and desktop 3D transforms.
+- **Landing Hero Composition**: Hero features public eyebrow `TACTICAL ANDROID FITNESS TRACKER`, headline `TRAIN. TRACK. LEVEL UP.`, value proposition ('802 exercises, deep logging, zero subscription'), pre-release CTA row (`PUBLIC RELEASE COMING SOON`, `VIEW CHANGELOG`, `TRY WEB APP`), and 3 public metrics (`802 EXERCISES`, `LOCAL FIRST STORAGE`, `$0 FOREVER FREE`). The 3-card screenshot hover stack preserves its fixed left/center/right interaction zones and desktop 3D transforms.
 - **Mobile Ergonomics**: Full-width comfortable touch targets, responsive checksum stacking on viewports below 480px, and zero horizontal overflow.
 - **Social / Link Preview Metadata**: Open Graph and Twitter summary_large_image tags use the approved static artwork at `website/public/branding/social-preview.jpg` (live URL: `https://fitdexinfo.vercel.app/branding/social-preview.jpg`, 1774x887 JPEG) for consistent FitDex branding across social and chat previews.
 

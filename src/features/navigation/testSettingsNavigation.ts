@@ -11,7 +11,6 @@ const rootLocation: AppLocation = {
   destination: 'home',
   settingsOpen: false,
   workoutEntry: 'hub',
-  progressEntry: 'overview',
 }
 
 // 1. Home → Settings → gear → Home
@@ -54,7 +53,6 @@ const rootLocation: AppLocation = {
     destination: 'workout',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(workoutLocation)
@@ -91,7 +89,6 @@ const rootLocation: AppLocation = {
     destination: 'food',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(foodLocation)
@@ -128,7 +125,6 @@ const rootLocation: AppLocation = {
     destination: 'progress',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'achievements',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(progressLocation)
@@ -151,12 +147,10 @@ const rootLocation: AppLocation = {
   manager.toggleSettings(activeLocation)
   assert.equal(activeLocation.settingsOpen, true)
   assert.equal(activeLocation.destination, 'progress')
-  assert.equal(activeLocation.progressEntry, 'achievements')
 
   manager.toggleSettings(activeLocation)
   assert.equal(activeLocation.settingsOpen, false)
   assert.equal(activeLocation.destination, 'progress')
-  assert.equal(activeLocation.progressEntry, 'achievements')
   assert.equal(manager.getPendingScrollRestore(), 210)
 }
 
@@ -167,7 +161,6 @@ const rootLocation: AppLocation = {
     destination: 'journal',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(journalLocation)
@@ -204,7 +197,6 @@ const rootLocation: AppLocation = {
     destination: 'workout',
     settingsOpen: false,
     workoutEntry: 'library',
-    progressEntry: 'overview',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(exerciseDexLocation)
@@ -268,7 +260,6 @@ const rootLocation: AppLocation = {
     destination: 'workout',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(workoutLocation)
@@ -317,7 +308,6 @@ const rootLocation: AppLocation = {
     destination: 'workout',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
   const history = createNavigationHistory(rootLocation)
   history.navigate(workoutLocation)
@@ -352,7 +342,6 @@ const rootLocation: AppLocation = {
     destination: 'home',
     settingsOpen: true,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
 
   const manager = createSettingsNavigationManager(
@@ -396,7 +385,6 @@ const rootLocation: AppLocation = {
     destination: 'workout',
     settingsOpen: false,
     workoutEntry: 'hub',
-    progressEntry: 'overview',
   }
   history.navigate(workoutLocation)
   let activeLocation: AppLocation = workoutLocation
@@ -432,6 +420,19 @@ const rootLocation: AppLocation = {
 // Visual & CSS contract checks
 {
   const appCss = fs.readFileSync('src/styles/app.css', 'utf8')
+  const settingsSource = fs.readFileSync('src/features/settings/SettingsPage.tsx', 'utf8')
+  assert.match(settingsSource, /title="Personalize &amp; Appearance"/)
+  assert.match(settingsSource, /title="Units, Audio &amp; Reminders"/)
+  assert.match(settingsSource, /title="Nutrition Target Engine"/)
+  assert.match(settingsSource, /title="Data &amp; App Information"/)
+  assert.doesNotMatch(settingsSource, /<div className="settings-panel">/)
+  assert.match(settingsSource, /<span className="settings-row-icon">\{icon\}<\/span>/)
+  assert.match(settingsSource, /<ChevronRight className="settings-row-chevron"/)
+  assert.match(appCss, /\.settings-hub \.settings-row\s*\{[^}]*grid-template-columns:\s*36px minmax\(0, 1fr\) minmax\(0, auto\) auto;/s)
+  assert.match(appCss, /\.settings-hub \.settings-row\s*\{[^}]*border-radius:\s*8px;/s)
+  assert.match(appCss, /\.settings-hub \.settings-row-icon\s*\{[^}]*width:\s*36px;/s)
+  assert.match(appCss, /\.settings-hub \.settings-hero \.avatar-portrait\s*\{[^}]*border:\s*0;/s)
+  assert.match(appCss, /:root\[data-theme-family='amazonians'\]\[data-brightness='dark'\] \.settings-hub\s*\{[^}]*--settings-accent:\s*#d68ac4;/s)
   assert.match(appCss, /\.settings-hub-button\s*\{[^}]*border-radius:\s*0;/s)
   assert.match(appCss, /\.settings-hub-button\s*\{[^}]*border:\s*2px solid var\(--color-border-strong\);/s)
   assert.match(appCss, /\.settings-hub-button\s*\{[^}]*box-shadow:\s*3px 3px 0 var\(--color-border-strong\);/s)

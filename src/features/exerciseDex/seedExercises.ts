@@ -1,19 +1,24 @@
-import { db } from '../../data/database'
-import type { Exercise } from '../../data/models'
-import { LEGACY_EXERCISE_ID_MAP } from './legacyExerciseMigration.generated'
-import { migrateExercisePreferences, migrateWorkoutExerciseReferences } from './exerciseMigration'
+import { db } from '../../data/database.ts'
+import type { Exercise } from '../../data/models.ts'
+import { LEGACY_EXERCISE_ID_MAP } from './legacyExerciseMigration.generated.ts'
+import {
+  CANONICAL_EXERCISE_ID_MIGRATIONS,
+  migrateExercisePreferences,
+  migrateWorkoutExerciseReferences,
+} from './exerciseMigration.ts'
 import {
   BUILT_IN_EXERCISE_DATASET_METADATA_ID,
-  BUILT_IN_EXERCISE_DATASET_VERSION,
+  BUILT_IN_EXERCISE_DATASET_SIGNATURE,
   builtInExercises,
   RETIRED_FITDEX_EXERCISE_SLUGS,
-} from './exerciseData'
+} from './exerciseData.ts'
 
 let seedPromise: Promise<void> | undefined
 
 const activeReferenceMigrationMap: Readonly<Record<string, string | null>> = {
   ...LEGACY_EXERCISE_ID_MAP,
   ...Object.fromEntries(RETIRED_FITDEX_EXERCISE_SLUGS.map((slug) => [`builtin-exercise:${slug}`, null])),
+  ...CANONICAL_EXERCISE_ID_MIGRATIONS,
 }
 
 async function seed() {
@@ -22,7 +27,7 @@ async function seed() {
     const existingCanonical = await db.exercises.bulkGet(builtInExercises.map((exercise) => exercise.id))
     const canonicalSetIsComplete = existingCanonical.every(Boolean)
 
-    if (metadata?.value === String(BUILT_IN_EXERCISE_DATASET_VERSION) && canonicalSetIsComplete) return
+    if (metadata?.value === BUILT_IN_EXERCISE_DATASET_SIGNATURE && canonicalSetIsComplete) return
 
     const existingBuiltIns = await db.exercises.where('source').equals('built-in').toArray()
     const legacyExerciseById = new Map(existingBuiltIns.map((exercise) => [exercise.id, exercise]))
@@ -60,7 +65,7 @@ async function seed() {
 
     await db.systemMetadata.put({
       id: BUILT_IN_EXERCISE_DATASET_METADATA_ID,
-      value: String(BUILT_IN_EXERCISE_DATASET_VERSION),
+      value: BUILT_IN_EXERCISE_DATASET_SIGNATURE,
       updatedAt: timestamp,
     })
   })

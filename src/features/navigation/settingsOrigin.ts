@@ -6,7 +6,6 @@ export interface AppLocation {
   settingsOpen: boolean
   workoutEntry: WorkoutEntryView
   workoutTargetId?: string
-  progressEntry: 'overview' | 'achievements'
 }
 
 export interface SettingsOrigin {

@@ -1,7 +1,7 @@
 {
   "name": "fitdex",
   "private": true,
-  "version": "1.1.1",
+  "version": "2.0.0",
   "type": "module",
   "license": "SEE LICENSE IN LICENSING.md",
   "scripts": {
@@ -31,6 +31,7 @@
     "test:updater": "node --experimental-strip-types src/features/updater/testUpdater.ts",
     "test:notifications": "node --experimental-strip-types src/features/notifications/testNotifications.ts",
     "audit:catalog": "node --experimental-strip-types src/features/exerciseDex/auditExerciseCatalog.ts",
+    "audit:tracking": "node --experimental-strip-types src/features/exerciseDex/auditExerciseTracking.ts --write",
     "validate:exercise-content": "node --experimental-strip-types src/features/exerciseDex/validateExerciseContent.ts",
     "test:exercise-migration": "node --experimental-strip-types src/features/exerciseDex/testExerciseMigration.ts",
     "test:exercise-dex": "node --experimental-strip-types src/features/exerciseDex/testExerciseDexUi.ts",
@@ -53,6 +54,7 @@
     "test:food": "node --experimental-strip-types src/features/food/testFoodRepository.ts",
     "test:food-migration": "node --experimental-strip-types src/features/food/testFoodMigration.ts",
     "test:food-ui": "node --experimental-strip-types src/features/food/testFoodUi.ts",
+    "test:food-responsive": "playwright test --config=playwright.food-category.config.ts",
     "test:food-breakdown": "node --experimental-strip-types src/features/food/testFoodBreakdown.ts",
     "test:nutrition-targets": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetCalculator.ts",
     "test:nutrition-targets-ui": "node --experimental-strip-types src/features/nutritionTargets/testNutritionTargetsUi.ts",
@@ -94,6 +96,7 @@
   "devDependencies": {
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

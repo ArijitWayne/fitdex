@@ -1,5 +1,5 @@
-import { ArrowLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ArrowLeft, Bell, ChevronRight, CircleUserRound, HardDrive, Info, Palette, Ruler, Target, Volume2 } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { BackgroundMusicPreference, NotificationPreferences, NutritionActivityLevel, NutritionGoal, NutritionSex, NutritionTargets } from '../../data/models'
 import { brandingForTheme } from '../../branding/branding'
 import { supportsNativeAndroidLauncherBranding } from '../../branding/nativeBranding'
@@ -13,6 +13,8 @@ import { AvatarPortrait } from '../avatar/AvatarPortrait'
 import { AvatarSelector } from '../avatar/AvatarSelector'
 import { useAvatar } from '../avatar/useAvatar'
 import { useAudio } from '../audio/useAudio'
+import { CommandPageFrame } from '../../components/layout/CommandPageFrame'
+import { CollapsibleModule } from '../../components/ui/CollapsibleModule'
 import { BackupSettings } from '../backup/BackupSettings'
 import { ExerciseMediaSettings } from '../exerciseMedia/ExerciseMediaSettings'
 import { listDownloadedExerciseMedia, supportsNativeExerciseMedia } from '../exerciseMedia/exerciseMediaStore'
@@ -262,19 +264,34 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
     return <AboutSettings family={family} onBack={backToHub} />
   }
 
-  return (
-    <div className="fitdex-page-frame page-stack settings-page settings-hub">
-      <header className="page-header settings-header">
-        <button className="back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back to FitDex">
-          <ArrowLeft size={21} strokeWidth={2} aria-hidden="true" />
-        </button>
-        <div>
-          <p className="eyebrow">Settings Utility Hub</p>
-          <h1>Settings</h1>
-          <p>Identity and personalization lead; utilities remain one tap away.</p>
-        </div>
-      </header>
+  const appearanceSummary = `Faction: ${family === 'spartans' ? 'Spartan' : 'Amazonian'} · Mode: ${brightness}`
+  const unitsSummary = `${units === 'metric' ? 'Metric (kg/km)' : 'Imperial (lb/mi)'} · SFX ${soundEffectsEnabled ? 'On' : 'Off'} · ${musicLabels[backgroundMusic]}`
+  const nutritionSummaryText = !nutritionSummary.enabled
+    ? 'Off'
+    : Number(nutritionSummary.proteinTargetGrams) > 0
+      ? `${nutritionSummary.calorieTarget} kcal · ${nutritionSummary.proteinTargetGrams}g protein`
+      : `${nutritionSummary.calorieTarget} kcal · Calculated`
 
+  return (
+    <CommandPageFrame className="settings-page settings-hub"
+      terminalTitle="FITDEX // SYSTEM TERMINAL"
+      terminalMeta={`DEVICE CFG · v${APP_VERSION}`}
+      headerActions={
+        <button
+          className="back-button"
+          type="button"
+          onClick={() => {
+            playEffect('select')
+            onBack()
+          }}
+          aria-label="Back to FitDex"
+          title="Back to FitDex"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+        </button>
+      }
+    >
+      {/* 1. PLAYER IDENTITY HERO (PRIMARY - ALWAYS VISIBLE) */}
       <section className="settings-hero">
         <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
         <div className="settings-hero-copy">
@@ -284,39 +301,71 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
         </div>
       </section>
 
-      <div className="settings-status-stack">
-        <div className="settings-status-card">
-          <small>Faction</small>
-          <strong>{family === 'spartans' ? 'Spartans' : 'Amazonians'}</strong>
-        </div>
-        <div className="settings-status-card">
-          <small>Units</small>
-          <strong>{units === 'imperial' ? 'Imperial' : 'Metric'}</strong>
-        </div>
-        <div className="settings-status-card">
-          <small>Targets</small>
-          <strong>{nutritionSummary.enabled ? 'On' : 'Off'}</strong>
-        </div>
-      </div>
-
-      <div className="settings-hub-groups">
-        <SettingsGroup label="Personalize">
+      {/* 2. APPEARANCE & THEME (COLLAPSIBLE GROUP) */}
+      <CollapsibleModule
+        id="settings-appearance"
+        title="Personalize &amp; Appearance"
+        badge="Visuals"
+        summary={appearanceSummary}
+        defaultExpanded={true}
+      >
           <SettingsRow
+            icon={<CircleUserRound aria-hidden="true" />}
             title="Identity"
-            description="Display name and six avatars"
+            description="Display name and avatar selection"
             value={selectedAvatar.name}
             onClick={() => openView('profile')}
           />
           <SettingsRow
+            icon={<Palette aria-hidden="true" />}
             title="Appearance"
             description="Faction and brightness"
             value={`${family === 'spartans' ? 'Spartans' : 'Amazonians'} · ${brightness}`}
             onClick={() => openView('appearance')}
           />
-        </SettingsGroup>
+      </CollapsibleModule>
 
-        <SettingsGroup label="Your System">
+      {/* 3. UNITS, AUDIO & SYSTEM (COLLAPSIBLE GROUP) */}
+      <CollapsibleModule
+        id="settings-system"
+        title="Units, Audio &amp; Reminders"
+        badge="System"
+        summary={unitsSummary}
+        defaultExpanded={false}
+      >
           <SettingsRow
+            icon={<Ruler aria-hidden="true" />}
+            title="Units"
+            description="Weight and distance measurement"
+            value={units === 'metric' ? 'kg / km' : 'lb / mi'}
+            onClick={() => openView('units')}
+          />
+          <SettingsRow
+            icon={<Volume2 aria-hidden="true" />}
+            title="Audio"
+            description="Sound effects and battle music"
+            value={`${soundEffectsEnabled ? 'SFX on' : 'SFX off'} · ${musicLabels[backgroundMusic]}`}
+            onClick={() => openView('audio')}
+          />
+          <SettingsRow
+            icon={<Bell aria-hidden="true" />}
+            title="Notifications"
+            description="Workout, nutrition, and update reminders"
+            value="Manage"
+            onClick={() => openView('notifications')}
+          />
+      </CollapsibleModule>
+
+      {/* 4. NUTRITION TARGETS (COLLAPSIBLE GROUP) */}
+      <CollapsibleModule
+        id="settings-nutrition"
+        title="Nutrition Target Engine"
+        badge="Profile"
+        summary={nutritionSummaryText}
+        defaultExpanded={false}
+      >
+          <SettingsRow
+            icon={<Target aria-hidden="true" />}
             title="Nutrition Targets"
             description="Calculation profile and daily targets"
             value={
@@ -328,35 +377,26 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
             }
             onClick={() => openView('nutrition')}
           />
-          <SettingsRow
-            title="Units"
-            description="Weight and distance"
-            value={units === 'metric' ? 'kg / km' : 'lb / mi'}
-            onClick={() => openView('units')}
-          />
-          <SettingsRow
-            title="Audio"
-            description="Sound effects and battle music"
-            value={`${soundEffectsEnabled ? 'SFX on' : 'SFX off'} · ${musicLabels[backgroundMusic]}`}
-            onClick={() => openView('audio')}
-          />
-          <SettingsRow
-            title="Notifications"
-            description="Workout, nutrition, and update reminders"
-            value="Manage"
-            onClick={() => openView('notifications')}
-          />
-        </SettingsGroup>
+      </CollapsibleModule>
 
-        <SettingsGroup label="Data & Help">
+      {/* 5. DATA, BACKUP & HELP (COLLAPSIBLE GROUP) */}
+      <CollapsibleModule
+        id="settings-data"
+        title="Data &amp; App Information"
+        badge={`v${APP_VERSION}`}
+        summary="Local Storage · Backup · Guide"
+        defaultExpanded={false}
+      >
           <SettingsRow
-            title="Backup & Restore"
+            icon={<HardDrive aria-hidden="true" />}
+            title="Backup &amp; Restore"
             description="Export or replace local data"
             value="Local file"
             onClick={() => openView('backup')}
           />
           {supportsNativeExerciseMedia() ? (
             <SettingsRow
+              icon={<HardDrive aria-hidden="true" />}
               title="Exercise Media"
               description="Android offline downloads"
               value={downloadCount === undefined ? 'Device only' : `${downloadCount} downloaded`}
@@ -364,21 +404,25 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
             />
           ) : null}
           <SettingsRow
+            icon={<Info aria-hidden="true" />}
             title="Field Guide"
             description="Replay the product tour"
             value="Replay"
-            onClick={() => { playEffect('select'); onReplayTutorial() }}
+            onClick={() => {
+              playEffect('select')
+              onReplayTutorial()
+            }}
           />
           <GamificationHelpButton variant="settings-row" />
           <SettingsRow
+            icon={<Info aria-hidden="true" />}
             title="About FitDex"
             description="Version and privacy"
             value={`v${APP_VERSION}`}
             onClick={() => openView('about')}
           />
-        </SettingsGroup>
-      </div>
-    </div>
+      </CollapsibleModule>
+    </CommandPageFrame>
   )
 }
 
@@ -397,26 +441,18 @@ function SettingsSubheader({ eyebrow, title, description, onBack }: { eyebrow: s
   )
 }
 
-function SettingsGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <section className="settings-section">
-      <h2 className="settings-section-title">{label}</h2>
-      <div className="settings-panel">{children}</div>
-    </section>
-  )
-}
-
-function SettingsRow({ title, description, value, onClick }: { title: string; description: string; value: string; onClick: () => void }) {
+function SettingsRow({ icon, title, description, value, onClick }: { icon: ReactNode; title: string; description: string; value: string; onClick: () => void }) {
   return (
     <button className="settings-row" type="button" onClick={onClick}>
+      <span className="settings-row-icon">{icon}</span>
       <span className="settings-row-copy">
         <strong>{title}</strong>
         <small>{description}</small>
       </span>
       <span className="settings-row-value">
         {value}
-        <span className="settings-chev" aria-hidden="true">›</span>
       </span>
+      <ChevronRight className="settings-row-chevron" size={17} strokeWidth={2.25} aria-hidden="true" />
     </button>
   )
 }
@@ -706,8 +742,8 @@ function NotificationPermissionStatus({ preferences, onEnable }: { preferences: 
   const message = isBlocked
     ? 'Notifications are blocked by your browser or device. Enable them in system or browser settings.'
     : isUnavailable
-    ? 'This browser or device does not support notifications.'
-    : 'Permission has not been granted yet.'
+      ? 'This browser or device does not support notifications.'
+      : 'Permission has not been granted yet.'
 
   return (
     <div className={`notification-permission-status ${isBlocked || isUnavailable ? 'is-warning' : ''}`}>

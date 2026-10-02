@@ -7,13 +7,13 @@ This is the authoritative Phase 1I.1 checker for the active FitDex-derived built
 - Live crawl: 2026-08-23T10:32:26.633Z
 - Built-in dataset version: 4
 - Raw FitDex category-page entries: 824
-- Active FitDex page identities after required slug deduplication and v4 retirement: 804
-- Active canonical category memberships after v4 retirement: 805
-- Content complete: 804 / 804
-- Verified local media: 804 MP4; 0 GIF; 0 animated WebP
+- Active FitDex page identities after required slug deduplication and v4 retirement: 802
+- Active canonical category memberships after v4 retirement: 803
+- Content complete: 802 / 802
+- Verified remote media: 802 MP4; 0 GIF; 0 animated WebP. Media is served from `https://fitdex-media.fitdexapp.workers.dev/exercises/` and is not bundled in this repository.
 - Active FitDex pages with no media element: 0
 - Declared source assets unavailable/broken: 0
-- Local media: 695,871,888 bytes (663.64 MiB)
+- Local media: 695,410,155 bytes (663.20 MiB)
 - Legacy v2 IDs mapped to v3 successors: 257
 - Legacy v2 records retired without successor: 142
 - New FitDex identities not represented by a mapped legacy record: 561
@@ -29,10 +29,10 @@ This is the authoritative Phase 1I.1 checker for the active FitDex-derived built
 | Gluteal | 58 | 55 | 2 |
 | Biceps | 56 | 54 | 0 |
 | Triceps | 68 | 67 | 1 |
-| Forearms | 30 | 29 | 1 |
+| Forearms | 30 | 28 | 1 |
 | Abs | 107 | 104 | 1 |
 
-FitDex’s raw page counters include 11 repeated slug/name pairs. Ten repeat inside one category; `split-squat-front-foot-elevated` repeats across Legs and Gluteal. Fetching every colliding URL showed one addressable page asset per slug, so FitDex follows the approved page-slug identity rule. Phase 1I.1 then retires the nine page identities without usable media, leaving 804 active canonical records and 805 active memberships.
+FitDex’s raw page counters include 11 repeated slug/name pairs. Ten repeat inside one category; `split-squat-front-foot-elevated` repeats across Legs and Gluteal. Fetching every colliding URL showed one addressable page asset per slug, so FitDex follows the approved page-slug identity rule. Current v4 cleanup leaves 802 active canonical records and 803 active memberships; historical 804 audit rows remain valid history.
 
 ## Duplicate FitDex page identities reconciled
 
@@ -56,23 +56,24 @@ FitDex’s raw page counters include 11 repeated slug/name pairs. Ten repeat ins
 - Band Russian Twist
 - Bottom up rotation
 - Concentration Hammer Curl
+- Hand Gripper
 - KAS Glute Bridge
 - Kneeling Ring Push-Up
 - Pull Around
 - Spoto Press
 - Standing Incline Band Chest Fly
 
-Reason: FitDex page exists, but no usable demonstration media is provided. FitDex v4 requires a verified demonstration for every active built-in exercise. The corresponding built-in records are archived during seeding so workout-history snapshots remain displayable.
+Reason: FitDex page exists, but no usable demonstration media is provided or exercise retired from canonical catalog. FitDex v4 requires a verified demonstration for every active built-in exercise. The corresponding built-in records are archived during seeding so workout-history snapshots remain displayable.
 
-## Active canonical content/media inventory (804)
+## Active canonical content/media inventory (802)
 
 | FitDex ID | FitDex name | Categories | Source page | Source media | Type / status | Local path | Bytes | Copy |
 | --- | --- | --- | --- | --- | --- | --- | ---: | --- |
-| `builtin-exercise:90-to-90-stretch` | 90 To 90 Stretch | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/90-to-90-stretch.mp4` | 560956 | Ready |
+| `builtin-exercise:90-to-90-stretch` | 90/90 Stretch | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/90-to-90-stretch.mp4` | 560956 | Ready |
 | `builtin-exercise:ab-wheel-rollout` | Ab Wheel Rollout | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ab-wheel-rollout.mp4` | 1405447 | Ready |
 | `builtin-exercise:abdominal-crunches` | Abdominal Crunches | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/abdominal-crunches.mp4` | 924325 | Ready |
-| `builtin-exercise:abdominal-vaccum` | Abdominal Vaccum | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/abdominal-vaccum.mp4` | 295825 | Ready |
-| `builtin-exercise:air-bike` | Air Bike | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/air-bike.mp4` | 2381954 | Ready |
+| `builtin-exercise:abdominal-vacuum` | Abdominal Vacuum | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/abdominal-vacuum.mp4` | 295825 | Ready |
+| `builtin-exercise:air-bicycle-crunch` | Air Bicycle Crunch | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/air-bicycle-crunch.mp4` | 2381954 | Ready |
 | `builtin-exercise:alternate-bent-over-dumbbell-reverse-fly` | Alternate Bent Over Dumbbell Reverse Fly | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/alternate-bent-over-dumbbell-reverse-fly.mp4` | 731408 | Ready |
 | `builtin-exercise:alternate-dumbbell-hammer-curl` | Alternate Dumbbell Hammer Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/alternate-dumbbell-hammer-curl.mp4` | 1041893 | Ready |
 | `builtin-exercise:alternate-renegade-row` | Alternate Renegade Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/alternate-renegade-row.mp4` | 2027846 | Ready |
@@ -80,8 +81,8 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:ankle-taps` | Ankle Taps | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ankle-taps.mp4` | 1315192 | Ready |
 | `builtin-exercise:archer-push-up` | Archer Push-Up | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/archer-push-up.mp4` | 1270304 | Ready |
 | `builtin-exercise:arm-blaster-biceps-dumbbell-curl` | Arm Blaster Biceps Dumbbell Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/arm-blaster-biceps-dumbbell-curl.mp4` | 642172 | Ready |
-| `builtin-exercise:arm-circle` | Arm Circle | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/arm-circle.mp4` | 734846 | Ready |
-| `builtin-exercise:arm-circles` | Arm Circles | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/arm-circles.mp4` | 707492 | Ready |
+| `builtin-exercise:full-range-arm-circles` | Full-Range Arm Circles | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/full-range-arm-circles.mp4` | 734846 | Ready |
+| `builtin-exercise:arm-circles-at-shoulder-height` | Arm Circles at Shoulder Height | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/arm-circles-at-shoulder-height.mp4` | 707492 | Ready |
 | `builtin-exercise:assault-air-bike` | Assault Air Bike | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/assault-air-bike.mp4` | 1050439 | Ready |
 | `builtin-exercise:assisted-machine-dips` | Assisted Machine Dips | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/assisted-machine-dips.mp4` | 700450 | Ready |
 | `builtin-exercise:assisted-pistol-squat` | Assisted Pistol Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/assisted-pistol-squat.mp4` | 758477 | Ready |
@@ -91,7 +92,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:back-extension` | Back Extension | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/back-extension.mp4` | 827632 | Ready |
 | `builtin-exercise:back-extension-with-dumbbell` | Back Extension With Dumbbell | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/back-extension-with-dumbbell.mp4` | 770417 | Ready |
 | `builtin-exercise:back-lever` | Back Lever | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/back-lever.mp4` | 627742 | Ready |
-| `builtin-exercise:band-assisted-pull-up` | Band Assisted Pull Up | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-assisted-pull-up.mp4` | 712543 | Ready |
+| `builtin-exercise:band-assisted-pull-up` | Band-Assisted Pull-Up | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-assisted-pull-up.mp4` | 712543 | Ready |
 | `builtin-exercise:band-bench-chest-press` | Band Bench Chest Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-bench-chest-press.mp4` | 828062 | Ready |
 | `builtin-exercise:band-bent-over-lat-pulldown` | Band Bent Over Lat Pulldown | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-bent-over-lat-pulldown.mp4` | 527193 | Ready |
 | `builtin-exercise:band-biceps-curl` | Band Biceps Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-biceps-curl.mp4` | 646085 | Ready |
@@ -116,11 +117,11 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:band-standing-side-bend` | Band Standing Side Bend | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-standing-side-bend.mp4` | 689416 | Ready |
 | `builtin-exercise:band-standing-twisting-crunches` | Band Standing Twisting Crunches | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-standing-twisting-crunches.mp4` | 761604 | Ready |
 | `builtin-exercise:band-triceps-pushdown` | Band Triceps Pushdown | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-triceps-pushdown.mp4` | 433901 | Ready |
-| `builtin-exercise:band-twist-horizontal` | Band Twist (horizontal) | Abs | [Page](FitDex Exercise Catalog)) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-twist-horizontal.mp4` | 623149 | Ready |
+| `builtin-exercise:band-twist-horizontal` | Band Twist (Horizontal) | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-twist-horizontal.mp4` | 623149 | Ready |
 | `builtin-exercise:band-upright-row` | Band Upright Row | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-upright-row.mp4` | 787122 | Ready |
 | `builtin-exercise:band-warm-up-dynamic-shoulder-stretch` | Band Warm-Up Dynamic Shoulder Stretch | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/band-warm-up-dynamic-shoulder-stretch.mp4` | 748673 | Ready |
 | `builtin-exercise:banded-face-pull` | Banded Face Pull | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/banded-face-pull.mp4` | 526822 | Ready |
-| `builtin-exercise:bar-cable-biceps-curl` | Bar Cable Biceps Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/bar-cable-biceps-curl.mp4` | 556835 | Ready |
+| `builtin-exercise:cable-biceps-curl` | Cable Biceps Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-biceps-curl.mp4` | 556835 | Ready |
 | `builtin-exercise:barbell-behind-neck-shoulder-press` | Barbell Behind Neck Shoulder Press | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/barbell-behind-neck-shoulder-press.mp4` | 637065 | Ready |
 | `builtin-exercise:barbell-bench-press` | Barbell Bench Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/barbell-bench-press.mp4` | 824066 | Ready |
 | `builtin-exercise:barbell-bench-press-with-chains` | Barbell Bench Press with Chains | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/barbell-bench-press-with-chains.mp4` | 1087585 | Ready |
@@ -186,7 +187,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:bodyweight-windmill` | Bodyweight Windmill | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/bodyweight-windmill.mp4` | 2890843 | Ready |
 | `builtin-exercise:box-jumps` | Box Jumps | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/box-jumps.mp4` | 1057210 | Ready |
 | `builtin-exercise:box-squat` | Box Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/box-squat.mp4` | 924346 | Ready |
-| `builtin-exercise:box-step-up` | Box step-up | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/box-step-up.mp4` | 1698736 | Ready |
+| `builtin-exercise:box-step-up` | Box Step-Up | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/box-step-up.mp4` | 1698736 | Ready |
 | `builtin-exercise:broad-jump` | Broad Jump | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/broad-jump.mp4` | 2635181 | Ready |
 | `builtin-exercise:bulgarian-bag-walking-lunges` | Bulgarian Bag Walking Lunges | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/bulgarian-bag-walking-lunges.mp4` | 1530277 | Ready |
 | `builtin-exercise:bulgarian-jump-squat` | Bulgarian Jump Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/bulgarian-jump-squat.mp4` | 834969 | Ready |
@@ -198,10 +199,10 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:cable-bench-press` | Cable Bench Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-bench-press.mp4` | 602389 | Ready |
 | `builtin-exercise:cable-close-grip-lat-pulldown` | Cable Close Grip Lat Pulldown | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-close-grip-lat-pulldown.mp4` | 641484 | Ready |
 | `builtin-exercise:cable-cross-triceps-extension` | Cable Cross Triceps Extension | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-cross-triceps-extension.mp4` | 591678 | Ready |
-| `builtin-exercise:cable-double-arm-tricep-kickback` | Cable Double-Arm Tricep Kickback | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-double-arm-tricep-kickback.mp4` | 593008 | Ready |
+| `builtin-exercise:cable-double-arm-tricep-kickback` | Cable Double-Arm Triceps Kickback | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-double-arm-tricep-kickback.mp4` | 593008 | Ready |
 | `builtin-exercise:cable-face-pull` | Cable Face Pull | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-face-pull.mp4` | 633492 | Ready |
 | `builtin-exercise:cable-front-raise` | Cable Front Raise | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-front-raise.mp4` | 729711 | Ready |
-| `builtin-exercise:cable-hip-abducction` | Cable Hip Abducction | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-hip-abducction.mp4` | 667260 | Ready |
+| `builtin-exercise:cable-hip-abduction` | Cable Hip Abduction | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-hip-abduction.mp4` | 667260 | Ready |
 | `builtin-exercise:cable-hip-adduction` | Cable Hip Adduction | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-hip-adduction.mp4` | 621200 | Ready |
 | `builtin-exercise:cable-horizontal-pallof-press` | Cable Horizontal Pallof Press | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-horizontal-pallof-press.mp4` | 577625 | Ready |
 | `builtin-exercise:cable-incline-skull-crusher` | Cable Incline Skull Crusher | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-incline-skull-crusher.mp4` | 525943 | Ready |
@@ -221,7 +222,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:cable-romanian-deadlift` | Cable Romanian Deadlift | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-romanian-deadlift.mp4` | 759279 | Ready |
 | `builtin-exercise:cable-seated-rear-lateral-raise` | Cable Seated Rear Lateral Raise | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-seated-rear-lateral-raise.mp4` | 711611 | Ready |
 | `builtin-exercise:cable-seated-row-neutral-grip` | Cable Seated Row Neutral Grip | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-seated-row-neutral-grip.mp4` | 608556 | Ready |
-| `builtin-exercise:cable-seated-supine-grip-row` | Cable Seated Supine Grip Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-seated-supine-grip-row.mp4` | 546265 | Ready |
+| `builtin-exercise:cable-seated-supinated-grip-row` | Cable Seated Supinated-Grip Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-seated-supinated-grip-row.mp4` | 546265 | Ready |
 | `builtin-exercise:cable-shrug` | Cable Shrug | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-shrug.mp4` | 424882 | Ready |
 | `builtin-exercise:cable-squatting-curl` | Cable Squatting Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-squatting-curl.mp4` | 524355 | Ready |
 | `builtin-exercise:cable-standing-wrist-roll` | Cable Standing Wrist Roll | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-standing-wrist-roll.mp4` | 557201 | Ready |
@@ -230,16 +231,16 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:cable-terminal-knee-extension` | Cable Terminal Knee Extension | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-terminal-knee-extension.mp4` | 441400 | Ready |
 | `builtin-exercise:cable-thibaudeau-kayak-row` | Cable Thibaudeau Kayak Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-thibaudeau-kayak-row.mp4` | 1299207 | Ready |
 | `builtin-exercise:cable-triceps-pushdown` | Cable Triceps Pushdown | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-triceps-pushdown.mp4` | 490297 | Ready |
-| `builtin-exercise:cable-twist-horizontal` | Cable Twist (horizontal) | Abs | [Page](FitDex Exercise Catalog)) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-twist-horizontal.mp4` | 768770 | Ready |
-| `builtin-exercise:cable-twist-up-down` | Cable Twist (up down) | Abs | [Page](FitDex Exercise Catalog)) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-twist-up-down.mp4` | 966178 | Ready |
+| `builtin-exercise:cable-twist-horizontal` | Cable Twist (Horizontal) | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-twist-horizontal.mp4` | 768770 | Ready |
+| `builtin-exercise:cable-twist-up-down` | Cable Twist (Up-Down) | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-twist-up-down.mp4` | 966178 | Ready |
 | `builtin-exercise:cable-upright-row` | Cable Upright Row | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-upright-row.mp4` | 500770 | Ready |
 | `builtin-exercise:cable-wide-grip-behind-neck-pulldown` | Cable Wide Grip Behind Neck Pulldown | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-wide-grip-behind-neck-pulldown.mp4` | 634601 | Ready |
 | `builtin-exercise:cable-wrist-curl` | Cable Wrist Curl | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-wrist-curl.mp4` | 390267 | Ready |
 | `builtin-exercise:cable-y-raise` | Cable Y Raise | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-y-raise.mp4` | 967189 | Ready |
 | `builtin-exercise:calf-leg-press` | Calf Leg Press | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/calf-leg-press.mp4` | 696425 | Ready |
 | `builtin-exercise:california-press` | California Press | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/california-press.mp4` | 863470 | Ready |
-| `builtin-exercise:capitans-chair-straight-leg-raises` | Capitan's Chair Straight Leg Raises | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/capitans-chair-straight-leg-raises.mp4` | 804995 | Ready |
-| `builtin-exercise:captains-chair-knee-raises` | Captains Chair Knee Raises | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/captains-chair-knee-raises.mp4` | 543788 | Ready |
+| `builtin-exercise:captains-chair-straight-leg-raises` | Captain's Chair Straight Leg Raises | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/captains-chair-straight-leg-raises.mp4` | 804995 | Ready |
+| `builtin-exercise:captains-chair-knee-raises` | Captain's Chair Knee Raises | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/captains-chair-knee-raises.mp4` | 543788 | Ready |
 | `builtin-exercise:cat-cow` | Cat Cow | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cat-cow.mp4` | 924999 | Ready |
 | `builtin-exercise:chest-dips` | Chest Dips | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/chest-dips.mp4` | 733663 | Ready |
 | `builtin-exercise:chest-supported-lateral-t-raise` | Chest Supported Lateral T Raise | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/chest-supported-lateral-t-raise.mp4` | 692778 | Ready |
@@ -261,7 +262,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:crab-pose` | Crab Pose | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/crab-pose.mp4` | 1374505 | Ready |
 | `builtin-exercise:cross-arms-push-up` | Cross Arms Push-Up | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cross-arms-push-up.mp4` | 1068375 | Ready |
 | `builtin-exercise:cross-body-one-arm-strength-press` | Cross Body One-Arm Strength Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cross-body-one-arm-strength-press.mp4` | 525531 | Ready |
-| `builtin-exercise:crossack-squat` | Crossack Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/crossack-squat.mp4` | 1924505 | Ready |
+| `builtin-exercise:cossack-squat` | Cossack Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cossack-squat.mp4` | 1924505 | Ready |
 | `builtin-exercise:cyclist-squat` | Cyclist Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cyclist-squat.mp4` | 907740 | Ready |
 | `builtin-exercise:dead-bug` | Dead Bug | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dead-bug.mp4` | 2080512 | Ready |
 | `builtin-exercise:dead-bug-with-ball` | Dead Bug with Ball | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dead-bug-with-ball.mp4` | 1413050 | Ready |
@@ -304,7 +305,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:dumbbell-cross-body-hammer-curl` | Dumbbell Cross Body Hammer Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-cross-body-hammer-curl.mp4` | 705548 | Ready |
 | `builtin-exercise:dumbbell-cuban-rotation` | Dumbbell Cuban Rotation | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-cuban-rotation.mp4` | 483891 | Ready |
 | `builtin-exercise:dumbbell-deadlift` | Dumbbell Deadlift | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-deadlift.mp4` | 931994 | Ready |
-| `builtin-exercise:dumbbell-deadlift-straight-legs` | Dumbbell Deadlift Straight Legs | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-deadlift-straight-legs.mp4` | 1057409 | Ready |
+| `builtin-exercise:two-dumbbell-straight-leg-deadlift` | Two-Dumbbell Straight-Leg Deadlift | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/two-dumbbell-straight-leg-deadlift.mp4` | 1057409 | Ready |
 | `builtin-exercise:dumbbell-deep-push-up` | Dumbbell Deep Push Up | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-deep-push-up.mp4` | 1314637 | Ready |
 | `builtin-exercise:dumbbell-drag-curl` | Dumbbell Drag Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-drag-curl.mp4` | 1295480 | Ready |
 | `builtin-exercise:dumbbell-farmer-carry` | Dumbbell Farmer Carry | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-farmer-carry.mp4` | 359943 | Ready |
@@ -360,7 +361,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:dumbbell-standing-side-bend` | Dumbbell Standing Side Bend | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-standing-side-bend.mp4` | 829228 | Ready |
 | `builtin-exercise:dumbbell-standing-wrist-curl` | Dumbbell Standing Wrist Curl | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-standing-wrist-curl.mp4` | 395831 | Ready |
 | `builtin-exercise:dumbbell-step-up` | Dumbbell Step-Up | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-step-up.mp4` | 767183 | Ready |
-| `builtin-exercise:dumbbell-straight-leg-deadlift` | Dumbbell Straight Leg Deadlift | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-straight-leg-deadlift.mp4` | 870318 | Ready |
+| `builtin-exercise:single-dumbbell-straight-leg-deadlift` | Single-Dumbbell Straight-Leg Deadlift | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/single-dumbbell-straight-leg-deadlift.mp4` | 870318 | Ready |
 | `builtin-exercise:dumbbell-sumo-squat` | Dumbbell Sumo Squat | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-sumo-squat.mp4` | 859489 | Ready |
 | `builtin-exercise:dumbbell-supinated-preacher-curl` | Dumbbell Supinated Preacher Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-supinated-preacher-curl.mp4` | 749993 | Ready |
 | `builtin-exercise:dumbbell-upright-row` | Dumbbell Upright Row | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/dumbbell-upright-row.mp4` | 761180 | Ready |
@@ -375,7 +376,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:ez-bar-seated-triceps-extension` | EZ-Bar Seated Triceps Extension | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ez-bar-seated-triceps-extension.mp4` | 572369 | Ready |
 | `builtin-exercise:ez-bar-seated-wrist-curl` | EZ-Bar Seated Wrist Curl | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ez-bar-seated-wrist-curl.mp4` | 631184 | Ready |
 | `builtin-exercise:ez-bar-spider-curl` | EZ-Bar Spider Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ez-bar-spider-curl.mp4` | 914562 | Ready |
-| `builtin-exercise:ez-bar-tricep-pushdown` | EZ-Bar Tricep Pushdown | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ez-bar-tricep-pushdown.mp4` | 495620 | Ready |
+| `builtin-exercise:ez-bar-tricep-pushdown` | EZ-Bar Triceps Pushdown | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/ez-bar-tricep-pushdown.mp4` | 495620 | Ready |
 | `builtin-exercise:farmer-walk` | Farmer Walk | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/farmer-walk.mp4` | 359943 | Ready |
 | `builtin-exercise:figure-4-stretch-on-chair` | Figure 4 Stretch on Chair | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/figure-4-stretch-on-chair.mp4` | 890891 | Ready |
 | `builtin-exercise:finger-push-up` | Finger Push-Up | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/finger-push-up.mp4` | 1258269 | Ready |
@@ -403,7 +404,6 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:half-kneeling-shoulder-dumbbell-press` | Half Kneeling Shoulder Dumbbell Press | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/half-kneeling-shoulder-dumbbell-press.mp4` | 607128 | Ready |
 | `builtin-exercise:half-squat` | Half Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/half-squat.mp4` | 805058 | Ready |
 | `builtin-exercise:hammer-grip-dumbbell-bench-press` | Hammer Grip Dumbbell Bench Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hammer-grip-dumbbell-bench-press.mp4` | 789717 | Ready |
-| `builtin-exercise:hand-gripper` | Hand Gripper | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hand-gripper.mp4` | 461733 | Ready |
 | `builtin-exercise:handstand-hold` | Handstand Hold | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/handstand-hold.mp4` | 358503 | Ready |
 | `builtin-exercise:handstand-push-up` | Handstand Push-Up | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/handstand-push-up.mp4` | 1186060 | Ready |
 | `builtin-exercise:hang-power-clean` | Hang Power Clean | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hang-power-clean.mp4` | 1296914 | Ready |
@@ -412,7 +412,6 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:hanging-knee-raises` | Hanging Knee Raises | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-knee-raises.mp4` | 835487 | Ready |
 | `builtin-exercise:hanging-knee-to-chest` | Hanging Knee To Chest | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-knee-to-chest.mp4` | 752441 | Ready |
 | `builtin-exercise:hanging-knees-to-elbows` | Hanging Knees to Elbows | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-knees-to-elbows.mp4` | 818131 | Ready |
-| `builtin-exercise:hanging-knees-to-elbows-waist` | Hanging Knees to Elbows Waist | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-knees-to-elbows-waist.mp4` | 835487 | Ready |
 | `builtin-exercise:hanging-leg-raise-to-bar` | Hanging Leg Raise To Bar | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-leg-raise-to-bar.mp4` | 819345 | Ready |
 | `builtin-exercise:hanging-oblique-knee-raise` | Hanging Oblique Knee Raise | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-oblique-knee-raise.mp4` | 1079501 | Ready |
 | `builtin-exercise:hanging-scapular-retractions` | Hanging Scapular Retractions | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/hanging-scapular-retractions.mp4` | 580289 | Ready |
@@ -456,8 +455,8 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:jump-squat` | Jump Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/jump-squat.mp4` | 784018 | Ready |
 | `builtin-exercise:jumping-jacks` | Jumping Jacks | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/jumping-jacks.mp4` | 606726 | Ready |
 | `builtin-exercise:katana-triceps-extension` | Katana Triceps Extension | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/katana-triceps-extension.mp4` | 619784 | Ready |
-| `builtin-exercise:kettelbell-clean` | Kettelbell Clean | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettelbell-clean.mp4` | 983214 | Ready |
-| `builtin-exercise:kettlebel-renegade-row` | Kettlebel Renegade Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettlebel-renegade-row.mp4` | 2001383 | Ready |
+| `builtin-exercise:kettlebell-clean` | Kettlebell Clean | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettlebell-clean.mp4` | 983214 | Ready |
+| `builtin-exercise:kettlebell-renegade-row` | Kettlebell Renegade Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettlebell-renegade-row.mp4` | 2001383 | Ready |
 | `builtin-exercise:kettlebell-around-the-head-rotation` | Kettlebell Around the Head Rotation | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettlebell-around-the-head-rotation.mp4` | 957539 | Ready |
 | `builtin-exercise:kettlebell-biceps-curl` | Kettlebell Biceps Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettlebell-biceps-curl.mp4` | 595097 | Ready |
 | `builtin-exercise:kettlebell-clean-and-jerk` | Kettlebell Clean and Jerk | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/kettlebell-clean-and-jerk.mp4` | 958168 | Ready |
@@ -507,7 +506,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:low-cable-incline-bench-press` | Low Cable Incline Bench Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/low-cable-incline-bench-press.mp4` | 754141 | Ready |
 | `builtin-exercise:low-high-cable-chest-fly` | Low High Cable Chest Fly | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/low-high-cable-chest-fly.mp4` | 817567 | Ready |
 | `builtin-exercise:low-incline-dumbbell-fly` | Low Incline Dumbbell Fly | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/low-incline-dumbbell-fly.mp4` | 748477 | Ready |
-| `builtin-exercise:lowbar-squat` | Lowbar Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lowbar-squat.mp4` | 960952 | Ready |
+| `builtin-exercise:lowbar-squat` | Low-Bar Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lowbar-squat.mp4` | 960952 | Ready |
 | `builtin-exercise:lunge-stretch` | Lunge Stretch | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lunge-stretch.mp4` | 737261 | Ready |
 | `builtin-exercise:lunges` | Lunges | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lunges.mp4` | 1788478 | Ready |
 | `builtin-exercise:lying-barbell-triceps-extension-skullcrusher` | Lying Barbell Triceps Extension (Skullcrusher) | Triceps | [Page](FitDex Exercise Catalog)) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-barbell-triceps-extension-skullcrusher.mp4` | 749273 | Ready |
@@ -515,12 +514,12 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:lying-cable-face-pull` | Lying Cable Face Pull | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-cable-face-pull.mp4` | 566908 | Ready |
 | `builtin-exercise:lying-cable-fly` | Lying Cable Fly | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-cable-fly.mp4` | 736050 | Ready |
 | `builtin-exercise:lying-chest-press` | Lying Chest Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-chest-press.mp4` | 960208 | Ready |
-| `builtin-exercise:lying-cross-lateral-cable-fly` | Lying Cross Lateral Cable Fly | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-cross-lateral-cable-fly.mp4` | 679594 | Ready |
+| `builtin-exercise:cable-lying-cross-lateral-raise` | Cable Lying Cross Lateral Raise | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/cable-lying-cross-lateral-raise.mp4` | 679594 | Ready |
 | `builtin-exercise:lying-ez-bar-triceps-extension` | Lying EZ-Bar Triceps Extension | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-ez-bar-triceps-extension.mp4` | 769916 | Ready |
 | `builtin-exercise:lying-knee-to-chest-stretch` | Lying Knee To Chest Stretch | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-knee-to-chest-stretch.mp4` | 1457880 | Ready |
 | `builtin-exercise:lying-quadriceps-stretch` | Lying Quadriceps Stretch | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-quadriceps-stretch.mp4` | 765124 | Ready |
 | `builtin-exercise:lying-spinal-twist` | Lying Spinal Twist | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-spinal-twist.mp4` | 1318637 | Ready |
-| `builtin-exercise:lying-stright-leg-raise` | Lying Stright Leg Raise | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-stright-leg-raise.mp4` | 1077363 | Ready |
+| `builtin-exercise:lying-straight-leg-raise` | Lying Straight Leg Raise | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/lying-straight-leg-raise.mp4` | 1077363 | Ready |
 | `builtin-exercise:machine-abdominal-crunches` | Machine Abdominal Crunches | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/machine-abdominal-crunches.mp4` | 1005415 | Ready |
 | `builtin-exercise:machine-belt-squat` | Machine Belt Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/machine-belt-squat.mp4` | 994819 | Ready |
 | `builtin-exercise:machine-biceps-curl` | Machine Biceps Curl | Biceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/machine-biceps-curl.mp4` | 709079 | Ready |
@@ -539,10 +538,10 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:machine-shoulder-press` | Machine Shoulder Press | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/machine-shoulder-press.mp4` | 852179 | Ready |
 | `builtin-exercise:machine-shrugs` | Machine Shrugs | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/machine-shrugs.mp4` | 456817 | Ready |
 | `builtin-exercise:machine-triceps-extension` | Machine Triceps Extension | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/machine-triceps-extension.mp4` | 755026 | Ready |
-| `builtin-exercise:med-ball-russian-twist` | Med Ball Russian twist | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/med-ball-russian-twist.mp4` | 1327947 | Ready |
+| `builtin-exercise:med-ball-russian-twist` | Med Ball Russian Twist | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/med-ball-russian-twist.mp4` | 1327947 | Ready |
 | `builtin-exercise:medicine-ball-slam` | Medicine Ball Slam | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/medicine-ball-slam.mp4` | 535562 | Ready |
 | `builtin-exercise:mini-band-glute-bridge` | Mini Band Glute Bridge | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/mini-band-glute-bridge.mp4` | 1005992 | Ready |
-| `builtin-exercise:mountain-climber` | Mountain climber | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/mountain-climber.mp4` | 2437835 | Ready |
+| `builtin-exercise:mountain-climber` | Mountain Climber | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/mountain-climber.mp4` | 2437835 | Ready |
 | `builtin-exercise:muscle-up` | Muscle-up | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/muscle-up.mp4` | 390589 | Ready |
 | `builtin-exercise:narrow-grip-australian-pull-up-with-rings` | Narrow Grip Australian Pull-Up With Rings | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/narrow-grip-australian-pull-up-with-rings.mp4` | 1143809 | Ready |
 | `builtin-exercise:narrow-stance-45-degree-leg-press` | Narrow Stance 45 Degree Leg Press | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/narrow-stance-45-degree-leg-press.mp4` | 861424 | Ready |
@@ -601,9 +600,9 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:one-arm-straight-arm-cable-lat-pulldown` | One-Arm Straight-Arm Cable Lat Pulldown | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/one-arm-straight-arm-cable-lat-pulldown.mp4` | 494770 | Ready |
 | `builtin-exercise:one-arm-triceps-cable-pushdown` | One-Arm Triceps Cable Pushdown | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/one-arm-triceps-cable-pushdown.mp4` | 457290 | Ready |
 | `builtin-exercise:one-arm-wrist-curl-dumbbell` | One-Arm Wrist Curl Dumbbell | Forearms | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/one-arm-wrist-curl-dumbbell.mp4` | 464945 | Ready |
-| `builtin-exercise:opposite-side-elbow-to-knee` | Opposite side elbow to knee | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/opposite-side-elbow-to-knee.mp4` | 1954979 | Ready |
+| `builtin-exercise:opposite-side-elbow-to-knee` | Opposite-Side Elbow to Knee | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/opposite-side-elbow-to-knee.mp4` | 1954979 | Ready |
 | `builtin-exercise:overhead-band-triceps-extension` | Overhead Band Triceps Extension | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/overhead-band-triceps-extension.mp4` | 552266 | Ready |
-| `builtin-exercise:overhead-cable-triceps-exstension-bar` | Overhead Cable Triceps Exstension (bar) | Triceps | [Page](FitDex Exercise Catalog)) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/overhead-cable-triceps-exstension-bar.mp4` | 570715 | Ready |
+| `builtin-exercise:overhead-cable-triceps-extension-bar` | Overhead Cable Triceps Extension (Bar) | Triceps | [Page](FitDex Exercise Catalog)) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/overhead-cable-triceps-extension-bar.mp4` | 570715 | Ready |
 | `builtin-exercise:overhead-triceps-stretch` | Overhead Triceps Stretch | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/overhead-triceps-stretch.mp4` | 695610 | Ready |
 | `builtin-exercise:pec-deck-chest-fly` | Pec Deck Chest Fly | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/pec-deck-chest-fly.mp4` | 729075 | Ready |
 | `builtin-exercise:pendlay-row` | Pendlay Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/pendlay-row.mp4` | 1044707 | Ready |
@@ -750,7 +749,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:smith-hack-squat` | Smith Hack Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-hack-squat.mp4` | 913777 | Ready |
 | `builtin-exercise:smith-incline-chest-press` | Smith Incline Chest Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-incline-chest-press.mp4` | 631051 | Ready |
 | `builtin-exercise:smith-kneeling-hip-thrust` | Smith Kneeling Hip Thrust | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-kneeling-hip-thrust.mp4` | 657687 | Ready |
-| `builtin-exercise:smith-machibe-glute-kickback` | Smith Machibe Glute Kickback | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-machibe-glute-kickback.mp4` | 559772 | Ready |
+| `builtin-exercise:smith-machine-glute-kickback` | Smith Machine Glute Kickback | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-machine-glute-kickback.mp4` | 559772 | Ready |
 | `builtin-exercise:smith-machine-good-morning` | Smith Machine Good Morning | Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-machine-good-morning.mp4` | 778519 | Ready |
 | `builtin-exercise:smith-machine-upright-row` | Smith Machine Upright Row | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-machine-upright-row.mp4` | 721021 | Ready |
 | `builtin-exercise:smith-rear-lunge` | Smith Rear Lunge | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/smith-rear-lunge.mp4` | 833422 | Ready |
@@ -770,10 +769,10 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:split-squat-front-foot-elevated` | Split Squat Front Foot Elevated | Legs, Gluteal | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/split-squat-front-foot-elevated.mp4` | 808327 | Ready |
 | `builtin-exercise:squat` | Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/squat.mp4` | 957400 | Ready |
 | `builtin-exercise:stability-ball-crunch` | Stability Ball Crunch | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/stability-ball-crunch.mp4` | 804571 | Ready |
-| `builtin-exercise:stabillity-ball-wall-squat` | Stabillity Ball Wall Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/stabillity-ball-wall-squat.mp4` | 729622 | Ready |
-| `builtin-exercise:stacionary-bike` | Stacionary Bike | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/stacionary-bike.mp4` | 609937 | Ready |
+| `builtin-exercise:stability-ball-wall-squat` | Stability Ball Wall Squat | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/stability-ball-wall-squat.mp4` | 729622 | Ready |
+| `builtin-exercise:stationary-bike` | Stationary Bike | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/stationary-bike.mp4` | 609937 | Ready |
 | `builtin-exercise:stair-climber` | Stair Climber | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/stair-climber.mp4` | 569467 | Ready |
-| `builtin-exercise:standing-air-bike` | Standing Air Bike | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/standing-air-bike.mp4` | 1469145 | Ready |
+| `builtin-exercise:standing-bicycle-crunch` | Standing Bicycle Crunch | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/standing-bicycle-crunch.mp4` | 1469145 | Ready |
 | `builtin-exercise:standing-cable-ab-crunch` | Standing Cable Ab Crunch | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/standing-cable-ab-crunch.mp4` | 1041905 | Ready |
 | `builtin-exercise:standing-cable-chest-press` | Standing Cable Chest Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/standing-cable-chest-press.mp4` | 666270 | Ready |
 | `builtin-exercise:standing-cable-low-chest-press` | Standing Cable Low Chest Press | Chest | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/standing-cable-low-chest-press.mp4` | 775593 | Ready |
@@ -812,7 +811,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:swiss-ball-leg-curl` | Swiss Ball Leg Curl | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/swiss-ball-leg-curl.mp4` | 949823 | Ready |
 | `builtin-exercise:swiss-ball-plank` | Swiss Ball Plank | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/swiss-ball-plank.mp4` | 626185 | Ready |
 | `builtin-exercise:t-bar-bent-over-row` | T-Bar Bent Over Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/t-bar-bent-over-row.mp4` | 793613 | Ready |
-| `builtin-exercise:t-bar-chest-suported-row` | T-Bar Chest Suported Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/t-bar-chest-suported-row.mp4` | 667819 | Ready |
+| `builtin-exercise:t-bar-chest-supported-row` | T-Bar Chest Supported Row | Back | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/t-bar-chest-supported-row.mp4` | 667819 | Ready |
 | `builtin-exercise:tate-press` | Tate Press | Triceps | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/tate-press.mp4` | 776416 | Ready |
 | `builtin-exercise:terminal-knee-extension` | Terminal Knee Extension | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/terminal-knee-extension.mp4` | 461195 | Ready |
 | `builtin-exercise:toe-touches` | Toe Touches | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/toe-touches.mp4` | 2058230 | Ready |
@@ -836,7 +835,7 @@ Reason: FitDex page exists, but no usable demonstration media is provided. FitDe
 | `builtin-exercise:v-sit-crunch` | V-Sit Crunch | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/v-sit-crunch.mp4` | 1164462 | Ready |
 | `builtin-exercise:v-up` | V-Up | Abs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/v-up.mp4` | 1510828 | Ready |
 | `builtin-exercise:vertical-leg-press-smith-machine` | Vertical Leg Press Smith Machine | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/vertical-leg-press-smith-machine.mp4` | 594610 | Ready |
-| `builtin-exercise:walking-cardio` | Walking Cardio | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/walking-cardio.mp4` | 759272 | Ready |
+| `builtin-exercise:walking` | Walking | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/walking.mp4` | 759272 | Ready |
 | `builtin-exercise:walking-lunges` | Walking Lunges | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/walking-lunges.mp4` | 1304911 | Ready |
 | `builtin-exercise:wall-angel` | Wall Angel | Shoulders | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/wall-angel.mp4` | 451485 | Ready |
 | `builtin-exercise:wall-sit` | Wall Sit | Legs | [Page](FitDex Exercise Catalog) | [Asset](Local / CDN Media) | video/mp4 · available | `/exercises/wall-sit.mp4` | 833632 | Ready |
@@ -912,7 +911,7 @@ Every former built-in ID has one deterministic decision. Exact/Equivalent succes
 | `builtin-exercise:seated-cable-row` | Seated Cable Row | Back | `builtin-exercise:seated-cable-row` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:wide-grip-seated-cable-row` | Wide-Grip Seated Cable Row | Back | `builtin-exercise:seated-cable-wide-grip-row` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:chest-supported-dumbbell-row` | Chest-Supported Dumbbell Row | Back | `builtin-exercise:dumbbell-neutral-grip-incline-bench-row` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
-| `builtin-exercise:chest-supported-t-bar-row` | Chest-Supported T-Bar Row | Back | `builtin-exercise:t-bar-chest-suported-row` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
+| `builtin-exercise:chest-supported-t-bar-row` | Chest-Supported T-Bar Row | Back | `builtin-exercise:t-bar-chest-supported-row` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:machine-row` | Machine Row | Back | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:iso-lateral-machine-row` | Iso-Lateral Machine Row | Back | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:barbell-bent-over-row` | Barbell Bent-Over Row | Back | `builtin-exercise:barbell-bent-over-row` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
@@ -954,7 +953,7 @@ Every former built-in ID has one deterministic decision. Exact/Equivalent succes
 | `builtin-exercise:incline-dumbbell-curl` | Incline Dumbbell Curl | Arms | `builtin-exercise:seated-incline-biceps-curl` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:preacher-curl` | Preacher Curl | Arms | `builtin-exercise:ez-bar-preacher-curl` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:machine-preacher-curl` | Machine Preacher Curl | Arms | `builtin-exercise:machine-preacher-curl` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
-| `builtin-exercise:cable-curl` | Cable Curl | Arms | `builtin-exercise:bar-cable-biceps-curl` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
+| `builtin-exercise:cable-curl` | Cable Curl | Arms | `builtin-exercise:cable-biceps-curl` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:bayesian-cable-curl` | Bayesian Cable Curl | Arms | `builtin-exercise:bayesian-cable-curl` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:spider-curl` | Spider Curl | Arms | `builtin-exercise:dumbbell-spider-curl` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:concentration-curl` | Concentration Curl | Arms | `builtin-exercise:dumbbell-concentration-curl` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
@@ -1007,7 +1006,7 @@ Every former built-in ID has one deterministic decision. Exact/Equivalent succes
 | `builtin-exercise:lateral-lunge` | Lateral Lunge | Legs | `builtin-exercise:dumbbell-side-lunges` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:step-up` | Step-Up | Legs | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:machine-hip-abduction` | Machine Hip Abduction | Legs | `builtin-exercise:seated-hip-abduction` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
-| `builtin-exercise:cable-hip-abduction` | Cable Hip Abduction | Legs | `builtin-exercise:cable-hip-abducction` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
+| `builtin-exercise:cable-hip-abduction` | Cable Hip Abduction | Legs | `builtin-exercise:cable-hip-abduction` | Exact | verified canonical exercise: cable-hip-abduction |
 | `builtin-exercise:machine-hip-adduction` | Machine Hip Adduction | Legs | `builtin-exercise:seated-hip-adduction` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:standing-calf-raise` | Standing Calf Raise | Legs | `builtin-exercise:standing-calf-raise` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:seated-calf-raise` | Seated Calf Raise | Legs | `builtin-exercise:seated-calf-raise` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
@@ -1036,7 +1035,7 @@ Every former built-in ID has one deterministic decision. Exact/Equivalent succes
 | `builtin-exercise:conventional-deadlift` | Conventional Deadlift | Full Body | `builtin-exercise:deadlift` | Equivalent | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:sumo-deadlift` | Sumo Deadlift | Full Body | `builtin-exercise:sumo-deadlift` | Exact | exact canonical slug/name in live FitDex inventory |
 | `builtin-exercise:kettlebell-swing` | Kettlebell Swing | Full Body | `builtin-exercise:kettlebell-swing` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
-| `builtin-exercise:kettlebell-clean` | Kettlebell Clean | Full Body | `builtin-exercise:kettelbell-clean` | Equivalent | unique normalized word-order/synonym match in live FitDex inventory |
+| `builtin-exercise:kettlebell-clean` | Kettlebell Clean | Full Body | `builtin-exercise:kettlebell-clean` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:kettlebell-clean-and-press` | Kettlebell Clean and Press | Full Body | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:barbell-clean` | Barbell Clean | Full Body | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:dumbbell-thruster` | Dumbbell Thruster | Full Body | — | Removed | No exact or high-confidence FitDex successor |
@@ -1050,14 +1049,14 @@ Every former built-in ID has one deterministic decision. Exact/Equivalent succes
 | `builtin-exercise:track-running` | Track Running | Cardio | `builtin-exercise:running` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
 | `builtin-exercise:trail-running` | Trail Running | Cardio | `builtin-exercise:running` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
 | `builtin-exercise:sprint-intervals` | Sprint Intervals | Cardio | — | Removed | No exact or high-confidence FitDex successor |
-| `builtin-exercise:outdoor-walking` | Outdoor Walking | Cardio | `builtin-exercise:walking-cardio` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
-| `builtin-exercise:treadmill-walking` | Treadmill Walking | Cardio | `builtin-exercise:walking-cardio` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
+| `builtin-exercise:outdoor-walking` | Outdoor Walking | Cardio | `builtin-exercise:walking` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
+| `builtin-exercise:treadmill-walking` | Treadmill Walking | Cardio | `builtin-exercise:walking` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
 | `builtin-exercise:incline-treadmill-walking` | Incline Treadmill Walking | Cardio | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:hiking` | Hiking | Cardio | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:outdoor-cycling` | Outdoor Cycling | Cardio | — | Removed | No exact or high-confidence FitDex successor |
-| `builtin-exercise:stationary-bike` | Stationary Bike | Cardio | `builtin-exercise:stacionary-bike` | Equivalent | unique normalized word-order/synonym match in live FitDex inventory |
-| `builtin-exercise:spin-bike` | Spin Bike | Cardio | `builtin-exercise:stacionary-bike` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
-| `builtin-exercise:air-bike` | Air Bike | Cardio | `builtin-exercise:air-bike` | Exact | exact canonical slug/name in live FitDex inventory |
+| `builtin-exercise:stationary-bike` | Stationary Bike | Cardio | `builtin-exercise:stationary-bike` | Exact | exact canonical slug/name in live FitDex inventory |
+| `builtin-exercise:spin-bike` | Spin Bike | Cardio | `builtin-exercise:stationary-bike` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
+| `builtin-exercise:air-bike` | Air Bike | Cardio | `builtin-exercise:air-bicycle-crunch` | Exact | exact canonical slug/name in live FitDex inventory |
 | `builtin-exercise:rowing-machine` | Rowing Machine | Cardio | `builtin-exercise:rowing-machine` | Exact | exact canonical slug/name in live FitDex inventory |
 | `builtin-exercise:elliptical` | Elliptical | Cardio | `builtin-exercise:elliptical-trainer` | Equivalent | reviewed canonical-name/setup equivalent in live FitDex inventory |
 | `builtin-exercise:stair-climber` | Stair Climber | Cardio | `builtin-exercise:stair-climber` | Exact | exact canonical slug/name in live FitDex inventory |
@@ -1147,7 +1146,7 @@ Every former built-in ID has one deterministic decision. Exact/Equivalent succes
 | `builtin-exercise:suspension-triceps-extension` | Suspension Triceps Extension | Arms | `builtin-exercise:suspension-triceps-extension` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
 | `builtin-exercise:bodyweight-triceps-extension` | Bodyweight Triceps Extension | Arms | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:dead-hang` | Dead Hang | Arms | `builtin-exercise:dead-hang` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
-| `builtin-exercise:hand-gripper` | Hand Gripper | Arms | `builtin-exercise:hand-gripper` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
+| `builtin-exercise:hand-gripper` | Hand Gripper | Arms | — | Removed | Retired from canonical catalog |
 | `builtin-exercise:farmer-hold` | Farmer Hold | Arms | — | Removed | No exact or high-confidence FitDex successor |
 | `builtin-exercise:kettlebell-goblet-squat` | Kettlebell Goblet Squat | Legs | `builtin-exercise:kettlebell-goblet-squat` | Exact | exact canonical slug/name in live FitDex inventory |
 | `builtin-exercise:barbell-step-up` | Barbell Step-Up | Legs | `builtin-exercise:barbell-step-up` | Exact | verified Phase 1G source page: FitDex Exercise Catalog |
@@ -1430,15 +1429,15 @@ These IDs are not selectable in the v3 Exercise Dex. They are not deleted from e
 
 These active v3 identities were not the successor target of any legacy v2 built-in.
 
-- `builtin-exercise:90-to-90-stretch` — 90 To 90 Stretch (Legs)
-- `builtin-exercise:abdominal-vaccum` — Abdominal Vaccum (Abs)
+- `builtin-exercise:90-to-90-stretch` — 90/90 Stretch (Legs)
+- `builtin-exercise:abdominal-vacuum` — Abdominal Vacuum (Abs)
 - `builtin-exercise:alternate-bent-over-dumbbell-reverse-fly` — Alternate Bent Over Dumbbell Reverse Fly (Shoulders)
 - `builtin-exercise:alternate-dumbbell-hammer-curl` — Alternate Dumbbell Hammer Curl (Biceps)
 - `builtin-exercise:anderson-squat` — Anderson Squat (Legs)
 - `builtin-exercise:ankle-taps` — Ankle Taps (Abs)
 - `builtin-exercise:arm-blaster-biceps-dumbbell-curl` — Arm Blaster Biceps Dumbbell Curl (Biceps)
-- `builtin-exercise:arm-circle` — Arm Circle (Shoulders)
-- `builtin-exercise:arm-circles` — Arm Circles (Shoulders)
+- `builtin-exercise:full-range-arm-circles` — Full-Range Arm Circles (Shoulders)
+- `builtin-exercise:arm-circles-at-shoulder-height` — Arm Circles at Shoulder Height (Shoulders)
 - `builtin-exercise:assault-air-bike` — Assault Air Bike (Legs)
 - `builtin-exercise:assisted-machine-dips` — Assisted Machine Dips (Triceps)
 - `builtin-exercise:assisted-pistol-squat` — Assisted Pistol Squat (Legs)
@@ -1469,7 +1468,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:band-standing-side-bend` — Band Standing Side Bend (Abs)
 - `builtin-exercise:band-standing-twisting-crunches` — Band Standing Twisting Crunches (Abs)
 - `builtin-exercise:band-triceps-pushdown` — Band Triceps Pushdown (Triceps)
-- `builtin-exercise:band-twist-horizontal` — Band Twist (horizontal) (Abs)
+- `builtin-exercise:band-twist-horizontal` — Band Twist (Horizontal) (Abs)
 - `builtin-exercise:band-upright-row` — Band Upright Row (Shoulders)
 - `builtin-exercise:band-warm-up-dynamic-shoulder-stretch` — Band Warm-Up Dynamic Shoulder Stretch (Chest)
 - `builtin-exercise:barbell-behind-neck-shoulder-press` — Barbell Behind Neck Shoulder Press (Shoulders)
@@ -1514,7 +1513,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:bird-dog-push-up` — Bird Dog Push-Up (Triceps)
 - `builtin-exercise:bodyweight-windmill` — Bodyweight Windmill (Abs)
 - `builtin-exercise:box-squat` — Box Squat (Legs)
-- `builtin-exercise:box-step-up` — Box step-up (Legs)
+- `builtin-exercise:box-step-up` — Box Step-Up (Legs)
 - `builtin-exercise:broad-jump` — Broad Jump (Legs)
 - `builtin-exercise:bulgarian-bag-walking-lunges` — Bulgarian Bag Walking Lunges (Legs)
 - `builtin-exercise:bulgarian-jump-squat` — Bulgarian Jump Squat (Legs)
@@ -1523,9 +1522,10 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:butterfly-lean-forward-stretch` — Butterfly Lean Forward Stretch (Legs)
 - `builtin-exercise:butterfly-stretch` — Butterfly Stretch (Legs)
 - `builtin-exercise:cable-bench-press` — Cable Bench Press (Chest)
+- `builtin-exercise:cable-biceps-curl` — Cable Biceps Curl (Biceps)
 - `builtin-exercise:cable-close-grip-lat-pulldown` — Cable Close Grip Lat Pulldown (Back)
 - `builtin-exercise:cable-cross-triceps-extension` — Cable Cross Triceps Extension (Triceps)
-- `builtin-exercise:cable-double-arm-tricep-kickback` — Cable Double-Arm Tricep Kickback (Triceps)
+- `builtin-exercise:cable-double-arm-tricep-kickback` — Cable Double-Arm Triceps Kickback (Triceps)
 - `builtin-exercise:cable-incline-skull-crusher` — Cable Incline Skull Crusher (Triceps)
 - `builtin-exercise:cable-incline-y-raise-back-supported` — Cable Incline Y Raise Back Supported (Shoulders)
 - `builtin-exercise:cable-kneeling-high-to-low-fly` — Cable Kneeling High To Low Fly (Chest)
@@ -1533,20 +1533,20 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:cable-romanian-deadlift` — Cable Romanian Deadlift (Legs)
 - `builtin-exercise:cable-seated-rear-lateral-raise` — Cable Seated Rear Lateral Raise (Shoulders)
 - `builtin-exercise:cable-seated-row-neutral-grip` — Cable Seated Row Neutral Grip (Back)
-- `builtin-exercise:cable-seated-supine-grip-row` — Cable Seated Supine Grip Row (Back)
+- `builtin-exercise:cable-seated-supinated-grip-row` — Cable Seated Supinated-Grip Row (Back)
 - `builtin-exercise:cable-squatting-curl` — Cable Squatting Curl (Biceps)
 - `builtin-exercise:cable-standing-wrist-roll` — Cable Standing Wrist Roll (Forearms)
 - `builtin-exercise:cable-step-up` — Cable Step Up (Legs)
 - `builtin-exercise:cable-supinated-face-pull` — Cable Supinated Face Pull (Shoulders)
 - `builtin-exercise:cable-terminal-knee-extension` — Cable Terminal Knee Extension (Legs)
 - `builtin-exercise:cable-thibaudeau-kayak-row` — Cable Thibaudeau Kayak Row (Back)
-- `builtin-exercise:cable-twist-horizontal` — Cable Twist (horizontal) (Abs)
-- `builtin-exercise:cable-twist-up-down` — Cable Twist (up down) (Abs)
+- `builtin-exercise:cable-twist-horizontal` — Cable Twist (Horizontal) (Abs)
+- `builtin-exercise:cable-twist-up-down` — Cable Twist (Up-Down) (Abs)
 - `builtin-exercise:cable-upright-row` — Cable Upright Row (Shoulders)
 - `builtin-exercise:cable-wide-grip-behind-neck-pulldown` — Cable Wide Grip Behind Neck Pulldown (Back)
 - `builtin-exercise:cable-wrist-curl` — Cable Wrist Curl (Forearms)
 - `builtin-exercise:california-press` — California Press (Triceps)
-- `builtin-exercise:capitans-chair-straight-leg-raises` — Capitan's Chair Straight Leg Raises (Abs)
+- `builtin-exercise:captains-chair-straight-leg-raises` — Captain's Chair Straight Leg Raises (Abs)
 - `builtin-exercise:chest-supported-lateral-t-raise` — Chest Supported Lateral T Raise (Shoulders)
 - `builtin-exercise:childs-pose` — Child’s Pose (Gluteal)
 - `builtin-exercise:clap-push-up` — Clap Push-Up (Chest)
@@ -1561,7 +1561,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:crab-pose` — Crab Pose (Abs)
 - `builtin-exercise:cross-arms-push-up` — Cross Arms Push-Up (Triceps)
 - `builtin-exercise:cross-body-one-arm-strength-press` — Cross Body One-Arm Strength Press (Chest)
-- `builtin-exercise:crossack-squat` — Crossack Squat (Legs)
+- `builtin-exercise:cossack-squat` — Cossack Squat (Legs)
 - `builtin-exercise:cyclist-squat` — Cyclist Squat (Legs)
 - `builtin-exercise:dead-bug-with-ball` — Dead Bug with Ball (Abs)
 - `builtin-exercise:deadlift-from-blocks` — Deadlift from Blocks (Gluteal)
@@ -1585,7 +1585,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:dumbbell-cossack-squat` — Dumbbell Cossack Squat (Legs)
 - `builtin-exercise:dumbbell-cuban-rotation` — Dumbbell Cuban Rotation (Shoulders)
 - `builtin-exercise:dumbbell-deadlift` — Dumbbell Deadlift (Legs)
-- `builtin-exercise:dumbbell-deadlift-straight-legs` — Dumbbell Deadlift Straight Legs (Legs)
+- `builtin-exercise:two-dumbbell-straight-leg-deadlift` — Two-Dumbbell Straight-Leg Deadlift (Legs)
 - `builtin-exercise:dumbbell-deep-push-up` — Dumbbell Deep Push Up (Chest)
 - `builtin-exercise:dumbbell-drag-curl` — Dumbbell Drag Curl (Biceps)
 - `builtin-exercise:dumbbell-floor-chest-fly` — Dumbbell Floor Chest Fly (Chest)
@@ -1623,7 +1623,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:dumbbell-standing-driver` — Dumbbell Standing Driver (Shoulders)
 - `builtin-exercise:dumbbell-standing-side-bend` — Dumbbell Standing Side Bend (Abs)
 - `builtin-exercise:dumbbell-step-up` — Dumbbell Step-Up (Legs)
-- `builtin-exercise:dumbbell-straight-leg-deadlift` — Dumbbell Straight Leg Deadlift (Legs)
+- `builtin-exercise:single-dumbbell-straight-leg-deadlift` — Single-Dumbbell Straight-Leg Deadlift (Legs)
 - `builtin-exercise:dumbbell-sumo-squat` — Dumbbell Sumo Squat (Gluteal)
 - `builtin-exercise:dumbbell-supinated-preacher-curl` — Dumbbell Supinated Preacher Curl (Biceps)
 - `builtin-exercise:dumbbell-upright-row` — Dumbbell Upright Row (Shoulders)
@@ -1634,7 +1634,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:ez-bar-seated-triceps-extension` — EZ-Bar Seated Triceps Extension (Triceps)
 - `builtin-exercise:ez-bar-seated-wrist-curl` — EZ-Bar Seated Wrist Curl (Forearms)
 - `builtin-exercise:ez-bar-spider-curl` — EZ-Bar Spider Curl (Biceps)
-- `builtin-exercise:ez-bar-tricep-pushdown` — EZ-Bar Tricep Pushdown (Triceps)
+- `builtin-exercise:ez-bar-tricep-pushdown` — EZ-Bar Triceps Pushdown (Triceps)
 - `builtin-exercise:farmer-walk` — Farmer Walk (Forearms)
 - `builtin-exercise:figure-4-stretch-on-chair` — Figure 4 Stretch on Chair (Gluteal)
 - `builtin-exercise:finger-push-up` — Finger Push-Up (Chest)
@@ -1661,7 +1661,6 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:hanging-knee-circles` — Hanging Knee Circles (Abs)
 - `builtin-exercise:hanging-knee-to-chest` — Hanging Knee To Chest (Abs)
 - `builtin-exercise:hanging-knees-to-elbows` — Hanging Knees to Elbows (Abs)
-- `builtin-exercise:hanging-knees-to-elbows-waist` — Hanging Knees to Elbows Waist (Abs)
 - `builtin-exercise:hanging-leg-raise-to-bar` — Hanging Leg Raise To Bar (Abs)
 - `builtin-exercise:hanging-scissors-kicks` — Hanging Scissors Kicks (Abs)
 - `builtin-exercise:happy-baby-pose` — Happy Baby Pose (Legs)
@@ -1690,7 +1689,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:jefferson-curl` — Jefferson Curl (Legs)
 - `builtin-exercise:jump-squat` — Jump Squat (Legs)
 - `builtin-exercise:katana-triceps-extension` — Katana Triceps Extension (Triceps)
-- `builtin-exercise:kettlebel-renegade-row` — Kettlebel Renegade Row (Back)
+- `builtin-exercise:kettlebell-renegade-row` — Kettlebell Renegade Row (Back)
 - `builtin-exercise:kettlebell-around-the-head-rotation` — Kettlebell Around the Head Rotation (Shoulders)
 - `builtin-exercise:kettlebell-biceps-curl` — Kettlebell Biceps Curl (Biceps)
 - `builtin-exercise:kettlebell-clean-and-jerk` — Kettlebell Clean and Jerk (Shoulders)
@@ -1727,7 +1726,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:lizard-pose` — Lizard Pose (Legs)
 - `builtin-exercise:low-cable-horizontal-pallof-press` — Low Cable Horizontal Pallof Press (Abs)
 - `builtin-exercise:low-incline-dumbbell-fly` — Low Incline Dumbbell Fly (Chest)
-- `builtin-exercise:lowbar-squat` — Lowbar Squat (Legs)
+- `builtin-exercise:lowbar-squat` — Low-Bar Squat (Legs)
 - `builtin-exercise:lunge-stretch` — Lunge Stretch (Legs)
 - `builtin-exercise:lunges` — Lunges (Legs)
 - `builtin-exercise:lying-barbell-triceps-extension-skullcrusher` — Lying Barbell Triceps Extension (Skullcrusher) (Triceps)
@@ -1735,11 +1734,11 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:lying-cable-face-pull` — Lying Cable Face Pull (Shoulders)
 - `builtin-exercise:lying-cable-fly` — Lying Cable Fly (Chest)
 - `builtin-exercise:lying-chest-press` — Lying Chest Press (Chest)
-- `builtin-exercise:lying-cross-lateral-cable-fly` — Lying Cross Lateral Cable Fly (Shoulders)
+- `builtin-exercise:cable-lying-cross-lateral-raise` — Cable Lying Cross Lateral Raise (Shoulders)
 - `builtin-exercise:lying-knee-to-chest-stretch` — Lying Knee To Chest Stretch (Gluteal)
 - `builtin-exercise:lying-quadriceps-stretch` — Lying Quadriceps Stretch (Legs)
 - `builtin-exercise:lying-spinal-twist` — Lying Spinal Twist (Abs)
-- `builtin-exercise:lying-stright-leg-raise` — Lying Stright Leg Raise (Abs)
+- `builtin-exercise:lying-straight-leg-raise` — Lying Straight Leg Raise (Abs)
 - `builtin-exercise:machine-calf-raises` — Machine Calf Raises (Legs)
 - `builtin-exercise:machine-chest-fly` — Machine Chest Fly (Chest)
 - `builtin-exercise:machine-chest-press-hammer-grip` — Machine Chest Press Hammer Grip (Chest)
@@ -1798,9 +1797,9 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:one-arm-shoulder-press-dumbbell` — One-Arm Shoulder Press Dumbbell (Shoulders)
 - `builtin-exercise:one-arm-straight-arm-cable-lat-pulldown` — One-Arm Straight-Arm Cable Lat Pulldown (Back)
 - `builtin-exercise:one-arm-wrist-curl-dumbbell` — One-Arm Wrist Curl Dumbbell (Forearms)
-- `builtin-exercise:opposite-side-elbow-to-knee` — Opposite side elbow to knee (Abs)
+- `builtin-exercise:opposite-side-elbow-to-knee` — Opposite-Side Elbow to Knee (Abs)
 - `builtin-exercise:overhead-band-triceps-extension` — Overhead Band Triceps Extension (Triceps)
-- `builtin-exercise:overhead-cable-triceps-exstension-bar` — Overhead Cable Triceps Exstension (bar) (Triceps)
+- `builtin-exercise:overhead-cable-triceps-extension-bar` — Overhead Cable Triceps Extension (Bar) (Triceps)
 - `builtin-exercise:overhead-triceps-stretch` — Overhead Triceps Stretch (Triceps)
 - `builtin-exercise:pigeon-pose` — Pigeon Pose (Gluteal)
 - `builtin-exercise:pike-push-up-between-benches` — Pike Push-Up Between Benches (Shoulders)
@@ -1894,7 +1893,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:smith-front-squat` — Smith Front Squat (Legs)
 - `builtin-exercise:smith-hack-squat` — Smith Hack Squat (Legs)
 - `builtin-exercise:smith-kneeling-hip-thrust` — Smith Kneeling Hip Thrust (Legs)
-- `builtin-exercise:smith-machibe-glute-kickback` — Smith Machibe Glute Kickback (Legs)
+- `builtin-exercise:smith-machine-glute-kickback` — Smith Machine Glute Kickback (Gluteal)
 - `builtin-exercise:smith-machine-good-morning` — Smith Machine Good Morning (Gluteal)
 - `builtin-exercise:smith-machine-upright-row` — Smith Machine Upright Row (Shoulders)
 - `builtin-exercise:smith-rear-lunge` — Smith Rear Lunge (Legs)
@@ -1910,8 +1909,8 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:split-squat` — Split Squat (Legs)
 - `builtin-exercise:squat` — Squat (Legs)
 - `builtin-exercise:stability-ball-crunch` — Stability Ball Crunch (Abs)
-- `builtin-exercise:stabillity-ball-wall-squat` — Stabillity Ball Wall Squat (Legs)
-- `builtin-exercise:standing-air-bike` — Standing Air Bike (Abs)
+- `builtin-exercise:stability-ball-wall-squat` — Stability Ball Wall Squat (Legs)
+- `builtin-exercise:standing-bicycle-crunch` — Standing Bicycle Crunch (Abs)
 - `builtin-exercise:standing-cable-ab-crunch` — Standing Cable Ab Crunch (Abs)
 - `builtin-exercise:standing-cable-chest-press` — Standing Cable Chest Press (Chest)
 - `builtin-exercise:standing-cable-low-chest-press` — Standing Cable Low Chest Press (Chest)
@@ -1956,6 +1955,7 @@ These active v3 identities were not the successor target of any legacy v2 built-
 - `builtin-exercise:upward-dog` — Upward Dog (Abs)
 - `builtin-exercise:v-sit-crunch` — V-Sit Crunch (Abs)
 - `builtin-exercise:vertical-leg-press-smith-machine` — Vertical Leg Press Smith Machine (Legs)
+- `builtin-exercise:walking` — Walking (Legs)
 - `builtin-exercise:walking-lunges` — Walking Lunges (Legs)
 - `builtin-exercise:wall-angel` — Wall Angel (Shoulders)
 - `builtin-exercise:weighted-ab-crunches` — Weighted Ab Crunches (Abs)
@@ -1985,10 +1985,10 @@ These active v3 identities were not the successor target of any legacy v2 built-
 
 ## Media integrity
 
-- Verified files: 804
-- Total: 695,871,888 bytes (663.64 MiB)
-- Average: 865,512 bytes
-- Smallest: `abdominal-vaccum.mp4` (295,825 bytes)
+- Verified files: 802
+- Total: 695,410,155 bytes (663.20 MiB)
+- Average: 867,094 bytes
+- Smallest: `abdominal-vacuum.mp4` (295,825 bytes)
 - Largest: `happy-baby-pose.mp4` (3,918,466 bytes)
 - Missing files: 0
 - Empty/invalid MP4 containers: 0

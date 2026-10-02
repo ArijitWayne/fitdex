@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en" data-theme-family="spartans" data-brightness="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FitDex · Workout Premium Shell & Collapsible Sections Prototype (Part 1)</title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/styles/app.css" />
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body.proto-body {
+        margin: 0;
+        padding: 24px 16px 60px;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .proto-page-wrap {
+        width: 100%;
+        max-width: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      /* ============================================================
+         PROTOTYPE CONTROLS & REVIEW TOOLBAR
+         ============================================================ */
+      .proto-review-bar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .proto-review-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .proto-review-tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        padding: 2px 7px;
+        border-radius: 3px;
+        background: var(--color-rpg-accent, #b67e26);
+        color: #111;
+        font-weight: 800;
+      }
+
+      .proto-review-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .proto-review-label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        min-width: 80px;
+      }
+
+      .proto-btn {
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-family: var(--font-body);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.12s ease;
+      }
+
+      .proto-btn:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-muted);
+        color: var(--color-primary-text);
+      }
+
+      .proto-btn.active {
+        background: var(--color-primary);
+        color: #111;
+        border-color: var(--color-primary);
+        font-weight: 700;
+      }
+
+      /* ============================================================
+         THE NEW WORKOUT HANDHELD COMMAND SHELL
+         Device-like containment, rounded inner bezel, top status rail
+         ============================================================ */
+      .workout-command-frame {
+        width: 100%;
+        min-width: 0;
+        padding: 8px;
+        border: 3px solid var(--color-border-strong);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--color-app-surface) 92%, var(--color-text));
+        box-shadow: inset 0 0 0 2px var(--color-bg), 5px 6px 0 var(--color-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: all 0.15s ease;
+      }
+
+      /* Shell Status Header */
+      .workout-command-status {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 8px 8px;
+        color: var(--color-primary-text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .workout-command-status span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-terminal-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-success);
+        box-shadow: 0 0 4px var(--color-success);
+      }
+
+      /* Inner Content Stack */
+      .workout-command-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      /* Today Mission Card (Primary - Non-Collapsible) */
+      .proto-mission-card {
+        background: var(--color-surface);
+        border: 2px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .proto-mission-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .proto-mission-tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--color-primary-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .proto-mission-badge {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        padding: 2px 6px;
+        background: var(--color-primary-muted);
+        color: var(--color-primary-text);
+        border-radius: 3px;
+        font-weight: 700;
+      }
+
+      .proto-mission-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .proto-mission-desc {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        line-height: 1.35;
+      }
+
+      .proto-mission-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+        gap: 8px;
+        margin-top: 2px;
+      }
+
+      /* Weekly Plan Section in Shell */
+      .proto-weekly-panel {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-top: 3px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .proto-weekly-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .proto-weekly-head h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 0.88rem;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      /* Dex Gateway */
+      .proto-dex-gateway {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: border-color 0.12s ease;
+      }
+      .proto-dex-gateway:hover {
+        border-color: var(--color-primary);
+      }
+      .proto-dex-copy strong {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 800;
+      }
+      .proto-dex-copy small {
+        color: var(--color-text-muted);
+        font-size: 0.72rem;
+      }
+
+      /* ============================================================
+         PREMIUM COLLAPSIBLE SECTION SYSTEM (Option B Game-Drawer)
+         ============================================================ */
+      .collapsible-module {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .collapsible-module:focus-within,
+      .collapsible-module.is-expanded {
+        border-color: var(--color-border-strong);
+      }
+
+      /* Interactive Collapsible Header Button */
+      .collapsible-trigger {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        background: transparent;
+        border: 0;
+        color: var(--color-text);
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.1s ease;
+      }
+
+      .collapsible-trigger:hover {
+        background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+      }
+
+      .collapsible-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .collapsible-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .collapsible-title {
+        font-family: var(--font-display);
+        font-size: 0.88rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0;
+        color: var(--color-text);
+      }
+
+      .collapsible-badge {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 800;
+        padding: 1px 5px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 3px;
+        color: var(--color-text-muted);
+      }
+
+      .collapsible-summary {
+        font-size: 0.72rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Pixel Disclosure Marker */
+      .collapsible-disclosure {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        color: var(--color-primary-text);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 900;
+        flex-shrink: 0;
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+
+      .collapsible-module.is-expanded .collapsible-disclosure {
+        transform: rotate(90deg);
+        background: var(--color-primary-muted);
+        border-color: var(--color-primary);
+      }
+
+      /* Collapsible Body / Rows */
+      .collapsible-body {
+        display: none;
+        padding: 0 14px 14px;
+        border-top: 1px solid var(--color-border);
+        background: color-mix(in srgb, var(--color-surface) 95%, var(--color-bg));
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .collapsible-module.is-expanded .collapsible-body {
+        display: flex;
+        padding-top: 12px;
+      }
+
+      /* Dense Routine / History Rows inside Collapsible Body */
+      .proto-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 9px 10px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: border-color 0.1s ease, transform 0.08s ease;
+      }
+
+      .proto-item-row:hover {
+        border-color: var(--color-primary);
+      }
+
+      .proto-item-row:active {
+        transform: translateY(1px);
+      }
+
+      .proto-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .proto-item-info strong {
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .proto-item-info small {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .proto-item-action {
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+        flex-shrink: 0;
+      }
+
+      /* Part 2 PR Placeholder Banner */
+      .proto-pr-placeholder {
+        background: color-mix(in srgb, var(--color-surface) 90%, var(--color-rpg-accent, #b67e26));
+        border: 1px dashed var(--color-rpg-border, #8c6c3b);
+        border-radius: 8px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        opacity: 0.88;
+      }
+
+      .proto-pr-placeholder-title {
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-rpg-accent, #b67e26);
+      }
+
+      .proto-pr-placeholder-desc {
+        font-size: 0.72rem;
+        color: var(--color-text-muted);
+        line-height: 1.35;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="proto-body">
+    <div class="proto-page-wrap">
+      <!-- REVIEW CONTROL BAR -->
+      <section class="proto-review-bar" aria-label="Prototype Controls">
+        <div class="proto-review-title">
+          <span>Workout Shell & Collapsibles</span>
+          <span class="proto-review-tag">Part 1 Prototype</span>
+        </div>
+        <div class="proto-review-row">
+          <span class="proto-review-label">Theme:</span>
+          <button type="button" class="proto-btn active" id="btn-spartans" onclick="setTheme('spartans')">Spartans (Warm Iron)</button>
+          <button type="button" class="proto-btn" id="btn-amazonians" onclick="setTheme('amazonians')">Amazonians (Cool Slate)</button>
+        </div>
+        <div class="proto-review-row">
+          <span class="proto-review-label">Mode:</span>
+          <button type="button" class="proto-btn active" id="btn-dark" onclick="setBrightness('dark')">Dark Mode</button>
+          <button type="button" class="proto-btn" id="btn-light" onclick="setBrightness('light')">Light Mode</button>
+        </div>
+        <div class="proto-review-row">
+          <span class="proto-review-label">Sections:</span>
+          <button type="button" class="proto-btn" onclick="toggleAll(true)">Expand All</button>
+          <button type="button" class="proto-btn" onclick="toggleAll(false)">Collapse All</button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           THE WORKOUT HANDHELD COMMAND SHELL
+           ============================================================ -->
+      <div class="workout-command-frame" id="workout-shell">
+        <!-- Top Status Rail (Handheld Command Terminal Header) -->
+        <header class="workout-command-status">
+          <span>
+            <i class="status-terminal-dot"></i>
+            FITDEX // TRAINING TERMINAL
+          </span>
+          <time>LV 4 · THU 01 OCT</time>
+        </header>
+
+        <div class="workout-command-stack">
+          <!-- 1. TODAY MISSION CARD (PRIMARY - NON-COLLAPSIBLE) -->
+          <section class="proto-mission-card" aria-labelledby="today-mission-heading">
+            <div class="proto-mission-top">
+              <span class="proto-mission-tag">Today's Mission</span>
+              <span class="proto-mission-badge">Thu · Planned</span>
+            </div>
+            <h2 class="proto-mission-title" id="today-mission-heading">Chest &amp; Triceps Power</h2>
+            <p class="proto-mission-desc">4 exercises ready · Bench press, incline dumbbell press, dips &amp; cable pushdowns.</p>
+            <div class="proto-mission-actions">
+              <button class="primary-button" type="button" style="padding: 9px 12px; font-weight: 800;">Start Workout</button>
+              <button class="secondary-button" type="button" style="padding: 9px 12px;">Options</button>
+            </div>
+          </section>
+
+          <!-- 2. WEEKLY PLAN (PRIMARY - NON-COLLAPSIBLE PIXEL WALL) -->
+          <section class="proto-weekly-panel" aria-labelledby="weekly-plan-heading">
+            <div class="proto-weekly-head">
+              <h3 id="weekly-plan-heading">Weekly Plan</h3>
+              <button class="text-button" type="button" style="font-size: 0.75rem;">Edit Plan</button>
+            </div>
+            <div class="workout-week-grid" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;">
+              <!-- 7 Pixel Wall Tiles -->
+              <div class="pixel-wall-tile">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--done-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--done-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--done-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--done-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--done-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--done-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--done-mid)" /></svg>
+                <span class="wall-face-letter">M</span>
+              </div>
+              <div class="pixel-wall-tile">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--done-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--done-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--done-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--done-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--done-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--done-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--done-mid)" /></svg>
+                <span class="wall-face-letter">T</span>
+              </div>
+              <div class="pixel-wall-tile">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--rest-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--rest-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--rest-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--rest-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--rest-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--rest-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--rest-mid)" /></svg>
+                <span class="wall-face-letter">W</span>
+              </div>
+              <div class="pixel-wall-tile is-today">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--plan-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--plan-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--plan-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--plan-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--plan-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--plan-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--plan-mid)" /><rect class="today-focus-rim" x="1" y="1" width="46" height="50" rx="1" fill="none" stroke="transparent" stroke-width="1.5" opacity="0"/></svg>
+                <span class="wall-face-letter">T</span>
+              </div>
+              <div class="pixel-wall-tile">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--plan-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--plan-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--plan-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--plan-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--plan-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--plan-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--plan-mid)" /></svg>
+                <span class="wall-face-letter">F</span>
+              </div>
+              <div class="pixel-wall-tile">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--miss-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--miss-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--miss-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--miss-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--miss-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--miss-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--miss-mid)" /></svg>
+                <span class="wall-face-letter">S</span>
+              </div>
+              <div class="pixel-wall-tile state-noplan">
+                <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--noplan-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--noplan-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--noplan-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--noplan-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--noplan-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--noplan-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--noplan-mid)" /></svg>
+                <span class="wall-face-letter">S</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. EXERCISE DEX GATEWAY (NON-COLLAPSIBLE) -->
+          <div class="proto-dex-gateway" role="button" tabindex="0">
+            <div class="proto-dex-copy">
+              <strong>Exercise Dex</strong>
+              <small>802 moves · Favorites, animations &amp; catalog</small>
+            </div>
+            <span style="color: var(--color-primary-text); font-weight: 800;">→</span>
+          </div>
+
+          <!-- 4. SAVED ROUTINES (COLLAPSIBLE MODULE) -->
+          <section class="collapsible-module is-expanded" id="module-routines">
+            <button class="collapsible-trigger" type="button" aria-expanded="true" aria-controls="routines-body" onclick="toggleModule('module-routines')">
+              <div class="collapsible-header-left">
+                <div class="collapsible-title-row">
+                  <h3 class="collapsible-title">Saved Routines</h3>
+                  <span class="collapsible-badge">3 Routines</span>
+                </div>
+                <span class="collapsible-summary">Chest Power, Back Volume, Legs &amp; Core</span>
+              </div>
+              <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+            </button>
+            <div class="collapsible-body" id="routines-body">
+              <div class="proto-item-row">
+                <div class="proto-item-info">
+                  <strong>Chest &amp; Triceps Power</strong>
+                  <small>4 exercises · 14 planned sets · Thu</small>
+                </div>
+                <span class="proto-item-action">▶</span>
+              </div>
+              <div class="proto-item-row">
+                <div class="proto-item-info">
+                  <strong>Back &amp; Biceps Volume</strong>
+                  <small>5 exercises · 16 planned sets · Tue</small>
+                </div>
+                <span class="proto-item-action">▶</span>
+              </div>
+              <div class="proto-item-row">
+                <div class="proto-item-info">
+                  <strong>Legs &amp; Core Foundation</strong>
+                  <small>5 exercises · 17 planned sets · Fri</small>
+                </div>
+                <span class="proto-item-action">▶</span>
+              </div>
+              <button class="secondary-button" type="button" style="width: 100%; margin-top: 4px; padding: 7px; font-size: 0.76rem;">+ Create Routine</button>
+            </div>
+          </section>
+
+          <!-- 5. RECENT WORKOUTS (COLLAPSIBLE MODULE - COLLAPSED BY DEFAULT) -->
+          <section class="collapsible-module" id="module-history">
+            <button class="collapsible-trigger" type="button" aria-expanded="false" aria-controls="history-body" onclick="toggleModule('module-history')">
+              <div class="collapsible-header-left">
+                <div class="collapsible-title-row">
+                  <h3 class="collapsible-title">Recent Workouts</h3>
+                  <span class="collapsible-badge">2 Recent</span>
+                </div>
+                <span class="collapsible-summary">Last: Back Volume · Yesterday · 48m</span>
+              </div>
+              <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+            </button>
+            <div class="collapsible-body" id="history-body">
+              <div class="proto-item-row">
+                <div class="proto-item-info">
+                  <strong>Back &amp; Biceps Volume</strong>
+                  <small>Yesterday · 5 exercises · 16 sets · 48m</small>
+                </div>
+                <span class="proto-item-action">▶</span>
+              </div>
+              <div class="proto-item-row">
+                <div class="proto-item-info">
+                  <strong>Chest Power</strong>
+                  <small>29 Sep · 4 exercises · 14 sets · 42m</small>
+                </div>
+                <span class="proto-item-action">▶</span>
+              </div>
+              <button class="secondary-button" type="button" style="width: 100%; margin-top: 4px; padding: 7px; font-size: 0.76rem;">View Full History</button>
+            </div>
+          </section>
+
+          <!-- 6. PART 2 PLACEHOLDER: PERSONAL RECORDS -->
+          <div class="proto-pr-placeholder">
+            <span class="proto-pr-placeholder-title">⚡ Part 2 Preview: Personal Records</span>
+            <p class="proto-pr-placeholder-desc">Full PR cards, category breakdown, 1RM hierarchy and compact views will be designed in Part 2 after Part 1 approval.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleModule(id) {
+        const mod = document.getElementById(id);
+        const isExp = mod.classList.toggle('is-expanded');
+        const btn = mod.querySelector('.collapsible-trigger');
+        btn.setAttribute('aria-expanded', isExp ? 'true' : 'false');
+      }
+
+      function toggleAll(expand) {
+        ['module-routines', 'module-history'].forEach(id => {
+          const mod = document.getElementById(id);
+          if (expand) mod.classList.add('is-expanded');
+          else mod.classList.remove('is-expanded');
+          const btn = mod.querySelector('.collapsible-trigger');
+          btn.setAttribute('aria-expanded', expand ? 'true' : 'false');
+        });
+      }
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme-family', theme);
+        document.getElementById('btn-spartans').classList.toggle('active', theme === 'spartans');
+        document.getElementById('btn-amazonians').classList.toggle('active', theme === 'amazonians');
+      }
+
+      function setBrightness(mode) {
+        document.documentElement.setAttribute('data-brightness', mode);
+        document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
+        document.getElementById('btn-light').classList.toggle('active', mode === 'light');
+      }
+    </script>
+  </body>
+</html>

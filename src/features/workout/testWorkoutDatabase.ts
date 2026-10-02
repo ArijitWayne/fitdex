@@ -147,7 +147,7 @@ assert.equal((await db.exercises.get(customExercise.id))?.name, customExercise.n
 assert.equal((await db.workouts.get('workout:legacy'))?.nameSnapshot, routine.name)
 
 // Fresh install: all v7 stores are available; normal seeding restores exactly
-// the authoritative 804 built-ins without changing dataset version 4.
+// the authoritative 802 built-ins without changing dataset version 4.
 db.close()
 await Dexie.delete(databaseName)
 const freshDb = new FitDexDatabase()
@@ -159,7 +159,7 @@ freshDb.close()
 
 await db.open()
 await db.exercises.bulkPut(builtInExercises)
-assert.equal(await db.exercises.where('source').equals('built-in').and((exercise) => !exercise.archived).count(), 804)
+assert.equal(await db.exercises.where('source').equals('built-in').and((exercise) => !exercise.archived).count(), 802)
 assert.equal(await db.exercisePreferences.count(), 0)
 
 db.close()

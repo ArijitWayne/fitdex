@@ -235,9 +235,9 @@ The standalone Exercise Dex implements the locked **V3 RPG Codex** visual identi
 - **Exercise Record Ordering**: Structured as Header → Remote Media frame → Exercise Metadata/Facts card (`Primary Muscle`, `Secondary Muscles`, `Region`, `Equipment`, `Tracking Method`, `Movement Pattern`) → How to Perform → How It Helps (when backed by real catalog data) → Add to Routine action.
 - **Strict Protection**: Phase 2 Workout Exercise Picker, remote media streaming architecture, and IndexedDB schema remain strictly untouched.
 
-The current FitDex built-in exercise catalog is dataset version 4 with **804 active canonical exercises** and 805 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
+The current FitDex built-in exercise catalog is dataset version 4 with **802 active canonical exercises** and 803 deduplicated category memberships. The active categories are Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs; desktop/tablet uses the approved 3 × 3 card grid, with two columns on phones and one only on very narrow screens.
 
-The data-driven membership counts are Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. `split-squat-front-foot-elevated` retains both Legs and Gluteal memberships, accounting for the one extra membership.
+The data-driven membership counts are Chest 105, Back 134, Shoulders 123, Legs 205, Gluteal 85, Biceps 57, Triceps 70, Forearms 28, and Abs 125. `split-squat-front-foot-elevated` retains both Legs and Gluteal memberships, accounting for the one extra membership.
 
 The model supports authoritative multi-category membership, stable canonical exercise slugs and IDs, demonstration media status, reliable equipment options, FitDex tracking type/movement pattern, and historical category compatibility. Built-ins use stable canonical IDs while preserving compatibility with any older custom-exercise records.
 
@@ -327,7 +327,7 @@ Phase 1I.1 retires the nine entries that provide no usable demonstration media. 
 
 The Workout tab is now a functional local-first hub ordered as Today / Start Workout, Your Routines, Exercise Library, and Recent Workouts. Users can create, rename, reorder, edit planned sets, and delete routine templates; the existing Exercise Dex is reused for contextual routine picking and Exercise Detail can add an exercise directly to a routine. Built-ins use the supported stable-ID reference path; compatibility for historical custom-exercise records remains non-destructive. Duplicate exercise IDs are prevented within a routine, and no fake routines or workout history are seeded.
 
-The built-in exercise dataset remains version 4 with 804 records. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local and are included in `.fitdex` backups with routine exercises, session exercises, set logs, and cardio.
+The built-in exercise dataset remains version 4 with 802 active records. Historical 804 audit rows and retired-history mappings remain valid. Dexie schema version 5 adds ordered `routineExercises` and snapshot/query fields on the existing workout-session tables. A routine is an editable template; a completed workout is an independent historical snapshot whose name, exercise order, tracking mode, and set/activity values must never change when its source routine is edited or deleted. Routines and active/completed sessions remain device-local and are included in `.fitdex` backups with routine exercises, session exercises, set logs, and cardio.
 
 ### Phase 1K.2 active workout logging and history
 
@@ -387,9 +387,9 @@ Persistent local records now use the shared `createId()` utility. It prefers `gl
 
 ### Current Exercise Dex and workout milestone snapshot
 
-The active Exercise Dex is built-in dataset version 4: 804 stable canonical IDs, 804 verified local MP4 demonstrations, and complete FitDex-authored How to Perform/How it Helps content. Category memberships total 805 because `split-squat-front-foot-elevated` belongs to both Legs and Gluteal: Chest 99, Back 100, Shoulders 107, Legs 190, Gluteal 55, Biceps 54, Triceps 67, Forearms 29, and Abs 104. Normalized search supports punctuation/spacing variants such as `pushup`/`push up`/`push-up` and `onearm`/`one arm`/`one-arm`; the Exercise Dex remains the shared browser and picker engine.
+The active Exercise Dex is built-in dataset version 4: 802 stable canonical IDs, 802 verified remotely hosted MP4 demonstrations, and complete FitDex-authored How to Perform/How it Helps content. Category memberships total 803 because `split-squat-front-foot-elevated` belongs to both Legs and Gluteal: Chest 105, Back 134, Shoulders 123, Legs 205, Gluteal 85, Biceps 57, Triceps 70, Forearms 28, and Abs 125. Normalized search supports punctuation/spacing variants such as `pushup`/`push up`/`push-up` and `onearm`/`one arm`/`one-arm`; the Exercise Dex remains the shared browser and picker engine.
 
-Demonstrations stay under `public/exercises/`, load only in Exercise Detail, and are excluded from PWA precaching. The dynamic category-sprite system has nine sprites in each Spartan Dark, Spartan Light, Amazonian Dark, and Amazonian Light set under `public/exercise-categories/`. The app is deployed through Cloudflare Workers Static Assets; R2 is not configured, and any separate media-hosting decision remains future work.
+Demonstrations load on demand from `https://fitdex-media.fitdexapp.workers.dev/exercises/<filename>.mp4`, remain external to app assets and PWA precaching, and may be selectively downloaded to Android private storage. The dynamic category-sprite system has nine sprites in each Spartan Dark, Spartan Light, Amazonian Dark, and Amazonian Light set under `public/exercise-categories/`.
 
 The Workout tab is the parent hub for Today (Start/Resume), Your Routines, Exercise Library, and Recent Workouts. Local schema v5 tables are `workoutRoutines`, `routineExercises`, `workouts`, `workoutExercises`, and `workoutSets`; there is no cloud database, account requirement, or workout sync. Routine items default to three planned sets (1–20 allowed), preserve an exercise-name snapshot and deterministic order, and reject duplicate exercise IDs. Canonical values are kilograms, kilometres, and seconds, with existing `settings.units` controlling kg/lb and km/mi display/input conversion. A lightweight 90-second rest timer is resettable/skippable; session notes are supported, while RPE/RIR, calorie estimation, and advanced exercise/set notes remain deferred.
 
@@ -397,7 +397,7 @@ Active Workout exercise menus contain How to Perform, Reorder Exercises, Exercis
 
 ## 18. Exercise-library direction and organization
 
-FitDex’s supported exercise library is the 804 built-in Exercise Dex. Existing compatibility structures for older custom-exercise records remain non-destructive, but the product direction does not promote a custom-exercise creation workflow. Personal favourites, notes, and custom tags remain separate user-owned organization data.
+FitDex’s supported exercise library is the 802-active built-in Exercise Dex. Historical 804 audit rows remain non-destructive compatibility history. Existing compatibility structures for older custom-exercise records remain non-destructive, but the product direction does not promote a custom-exercise creation workflow. Personal favourites, notes, and custom tags remain separate user-owned organization data.
 
 These concepts remain separate:
 
@@ -581,7 +581,7 @@ The permanent Android package ID is `com.fitdex.app`. The signing key must be pr
 
 ## 29. Current development status
 
-**Current milestone:** Exercise Dex dataset version 4 has 804 FitDex built-ins with verified local MP4 demonstrations and complete written content. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, required local Display Name onboarding/migration, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
+**Current milestone:** FitDex v2.0.0 release candidate has Exercise Dex dataset version 4 with 802 active FitDex built-ins, remote MP4 demonstrations, and complete written content. Historical 804 audit rows remain valid. Workout Hub, routines, persistent active logging, completed snapshot history, Food V1, Journal V1, Progress + Personal Records V1, Home Dashboard V1, Gamification V1, `.fitdex` Backup & Restore V1, required local Display Name onboarding/migration, optimized avatar delivery, and Android/WebView-compatible local ID generation are complete on Dexie schema version 7.
 
 Likely next work:
 
@@ -727,7 +727,7 @@ Browser/PWA retains existing local demo playback and has no native download UI. 
 
 ## 38. Field Guide, Audio, and Navigation Polish
 
-The old tutorial presentation is replaced by the FitDex Field Guide: Home, Workout, Food, Weekly Plan & Streaks, Progress, Achievements, and Battle Music. Its retro-RPG panel uses the current theme variables, topic index/direct selectors, progress indicator, Back/Next, Skip/Close, safe areas, short-landscape scrolling, and replay from Settings. Its claims match the current local-first product, including 804 exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. Existing focused Workout, Food, Journal, and Progress guides remain available.
+The old tutorial presentation is replaced by the FitDex Field Guide: Home, Workout, Food, Weekly Plan & Streaks, Progress, Achievements, and Battle Music. Its retro-RPG panel uses the current theme variables, topic index/direct selectors, progress indicator, Back/Next, Skip/Close, safe areas, short-landscape scrolling, and replay from Settings. Its claims match the current local-first product, including 802 active exercises, four meals, current XP sources, selective Android exercise-media downloads, and manual `.fitdex` backup. Existing focused Workout, Food, Journal, and Progress guides remain available.
 
 Display Name is an optional persisted property only for compatibility with older local records and V1 backups; new product flows require a valid value. The shared validator trims leading/trailing whitespace, rejects an empty result, and permits at most 24 Unicode characters. Settings exposes the same required input, live counter, validation, and persistence path used by the onboarding/migration prompt. Because it is part of the authoritative Settings record, it is included in normal `.fitdex` export/replace restore without a separate backup field. Older backups without it remain valid; after restore, the lightweight required-name prompt appears while all restored data and onboarding state remain intact.
 
@@ -891,7 +891,7 @@ Key architectural principles and locked design decisions:
 8. **Action & Verification Hierarchy**: Primary CTA is `DOWNLOAD APK` with file size rendered as secondary metadata (`.btn-meta-badge`). Checksum UI is visually restrained with interactive clipboard copy and accessible status feedback. Main release headers omit Android compatibility noise to keep focus on version, build, date, and git tag.
 9. **Routing & Vercel Configuration**: Lightweight pathname router in `src/router.ts` supporting `/` and `/changelog`. A minimal `website/vercel.json` rewrite routes all requests to `/index.html` for direct-load support.
 10. **Caching Policy**: 5-minute client-side session/in-memory cache (`fitdex_release_cache_v1`). Handles GitHub API rate limits (403) and network failures with graceful offline fallback and retry controls.
-11. **Landing Hero Parity**: Public hero utilizes approved product framing: eyebrow `TACTICAL ANDROID FITNESS TRACKER`, concise description ('804 exercises, deep logging, zero subscription'), pre-release CTA composition (`PUBLIC RELEASE COMING SOON`, `VIEW CHANGELOG` routing to `/changelog`, `TRY WEB APP`), and 3 public metrics (`804 EXERCISES`, `LOCAL FIRST STORAGE`, `$0 FOREVER FREE`).
+11. **Landing Hero Parity**: Public hero utilizes approved product framing: eyebrow `TACTICAL ANDROID FITNESS TRACKER`, concise description ('802 exercises, deep logging, zero subscription'), pre-release CTA composition (`PUBLIC RELEASE COMING SOON`, `VIEW CHANGELOG` routing to `/changelog`, `TRY WEB APP`), and 3 public metrics (`802 EXERCISES`, `LOCAL FIRST STORAGE`, `$0 FOREVER FREE`).
 12. **Automated Test Suite**: Targeted Node test suite in `website/scripts/testReleaseSystem.mjs` verifying all 17 release and hero parity invariants via `npm --prefix website run test:release`, alongside existing `test:hero`.
 
 ## 50. Startup Experience & In-App Update System — Phase 7 Implemented

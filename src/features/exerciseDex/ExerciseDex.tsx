@@ -1,5 +1,6 @@
-import { ArrowLeft, Check, ChevronRight, Plus, Search, Star } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { ArrowLeft, Check, ChevronRight, CircleHelp, Plus, Search, Star } from 'lucide-react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { CommandPageFrame } from '../../components/layout/CommandPageFrame'
 import { Panel } from '../../components/ui/Panel'
 import { RetroLoader } from '../../components/ui/RetroLoader'
 import { db } from '../../data/database'
@@ -25,6 +26,7 @@ import { ensureBuiltInExercises } from './seedExercises'
 import { listFavouriteExerciseIds, setExerciseFavourite } from './exerciseFavouriteRepository'
 import { useAudio } from '../audio/useAudio'
 import { useBackNavigation } from '../navigation/useBackNavigation'
+import { getAppScrollTop, restoreAppScroll } from '../navigation/settingsOrigin'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
@@ -38,9 +40,10 @@ export interface ExerciseDexPicker {
   onDone: () => void
 }
 
-export function ExerciseDex({ picker, onAddToRoutine }: {
+export function ExerciseDex({ picker, onAddToRoutine, onBackToWorkoutHub }: {
   picker?: ExerciseDexPicker
   onAddToRoutine?: (exercise: Exercise) => void
+  onBackToWorkoutHub?: () => void
 } = {}) {
   const { family } = useTheme()
   const { playEffect } = useAudio()
@@ -57,6 +60,11 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
   const [pickerError, setPickerError] = useState('')
   const [libraryScope, setLibraryScope] = useState<'all' | 'favourites'>('all')
   const [confirmRemoval, setConfirmRemoval] = useState<Exercise>()
+
+  const savedScrollTopRef = useRef<number>(0)
+  const pendingScrollRestoreRef = useRef<number | null>(null)
+  const savedIndexScrollTopRef = useRef<number>(0)
+  const pendingIndexScrollRestoreRef = useRef<number | null>(null)
 
   useEffect(() => {
     let active = true
@@ -101,6 +109,31 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
     return searchExercises(scope, query)
   }, [category, categoryExercises, exercises, favourites, libraryScope, query, subfilter])
 
+  useLayoutEffect(() => {
+    if (!selectedExercise && pendingScrollRestoreRef.current !== null) {
+      const target = pendingScrollRestoreRef.current
+      pendingScrollRestoreRef.current = null
+      restoreAppScroll(target)
+      requestAnimationFrame(() => {
+        restoreAppScroll(target)
+        requestAnimationFrame(() => {
+          restoreAppScroll(target)
+        })
+      })
+    }
+  }, [selectedExercise])
+
+  useLayoutEffect(() => {
+    if (!selectedExercise && !category && pendingIndexScrollRestoreRef.current !== null) {
+      const target = pendingIndexScrollRestoreRef.current
+      pendingIndexScrollRestoreRef.current = null
+      restoreAppScroll(target)
+      requestAnimationFrame(() => {
+        restoreAppScroll(target)
+      })
+    }
+  }, [selectedExercise, category])
+
   async function toggleFavourite(exerciseId: string) {
     const nextFavourite = !favourites.has(exerciseId)
     await setExerciseFavourite(exerciseId, nextFavourite)
@@ -113,22 +146,37 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
   }
 
   function openCategory(nextCategory: ExerciseCategory) {
+    savedIndexScrollTopRef.current = getAppScrollTop()
     playEffect('select')
     setCategory(nextCategory)
     setSubfilter('All')
     setQuery('')
+    restoreAppScroll(0)
   }
 
   function returnToIndex() {
     setCategory(null)
     setSubfilter('All')
     setQuery('')
+    pendingIndexScrollRestoreRef.current = savedIndexScrollTopRef.current
+  }
+
+  function selectExercise(exercise: Exercise) {
+    savedScrollTopRef.current = getAppScrollTop()
+    playEffect('select')
+    setSelectedExercise(exercise)
+    restoreAppScroll(0)
   }
 
   const navigateBack = useBackNavigation('exercise-dex', Boolean(selectedExercise || category || picker), () => {
-    if (selectedExercise) setSelectedExercise(null)
-    else if (category) returnToIndex()
-    else picker?.onDone()
+    if (selectedExercise) {
+      pendingScrollRestoreRef.current = savedScrollTopRef.current
+      setSelectedExercise(null)
+    } else if (category) {
+      returnToIndex()
+    } else {
+      picker?.onDone()
+    }
   }, 20)
 
   async function persistPickerToggle(exercise: Exercise) {
@@ -175,8 +223,8 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
     )
   }
 
-  return (
-    <Panel className={picker ? 'exercise-dex-panel is-picker' : 'exercise-dex-panel'}>
+  const dexContent = (
+    <>
       {picker ? (
         <div className="exercise-picker-contextbar">
           <button className="dex-back-button" type="button" onClick={() => { void navigateBack() }} aria-label={`Back to ${picker.targetLabel}`}>
@@ -187,14 +235,24 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
       ) : null}
 
       {!picker && !category ? (
+        <header className="exercise-dex-context">
+          {onBackToWorkoutHub ? <button className="retro-workout-back" type="button" onClick={onBackToWorkoutHub} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /><span>Workout Hub</span></button> : null}
+          <div>
+            <h1>Exercise Dex</h1>
+            <p>Movement archive and routine tools.</p>
+          </div>
+        </header>
+      ) : null}
+
+      {!picker && !category ? (
         <div className="exercise-codex-cover">
           <div className="exercise-codex-avatar-frame">
             <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
           </div>
           <div className="exercise-codex-copy">
             <p className="eyebrow">FitDex field archive</p>
-            <h1>Exercise Codex</h1>
-            <p>Browse {exercises.length} verified records. Find a movement. Study its form. Carry it into training.</p>
+            <h2>Exercise Codex</h2>
+            <p>Browse 802 verified records. Find a movement. Study its form. Carry it into training.</p>
           </div>
         </div>
       ) : (
@@ -242,7 +300,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
             aria-pressed={libraryScope === 'favourites'}
             onClick={() => { playEffect('select'); setLibraryScope('favourites') }}
           >
-            <Star size={16} aria-hidden="true" /> Favorites
+            <Star size={20} strokeWidth={2.4} fill={libraryScope === 'favourites' ? 'currentColor' : 'none'} aria-hidden="true" /> Favorites
           </button>
         </div>
       ) : null}
@@ -275,7 +333,7 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
         <ExerciseRows
           exercises={visibleExercises}
           favourites={favourites}
-          onSelect={(exercise) => { playEffect('select'); setSelectedExercise(exercise) }}
+          onSelect={selectExercise}
           onToggleFavourite={(id) => void toggleFavourite(id)}
           picker={picker}
           pendingExerciseIds={pendingExerciseIds}
@@ -287,7 +345,24 @@ export function ExerciseDex({ picker, onAddToRoutine }: {
       )}
       {pickerError ? <p className="workout-feedback exercise-picker-feedback" role="alert">{pickerError}</p> : null}
       {confirmRemoval ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-picker-exercise-title"><h2 id="remove-picker-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmRemoval(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exercise = confirmRemoval; setConfirmRemoval(undefined); void persistPickerToggle(exercise) }}>Remove</button></section></div> : null}
-    </Panel>
+    </>
+  )
+
+  if (picker) return <Panel className="exercise-dex-panel is-picker">{dexContent}</Panel>
+
+  return (
+    <CommandPageFrame
+      className="exercise-dex-command"
+      terminalTitle="FITDEX // EXERCISE CODEX"
+      terminalMeta="ARCHIVE · 802"
+      headerActions={
+        <button className="cmd-icon-btn" type="button" onClick={() => playEffect('select')} aria-label="Exercise Dex help" title="Exercise Dex help">
+          <CircleHelp size={16} aria-hidden="true" />
+        </button>
+      }
+    >
+      <section className="exercise-dex-panel">{dexContent}</section>
+    </CommandPageFrame>
   )
 }
 
@@ -337,7 +412,7 @@ function ExerciseRows({
           <h2>{sectionTitle}</h2>
           <span className="eyebrow">{sectionCountLabel}</span>
         </div>
-        <p className="exercise-empty-result">{emptyMessage ?? 'No exercises match this search and filter.'}</p>
+        {emptyMessage ? <div className="exercise-empty-result exercise-favourites-empty"><Star size={20} strokeWidth={2.2} aria-hidden="true" /><span><strong>No favorite exercises yet</strong><small>{emptyMessage}</small></span></div> : <p className="exercise-empty-result">No exercises match this search and filter.</p>}
       </div>
     )
   }

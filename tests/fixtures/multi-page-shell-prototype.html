@@ -1,0 +1,1732 @@
+<!doctype html>
+<html lang="en" data-theme-family="spartans" data-brightness="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FitDex · Multi-Page Premium Shell & System Prototype</title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/src/styles/app.css" />
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body.proto-body {
+        margin: 0;
+        padding: clamp(12px, 3vw, 24px) clamp(8px, 2vw, 16px) 60px;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .proto-page-wrap {
+        width: 100%;
+        max-width: 520px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      /* ============================================================
+         PROTOTYPE REVIEW CONTROL BAR
+         ============================================================ */
+      .proto-review-bar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .proto-review-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .proto-review-tag {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: var(--color-rpg-accent, #b67e26);
+        color: #111;
+        font-weight: 800;
+      }
+
+      .proto-review-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .proto-review-label {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        min-width: 68px;
+      }
+
+      .proto-btn {
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-family: var(--font-body);
+        font-size: 0.74rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.12s ease;
+      }
+
+      .proto-btn:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-muted);
+        color: var(--color-primary-text);
+      }
+
+      .proto-btn.active {
+        background: var(--color-primary);
+        color: #111;
+        border-color: var(--color-primary);
+        font-weight: 700;
+      }
+
+      .proto-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+        width: 100%;
+      }
+
+      .proto-nav-btn {
+        padding: 6px 4px;
+        text-align: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border-radius: 4px;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        cursor: pointer;
+        transition: all 0.1s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .proto-nav-btn.active {
+        background: var(--color-primary);
+        color: #111;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 6px var(--color-primary-muted);
+      }
+
+      /* ============================================================
+         SHARED FITDEX HANDHELD COMMAND SHELL
+         Device-like chassis, inner rim, top status rail, bottom containment
+         ============================================================ */
+      .fitdex-command-frame {
+        width: 100%;
+        min-width: 0;
+        padding: 8px;
+        border: 3px solid var(--color-border-strong);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--color-app-surface) 92%, var(--color-text));
+        box-shadow: inset 0 0 0 2px var(--color-bg), 5px 6px 0 var(--color-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: all 0.15s ease;
+      }
+
+      /* Status Header Rail */
+      .fitdex-command-status {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 8px 8px;
+        color: var(--color-primary-text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .fitdex-command-status span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-terminal-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-success);
+        box-shadow: 0 0 4px var(--color-success);
+      }
+
+      .fitdex-command-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      /* Page Screen Visibility */
+      .proto-page-screen {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .proto-page-screen.active {
+        display: flex;
+      }
+
+      /* ============================================================
+         PRIMARY UNIFIED CARDS (Clean framing without over-bordering)
+         ============================================================ */
+      .proto-primary-card {
+        background: var(--color-surface);
+        border: 2px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .proto-panel-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-top: 3px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .proto-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .proto-card-tag {
+        font-family: var(--font-mono);
+        font-size: 0.64rem;
+        font-weight: 800;
+        color: var(--color-primary-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .proto-card-badge {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        padding: 2px 6px;
+        background: var(--color-primary-muted);
+        color: var(--color-primary-text);
+        border-radius: 3px;
+        font-weight: 700;
+      }
+
+      .proto-card-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        line-height: 1.2;
+      }
+
+      .proto-card-desc {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--color-text-muted);
+        line-height: 1.35;
+      }
+
+      /* ============================================================
+         PREMIUM COLLAPSIBLE SECTION SYSTEM
+         Consistent across all 5 pages
+         ============================================================ */
+      .collapsible-module {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .collapsible-module:focus-within,
+      .collapsible-module.is-expanded {
+        border-color: var(--color-border-strong);
+      }
+
+      .collapsible-trigger {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        background: transparent;
+        border: 0;
+        color: var(--color-text);
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.1s ease;
+      }
+
+      .collapsible-trigger:hover {
+        background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+      }
+
+      .collapsible-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .collapsible-title-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .collapsible-title {
+        font-family: var(--font-display);
+        font-size: 0.84rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0;
+        color: var(--color-text);
+      }
+
+      .collapsible-badge {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 1px 5px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 3px;
+        color: var(--color-text-muted);
+      }
+
+      .collapsible-summary {
+        font-size: 0.72rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .collapsible-disclosure {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 4px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        color: var(--color-primary-text);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 900;
+        flex-shrink: 0;
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+
+      .collapsible-module.is-expanded .collapsible-disclosure {
+        transform: rotate(90deg);
+        background: var(--color-primary-muted);
+        border-color: var(--color-primary);
+      }
+
+      .collapsible-body {
+        display: none;
+        padding: 0 12px 12px;
+        border-top: 1px solid var(--color-border);
+        background: color-mix(in srgb, var(--color-surface) 95%, var(--color-bg));
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .collapsible-module.is-expanded .collapsible-body {
+        display: flex;
+        padding-top: 10px;
+      }
+
+      /* Dense Item Rows inside Collapsible Drawers */
+      .proto-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: border-color 0.1s ease, transform 0.08s ease;
+      }
+
+      .proto-item-row:hover {
+        border-color: var(--color-primary);
+      }
+
+      .proto-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .proto-item-info strong {
+        font-size: 0.8rem;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .proto-item-info small {
+        font-size: 0.68rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .proto-item-value {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--color-primary-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* Journal Meal Rows with Approved Food Meal Artwork */
+      .proto-meal-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: border-color 0.1s ease, transform 0.08s ease;
+      }
+
+      .proto-meal-row:hover {
+        border-color: var(--color-primary);
+      }
+
+      .proto-meal-slot {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 3px;
+        box-sizing: border-box;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .proto-meal-art {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      .proto-meal-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .proto-meal-title {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--color-text);
+        min-width: 0;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      .proto-meal-preview {
+        font-size: 0.68rem;
+        color: var(--color-text-muted);
+        min-width: 0;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      .proto-meal-value {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--color-primary-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+        text-align: right;
+      }
+
+      /* ============================================================
+         FOOD PAGE SPECIFIC STYLES
+         ============================================================ */
+      .food-target-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 8px;
+      }
+
+      .food-target-cell {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .food-target-cell .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 800;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        margin: 0;
+      }
+
+      .food-target-cell strong {
+        font-size: 0.95rem;
+        font-weight: 900;
+      }
+
+      .food-target-cell small {
+        font-size: 0.68rem;
+        color: var(--color-primary-text);
+        font-weight: 700;
+      }
+
+      .food-bar-track {
+        height: 5px;
+        border-radius: 3px;
+        background: var(--color-border);
+        overflow: hidden;
+        margin-top: 2px;
+      }
+
+      .food-bar-fill {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: 3px;
+      }
+
+      .food-quick-log-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .food-quick-btn {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        padding: 8px 4px;
+        text-align: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--color-text);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        transition: all 0.1s ease;
+      }
+
+      .food-quick-btn:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-muted);
+      }
+
+      .food-quick-btn span {
+        font-size: 1rem;
+      }
+
+      .food-quick-btn small {
+        font-size: 0.64rem;
+        color: var(--color-text-muted);
+      }
+
+      .macro-pill-row {
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+      }
+
+      .macro-pill {
+        flex: 1;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        padding: 6px 8px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .macro-pill strong {
+        font-size: 0.84rem;
+        font-weight: 900;
+      }
+
+      .macro-pill span {
+        font-size: 0.65rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+      }
+
+      /* ============================================================
+         PROGRESS PAGE SPECIFIC STYLES
+         ============================================================ */
+      .progress-hero-card {
+        background: var(--color-surface);
+        border: 2px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .progress-hero-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        background: var(--color-surface-raised);
+        border: 2px solid var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+        box-shadow: 0 0 8px var(--color-primary-muted);
+      }
+
+      .progress-hero-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .progress-hero-info .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 800;
+        color: var(--color-primary-text);
+        text-transform: uppercase;
+        margin: 0;
+      }
+
+      .progress-hero-info h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .progress-attr-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .progress-attr-cell {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .progress-attr-cell span {
+        font-size: 0.65rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+      }
+
+      .progress-attr-cell strong {
+        font-size: 0.95rem;
+        font-weight: 900;
+      }
+
+      .progress-attr-cell small {
+        font-size: 0.64rem;
+        color: var(--color-primary-text);
+      }
+
+      .proto-bar-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        height: 70px;
+        padding-top: 10px;
+      }
+
+      .proto-chart-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        height: 100%;
+        justify-content: flex-end;
+      }
+
+      .proto-chart-col i {
+        width: 100%;
+        background: var(--color-primary);
+        border-radius: 2px 2px 0 0;
+        min-height: 4px;
+        opacity: 0.85;
+      }
+
+      .proto-chart-col.is-peak i {
+        background: var(--color-rpg-accent, #b67e26);
+        opacity: 1;
+      }
+
+      .proto-chart-col small {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        color: var(--color-text-muted);
+      }
+
+      /* ============================================================
+         JOURNAL PAGE SPECIFIC STYLES
+         ============================================================ */
+      .journal-date-strip {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .journal-date-strip button {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 4px 8px;
+        color: var(--color-text);
+        font-size: 0.72rem;
+        cursor: pointer;
+      }
+
+      .journal-date-title {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .journal-date-title strong {
+        font-family: var(--font-display);
+        font-size: 0.88rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .journal-date-title small {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        color: var(--color-primary-text);
+        font-weight: 700;
+      }
+
+      .journal-summary-box {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .journal-summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.76rem;
+      }
+
+      /* ============================================================
+         SETTINGS PAGE SPECIFIC STYLES
+         ============================================================ */
+      .settings-profile-banner {
+        background: var(--color-surface);
+        border: 2px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .settings-avatar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .settings-avatar-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--color-surface-raised);
+        border: 2px solid var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+      }
+
+      .settings-identity-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .settings-identity-text strong {
+        font-size: 0.95rem;
+        font-weight: 900;
+      }
+
+      .settings-identity-text small {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+      }
+
+      .settings-row-interactive {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: border-color 0.1s ease;
+      }
+
+      .settings-row-interactive:hover {
+        border-color: var(--color-primary);
+      }
+
+      .settings-row-interactive span {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .settings-row-interactive strong {
+        font-size: 0.8rem;
+      }
+
+      .settings-row-interactive small {
+        font-size: 0.68rem;
+        color: var(--color-text-muted);
+      }
+
+      .settings-row-interactive em {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--color-primary-text);
+        font-style: normal;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body class="proto-body">
+    <div class="proto-page-wrap">
+      <!-- REVIEW CONTROL TOOLBAR -->
+      <section class="proto-review-bar" aria-label="Prototype Navigation Controls">
+        <div class="proto-review-title">
+          <span>Multi-Page Shell Prototype</span>
+          <span class="proto-review-tag">Handheld Shell Review</span>
+        </div>
+
+        <!-- 5 Page Navigation -->
+        <div class="proto-nav-grid" role="tablist" aria-label="Prototype Pages">
+          <button type="button" class="proto-nav-btn active" id="tab-workout" onclick="switchPage('workout')">🏋️ Workout</button>
+          <button type="button" class="proto-nav-btn" id="tab-food" onclick="switchPage('food')">🥩 Food</button>
+          <button type="button" class="proto-nav-btn" id="tab-progress" onclick="switchPage('progress')">📈 Progress</button>
+          <button type="button" class="proto-nav-btn" id="tab-journal" onclick="switchPage('journal')">📜 Journal</button>
+          <button type="button" class="proto-nav-btn" id="tab-settings" onclick="switchPage('settings')">⚙️ Settings</button>
+        </div>
+
+        <div class="proto-review-row">
+          <span class="proto-review-label">Faction:</span>
+          <button type="button" class="proto-btn active" id="btn-spartans" onclick="setTheme('spartans')">Spartan (Warm Iron)</button>
+          <button type="button" class="proto-btn" id="btn-amazonians" onclick="setTheme('amazonians')">Amazonian (Cool Slate)</button>
+        </div>
+
+        <div class="proto-review-row">
+          <span class="proto-review-label">Brightness:</span>
+          <button type="button" class="proto-btn active" id="btn-dark" onclick="setBrightness('dark')">Dark Mode</button>
+          <button type="button" class="proto-btn" id="btn-light" onclick="setBrightness('light')">Light Mode</button>
+        </div>
+
+        <div class="proto-review-row">
+          <span class="proto-review-label">Drawers:</span>
+          <button type="button" class="proto-btn" onclick="toggleAllDrawers(true)">Expand All</button>
+          <button type="button" class="proto-btn" onclick="toggleAllDrawers(false)">Collapse All</button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           THE SHARED HANDHELD COMMAND SHELL
+           Same device chassis and frame across all 5 pages
+           ============================================================ -->
+      <div class="fitdex-command-frame" id="main-command-shell">
+        <!-- TOP STATUS HEADER RAIL (Page Specific Content) -->
+        <header class="fitdex-command-status" id="shell-status-rail">
+          <span id="shell-terminal-title">
+            <i class="status-terminal-dot"></i>
+            FITDEX // TRAINING TERMINAL
+          </span>
+          <time id="shell-terminal-meta">LV 4 · THU 01 OCT</time>
+        </header>
+
+        <div class="fitdex-command-stack">
+          <!-- ========================================================
+               PAGE 1: WORKOUT HUB
+               ======================================================== -->
+          <main class="proto-page-screen active" id="screen-workout" aria-label="Workout Terminal">
+            <!-- 1. TODAY'S MISSION (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="proto-primary-card" aria-labelledby="workout-mission-heading">
+              <div class="proto-card-top">
+                <span class="proto-card-tag">Today's Mission</span>
+                <span class="proto-card-badge">Thu · Planned</span>
+              </div>
+              <h2 class="proto-card-title" id="workout-mission-heading">Chest &amp; Triceps Power</h2>
+              <p class="proto-card-desc">4 exercises ready · Bench press, incline dumbbell press, dips &amp; cable pushdowns.</p>
+              <div style="display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 8px; margin-top: 2px;">
+                <button class="primary-button" type="button" style="padding: 8px 12px; font-weight: 800;">Start Workout</button>
+                <button class="secondary-button" type="button" style="padding: 8px 12px;">Options</button>
+              </div>
+            </section>
+
+            <!-- 2. WEEKLY PLAN PIXEL WALL STRIP (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="proto-panel-card" aria-labelledby="workout-weekly-heading">
+              <div class="proto-card-top">
+                <h3 class="proto-card-title" id="workout-weekly-heading" style="font-size: 0.86rem;">Weekly Plan</h3>
+                <button class="text-button" type="button" style="font-size: 0.72rem;">Edit Plan</button>
+              </div>
+              <div class="workout-week-grid" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;">
+                <div class="pixel-wall-tile">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--done-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--done-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--done-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--done-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--done-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--done-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--done-mid)" /></svg>
+                  <span class="wall-face-letter">M</span>
+                </div>
+                <div class="pixel-wall-tile">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--done-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--done-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--done-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--done-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--done-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--done-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--done-mid)" /></svg>
+                  <span class="wall-face-letter">T</span>
+                </div>
+                <div class="pixel-wall-tile">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--rest-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--rest-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--rest-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--rest-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--rest-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--rest-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--rest-mid)" /></svg>
+                  <span class="wall-face-letter">W</span>
+                </div>
+                <div class="pixel-wall-tile is-today">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--plan-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--plan-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--plan-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--plan-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--plan-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--plan-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--plan-mid)" /><rect class="today-focus-rim" x="1" y="1" width="46" height="50" rx="1" fill="none" stroke="transparent" stroke-width="1.5" opacity="0"/></svg>
+                  <span class="wall-face-letter">T</span>
+                </div>
+                <div class="pixel-wall-tile">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--plan-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--plan-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--plan-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--plan-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--plan-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--plan-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--plan-mid)" /></svg>
+                  <span class="wall-face-letter">F</span>
+                </div>
+                <div class="pixel-wall-tile">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--miss-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--miss-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--miss-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--miss-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--miss-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--miss-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--miss-mid)" /></svg>
+                  <span class="wall-face-letter">S</span>
+                </div>
+                <div class="pixel-wall-tile state-noplan">
+                  <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none"><rect x="1" y="2" width="46" height="51" fill="var(--noplan-shadow)" /><rect x="1" y="1" width="46" height="50" fill="var(--noplan-mortar)" /><rect x="3" y="3" width="18" height="13" fill="var(--noplan-mid)" /><rect x="23" y="3" width="22" height="13" fill="var(--noplan-mid)" /><rect x="3" y="18" width="42" height="18" fill="var(--noplan-light)" /><rect x="3" y="38" width="24" height="11" fill="var(--noplan-mid)" /><rect x="29" y="38" width="16" height="11" fill="var(--noplan-mid)" /></svg>
+                  <span class="wall-face-letter">S</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. EXERCISE DEX GATEWAY (ALWAYS VISIBLE) -->
+            <div class="proto-item-row" style="padding: 10px 12px; background: var(--color-surface);" role="button">
+              <div class="proto-item-info">
+                <strong>Exercise Dex</strong>
+                <small>802 moves · Favorites, animations &amp; catalog</small>
+              </div>
+              <span class="proto-item-value">Open ›</span>
+            </div>
+
+            <!-- 4. SAVED ROUTINES (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module is-expanded" id="mod-workout-routines">
+              <button class="collapsible-trigger" type="button" aria-expanded="true" onclick="toggleDrawer('mod-workout-routines')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Saved Routines</h3>
+                    <span class="collapsible-badge">3 Routines</span>
+                  </div>
+                  <span class="collapsible-summary">Chest Power, Back Volume, Legs &amp; Core</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Chest &amp; Triceps Power</strong>
+                    <small>4 exercises · 14 planned sets · Thu</small>
+                  </div>
+                  <span class="proto-item-value">▶</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Back &amp; Biceps Volume</strong>
+                    <small>5 exercises · 16 planned sets · Tue</small>
+                  </div>
+                  <span class="proto-item-value">▶</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Legs &amp; Core Foundation</strong>
+                    <small>5 exercises · 17 planned sets · Fri</small>
+                  </div>
+                  <span class="proto-item-value">▶</span>
+                </div>
+                <button class="secondary-button" type="button" style="width: 100%; margin-top: 2px; padding: 6px; font-size: 0.74rem;">+ Create Routine</button>
+              </div>
+            </section>
+
+            <!-- 5. RECENT WORKOUTS (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module" id="mod-workout-recent">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-workout-recent')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Recent Workouts</h3>
+                    <span class="collapsible-badge">2 Recent</span>
+                  </div>
+                  <span class="collapsible-summary">Last: Back Volume · Yesterday · 48m</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Back &amp; Biceps Volume</strong>
+                    <small>Yesterday · 5 exercises · 16 sets · 48m</small>
+                  </div>
+                  <span class="proto-item-value">12,400 kg</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Chest Power</strong>
+                    <small>29 Sep · 4 exercises · 14 sets · 42m</small>
+                  </div>
+                  <span class="proto-item-value">10,800 kg</span>
+                </div>
+                <button class="secondary-button" type="button" style="width: 100%; margin-top: 2px; padding: 6px; font-size: 0.74rem;">View Full History</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- ========================================================
+               PAGE 2: FOOD / NUTRITION HUB
+               ======================================================== -->
+          <main class="proto-page-screen" id="screen-food" aria-label="Nutrition Terminal">
+            <!-- 1. DAILY TARGETS & SUMMARY (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="proto-primary-card" aria-labelledby="food-targets-heading">
+              <div class="proto-card-top">
+                <span class="proto-card-tag">Today's Nutrition</span>
+                <span class="proto-card-badge">Day 14 · On Track</span>
+              </div>
+              <div class="food-target-grid">
+                <div class="food-target-cell">
+                  <p class="eyebrow">Calories</p>
+                  <strong>1,840 <small style="color: var(--color-text-muted); font-size: 0.72rem;">/ 2,250</small></strong>
+                  <small>410 kcal remaining</small>
+                  <div class="food-bar-track"><div class="food-bar-fill" style="width: 81%;"></div></div>
+                </div>
+                <div class="food-target-cell">
+                  <p class="eyebrow">Protein</p>
+                  <strong>148g <small style="color: var(--color-text-muted); font-size: 0.72rem;">/ 165g</small></strong>
+                  <small>17g remaining</small>
+                  <div class="food-bar-track"><div class="food-bar-fill" style="width: 89%;"></div></div>
+                </div>
+              </div>
+              <!-- Fast Log Meal Buttons -->
+              <div class="food-quick-log-grid">
+                <button class="food-quick-btn" type="button">
+                  <span>🍳</span>
+                  Breakfast
+                  <small>520 kcal</small>
+                </button>
+                <button class="food-quick-btn" type="button">
+                  <span>🥗</span>
+                  Lunch
+                  <small>780 kcal</small>
+                </button>
+                <button class="food-quick-btn" type="button">
+                  <span>🍗</span>
+                  Dinner
+                  <small>540 kcal</small>
+                </button>
+                <button class="food-quick-btn" type="button">
+                  <span>🍎</span>
+                  Snacks
+                  <small>+ Log</small>
+                </button>
+              </div>
+            </section>
+
+            <!-- 2. NUTRITION BREAKDOWN & MACROS (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module is-expanded" id="mod-food-macros">
+              <button class="collapsible-trigger" type="button" aria-expanded="true" onclick="toggleDrawer('mod-food-macros')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Macro Breakdown</h3>
+                    <span class="collapsible-badge">3 Macros</span>
+                  </div>
+                  <span class="collapsible-summary">Carbs 190g · Protein 148g · Fat 58g · Fiber 28g</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="macro-pill-row">
+                  <div class="macro-pill">
+                    <strong>190g</strong>
+                    <span>Carbs (42%)</span>
+                  </div>
+                  <div class="macro-pill">
+                    <strong>148g</strong>
+                    <span>Protein (32%)</span>
+                  </div>
+                  <div class="macro-pill">
+                    <strong>58g</strong>
+                    <span>Fat (26%)</span>
+                  </div>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Fiber &amp; Micronutrients</strong>
+                    <small>Fiber: 28g · Sugar: 34g · Sodium: 1,820mg</small>
+                  </div>
+                  <span class="proto-item-value">Detailed</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. FREQUENT & RECENT FOODS (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module" id="mod-food-frequent">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-food-frequent')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Frequent Foods</h3>
+                    <span class="collapsible-badge">4 Frequent</span>
+                  </div>
+                  <span class="collapsible-summary">Whey Isolate, Whole Eggs, Chicken Breast, Oats</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Whey Protein Isolate (1 scoop)</strong>
+                    <small>120 kcal · 25g P · 2g C · 1g F</small>
+                  </div>
+                  <button class="proto-btn" style="padding: 3px 8px; font-size: 0.68rem;">+ Quick Log</button>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Grilled Chicken Breast (200g)</strong>
+                    <small>330 kcal · 62g P · 0g C · 7g F</small>
+                  </div>
+                  <button class="proto-btn" style="padding: 3px 8px; font-size: 0.68rem;">+ Quick Log</button>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Rolled Oats (80g)</strong>
+                    <small>300 kcal · 10g P · 54g C · 5g F</small>
+                  </div>
+                  <button class="proto-btn" style="padding: 3px 8px; font-size: 0.68rem;">+ Quick Log</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. TODAY'S LOGGED ITEMS (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module" id="mod-food-entries">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-food-entries')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Today's Logged Items</h3>
+                    <span class="collapsible-badge">6 Items</span>
+                  </div>
+                  <span class="collapsible-summary">Breakfast (2 items) · Lunch (3 items) · Dinner (1 item)</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>3 Eggs + 2 Slices Sourdough</strong>
+                    <small>Breakfast · 520 kcal · 28g Protein</small>
+                  </div>
+                  <span class="proto-item-value">Edit</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Chicken Rice Bowl + Avocado</strong>
+                    <small>Lunch · 780 kcal · 58g Protein</small>
+                  </div>
+                  <span class="proto-item-value">Edit</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Salmon Fillet + Sweet Potato</strong>
+                    <small>Dinner · 540 kcal · 42g Protein</small>
+                  </div>
+                  <span class="proto-item-value">Edit</span>
+                </div>
+              </div>
+            </section>
+          </main>
+
+          <!-- ========================================================
+               PAGE 3: PROGRESS HUB
+               ======================================================== -->
+          <main class="proto-page-screen" id="screen-progress" aria-label="Progress Terminal">
+            <!-- 1. CHARACTER RANK & XP HERO (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="progress-hero-card">
+              <div class="progress-hero-badge">⚔️</div>
+              <div class="progress-hero-info">
+                <p class="eyebrow">Character Level 4</p>
+                <h2>Iron Vanguard</h2>
+                <div class="food-bar-track"><div class="food-bar-fill" style="width: 68%;"></div></div>
+                <small style="font-size: 0.66rem; color: var(--color-text-muted); font-family: var(--font-mono);">3,420 / 5,000 XP to Level 5</small>
+              </div>
+            </section>
+
+            <!-- 2. CORE ATTRIBUTES SUMMARY (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="proto-panel-card" aria-labelledby="prog-attrs-heading">
+              <div class="proto-card-top">
+                <h3 class="proto-card-title" id="prog-attrs-heading" style="font-size: 0.86rem;">Training Stats (30D)</h3>
+                <span class="proto-card-badge">30D Active</span>
+              </div>
+              <div class="progress-attr-grid">
+                <div class="progress-attr-cell">
+                  <span>Consistency</span>
+                  <strong>14 Sessions</strong>
+                  <small>93% adherence</small>
+                </div>
+                <div class="progress-attr-cell">
+                  <span>Training Time</span>
+                  <strong>11h 24m</strong>
+                  <small>48m avg session</small>
+                </div>
+                <div class="progress-attr-cell">
+                  <span>Resistance Vol</span>
+                  <strong>48,250 kg</strong>
+                  <small>+12% vs last month</small>
+                </div>
+                <div class="progress-attr-cell">
+                  <span>Record Book</span>
+                  <strong>18 Exercises</strong>
+                  <small>4 new PRs this week</small>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. TRAINING VOLUME & FREQUENCY TRENDS (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module is-expanded" id="mod-prog-trends">
+              <button class="collapsible-trigger" type="button" aria-expanded="true" onclick="toggleDrawer('mod-prog-trends')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Volume Trend (Weekly)</h3>
+                    <span class="collapsible-badge">4 Weeks</span>
+                  </div>
+                  <span class="collapsible-summary">Peak: 14,800 kg · Current: 12,400 kg</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-bar-chart">
+                  <div class="proto-chart-col"><i style="height: 60%;"></i><small>W1</small></div>
+                  <div class="proto-chart-col"><i style="height: 75%;"></i><small>W2</small></div>
+                  <div class="proto-chart-col is-peak"><i style="height: 100%;"></i><small>W3</small></div>
+                  <div class="proto-chart-col"><i style="height: 85%;"></i><small>W4</small></div>
+                </div>
+                <p class="proto-card-desc" style="margin-top: 4px;">Weekly resistance tonnage calculated from weight × reps across all completed sets.</p>
+              </div>
+            </section>
+
+            <!-- 4. PERSONAL RECORDS (PR) SPOTLIGHT (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module" id="mod-prog-prs">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-prog-prs')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Personal Records</h3>
+                    <span class="collapsible-badge">18 Records</span>
+                  </div>
+                  <span class="collapsible-summary">Bench 105kg · Squat 140kg · Deadlift 180kg</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Barbell Bench Press</strong>
+                    <small>105 kg × 5 reps · 29 Sep 2026</small>
+                  </div>
+                  <span class="proto-item-value">122 kg 1RM</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Barbell Back Squat</strong>
+                    <small>140 kg × 3 reps · 24 Sep 2026</small>
+                  </div>
+                  <span class="proto-item-value">152 kg 1RM</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Conventional Deadlift</strong>
+                    <small>180 kg × 2 reps · 18 Sep 2026</small>
+                  </div>
+                  <span class="proto-item-value">191 kg 1RM</span>
+                </div>
+                <button class="secondary-button" type="button" style="width: 100%; margin-top: 2px; padding: 6px; font-size: 0.74rem;">View Full PR Record Book ›</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- ========================================================
+               PAGE 4: JOURNAL HUB
+               ======================================================== -->
+          <main class="proto-page-screen" id="screen-journal" aria-label="Journal Terminal">
+            <!-- 1. DATE SELECTOR STRIP (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="journal-date-strip">
+              <button type="button">‹ Yesterday</button>
+              <div class="journal-date-title">
+                <strong>Thu, 01 Oct 2026</strong>
+                <small>2 Activities Logged</small>
+              </div>
+              <button type="button">Tomorrow ›</button>
+            </section>
+
+            <!-- 2. DAY SNAPSHOT SUMMARY (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="journal-summary-box">
+              <div class="journal-summary-row">
+                <strong>🏋️ Completed Training</strong>
+                <span style="color: var(--color-primary-text); font-weight: 700;">Chest &amp; Triceps (48m)</span>
+              </div>
+              <div class="journal-summary-row">
+                <strong>🥩 Nutrition Logged</strong>
+                <span style="color: var(--color-primary-text); font-weight: 700;">2,120 kcal · 176g Protein</span>
+              </div>
+            </section>
+
+            <!-- 3. WORKOUT SESSION DEEP-DIVE (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module is-expanded" id="mod-journal-workout">
+              <button class="collapsible-trigger" type="button" aria-expanded="true" onclick="toggleDrawer('mod-journal-workout')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Workout Breakdown</h3>
+                    <span class="collapsible-badge">4 Exercises</span>
+                  </div>
+                  <span class="collapsible-summary">14 Sets · 10,800 kg Total Volume</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Barbell Bench Press</strong>
+                    <small>Set 1: 80kg×10 · Set 2: 90kg×8 · Set 3: 100kg×5</small>
+                  </div>
+                  <span class="proto-item-value">3 Sets</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Incline Dumbbell Press</strong>
+                    <small>Set 1: 32kg×10 · Set 2: 34kg×8 · Set 3: 36kg×6</small>
+                  </div>
+                  <span class="proto-item-value">3 Sets</span>
+                </div>
+                <div class="proto-item-row">
+                  <div class="proto-item-info">
+                    <strong>Triceps Cable Pushdowns</strong>
+                    <small>Set 1: 35kg×12 · Set 2: 40kg×10 · Set 3: 42kg×8</small>
+                  </div>
+                  <span class="proto-item-value">3 Sets</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. MEAL DETAILS (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module is-expanded" id="mod-journal-food">
+              <button class="collapsible-trigger" type="button" aria-expanded="true" onclick="toggleDrawer('mod-journal-food')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Meals Logged</h3>
+                    <span class="collapsible-badge">4 Meals</span>
+                  </div>
+                  <span class="collapsible-summary">Breakfast (520 kcal), Lunch (780 kcal), Dinner (540 kcal), Supper (280 kcal)</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="proto-meal-row">
+                  <div class="proto-meal-slot">
+                    <img class="proto-meal-art" src="/food/meals/meal-breakfast.webp" alt="" aria-hidden="true" />
+                  </div>
+                  <div class="proto-meal-info">
+                    <strong class="proto-meal-title">Breakfast · 08:30 AM</strong>
+                    <span class="proto-meal-preview">3 Eggs, Sourdough, Black Coffee</span>
+                  </div>
+                  <span class="proto-meal-value">520 kcal</span>
+                </div>
+                <div class="proto-meal-row">
+                  <div class="proto-meal-slot">
+                    <img class="proto-meal-art" src="/food/meals/meal-lunch.webp" alt="" aria-hidden="true" />
+                  </div>
+                  <div class="proto-meal-info">
+                    <strong class="proto-meal-title">Lunch · 01:15 PM</strong>
+                    <span class="proto-meal-preview">Chicken Rice Bowl, Avocado, Olive Oil</span>
+                  </div>
+                  <span class="proto-meal-value">780 kcal</span>
+                </div>
+                <div class="proto-meal-row">
+                  <div class="proto-meal-slot">
+                    <img class="proto-meal-art" src="/food/meals/meal-dinner.webp" alt="" aria-hidden="true" />
+                  </div>
+                  <div class="proto-meal-info">
+                    <strong class="proto-meal-title">Dinner · 07:45 PM</strong>
+                    <span class="proto-meal-preview">Salmon, Sweet Potato, Steamed Broccoli</span>
+                  </div>
+                  <span class="proto-meal-value">540 kcal</span>
+                </div>
+                <div class="proto-meal-row">
+                  <div class="proto-meal-slot">
+                    <img class="proto-meal-art" src="/food/meals/meal-supper.webp" alt="" aria-hidden="true" />
+                  </div>
+                  <div class="proto-meal-info">
+                    <strong class="proto-meal-title">Supper · 10:00 PM</strong>
+                    <span class="proto-meal-preview">Casein Protein Shake, Almond Butter</span>
+                  </div>
+                  <span class="proto-meal-value">280 kcal</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 5. DAILY NOTES & REFLECTION (COLLAPSIBLE DRAWER) -->
+            <section class="collapsible-module" id="mod-journal-notes">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-journal-notes')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Notes &amp; Reflection</h3>
+                    <span class="collapsible-badge">1 Note</span>
+                  </div>
+                  <span class="collapsible-summary">"Felt strong on bench top set, shoulder mobility was great"</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <p class="proto-card-desc" style="font-style: italic; background: var(--color-surface-raised); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--color-border); margin: 0;">
+                  "Felt strong on bench top set, shoulder mobility was great after 5min warm up. Energy levels high today."
+                </p>
+                <button class="secondary-button" type="button" style="width: 100%; margin-top: 2px; padding: 6px; font-size: 0.74rem;">+ Edit Day Note</button>
+              </div>
+            </section>
+          </main>
+
+          <!-- ========================================================
+               PAGE 5: SETTINGS HUB
+               ======================================================== -->
+          <main class="proto-page-screen" id="screen-settings" aria-label="Settings Terminal">
+            <!-- 1. PROFILE & IDENTITY BANNER (PRIMARY - ALWAYS VISIBLE) -->
+            <section class="settings-profile-banner">
+              <div class="settings-avatar-wrap">
+                <div class="settings-avatar-circle">🛡️</div>
+                <div class="settings-identity-text">
+                  <strong>Arijit</strong>
+                  <small>Spartan Champion · Local Device Profile</small>
+                </div>
+              </div>
+              <button class="proto-btn" style="padding: 4px 10px; font-size: 0.72rem;">Edit</button>
+            </section>
+
+            <!-- 2. APPEARANCE & THEME (COLLAPSIBLE GROUP) -->
+            <section class="collapsible-module is-expanded" id="mod-settings-appearance">
+              <button class="collapsible-trigger" type="button" aria-expanded="true" onclick="toggleDrawer('mod-settings-appearance')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Appearance &amp; Theme</h3>
+                    <span class="collapsible-badge">Visuals</span>
+                  </div>
+                  <span class="collapsible-summary">Faction: Spartan · Mode: Dark</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Faction Theme</strong>
+                    <small>Switches visual theme and launcher branding</small>
+                  </span>
+                  <em>Spartan (Warm Iron) ›</em>
+                </div>
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Brightness</strong>
+                    <small>System, Dark, or Light interface</small>
+                  </span>
+                  <em>Dark Mode ›</em>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. TRAINING & SYSTEM UNITS (COLLAPSIBLE GROUP) -->
+            <section class="collapsible-module" id="mod-settings-units">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-settings-units')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Units &amp; Audio</h3>
+                    <span class="collapsible-badge">Config</span>
+                  </div>
+                  <span class="collapsible-summary">Metric (kg/km) · SFX On · Warrior Music</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Measurement System</strong>
+                    <small>Weight and distance unit preferences</small>
+                  </span>
+                  <em>Metric (kg / km) ›</em>
+                </div>
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Audio &amp; Battle Music</strong>
+                    <small>Retro sound effects and soundtrack</small>
+                  </span>
+                  <em>SFX On · Warrior ›</em>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. NUTRITION ENGINE TARGETS (COLLAPSIBLE GROUP) -->
+            <section class="collapsible-module" id="mod-settings-nutrition">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-settings-nutrition')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Nutrition Target Engine</h3>
+                    <span class="collapsible-badge">Target Formula</span>
+                  </div>
+                  <span class="collapsible-summary">2,250 kcal · 165g Protein · Recomp Profile</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Calorie &amp; Macro Calculator</strong>
+                    <small>Calculated from 30yo / 65kg / Moderate Activity</small>
+                  </span>
+                  <em>2,250 kcal ›</em>
+                </div>
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Protein Multiplier</strong>
+                    <small>2.2g per kg bodyweight target</small>
+                  </span>
+                  <em>165g Target ›</em>
+                </div>
+              </div>
+            </section>
+
+            <!-- 5. DATA, BACKUP & APP INFO (COLLAPSIBLE GROUP) -->
+            <section class="collapsible-module" id="mod-settings-data">
+              <button class="collapsible-trigger" type="button" aria-expanded="false" onclick="toggleDrawer('mod-settings-data')">
+                <div class="collapsible-header-left">
+                  <div class="collapsible-title-row">
+                    <h3 class="collapsible-title">Data &amp; App Information</h3>
+                    <span class="collapsible-badge">v1.4.0</span>
+                  </div>
+                  <span class="collapsible-summary">Local Dexie Storage · Backup JSON · Field Guide</span>
+                </div>
+                <span class="collapsible-disclosure" aria-hidden="true">▶</span>
+              </button>
+              <div class="collapsible-body">
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Backup &amp; Restore</strong>
+                    <small>Export or import local JSON fitness records</small>
+                  </span>
+                  <em>Export JSON ›</em>
+                </div>
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>Field Guide</strong>
+                    <small>Replay the complete app interactive tour</small>
+                  </span>
+                  <em>Replay Tour ›</em>
+                </div>
+                <div class="settings-row-interactive">
+                  <span>
+                    <strong>About FitDex</strong>
+                    <small>Version, build release notes, and license</small>
+                  </span>
+                  <em>v1.4.0 (b42) ›</em>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROTOTYPE SCRIPT -->
+    <script>
+      const PAGE_CONFIG = {
+        workout: {
+          title: 'FITDEX // TRAINING TERMINAL',
+          meta: 'LV 4 · THU 01 OCT'
+        },
+        food: {
+          title: 'FITDEX // NUTRITION TERMINAL',
+          meta: 'DAY 14 · THU 01 OCT'
+        },
+        progress: {
+          title: 'FITDEX // PROGRESS TERMINAL',
+          meta: 'LV 4 WARRIOR · STATS'
+        },
+        journal: {
+          title: 'FITDEX // JOURNAL TERMINAL',
+          meta: 'LOG ARCHIVE · THU 01 OCT'
+        },
+        settings: {
+          title: 'FITDEX // SYSTEM TERMINAL',
+          meta: 'DEVICE CFG · v1.4.0'
+        }
+      };
+
+      let activePage = 'workout';
+
+      function switchPage(pageKey) {
+        activePage = pageKey;
+
+        // Update nav buttons
+        document.querySelectorAll('.proto-nav-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.id === `tab-${pageKey}`);
+        });
+
+        // Update screens
+        document.querySelectorAll('.proto-page-screen').forEach(screen => {
+          screen.classList.toggle('active', screen.id === `screen-${pageKey}`);
+        });
+
+        // Update terminal header
+        const conf = PAGE_CONFIG[pageKey];
+        if (conf) {
+          document.getElementById('shell-terminal-title').innerHTML = `<i class="status-terminal-dot"></i> ${conf.title}`;
+          document.getElementById('shell-terminal-meta').textContent = conf.meta;
+        }
+      }
+
+      function toggleDrawer(id) {
+        const mod = document.getElementById(id);
+        if (!mod) return;
+        const isExp = mod.classList.toggle('is-expanded');
+        const btn = mod.querySelector('.collapsible-trigger');
+        if (btn) btn.setAttribute('aria-expanded', isExp ? 'true' : 'false');
+      }
+
+      function toggleAllDrawers(expand) {
+        document.querySelectorAll('.collapsible-module').forEach(mod => {
+          if (expand) mod.classList.add('is-expanded');
+          else mod.classList.remove('is-expanded');
+          const btn = mod.querySelector('.collapsible-trigger');
+          if (btn) btn.setAttribute('aria-expanded', expand ? 'true' : 'false');
+        });
+      }
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme-family', theme);
+        document.getElementById('btn-spartans').classList.toggle('active', theme === 'spartans');
+        document.getElementById('btn-amazonians').classList.toggle('active', theme === 'amazonians');
+      }
+
+      function setBrightness(mode) {
+        document.documentElement.setAttribute('data-brightness', mode);
+        document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
+        document.getElementById('btn-light').classList.toggle('active', mode === 'light');
+      }
+    </script>
+  </body>
+</html>

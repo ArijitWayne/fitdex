@@ -72,7 +72,7 @@ FitDex is designed to behave less like a passive notebook and more like a dedica
 - **Plan Streaks:** Track adherence to the workouts you actually scheduled, rather than rewarding meaningless daily app opens.
 - **Streak Freezes:** Earn limited, meaningful protection when life gets in the way, avoiding both harsh discouragement and unlimited artificial forgiveness.
 - **Travel & Sickness Pause:** Pause your active schedule during legitimate breaks without corrupting your training momentum or recording false missed sessions.
-- **Exercise Dex:** Search 804 built-in movements across 9 muscle categories with detailed execution instructions, anatomical target cards, and video demonstrations.
+- **Exercise Dex:** Search 802 built-in movements across 9 muscle categories with detailed execution instructions, anatomical target cards, and video demonstrations.
 - **Food & Nutrition Codex:** Track meals, daily calories, and full macronutrient breakdowns with customizable targets—without a premium paywall.
 - **Progress & Personal Records:** Review calculated training volume, resistance workload, weekly consistency, macro adherence, and an all-time PR ledger.
 - **RPG Progression & Audio:** Earn XP, climb through 9 player ranks from Novice to Immortal, unlock 52 milestone achievements, and train with dynamic retro 8-bit sound effects and battle music soundtracks.
@@ -152,7 +152,7 @@ FitDex pairs high-density training and nutrition tracking with the tactile feel 
 - **Performance History:** Review past set weight and repetitions directly within the active logging view. Completed workouts are stored as immutable snapshots.
 
 ### 📖 Exercise Dex
-- **804 Built-in Exercises:** Searchable library covering 9 anatomical categories (Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, Abs).
+- **802 Built-in Exercises:** Searchable library covering 9 anatomical categories (Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, Abs).
 - **Anatomical Cards & Execution Instructions:** Detailed execution steps, primary/secondary muscle targets, and equipment tags.
 - **Selective Video Demos:** Stream exercise video demonstrations online or selectively download videos to local storage on Android to conserve data.
 - **Favorites & Fast Filtering:** Filter by muscle category, search with normalized punctuation, and maintain local quick-access lists.

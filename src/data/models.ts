@@ -131,6 +131,7 @@ export type ExerciseTrackingType =
   | 'duration_optional_distance'
   | 'weight_distance'
   | 'duration_reps'
+  | 'weight_duration'
 
 export type ExerciseEquipment =
   | 'Barbell'
@@ -145,6 +146,7 @@ export type ExerciseEquipment =
   | 'Resistance Band'
   | 'Kettlebell'
   | 'Medicine Ball'
+  | 'Swiss Ball'
   | 'Suspension Trainer'
   | 'Weight Plate'
   | 'Landmine'
@@ -157,6 +159,13 @@ export type ExerciseEquipment =
   | 'Rings'
   | 'Sandbag'
   | 'GHD'
+  | 'Ab Wheel'
+  | 'Bulgarian Bag'
+  | 'Foam Roller'
+  | 'Slider'
+  | 'Chains'
+  | 'Jump Rope'
+  | 'Dip Bar'
 
 export type MovementPattern =
   | 'Horizontal Push'

@@ -26,6 +26,19 @@ footer { padding-block:44px; background:#090c0c; } .footer-grid { display:flex; 
 @media (max-width:600px) { .license-summary article { grid-template-columns:1fr; gap:5px; min-height:0; padding:15px; } .license-summary span { text-align:left; } .license-summary .doc-links { padding:15px; } }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important; } .hero-shot, .feature-shots .screen, .dex-layout > .screen { transition:none !important; } .feature-shots .screen:hover, .dex-layout > .screen:hover, .feature-shots .screen:focus-visible, .dex-layout > .screen:focus-visible { transform:none !important; } }
 
+/* FitDex 2.0 release baseline */
+.release-status { border-color:var(--teal); color:var(--teal-light); background:rgba(46,152,149,.13); }
+.release-highlights-list { display:grid; gap:8px; margin:20px 0 26px; padding-left:20px; color:#d7dfdb; }
+.release-highlights-list li::marker { color:var(--teal-light); }
+.support-panel { border:1px solid var(--line); background:rgba(14,18,18,.72); box-shadow:var(--shadow); }
+.support-panel > div { display:flex; justify-content:space-between; gap:16px; padding:15px 17px; border-bottom:1px solid var(--line); font:800 .75rem var(--mono); letter-spacing:.05em; }
+.support-panel > div span { color:var(--teal-light); }
+.support-panel > div + div span { color:var(--muted); }
+.support-panel p { margin:0; padding:14px 17px 0; color:var(--muted); font-size:.9rem; line-height:1.45; }
+.support-panel p:last-child { padding-bottom:17px; color:#d7dfdb; }
+.hero-shot { transition:transform 240ms var(--ease-out),opacity 180ms ease,filter 180ms ease,border-color 180ms ease,box-shadow 240ms var(--ease-out); }
+.feature-shots .screen,.dex-layout > .screen { transition:transform 200ms var(--ease-out),box-shadow 200ms var(--ease-out),border-color 160ms ease,filter 200ms ease; }
+
 /* Phase 6: Release Hub, Changelog Archive & Verification Styles */
 .download-btn { display:inline-flex; align-items:center; gap:8px; }
 .btn-primary-text { font-weight:900; letter-spacing:0.05em; }

@@ -46,6 +46,11 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   milestone('PROGRESSION', 'reach-radiant', 'Reach Radiant', 'Reach Level 100 and the Radiant rank.', 'level', 100),
 ]
 
+/** Stable presentation partition. Input order is canonical catalog order. */
+export function unlockedFirst<T extends { unlocked?: unknown }>(entries: readonly T[]): T[] {
+  return [...entries.filter((entry) => entry.unlocked), ...entries.filter((entry) => !entry.unlocked)]
+}
+
 if (ACHIEVEMENTS.length !== 52) throw new Error(`Gamification catalog must contain exactly 52 achievements; found ${ACHIEVEMENTS.length}.`)
 
 export const achievementById = new Map(ACHIEVEMENTS.map((achievement) => [achievement.id, achievement]))

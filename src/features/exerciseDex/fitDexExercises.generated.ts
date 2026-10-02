@@ -84,21 +84,23 @@ export const FITDEX_DUPLICATE_PAGE_IDENTITIES = [
 export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   {
     "slug": "90-to-90-stretch",
-    "name": "90 To 90 Stretch",
+    "name": "90/90 Stretch",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Adductors",
       "Gluteus Maximus",
       "Gluteus Medius",
-      "Quadriceps",
-      "Sartorius"
+      "Adductors"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Sartorius",
+      "Quadriceps"
+    ],
     "tags": [
       "MOBILITY",
       "STRETCH",
@@ -118,15 +120,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Abs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Ab Wheel"
     ],
     "primaryMuscles": [
-      "Upper Abs"
-    ],
-    "secondaryMuscles": [
+      "Upper Abs",
       "Lower Abs",
       "Obliques"
     ],
+    "secondaryMuscles": [],
     "tags": [
       "STRENGTH",
       "CORE",
@@ -167,8 +168,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/abdominal-crunches.mp4"
   },
   {
-    "slug": "abdominal-vaccum",
-    "name": "Abdominal Vaccum",
+    "slug": "abdominal-vacuum",
+    "name": "Abdominal Vacuum",
     "categories": [
       "Abs"
     ],
@@ -189,11 +190,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "UNWEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/abdominal-vaccum.mp4"
+    "mediaPath": "/exercises/abdominal-vacuum.mp4"
   },
   {
-    "slug": "air-bike",
-    "name": "Air Bike",
+    "slug": "air-bicycle-crunch",
+    "name": "Air Bicycle Crunch",
     "categories": [
       "Abs"
     ],
@@ -208,7 +209,6 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Lower Abs"
     ],
     "tags": [
-      "CARDIO",
       "CORE",
       "FUNCTIONAL"
     ],
@@ -217,7 +217,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/air-bike.mp4"
+    "mediaPath": "/exercises/air-bicycle-crunch.mp4"
   },
   {
     "slug": "alternate-bent-over-dumbbell-reverse-fly",
@@ -341,10 +341,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Other"
     ],
     "primaryMuscles": [
+      "Quadriceps",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
       "Sartorius",
       "Adductors",
       "Spinal Erectors",
@@ -443,15 +443,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "PULL"
     ],
     "mechanics": "ISOLATION",
-    "laterality": "UNILATERAL",
+    "laterality": "BILATERAL",
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/arm-blaster-biceps-dumbbell-curl.mp4"
   },
   {
-    "slug": "arm-circle",
-    "name": "Arm Circle",
+    "slug": "full-range-arm-circles",
+    "name": "Full-Range Arm Circles",
     "categories": [
       "Shoulders"
     ],
@@ -473,11 +473,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "UNWEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/arm-circle.mp4"
+    "mediaPath": "/exercises/full-range-arm-circles.mp4"
   },
   {
-    "slug": "arm-circles",
-    "name": "Arm Circles",
+    "slug": "arm-circles-at-shoulder-height",
+    "name": "Arm Circles at Shoulder Height",
     "categories": [
       "Shoulders"
     ],
@@ -499,7 +499,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "UNWEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/arm-circles.mp4"
+    "mediaPath": "/exercises/arm-circles-at-shoulder-height.mp4"
   },
   {
     "slug": "assault-air-bike",
@@ -508,7 +508,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Machine"
+      "Cardio Machine"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -527,7 +527,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/assault-air-bike.mp4"
@@ -636,13 +636,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Infraspinatus"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Biceps",
+      "Infraspinatus",
       "Teres Minor",
       "Lower Traps",
       "Rear Delts",
-      "Lats",
       "Teres Major"
     ],
     "tags": [
@@ -661,16 +663,17 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "b-stance-romanian-deadlift",
     "name": "B Stance Romanian Deadlift",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
+      "Hamstrings",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
       "Spinal Erectors",
       "Quadriceps",
       "Lower Abs",
@@ -691,6 +694,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "back-extension",
     "name": "Back Extension",
     "categories": [
+      "Back",
       "Gluteal"
     ],
     "equipment": [
@@ -718,6 +722,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "back-extension-with-dumbbell",
     "name": "Back Extension With Dumbbell",
     "categories": [
+      "Back",
       "Gluteal"
     ],
     "equipment": [
@@ -737,7 +742,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/back-extension-with-dumbbell.mp4"
@@ -778,7 +783,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "band-assisted-pull-up",
-    "name": "Band Assisted Pull Up",
+    "name": "Band-Assisted Pull-Up",
     "categories": [
       "Back"
     ],
@@ -918,7 +923,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "FUNCTIONAL"
     ],
     "mechanics": "ISOLATION",
-    "laterality": "UNILATERAL",
+    "laterality": "ALTERNATING",
     "weightType": "BAND",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
@@ -1285,7 +1290,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "BAND",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/band-reverse-hyperextension.mp4"
@@ -1508,7 +1513,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "band-twist-horizontal",
-    "name": "Band Twist (horizontal)",
+    "name": "Band Twist (Horizontal)",
     "categories": [
       "Abs"
     ],
@@ -1622,8 +1627,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/banded-face-pull.mp4"
   },
   {
-    "slug": "bar-cable-biceps-curl",
-    "name": "Bar Cable Biceps Curl",
+    "slug": "cable-biceps-curl",
+    "name": "Cable Biceps Curl",
     "categories": [
       "Biceps"
     ],
@@ -1643,7 +1648,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/bar-cable-biceps-curl.mp4"
+    "mediaPath": "/exercises/cable-biceps-curl.mp4"
   },
   {
     "slug": "barbell-behind-neck-shoulder-press",
@@ -1711,7 +1716,9 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Barbell"
+      "Barbell",
+      "Bench",
+      "Chains"
     ],
     "primaryMuscles": [
       "Mid Chest"
@@ -1744,14 +1751,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Lower Traps"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Lower Traps",
       "Infraspinatus",
       "Teres Minor",
-      "Middle Traps",
-      "Rear Delts",
-      "Lats"
+      "Rear Delts"
     ],
     "tags": [
       "STRENGTH",
@@ -1840,8 +1847,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Gastrocnemius"
     ],
     "secondaryMuscles": [
-      "Soleus",
-      "Tibialis Anterior"
+      "Soleus"
     ],
     "tags": [
       "STRENGTH"
@@ -1925,11 +1931,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Mid Chest"
     ],
     "secondaryMuscles": [
-      "Lower Chest",
-      "Forearm Extensors",
-      "Serratus Anterior",
+      "Triceps",
+      "Front Delts",
       "Upper Chest",
-      "Triceps"
+      "Lower Chest",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -1999,18 +2005,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "barbell-good-morning",
     "name": "Barbell Good Morning",
     "categories": [
-      "Gluteal"
+      "Gluteal",
+      "Legs",
+      "Back"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus"
+      "Gluteus Maximus",
+      "Hamstrings"
     ],
     "secondaryMuscles": [
       "Spinal Erectors",
-      "Gluteus Medius",
-      "Hamstrings"
+      "Gluteus Medius"
     ],
     "tags": [
       "STRENGTH",
@@ -2171,16 +2179,27 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "barbell-overhead-squat",
     "name": "Barbell Overhead Squat",
     "categories": [
-      "Legs"
+      "Legs",
+      "Shoulders",
+      "Abs"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
       "Quadriceps",
-      "Sartorius"
+      "Gluteus Maximus"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Hamstrings",
+      "Spinal Erectors",
+      "Lower Abs",
+      "Obliques",
+      "Front Delts",
+      "Side Delts",
+      "Upper Traps",
+      "Middle Traps"
+    ],
     "tags": [
       "STRENGTH",
       "MOBILITY",
@@ -2249,6 +2268,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "barbell-pullover",
     "name": "Barbell Pullover",
     "categories": [
+      "Back",
       "Chest"
     ],
     "equipment": [
@@ -2256,12 +2276,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Lats"
+      "Lats",
+      "Mid Chest"
     ],
     "secondaryMuscles": [
-      "Teres Minor",
-      "Serratus Anterior",
       "Teres Major",
+      "Serratus Anterior",
       "Triceps",
       "Lower Chest"
     ],
@@ -2293,7 +2313,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Quadriceps",
       "Upper Chest",
       "Gastrocnemius",
-      "Soleus"
+      "Soleus",
+      "Triceps"
     ],
     "tags": [
       "STRENGTH",
@@ -2311,6 +2332,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "barbell-rack-pull",
     "name": "Barbell Rack Pull",
     "categories": [
+      "Back",
+      "Gluteal",
       "Legs"
     ],
     "equipment": [
@@ -2318,14 +2341,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Other"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Spinal Erectors",
+      "Gluteus Maximus",
+      "Hamstrings"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
-      "Gluteus Medius",
-      "Hamstrings",
       "Upper Traps",
-      "Middle Traps"
+      "Middle Traps",
+      "Lats",
+      "Forearm Flexors"
     ],
     "tags": [
       "STRENGTH",
@@ -2391,7 +2415,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "MACHINE",
+    "weightType": "BARBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/barbell-rear-delt-row.mp4"
@@ -2558,7 +2582,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/barbell-rollout-kneeling.mp4"
@@ -2677,16 +2701,17 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "barbell-squat",
     "name": "Barbell Squat",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
+      "Quadriceps",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
       "Sartorius",
       "Adductors",
       "Spinal Erectors",
@@ -2792,7 +2817,9 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "primaryMuscles": [
       "Quadriceps"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Gluteus Maximus"
+    ],
     "tags": [
       "STRENGTH",
       "BALANCE",
@@ -2809,16 +2836,18 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "barbell-straight-leg-deadlift",
     "name": "Barbell Straight Leg Deadlift",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
+      "Hamstrings",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
       "Spinal Erectors",
       "Forearm Flexors",
       "Adductors",
@@ -2860,7 +2889,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "BARBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/barbell-sumo-squat.mp4"
@@ -2883,7 +2912,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Gastrocnemius",
       "Side Delts",
       "Sartorius",
-      "Upper Chest"
+      "Upper Chest",
+      "Triceps"
     ],
     "tags": [
       "STRENGTH",
@@ -3248,13 +3278,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Kettlebell"
     ],
     "primaryMuscles": [
-      "Lower Traps",
-      "Teres Major"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Lower Traps",
+      "Teres Major",
       "Infraspinatus",
       "Teres Minor",
-      "Lats",
       "Rear Delts",
       "Brachioradialis"
     ],
@@ -3326,16 +3357,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "bird-dog",
     "name": "Bird Dog",
     "categories": [
+      "Abs",
+      "Back",
       "Gluteal"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
+      "Lower Abs",
+      "Obliques",
+      "Spinal Erectors",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Spinal Erectors",
       "Infraspinatus",
       "Middle Traps",
       "Side Delts",
@@ -3358,22 +3393,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "bird-dog-plank",
     "name": "Bird Dog Plank",
     "categories": [
-      "Shoulders"
+      "Abs",
+      "Shoulders",
+      "Gluteal"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Rear Delts",
-      "Side Delts",
-      "Triceps"
+      "Lower Abs",
+      "Obliques"
     ],
     "secondaryMuscles": [
+      "Rear Delts",
+      "Side Delts",
+      "Triceps",
       "Gluteus Maximus",
       "Upper Traps",
-      "Lower Abs",
-      "Middle Traps",
-      "Obliques"
+      "Middle Traps"
     ],
     "tags": [
       "CORE",
@@ -3391,7 +3428,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "bird-dog-push-up",
     "name": "Bird Dog Push-Up",
     "categories": [
-      "Triceps"
+      "Chest",
+      "Abs"
     ],
     "equipment": [
       "Bodyweight"
@@ -3401,10 +3439,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "secondaryMuscles": [
       "Triceps",
-      "Lower Chest",
-      "Upper Chest",
       "Front Delts",
-      "Serratus Anterior"
+      "Upper Chest",
+      "Lower Chest",
+      "Serratus Anterior",
+      "Lower Abs",
+      "Obliques"
     ],
     "tags": [
       "STRENGTH",
@@ -3480,16 +3520,17 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "box-jumps",
     "name": "Box Jumps",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Other"
     ],
     "primaryMuscles": [
+      "Quadriceps",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
       "Sartorius",
       "Gluteus Medius",
       "Adductors"
@@ -3541,7 +3582,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "box-step-up",
-    "name": "Box step-up",
+    "name": "Box Step-Up",
     "categories": [
       "Legs"
     ],
@@ -3605,16 +3646,17 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "bulgarian-bag-walking-lunges",
     "name": "Bulgarian Bag Walking Lunges",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
-      "Bodyweight"
+      "Bulgarian Bag"
     ],
     "primaryMuscles": [
-      "Quadriceps"
+      "Quadriceps",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
       "Sartorius",
       "Adductors",
       "Hamstrings",
@@ -3667,7 +3709,6 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Gluteal"
     ],
     "equipment": [
-      "Dumbbell",
       "Bench"
     ],
     "primaryMuscles": [
@@ -3893,7 +3934,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "cable-double-arm-tricep-kickback",
-    "name": "Cable Double-Arm Tricep Kickback",
+    "name": "Cable Double-Arm Triceps Kickback",
     "categories": [
       "Triceps"
     ],
@@ -3974,8 +4015,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/cable-front-raise.mp4"
   },
   {
-    "slug": "cable-hip-abducction",
-    "name": "Cable Hip Abducction",
+    "slug": "cable-hip-abduction",
+    "name": "Cable Hip Abduction",
     "categories": [
       "Gluteal"
     ],
@@ -3997,7 +4038,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/cable-hip-abducction.mp4"
+    "mediaPath": "/exercises/cable-hip-abduction.mp4"
   },
   {
     "slug": "cable-hip-adduction",
@@ -4084,21 +4125,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "cable-incline-y-raise-back-supported",
     "name": "Cable Incline Y Raise Back Supported",
     "categories": [
-      "Shoulders"
+      "Shoulders",
+      "Back"
     ],
     "equipment": [
       "Cable",
       "Bench"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Lower Traps",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
       "Rear Delts",
-      "Middle Traps",
-      "Upper Traps",
+      "Side Delts",
+      "Infraspinatus",
       "Front Delts",
-      "Infraspinatus"
+      "Upper Traps"
     ],
     "tags": [
       "STRENGTH",
@@ -4238,9 +4281,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "secondaryMuscles": [
       "Rear Delts",
       "Serratus Anterior",
-      "Front Delts",
-      "Lower Chest",
-      "Mid Chest"
+      "Front Delts"
     ],
     "tags": [
       "STRENGTH"
@@ -4431,14 +4472,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Cable"
     ],
     "primaryMuscles": [
-      "Teres Minor"
+      "Lats"
     ],
     "secondaryMuscles": [
+      "Biceps",
       "Teres Major",
-      "Lats",
       "Lower Traps",
       "Infraspinatus",
-      "Biceps"
+      "Teres Minor"
     ],
     "tags": [
       "STRENGTH",
@@ -4520,12 +4561,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Cable"
     ],
     "primaryMuscles": [
+      "Lats",
       "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Biceps",
       "Rear Delts",
-      "Infraspinatus",
       "Lower Traps",
+      "Infraspinatus",
       "Teres Minor",
       "Upper Traps"
     ],
@@ -4541,8 +4584,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/cable-seated-row-neutral-grip.mp4"
   },
   {
-    "slug": "cable-seated-supine-grip-row",
-    "name": "Cable Seated Supine Grip Row",
+    "slug": "cable-seated-supinated-grip-row",
+    "name": "Cable Seated Supinated-Grip Row",
     "categories": [
       "Back"
     ],
@@ -4551,15 +4594,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Infraspinatus",
-      "Lats"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Biceps",
       "Teres Major",
-      "Teres Minor",
       "Lower Traps",
-      "Middle Traps",
-      "Biceps"
+      "Teres Minor",
+      "Infraspinatus"
     ],
     "tags": [
       "STRENGTH",
@@ -4570,7 +4613,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/cable-seated-supine-grip-row.mp4"
+    "mediaPath": "/exercises/cable-seated-supinated-grip-row.mp4"
   },
   {
     "slug": "cable-shrug",
@@ -4795,7 +4838,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "cable-twist-horizontal",
-    "name": "Cable Twist (horizontal)",
+    "name": "Cable Twist (Horizontal)",
     "categories": [
       "Abs"
     ],
@@ -4823,7 +4866,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "cable-twist-up-down",
-    "name": "Cable Twist (up down)",
+    "name": "Cable Twist (Up-Down)",
     "categories": [
       "Abs"
     ],
@@ -4935,17 +4978,19 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "cable-y-raise",
     "name": "Cable Y Raise",
     "categories": [
-      "Shoulders"
+      "Shoulders",
+      "Back"
     ],
     "equipment": [
       "Cable"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Lower Traps",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Side Delts",
       "Rear Delts",
-      "Middle Traps",
       "Upper Traps",
       "Front Delts",
       "Infraspinatus"
@@ -4968,15 +5013,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Smith Machine"
+      "Machine"
     ],
     "primaryMuscles": [
       "Gastrocnemius",
       "Soleus"
     ],
-    "secondaryMuscles": [
-      "Tibialis Anterior"
-    ],
+    "secondaryMuscles": [],
     "tags": [
       "STRENGTH",
       "PUSH"
@@ -4995,7 +5038,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Triceps"
     ],
     "equipment": [
-      "Dumbbell",
+      "Barbell",
       "Bench"
     ],
     "primaryMuscles": [
@@ -5020,8 +5063,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/california-press.mp4"
   },
   {
-    "slug": "capitans-chair-straight-leg-raises",
-    "name": "Capitan's Chair Straight Leg Raises",
+    "slug": "captains-chair-straight-leg-raises",
+    "name": "Captain's Chair Straight Leg Raises",
     "categories": [
       "Abs"
     ],
@@ -5029,10 +5072,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Other"
     ],
     "primaryMuscles": [
-      "Upper Abs"
+      "Upper Abs",
+      "Lower Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
       "Obliques",
       "Quadriceps"
     ],
@@ -5045,11 +5088,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/capitans-chair-straight-leg-raises.mp4"
+    "mediaPath": "/exercises/captains-chair-straight-leg-raises.mp4"
   },
   {
     "slug": "captains-chair-knee-raises",
-    "name": "Captains Chair Knee Raises",
+    "name": "Captain's Chair Knee Raises",
     "categories": [
       "Abs"
     ],
@@ -5057,10 +5100,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Other"
     ],
     "primaryMuscles": [
-      "Upper Abs"
+      "Upper Abs",
+      "Lower Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
       "Obliques"
     ],
     "tags": [
@@ -5077,18 +5120,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "cat-cow",
     "name": "Cat Cow",
     "categories": [
+      "Back",
       "Abs"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Lower Abs",
-      "Lower Traps",
       "Spinal Erectors",
-      "Upper Abs"
+      "Upper Abs",
+      "Lower Abs"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Lower Traps"
+    ],
     "tags": [
       "MOBILITY",
       "STRETCH",
@@ -5108,7 +5153,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Other"
+      "Dip Bar"
     ],
     "primaryMuscles": [
       "Lower Chest"
@@ -5126,7 +5171,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/chest-dips.mp4"
@@ -5171,15 +5216,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Infraspinatus",
-      "Teres Minor"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Rear Delts",
       "Lower Traps",
       "Teres Major",
-      "Lats",
-      "Rear Delts",
-      "Middle Traps"
+      "Infraspinatus",
+      "Teres Minor"
     ],
     "tags": [
       "STRENGTH",
@@ -5196,14 +5241,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "childs-pose",
     "name": "Child’s Pose",
     "categories": [
+      "Back",
       "Gluteal"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus",
-      "Lats"
+      "Lats",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [],
     "tags": [
@@ -5288,21 +5334,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "clean-and-jerk",
     "name": "Clean and Jerk",
     "categories": [
-      "Legs"
+      "Legs",
+      "Shoulders"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Front Delts",
-      "Quadriceps"
+      "Quadriceps",
+      "Gluteus Maximus",
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Side Delts",
-      "Spinal Erectors",
-      "Gluteus Maximus",
       "Hamstrings",
-      "Lower Abs"
+      "Spinal Erectors",
+      "Side Delts",
+      "Lower Abs",
+      "Obliques"
     ],
     "tags": [
       "STRENGTH",
@@ -5320,18 +5368,19 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "clean-squat",
     "name": "Clean Squat",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Quadriceps",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
+      "Spinal Erectors",
       "Hamstrings",
-      "Gluteus Maximus",
       "Lower Abs",
       "Sartorius"
     ],
@@ -5432,7 +5481,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "close-grip-incline-dumbbell-bench-press",
     "name": "Close Grip Incline Dumbbell Bench Press",
     "categories": [
-      "Triceps"
+      "Triceps",
+      "Chest"
     ],
     "equipment": [
       "Dumbbell",
@@ -5442,10 +5492,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Triceps"
     ],
     "secondaryMuscles": [
-      "Serratus Anterior",
-      "Front Delts",
       "Upper Chest",
+      "Front Delts",
       "Mid Chest",
+      "Serratus Anterior",
       "Side Delts"
     ],
     "tags": [
@@ -5586,19 +5636,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "cobra-push-up",
     "name": "Cobra Push-Up",
     "categories": [
+      "Chest",
       "Triceps"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Mid Chest"
+      "Mid Chest",
+      "Triceps"
     ],
     "secondaryMuscles": [
-      "Lower Chest",
-      "Triceps",
-      "Upper Chest",
       "Front Delts",
+      "Upper Chest",
+      "Lower Chest",
       "Serratus Anterior"
     ],
     "tags": [
@@ -5727,8 +5778,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/cross-body-one-arm-strength-press.mp4"
   },
   {
-    "slug": "crossack-squat",
-    "name": "Crossack Squat",
+    "slug": "cossack-squat",
+    "name": "Cossack Squat",
     "categories": [
       "Legs"
     ],
@@ -5755,7 +5806,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/crossack-squat.mp4"
+    "mediaPath": "/exercises/cossack-squat.mp4"
   },
   {
     "slug": "cyclist-squat",
@@ -5841,7 +5892,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "FUNCTIONAL"
     ],
     "mechanics": "COMPOUND",
-    "laterality": "BILATERAL",
+    "laterality": "ALTERNATING",
     "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
@@ -5915,19 +5966,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "deadlift-from-blocks",
     "name": "Deadlift from Blocks",
     "categories": [
-      "Gluteal"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Barbell",
       "Other"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Quadriceps"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
-      "Quadriceps",
-      "Hamstrings",
+      "Spinal Erectors",
       "Gluteus Medius",
       "Forearm Extensors"
     ],
@@ -6217,13 +6270,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Upper Chest"
+      "Lower Chest"
     ],
     "secondaryMuscles": [
       "Mid Chest",
       "Triceps",
-      "Lower Chest",
-      "Front Delts"
+      "Front Delts",
+      "Upper Chest"
     ],
     "tags": [
       "STRENGTH",
@@ -6276,11 +6329,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Gastrocnemius",
-      "Gluteus Maximus",
-      "Hamstrings"
+      "Hamstrings",
+      "Adductors"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Gluteus Maximus",
+      "Gastrocnemius",
+      "Spinal Erectors"
+    ],
     "tags": [
       "MOBILITY",
       "STRETCH",
@@ -6364,10 +6420,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Other"
     ],
     "primaryMuscles": [
-      "Upper Traps"
+      "Lower Traps",
+      "Serratus Anterior",
+      "Lats"
     ],
     "secondaryMuscles": [
-      "Serratus Anterior",
       "Middle Traps"
     ],
     "tags": [
@@ -6527,19 +6584,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "downward-dog",
     "name": "Downward Dog",
     "categories": [
+      "Back",
+      "Shoulders",
       "Legs"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Gastrocnemius",
       "Hamstrings",
-      "Soleus"
+      "Gastrocnemius",
+      "Lats"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
-      "Gluteus Medius"
+      "Front Delts",
+      "Triceps",
+      "Soleus",
+      "Spinal Erectors"
     ],
     "tags": [
       "MOBILITY",
@@ -6564,12 +6625,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Upper Abs"
+      "Upper Abs",
+      "Lower Abs",
+      "Obliques"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
-      "Obliques",
-      "Quadriceps"
+      "Gluteus Maximus",
+      "Spinal Erectors",
+      "Lats"
     ],
     "tags": [
       "STRENGTH",
@@ -6669,7 +6732,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Dumbbell"
+      "Dumbbell",
+      "Bench"
     ],
     "primaryMuscles": [
       "Mid Chest"
@@ -6702,15 +6766,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Lower Traps",
-      "Teres Major"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Rear Delts",
+      "Lower Traps",
       "Infraspinatus",
       "Teres Minor",
-      "Lats",
-      "Middle Traps",
-      "Rear Delts"
+      "Teres Major",
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -6745,7 +6810,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "PULL"
     ],
     "mechanics": "ISOLATION",
-    "laterality": "UNILATERAL",
+    "laterality": "BILATERAL",
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
@@ -6785,7 +6850,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Dumbbell"
+      "Dumbbell",
+      "Bench"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -6888,7 +6954,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/dumbbell-cossack-squat.mp4"
@@ -6929,13 +6995,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Rear Delts"
-    ],
-    "secondaryMuscles": [
-      "Side Delts",
-      "Front Delts",
       "Infraspinatus",
       "Teres Minor"
+    ],
+    "secondaryMuscles": [
+      "Rear Delts"
     ],
     "tags": [
       "STRENGTH",
@@ -6954,17 +7018,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "dumbbell-deadlift",
     "name": "Dumbbell Deadlift",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Gluteus Maximus",
+      "Hamstrings"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
-      "Hamstrings",
+      "Spinal Erectors",
+      "Quadriceps",
+      "Forearm Flexors",
       "Gluteus Medius"
     ],
     "tags": [
@@ -6979,8 +7047,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/dumbbell-deadlift.mp4"
   },
   {
-    "slug": "dumbbell-deadlift-straight-legs",
-    "name": "Dumbbell Deadlift Straight Legs",
+    "slug": "two-dumbbell-straight-leg-deadlift",
+    "name": "Two-Dumbbell Straight-Leg Deadlift",
     "categories": [
       "Legs"
     ],
@@ -7005,7 +7073,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/dumbbell-deadlift-straight-legs.mp4"
+    "mediaPath": "/exercises/two-dumbbell-straight-leg-deadlift.mp4"
   },
   {
     "slug": "dumbbell-deep-push-up",
@@ -7064,21 +7132,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "dumbbell-farmer-carry",
     "name": "Dumbbell Farmer Carry",
     "categories": [
-      "Forearms"
+      "Forearms",
+      "Legs",
+      "Abs"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Forearm Extensors",
-      "Forearm Flexors"
+      "Forearm Flexors",
+      "Brachioradialis"
     ],
     "secondaryMuscles": [
-      "Brachioradialis",
-      "Gastrocnemius",
       "Quadriceps",
-      "Soleus",
-      "Lower Abs"
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Lower Abs",
+      "Obliques",
+      "Upper Traps",
+      "Gastrocnemius"
     ],
     "tags": [
       "STRENGTH",
@@ -7514,10 +7586,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
+      "Lats",
       "Teres Major"
     ],
     "secondaryMuscles": [
-      "Lats",
       "Serratus Anterior",
       "Triceps",
       "Teres Minor",
@@ -7528,7 +7600,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "PULL"
     ],
     "mechanics": "COMPOUND",
-    "laterality": "UNILATERAL",
+    "laterality": "BILATERAL",
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
@@ -7664,7 +7736,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "STRENGTH"
     ],
     "mechanics": "ISOLATION",
-    "laterality": "UNILATERAL",
+    "laterality": "BILATERAL",
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
@@ -7715,7 +7787,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "PUSH"
     ],
     "mechanics": "ISOLATION",
-    "laterality": "UNILATERAL",
+    "laterality": "BILATERAL",
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
@@ -7765,11 +7837,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Side Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Rear Delts",
-      "Biceps",
-      "Brachioradialis",
-      "Triceps"
+      "Front Delts"
     ],
     "tags": [
       "STRENGTH",
@@ -7820,7 +7888,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Back"
     ],
     "equipment": [
-      "Dumbbell"
+      "Dumbbell",
+      "Bench"
     ],
     "primaryMuscles": [
       "Teres Major"
@@ -7928,7 +7997,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/dumbbell-rear-lunge.mp4"
@@ -7968,20 +8037,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "dumbbell-romanian-deadlift",
     "name": "Dumbbell Romanian Deadlift",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Hamstrings",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
-      "Gluteus Maximus",
+      "Spinal Erectors",
       "Gluteus Medius",
-      "Quadriceps",
-      "Sartorius"
+      "Forearm Flexors"
     ],
     "tags": [
       "STRENGTH",
@@ -8275,7 +8345,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/dumbbell-single-leg-hip-thrust.mp4"
@@ -8284,20 +8354,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "dumbbell-snatch",
     "name": "Dumbbell Snatch",
     "categories": [
-      "Shoulders"
+      "Legs",
+      "Shoulders",
+      "Gluteal"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
+      "Quadriceps",
+      "Gluteus Maximus",
       "Front Delts"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
+      "Hamstrings",
       "Side Delts",
-      "Gluteus Maximus",
-      "Gluteus Medius",
-      "Hamstrings"
+      "Spinal Erectors",
+      "Upper Traps",
+      "Lower Abs"
     ],
     "tags": [
       "STRENGTH",
@@ -8433,8 +8507,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Gastrocnemius"
     ],
     "secondaryMuscles": [
-      "Soleus",
-      "Tibialis Anterior"
+      "Soleus"
     ],
     "tags": [
       "STRENGTH",
@@ -8573,8 +8646,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/dumbbell-step-up.mp4"
   },
   {
-    "slug": "dumbbell-straight-leg-deadlift",
-    "name": "Dumbbell Straight Leg Deadlift",
+    "slug": "single-dumbbell-straight-leg-deadlift",
+    "name": "Single-Dumbbell Straight-Leg Deadlift",
     "categories": [
       "Legs"
     ],
@@ -8601,23 +8674,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/dumbbell-straight-leg-deadlift.mp4"
+    "mediaPath": "/exercises/single-dumbbell-straight-leg-deadlift.mp4"
   },
   {
     "slug": "dumbbell-sumo-squat",
     "name": "Dumbbell Sumo Squat",
     "categories": [
+      "Legs",
       "Gluteal"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus"
+      "Quadriceps",
+      "Gluteus Maximus",
+      "Adductors"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
-      "Adductors",
       "Hamstrings",
       "Gluteus Medius",
       "Spinal Erectors"
@@ -8756,7 +8830,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Cardio Machine"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -8774,7 +8848,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "UNWEIGHTED",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/elliptical-trainer.mp4"
@@ -8991,7 +9065,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "ez-bar-tricep-pushdown",
-    "name": "EZ-Bar Tricep Pushdown",
+    "name": "EZ-Bar Triceps Pushdown",
     "categories": [
       "Triceps"
     ],
@@ -9018,7 +9092,9 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "farmer-walk",
     "name": "Farmer Walk",
     "categories": [
-      "Forearms"
+      "Forearms",
+      "Legs",
+      "Abs"
     ],
     "equipment": [
       "Dumbbell",
@@ -9026,15 +9102,17 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Trap Bar"
     ],
     "primaryMuscles": [
-      "Forearm Extensors",
-      "Forearm Flexors"
+      "Forearm Flexors",
+      "Brachioradialis"
     ],
     "secondaryMuscles": [
-      "Brachioradialis",
-      "Gastrocnemius",
       "Quadriceps",
-      "Soleus",
-      "Lower Abs"
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Lower Abs",
+      "Obliques",
+      "Upper Traps",
+      "Gastrocnemius"
     ],
     "tags": [
       "STRENGTH",
@@ -9044,7 +9122,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "DUMBBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/farmer-walk.mp4"
@@ -9111,20 +9189,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "flag",
     "name": "Flag",
     "categories": [
-      "Back"
+      "Abs",
+      "Back",
+      "Shoulders"
     ],
     "equipment": [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Obliques"
+      "Obliques",
+      "Lats"
     ],
     "secondaryMuscles": [
-      "Lats",
-      "Infraspinatus",
-      "Teres Major",
-      "Teres Minor",
-      "Gluteus Medius"
+      "Side Delts",
+      "Front Delts",
+      "Middle Traps",
+      "Lower Abs",
+      "Upper Abs",
+      "Triceps"
     ],
     "tags": [
       "STRENGTH",
@@ -9230,20 +9312,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "frog-planche",
     "name": "Frog Planche",
     "categories": [
-      "Triceps"
+      "Shoulders",
+      "Triceps",
+      "Abs"
     ],
     "equipment": [
       "Other"
     ],
     "primaryMuscles": [
-      "Upper Chest"
+      "Front Delts",
+      "Triceps"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Triceps",
       "Lower Abs",
-      "Mid Chest",
-      "Obliques"
+      "Upper Abs",
+      "Obliques",
+      "Upper Chest"
     ],
     "tags": [
       "STRENGTH",
@@ -9268,12 +9352,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Gluteus Medius"
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
+      "Gluteus Medius",
       "Hamstrings",
-      "Quadriceps"
+      "Adductors"
     ],
     "tags": [
       "STRENGTH",
@@ -9282,7 +9366,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/frog-pump.mp4"
@@ -9291,23 +9375,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "front-lever",
     "name": "Front Lever",
     "categories": [
-      "Back"
+      "Back",
+      "Abs"
     ],
     "equipment": [
       "Pull-Up Bar",
       "Rings"
     ],
     "primaryMuscles": [
+      "Lats",
+      "Lower Abs",
+      "Obliques"
+    ],
+    "secondaryMuscles": [
+      "Middle Traps",
+      "Lower Traps",
+      "Rear Delts",
       "Infraspinatus",
       "Teres Major",
       "Teres Minor"
-    ],
-    "secondaryMuscles": [
-      "Lats",
-      "Rear Delts",
-      "Lower Traps",
-      "Lower Abs",
-      "Obliques"
     ],
     "tags": [
       "STRENGTH",
@@ -9325,20 +9411,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "front-lever-pull-up",
     "name": "Front Lever Pull-Up",
     "categories": [
-      "Back"
+      "Back",
+      "Abs"
     ],
     "equipment": [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Infraspinatus"
+      "Lats",
+      "Middle Traps",
+      "Lower Traps"
     ],
     "secondaryMuscles": [
-      "Teres Minor",
-      "Lats",
-      "Lower Traps",
-      "Teres Major",
-      "Forearm Flexors"
+      "Biceps",
+      "Lower Abs",
+      "Obliques",
+      "Rear Delts",
+      "Infraspinatus",
+      "Teres Major"
     ],
     "tags": [
       "STRENGTH",
@@ -9653,8 +9743,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Dumbbell",
-      "Kettlebell"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Gluteus Maximus"
@@ -9770,7 +9859,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Barbell"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -9830,7 +9919,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Forearms"
     ],
     "equipment": [
-      "Bodyweight"
+      "Other"
     ],
     "primaryMuscles": [
       "Forearm Flexors"
@@ -9842,9 +9931,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
     "weightType": "MACHINE",
-    "mediaStatus": "available",
-    "mediaType": "video/mp4",
-    "mediaPath": "/exercises/hand-gripper.mp4"
+    "mediaStatus": "not-provided"
   },
   {
     "slug": "handstand-hold",
@@ -9918,20 +10005,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "hang-power-clean",
     "name": "Hang Power Clean",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Gluteus Maximus",
+      "Quadriceps",
+      "Hamstrings"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
-      "Hamstrings",
-      "Brachioradialis",
-      "Forearm Flexors",
-      "Biceps"
+      "Spinal Erectors",
+      "Front Delts",
+      "Upper Traps",
+      "Gastrocnemius"
     ],
     "tags": [
       "STRENGTH",
@@ -10017,10 +10106,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
+      "Lower Abs",
       "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs"
+      "Obliques",
+      "Forearm Flexors"
     ],
     "tags": [
       "CORE",
@@ -10096,31 +10187,6 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/hanging-knees-to-elbows.mp4"
   },
   {
-    "slug": "hanging-knees-to-elbows-waist",
-    "name": "Hanging Knees to Elbows Waist",
-    "categories": [
-      "Abs"
-    ],
-    "equipment": [
-      "Pull-Up Bar"
-    ],
-    "primaryMuscles": [
-      "Lower Abs",
-      "Upper Abs"
-    ],
-    "secondaryMuscles": [],
-    "tags": [
-      "STRENGTH",
-      "CORE"
-    ],
-    "mechanics": "COMPOUND",
-    "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
-    "mediaStatus": "available",
-    "mediaType": "video/mp4",
-    "mediaPath": "/exercises/hanging-knees-to-elbows-waist.mp4"
-  },
-  {
     "slug": "hanging-leg-raise-to-bar",
     "name": "Hanging Leg Raise To Bar",
     "categories": [
@@ -10170,7 +10236,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/hanging-oblique-knee-raise.mp4"
@@ -10179,20 +10245,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "hanging-scapular-retractions",
     "name": "Hanging Scapular Retractions",
     "categories": [
-      "Forearms"
+      "Back"
     ],
     "equipment": [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Forearm Flexors"
+      "Lower Traps",
+      "Middle Traps",
+      "Lats"
     ],
     "secondaryMuscles": [
-      "Forearm Extensors",
-      "Teres Minor",
-      "Infraspinatus",
-      "Lower Traps",
-      "Lats"
+      "Forearm Flexors",
+      "Brachioradialis",
+      "Rear Delts"
     ],
     "tags": [
       "MOBILITY",
@@ -10248,13 +10314,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
+      "Lower Abs",
       "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
-      "Brachioradialis",
-      "Forearm Flexors",
-      "Obliques"
+      "Obliques",
+      "Forearm Flexors"
     ],
     "tags": [
       "CORE",
@@ -10272,16 +10337,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "happy-baby-pose",
     "name": "Happy Baby Pose",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
       "Gluteus Maximus",
-      "Hamstrings"
+      "Adductors"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Hamstrings",
+      "Gluteus Medius"
+    ],
     "tags": [
       "MOBILITY",
       "STRETCH",
@@ -10346,7 +10415,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "BARBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/high-bar-squat.mp4"
@@ -10463,15 +10532,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Gluteal"
     ],
     "equipment": [
-      "Barbell",
-      "Dumbbell",
-      "Kettlebell"
+      "Other"
     ],
     "primaryMuscles": [
       "Gluteus Maximus",
-      "Gluteus Medius"
+      "Hamstrings"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Spinal Erectors",
+      "Adductors"
+    ],
     "tags": [
       "STRENGTH",
       "FUNCTIONAL"
@@ -10780,14 +10850,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Infraspinatus"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Middle Traps",
-      "Teres Minor",
-      "Lats",
       "Rear Delts",
-      "Lower Traps"
+      "Lower Traps",
+      "Infraspinatus",
+      "Teres Minor",
+      "Teres Major"
     ],
     "tags": [
       "STRENGTH",
@@ -10804,19 +10875,20 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "incline-close-grip-push-up",
     "name": "Incline Close Grip Push-Up",
     "categories": [
-      "Triceps"
+      "Triceps",
+      "Chest"
     ],
     "equipment": [
       "Other"
     ],
     "primaryMuscles": [
-      "Lower Chest"
+      "Triceps",
+      "Mid Chest"
     ],
     "secondaryMuscles": [
-      "Triceps",
-      "Mid Chest",
       "Front Delts",
       "Upper Chest",
+      "Lower Chest",
       "Serratus Anterior"
     ],
     "tags": [
@@ -10837,7 +10909,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Dumbbell"
+      "Dumbbell",
+      "Bench"
     ],
     "primaryMuscles": [
       "Upper Chest"
@@ -10920,7 +10993,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Dumbbell"
+      "Machine"
     ],
     "primaryMuscles": [
       "Upper Chest"
@@ -11059,7 +11132,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "ALTERNATING",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/incline-twisting-sit-up.mp4"
@@ -11074,14 +11147,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Infraspinatus"
-    ],
-    "secondaryMuscles": [
-      "Teres Minor",
-      "Teres Major",
-      "Lower Traps",
       "Lats",
       "Middle Traps"
+    ],
+    "secondaryMuscles": [
+      "Biceps",
+      "Rear Delts",
+      "Lower Traps",
+      "Infraspinatus",
+      "Teres Minor",
+      "Teres Major"
     ],
     "tags": [
       "STRENGTH",
@@ -11251,7 +11326,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Jump Rope"
     ],
     "primaryMuscles": [
       "Soleus"
@@ -11392,23 +11467,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/katana-triceps-extension.mp4"
   },
   {
-    "slug": "kettelbell-clean",
-    "name": "Kettelbell Clean",
+    "slug": "kettlebell-clean",
+    "name": "Kettlebell Clean",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Kettlebell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Quadriceps"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
-      "Gluteus Maximus",
-      "Sartorius",
-      "Adductors",
-      "Quadriceps"
+      "Spinal Erectors",
+      "Front Delts",
+      "Upper Traps"
     ],
     "tags": [
       "STRENGTH",
@@ -11420,11 +11496,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/kettelbell-clean.mp4"
+    "mediaPath": "/exercises/kettlebell-clean.mp4"
   },
   {
-    "slug": "kettlebel-renegade-row",
-    "name": "Kettlebel Renegade Row",
+    "slug": "kettlebell-renegade-row",
+    "name": "Kettlebell Renegade Row",
     "categories": [
       "Back"
     ],
@@ -11452,10 +11528,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "DUMBBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/kettlebel-renegade-row.mp4"
+    "mediaPath": "/exercises/kettlebell-renegade-row.mp4"
   },
   {
     "slug": "kettlebell-around-the-head-rotation",
@@ -11511,7 +11587,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "DUMBBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/kettlebell-biceps-curl.mp4"
@@ -11520,20 +11596,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "kettlebell-clean-and-jerk",
     "name": "Kettlebell Clean and Jerk",
     "categories": [
+      "Legs",
+      "Gluteal",
       "Shoulders"
     ],
     "equipment": [
       "Kettlebell"
     ],
     "primaryMuscles": [
+      "Quadriceps",
+      "Gluteus Maximus",
       "Front Delts"
     ],
     "secondaryMuscles": [
-      "Side Delts",
-      "Quadriceps",
-      "Gluteus Maximus",
+      "Hamstrings",
       "Spinal Erectors",
-      "Hamstrings"
+      "Side Delts",
+      "Lower Abs",
+      "Obliques"
     ],
     "tags": [
       "STRENGTH",
@@ -11581,19 +11661,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "kettlebell-goblet-squat",
     "name": "Kettlebell Goblet Squat",
     "categories": [
+      "Legs",
       "Gluteal"
     ],
     "equipment": [
       "Kettlebell"
     ],
     "primaryMuscles": [
+      "Quadriceps",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Gluteus Medius",
+      "Adductors",
       "Hamstrings",
-      "Quadriceps",
-      "Sartorius"
+      "Gluteus Medius",
+      "Lower Abs"
     ],
     "tags": [
       "STRENGTH",
@@ -11622,7 +11704,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Serratus Anterior",
       "Upper Chest"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Triceps",
+      "Front Delts"
+    ],
     "tags": [
       "STRENGTH",
       "PUSH",
@@ -11667,20 +11752,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "kettlebell-swing",
     "name": "Kettlebell Swing",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Kettlebell"
     ],
     "primaryMuscles": [
-      "Quadriceps"
+      "Hamstrings",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
+      "Adductors",
+      "Spinal Erectors",
       "Front Delts",
-      "Side Delts",
-      "Soleus",
-      "Upper Traps"
+      "Upper Traps",
+      "Lower Abs"
     ],
     "tags": [
       "STRENGTH",
@@ -11700,20 +11787,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "kettlebell-windmill",
     "name": "Kettlebell Windmill",
     "categories": [
-      "Shoulders"
+      "Abs",
+      "Shoulders",
+      "Gluteal"
     ],
     "equipment": [
       "Kettlebell"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Obliques",
+      "Side Delts",
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Obliques",
-      "Rear Delts",
-      "Spinal Erectors",
-      "Gluteus Maximus"
+      "Hamstrings",
+      "Gluteus Maximus",
+      "Gluteus Medius",
+      "Spinal Erectors"
     ],
     "tags": [
       "STRENGTH",
@@ -11734,22 +11824,24 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "kickboxing",
     "name": "Kickboxing",
     "categories": [
-      "Legs"
+      "Legs",
+      "Abs",
+      "Shoulders"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Adductors",
       "Quadriceps",
-      "Sartorius"
+      "Gluteus Maximus",
+      "Obliques",
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Obliques",
       "Hamstrings",
+      "Gastrocnemius",
       "Lower Abs",
-      "Spinal Erectors",
-      "Upper Abs"
+      "Side Delts"
     ],
     "tags": [
       "CARDIO",
@@ -12058,11 +12150,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
+      "Hamstrings"
+    ],
+    "secondaryMuscles": [
       "Gastrocnemius",
-      "Hamstrings",
       "Soleus"
     ],
-    "secondaryMuscles": [],
     "tags": [
       "STRETCH",
       "MOBILITY",
@@ -12226,20 +12319,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "l-pull-up",
     "name": "L Pull-Up",
     "categories": [
-      "Back"
+      "Back",
+      "Abs"
     ],
     "equipment": [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
       "Lats",
-      "Teres Major"
+      "Lower Abs",
+      "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Infraspinatus",
-      "Teres Minor",
+      "Biceps",
+      "Middle Traps",
       "Lower Traps",
-      "Triceps",
       "Rear Delts"
     ],
     "tags": [
@@ -12258,20 +12352,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "l-sit",
     "name": "L-Sit",
     "categories": [
-      "Abs"
+      "Abs",
+      "Triceps",
+      "Shoulders"
     ],
     "equipment": [
-      "Other",
-      "Pull-Up Bar"
+      "Bodyweight"
     ],
     "primaryMuscles": [
+      "Lower Abs",
       "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
-      "Forearm Extensors",
-      "Forearm Flexors",
-      "Obliques"
+      "Triceps",
+      "Front Delts",
+      "Quadriceps"
     ],
     "tags": [
       "STRENGTH",
@@ -12493,7 +12588,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/lateral-to-front-raise.mp4"
@@ -12542,7 +12637,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Abs"
     ],
     "equipment": [
-      "Machine"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Lower Abs",
@@ -12680,14 +12775,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Teres Major"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Teres Minor",
-      "Infraspinatus",
+      "Rear Delts",
       "Lower Traps",
-      "Lats",
-      "Rear Delts"
+      "Teres Major",
+      "Infraspinatus",
+      "Teres Minor",
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -12738,14 +12835,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Teres Minor"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Lats",
-      "Infraspinatus",
+      "Rear Delts",
       "Lower Traps",
       "Teres Major",
-      "Side Delts"
+      "Infraspinatus",
+      "Teres Minor",
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -12936,7 +13035,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "lowbar-squat",
-    "name": "Lowbar Squat",
+    "name": "Low-Bar Squat",
     "categories": [
       "Legs"
     ],
@@ -12975,7 +13074,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Hamstrings"
+      "Hip Flexors"
     ],
     "secondaryMuscles": [
       "Quadriceps"
@@ -13142,7 +13241,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Bench"
+      "Machine"
     ],
     "primaryMuscles": [
       "Mid Chest"
@@ -13166,8 +13265,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/lying-chest-press.mp4"
   },
   {
-    "slug": "lying-cross-lateral-cable-fly",
-    "name": "Lying Cross Lateral Cable Fly",
+    "slug": "cable-lying-cross-lateral-raise",
+    "name": "Cable Lying Cross Lateral Raise",
     "categories": [
       "Shoulders"
     ],
@@ -13191,7 +13290,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/lying-cross-lateral-cable-fly.mp4"
+    "mediaPath": "/exercises/cable-lying-cross-lateral-raise.mp4"
   },
   {
     "slug": "lying-ez-bar-triceps-extension",
@@ -13300,8 +13399,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/lying-spinal-twist.mp4"
   },
   {
-    "slug": "lying-stright-leg-raise",
-    "name": "Lying Stright Leg Raise",
+    "slug": "lying-straight-leg-raise",
+    "name": "Lying Straight Leg Raise",
     "categories": [
       "Abs"
     ],
@@ -13309,14 +13408,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Upper Abs"
+      "Upper Abs",
+      "Lower Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
       "Obliques",
-      "Quadriceps",
-      "Sartorius",
-      "Adductors"
+      "Quadriceps"
     ],
     "tags": [
       "CORE"
@@ -13326,7 +13423,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/lying-stright-leg-raise.mp4"
+    "mediaPath": "/exercises/lying-straight-leg-raise.mp4"
   },
   {
     "slug": "machine-abdominal-crunches",
@@ -13498,11 +13595,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Upper Chest"
+      "Mid Chest"
     ],
     "secondaryMuscles": [
+      "Upper Chest",
       "Lower Chest",
-      "Mid Chest",
+      "Front Delts",
+      "Triceps",
       "Serratus Anterior"
     ],
     "tags": [
@@ -13622,7 +13721,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/machine-lying-crunch.mp4"
@@ -13752,14 +13851,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Upper Chest",
+      "Side Delts",
       "Triceps",
-      "Serratus Anterior",
-      "Rear Delts"
+      "Upper Chest",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -13825,7 +13923,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "med-ball-russian-twist",
-    "name": "Med Ball Russian twist",
+    "name": "Med Ball Russian Twist",
     "categories": [
       "Abs"
     ],
@@ -13855,20 +13953,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "medicine-ball-slam",
     "name": "Medicine Ball Slam",
     "categories": [
-      "Shoulders"
+      "Abs",
+      "Legs",
+      "Shoulders",
+      "Back"
     ],
     "equipment": [
       "Medicine Ball"
     ],
     "primaryMuscles": [
-      "Front Delts"
+      "Lower Abs",
+      "Upper Abs",
+      "Lats",
+      "Quadriceps",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Lats",
-      "Lower Abs",
-      "Side Delts",
-      "Upper Abs",
-      "Teres Major"
+      "Front Delts",
+      "Triceps",
+      "Hamstrings"
     ],
     "tags": [
       "PLYOMETRIC",
@@ -13909,14 +14012,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "BAND",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/mini-band-glute-bridge.mp4"
   },
   {
     "slug": "mountain-climber",
-    "name": "Mountain climber",
+    "name": "Mountain Climber",
     "categories": [
       "Abs"
     ],
@@ -14048,6 +14151,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Back"
     ],
     "equipment": [
+      "Weight Plate",
       "Bench"
     ],
     "primaryMuscles": [
@@ -14156,7 +14260,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Machine"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Hamstrings"
@@ -14172,7 +14276,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/nordic-hamstring-curl.mp4"
@@ -14184,8 +14288,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Back"
     ],
     "equipment": [
-      "Resistance Band",
-      "Bench"
+      "Resistance Band"
     ],
     "primaryMuscles": [
       "Lats"
@@ -14252,7 +14355,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "secondaryMuscles": [
       "Brachioradialis",
-      "Triceps"
+      "Forearm Flexors"
     ],
     "tags": [
       "STRENGTH",
@@ -14521,7 +14624,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Triceps"
     ],
     "equipment": [
-      "Dumbbell"
+      "Cable"
     ],
     "primaryMuscles": [
       "Triceps"
@@ -14533,7 +14636,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "UNILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/one-arm-cable-triceps-pushdown.mp4"
@@ -14548,14 +14651,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Teres Minor"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Infraspinatus",
+      "Rear Delts",
       "Lower Traps",
-      "Lats",
       "Teres Major",
-      "Middle Traps"
+      "Infraspinatus",
+      "Teres Minor",
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -14791,17 +14896,18 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "one-arm-dumbbell-supination",
     "name": "One-Arm Dumbbell Supination",
     "categories": [
-      "Forearms"
+      "Forearms",
+      "Biceps"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Forearm Flexors"
+      "Biceps"
     ],
     "secondaryMuscles": [
-      "Forearm Extensors",
-      "Brachioradialis"
+      "Brachioradialis",
+      "Forearm Flexors"
     ],
     "tags": [
       "REHAB"
@@ -14985,21 +15091,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "one-arm-kettlebell-swing",
     "name": "One-Arm Kettlebell Swing",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Kettlebell"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus",
-      "Quadriceps"
+      "Hamstrings",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Obliques",
+      "Adductors",
+      "Spinal Erectors",
       "Front Delts",
-      "Hamstrings",
-      "Side Delts",
-      "Soleus"
+      "Obliques"
     ],
     "tags": [
       "STRENGTH",
@@ -15010,7 +15116,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/one-arm-kettlebell-swing.mp4"
@@ -15179,14 +15285,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Lower Traps"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Lats",
-      "Teres Minor",
-      "Infraspinatus",
-      "Middle Traps",
-      "Rear Delts"
+      "Biceps",
+      "Rear Delts",
+      "Lower Traps",
+      "Teres Major",
+      "Infraspinatus"
     ],
     "tags": [
       "STRENGTH",
@@ -15484,10 +15591,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Front Delts"
+      "Front Delts",
+      "Side Delts"
     ],
     "secondaryMuscles": [
-      "Side Delts"
+      "Triceps",
+      "Upper Traps",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -15580,7 +15690,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
   },
   {
     "slug": "opposite-side-elbow-to-knee",
-    "name": "Opposite side elbow to knee",
+    "name": "Opposite-Side Elbow to Knee",
     "categories": [
       "Abs"
     ],
@@ -15635,8 +15745,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/overhead-band-triceps-extension.mp4"
   },
   {
-    "slug": "overhead-cable-triceps-exstension-bar",
-    "name": "Overhead Cable Triceps Exstension (bar)",
+    "slug": "overhead-cable-triceps-extension-bar",
+    "name": "Overhead Cable Triceps Extension (Bar)",
     "categories": [
       "Triceps"
     ],
@@ -15656,7 +15766,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/overhead-cable-triceps-exstension-bar.mp4"
+    "mediaPath": "/exercises/overhead-cable-triceps-extension-bar.mp4"
   },
   {
     "slug": "overhead-triceps-stretch",
@@ -15722,14 +15832,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Infraspinatus"
+      "Lats",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Middle Traps",
-      "Teres Major",
-      "Lats",
-      "Teres Minor",
-      "Lower Traps"
+      "Rear Delts",
+      "Lower Traps",
+      "Spinal Erectors",
+      "Biceps",
+      "Hamstrings"
     ],
     "tags": [
       "STRENGTH",
@@ -15753,10 +15864,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "primaryMuscles": [
       "Gluteus Maximus",
-      "Gluteus Medius",
-      "Quadriceps"
+      "Gluteus Medius"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Hip Flexors"
+    ],
     "tags": [
       "MOBILITY",
       "STRETCH",
@@ -15779,13 +15891,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
+      "Side Delts",
       "Triceps",
       "Upper Chest",
-      "Mid Chest"
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -15809,12 +15921,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
+      "Side Delts",
       "Triceps",
-      "Upper Chest"
+      "Upper Chest",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -15839,13 +15952,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
+      "Side Delts",
       "Triceps",
       "Upper Chest",
-      "Mid Chest"
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -15869,12 +15982,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
+      "Side Delts",
       "Triceps",
-      "Upper Chest"
+      "Upper Chest",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -16080,19 +16194,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "planche-push-up",
     "name": "Planche Push-Up",
     "categories": [
-      "Triceps"
+      "Chest",
+      "Shoulders",
+      "Triceps",
+      "Abs"
     ],
     "equipment": [
       "Other"
     ],
     "primaryMuscles": [
-      "Mid Chest"
+      "Mid Chest",
+      "Front Delts",
+      "Triceps"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Triceps",
-      "Lower Chest",
-      "Upper Chest",
+      "Lower Abs",
+      "Upper Abs",
+      "Serratus Anterior",
       "Side Delts"
     ],
     "tags": [
@@ -16265,12 +16383,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Gastrocnemius"
+      "Gastrocnemius",
+      "Soleus"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
-      "Soleus",
-      "Tibialis Anterior"
+      "Quadriceps"
     ],
     "tags": [
       "PLYOMETRIC",
@@ -16378,20 +16495,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "power-clean",
     "name": "Power Clean",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
-    ],
-    "secondaryMuscles": [
-      "Hamstrings",
       "Gluteus Maximus",
       "Quadriceps",
-      "Lower Abs",
-      "Sartorius"
+      "Hamstrings"
+    ],
+    "secondaryMuscles": [
+      "Spinal Erectors",
+      "Front Delts",
+      "Upper Traps",
+      "Gastrocnemius"
     ],
     "tags": [
       "STRENGTH",
@@ -16562,15 +16681,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Lats",
-      "Teres Major"
+      "Lats"
     ],
     "secondaryMuscles": [
-      "Lower Traps",
-      "Infraspinatus",
-      "Teres Minor",
+      "Biceps",
       "Middle Traps",
-      "Triceps"
+      "Lower Traps",
+      "Rear Delts",
+      "Teres Major"
     ],
     "tags": [
       "STRENGTH",
@@ -16650,21 +16768,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "punching-bag-boxing",
     "name": "Punching Bag Boxing",
     "categories": [
+      "Shoulders",
+      "Triceps",
+      "Abs",
+      "Legs",
       "Chest"
     ],
     "equipment": [
-      "Bodyweight"
+      "Other"
     ],
     "primaryMuscles": [
-      "Lower Chest",
-      "Upper Chest"
+      "Front Delts",
+      "Triceps",
+      "Obliques"
     ],
     "secondaryMuscles": [
       "Mid Chest",
-      "Serratus Anterior",
-      "Front Delts",
-      "Side Delts",
-      "Triceps"
+      "Upper Abs",
+      "Quadriceps",
+      "Gluteus Maximus"
     ],
     "tags": [
       "CARDIO",
@@ -16865,10 +16987,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
+      "Lower Abs",
       "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
       "Obliques"
     ],
     "tags": [
@@ -16971,20 +17093,18 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "reverse-wrist-push-up",
     "name": "Reverse Wrist Push-Up",
     "categories": [
-      "Chest"
+      "Forearms"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
       "Forearm Extensors",
-      "Mid Chest"
+      "Forearm Flexors"
     ],
     "secondaryMuscles": [
-      "Lower Chest",
+      "Mid Chest",
       "Triceps",
-      "Upper Chest",
-      "Forearm Flexors",
       "Front Delts"
     ],
     "tags": [
@@ -17091,21 +17211,26 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "ring-muscle-up",
     "name": "Ring Muscle Up",
     "categories": [
-      "Biceps"
+      "Back",
+      "Biceps",
+      "Chest",
+      "Triceps",
+      "Shoulders"
     ],
     "equipment": [
       "Rings"
     ],
     "primaryMuscles": [
-      "Teres Major",
-      "Teres Minor"
+      "Lats",
+      "Biceps",
+      "Triceps",
+      "Mid Chest"
     ],
     "secondaryMuscles": [
       "Front Delts",
-      "Serratus Anterior",
-      "Triceps",
-      "Lats",
-      "Biceps"
+      "Upper Traps",
+      "Lower Traps",
+      "Lower Abs"
     ],
     "tags": [
       "STRENGTH",
@@ -17203,7 +17328,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/ring-triceps-extension.mp4"
@@ -17303,7 +17428,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Machine"
+      "Foam Roller"
     ],
     "primaryMuscles": [
       "Gastrocnemius",
@@ -17329,7 +17454,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Foam Roller"
     ],
     "primaryMuscles": [
       "Tibialis Anterior"
@@ -17351,20 +17476,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "romanian-deadlift",
     "name": "Romanian Deadlift",
     "categories": [
-      "Gluteal"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
+      "Hamstrings",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
       "Spinal Erectors",
-      "Hamstrings",
-      "Gluteus Medius",
       "Forearm Flexors",
-      "Quadriceps"
+      "Adductors"
     ],
     "tags": [
       "STRENGTH",
@@ -17515,21 +17641,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "rowing-machine",
     "name": "Rowing Machine",
     "categories": [
-      "Back"
+      "Legs",
+      "Back",
+      "Biceps",
+      "Abs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Cardio Machine"
     ],
     "primaryMuscles": [
-      "Lats",
-      "Lower Traps"
+      "Quadriceps",
+      "Gluteus Maximus",
+      "Lats"
     ],
     "secondaryMuscles": [
-      "Infraspinatus",
-      "Teres Major",
-      "Teres Minor",
-      "Quadriceps",
-      "Biceps"
+      "Hamstrings",
+      "Biceps",
+      "Lower Abs",
+      "Middle Traps",
+      "Spinal Erectors"
     ],
     "tags": [
       "CARDIO",
@@ -17537,7 +17667,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/rowing-machine.mp4"
@@ -17549,7 +17679,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Cardio Machine"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -17584,14 +17714,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus"
+      "Upper Abs",
+      "Lower Abs",
+      "Obliques"
     ],
     "secondaryMuscles": [
-      "Upper Abs",
-      "Obliques",
       "Front Delts",
-      "Lower Abs",
-      "Quadriceps"
+      "Serratus Anterior",
+      "Gluteus Maximus"
     ],
     "tags": [
       "CORE",
@@ -17608,7 +17738,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "scapula-push-up",
     "name": "Scapula Push-Up",
     "categories": [
-      "Chest"
+      "Chest",
+      "Shoulders"
     ],
     "equipment": [
       "Bodyweight"
@@ -17617,9 +17748,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Serratus Anterior"
     ],
     "secondaryMuscles": [
-      "Middle Traps",
-      "Lower Traps",
-      "Upper Traps"
+      "Mid Chest",
+      "Front Delts",
+      "Triceps",
+      "Lower Traps"
     ],
     "tags": [
       "MOBILITY",
@@ -17673,14 +17805,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
+      "Lats",
       "Middle Traps"
     ],
     "secondaryMuscles": [
+      "Rear Delts",
       "Lower Traps",
       "Infraspinatus",
-      "Teres Major",
       "Teres Minor",
-      "Lats"
+      "Teres Major",
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -17858,7 +17992,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "BARBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/seated-barbell-twist.mp4"
@@ -18020,14 +18154,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Cable"
     ],
     "primaryMuscles": [
+      "Lats",
       "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Lats",
+      "Biceps",
+      "Rear Delts",
       "Lower Traps",
-      "Infraspinatus",
       "Teres Major",
-      "Teres Minor"
+      "Infraspinatus"
     ],
     "tags": [
       "STRENGTH",
@@ -18245,14 +18380,17 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Shoulders"
     ],
     "equipment": [
-      "Dumbbell"
+      "Dumbbell",
+      "Bench"
     ],
     "primaryMuscles": [
+      "Front Delts",
       "Side Delts"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Rear Delts"
+      "Triceps",
+      "Upper Traps",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -18359,11 +18497,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
+      "Lower Abs",
       "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
-      "Obliques"
+      "Obliques",
+      "Quadriceps"
     ],
     "tags": [
       "CORE",
@@ -18407,6 +18546,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "seated-good-morning",
     "name": "Seated Good Morning",
     "categories": [
+      "Back",
       "Gluteal"
     ],
     "equipment": [
@@ -18414,11 +18554,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
+      "Spinal Erectors",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Spinal Erectors",
-      "Gluteus Medius"
+      "Hamstrings"
     ],
     "tags": [
       "STRENGTH",
@@ -18634,7 +18774,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "UNILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/seated-machine-trunk-rotation.mp4"
@@ -18678,11 +18818,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Rear Delts"
+      "Infraspinatus",
+      "Teres Minor"
     ],
     "secondaryMuscles": [
-      "Side Delts",
-      "Front Delts"
+      "Rear Delts",
+      "Side Delts"
     ],
     "tags": [
       "REHAB",
@@ -18797,7 +18938,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/seated-triceps-bench-dip.mp4"
@@ -18806,22 +18947,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "shoulder-tap",
     "name": "Shoulder Tap",
     "categories": [
+      "Abs",
+      "Shoulders",
       "Chest"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Lower Chest",
-      "Mid Chest",
-      "Upper Chest"
+      "Lower Abs",
+      "Obliques"
     ],
     "secondaryMuscles": [
       "Front Delts",
-      "Side Delts",
-      "Lower Abs",
-      "Obliques",
-      "Triceps"
+      "Mid Chest",
+      "Triceps",
+      "Serratus Anterior"
     ],
     "tags": [
       "CORE",
@@ -18839,16 +18980,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "shoulderstand-pose",
     "name": "Shoulderstand Pose",
     "categories": [
+      "Shoulders",
+      "Back",
       "Abs"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Lower Abs"
+      "Front Delts",
+      "Lower Traps",
+      "Upper Abs"
     ],
     "secondaryMuscles": [
-      "Upper Abs",
+      "Triceps",
+      "Middle Traps",
+      "Lower Abs",
       "Obliques"
     ],
     "tags": [
@@ -19214,7 +19361,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "UNILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "DUMBBELL",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/single-leg-calf-raise-with-dumbbell.mp4"
@@ -19223,7 +19370,9 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "single-leg-deadlift",
     "name": "Single-Leg Deadlift",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Dumbbell",
@@ -19231,11 +19380,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
-    ],
-    "secondaryMuscles": [
       "Hamstrings",
       "Gluteus Maximus"
+    ],
+    "secondaryMuscles": [
+      "Spinal Erectors",
+      "Gluteus Medius",
+      "Quadriceps"
     ],
     "tags": [
       "STRENGTH",
@@ -19244,7 +19395,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "BARBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/single-leg-deadlift.mp4"
@@ -19253,18 +19404,21 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "single-leg-dumbbell-deadlift",
     "name": "Single Leg Dumbbell Deadlift",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Spinal Erectors"
+      "Hamstrings",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
-      "Gluteus Maximus",
-      "Gluteus Medius"
+      "Spinal Erectors",
+      "Gluteus Medius",
+      "Quadriceps"
     ],
     "tags": [
       "STRENGTH",
@@ -19313,11 +19467,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus",
-      "Gluteus Medius",
       "Hamstrings"
     ],
-    "secondaryMuscles": [],
+    "secondaryMuscles": [
+      "Gastrocnemius"
+    ],
     "tags": [
       "STRENGTH",
       "BALANCE",
@@ -19362,7 +19516,9 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "single-leg-romanian-deadlift",
     "name": "Single Leg Romanian Deadlift",
     "categories": [
-      "Gluteal"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Dumbbell",
@@ -19370,14 +19526,12 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Barbell"
     ],
     "primaryMuscles": [
+      "Hamstrings",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
-      "Gluteus Medius",
       "Spinal Erectors",
-      "Lower Abs",
-      "Obliques"
+      "Gluteus Medius"
     ],
     "tags": [
       "STRENGTH",
@@ -19386,7 +19540,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "DUMBBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/single-leg-romanian-deadlift.mp4"
@@ -19586,20 +19740,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "ski-ergometer",
     "name": "Ski Ergometer",
     "categories": [
-      "Back"
+      "Back",
+      "Abs",
+      "Legs",
+      "Triceps"
     ],
     "equipment": [
-      "Machine"
+      "Cardio Machine"
     ],
     "primaryMuscles": [
+      "Lats",
+      "Lower Abs",
+      "Upper Abs",
       "Triceps"
     ],
     "secondaryMuscles": [
-      "Infraspinatus",
-      "Lats",
-      "Lower Traps",
-      "Teres Major",
-      "Teres Minor"
+      "Quadriceps",
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Rear Delts"
     ],
     "tags": [
       "CARDIO",
@@ -19607,7 +19766,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "UNWEIGHTED",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/ski-ergometer.mp4"
@@ -19619,7 +19778,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Bench"
+      "Slider"
     ],
     "primaryMuscles": [
       "Hamstrings"
@@ -19657,9 +19816,11 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Mid Chest"
     ],
     "secondaryMuscles": [
+      "Triceps",
+      "Front Delts",
+      "Upper Chest",
       "Lower Chest",
-      "Serratus Anterior",
-      "Upper Chest"
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -19847,17 +20008,18 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "smith-kneeling-hip-thrust",
     "name": "Smith Kneeling Hip Thrust",
     "categories": [
-      "Legs"
+      "Gluteal"
     ],
     "equipment": [
       "Smith Machine"
     ],
     "primaryMuscles": [
-      "Gluteus Maximus",
-      "Quadriceps"
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Gluteus Medius"
+      "Hamstrings",
+      "Quadriceps",
+      "Spinal Erectors"
     ],
     "tags": [
       "STRENGTH",
@@ -19871,31 +20033,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/smith-kneeling-hip-thrust.mp4"
   },
   {
-    "slug": "smith-machibe-glute-kickback",
-    "name": "Smith Machibe Glute Kickback",
-    "categories": [
-      "Legs"
-    ],
-    "equipment": [
-      "Smith Machine"
-    ],
-    "primaryMuscles": [
-      "Hamstrings"
-    ],
-    "secondaryMuscles": [],
-    "tags": [
-      "STRENGTH"
-    ],
-    "mechanics": "COMPOUND",
-    "laterality": "UNILATERAL",
-    "weightType": "MACHINE",
-    "mediaStatus": "available",
-    "mediaType": "video/mp4",
-    "mediaPath": "/exercises/smith-machibe-glute-kickback.mp4"
-  },
-  {
-    "slug": "smith-machine-good-morning",
-    "name": "Smith Machine Good Morning",
+    "slug": "smith-machine-glute-kickback",
+    "name": "Smith Machine Glute Kickback",
     "categories": [
       "Gluteal"
     ],
@@ -19906,9 +20045,37 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Spinal Erectors",
-      "Gluteus Medius",
+      "Hamstrings",
+      "Gluteus Medius"
+    ],
+    "tags": [
+      "STRENGTH"
+    ],
+    "mechanics": "COMPOUND",
+    "laterality": "UNILATERAL",
+    "weightType": "MACHINE",
+    "mediaStatus": "available",
+    "mediaType": "video/mp4",
+    "mediaPath": "/exercises/smith-machine-glute-kickback.mp4"
+  },
+  {
+    "slug": "smith-machine-good-morning",
+    "name": "Smith Machine Good Morning",
+    "categories": [
+      "Gluteal",
+      "Legs",
+      "Back"
+    ],
+    "equipment": [
+      "Smith Machine"
+    ],
+    "primaryMuscles": [
+      "Gluteus Maximus",
       "Hamstrings"
+    ],
+    "secondaryMuscles": [
+      "Spinal Erectors",
+      "Gluteus Medius"
     ],
     "tags": [
       "STRENGTH"
@@ -20109,7 +20276,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/smith-shoulder-shrug.mp4"
@@ -20220,7 +20387,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/smith-zercher-squat.mp4"
@@ -20229,20 +20396,27 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "snatch",
     "name": "Snatch",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Shoulders",
+      "Back",
+      "Abs"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
-      "Quadriceps"
+      "Quadriceps",
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Gluteus Maximus",
-      "Gluteus Medius",
-      "Hamstrings",
-      "Infraspinatus",
-      "Lower Traps"
+      "Spinal Erectors",
+      "Upper Traps",
+      "Side Delts",
+      "Lower Abs",
+      "Obliques"
     ],
     "tags": [
       "STRENGTH",
@@ -20261,22 +20435,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "snatch-pull",
     "name": "Snatch Pull",
     "categories": [
-      "Legs"
+      "Legs",
+      "Gluteal",
+      "Back"
     ],
     "equipment": [
       "Barbell"
     ],
     "primaryMuscles": [
       "Gluteus Maximus",
-      "Quadriceps",
-      "Upper Traps"
+      "Hamstrings",
+      "Quadriceps"
     ],
     "secondaryMuscles": [
-      "Hamstrings",
-      "Side Delts",
-      "Biceps",
-      "Middle Traps",
-      "Spinal Erectors"
+      "Spinal Erectors",
+      "Upper Traps",
+      "Forearm Flexors"
     ],
     "tags": [
       "STRENGTH",
@@ -20324,7 +20498,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Barbell"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -20443,7 +20617,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Abs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Swiss Ball"
     ],
     "primaryMuscles": [
       "Upper Abs"
@@ -20464,13 +20638,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/stability-ball-crunch.mp4"
   },
   {
-    "slug": "stabillity-ball-wall-squat",
-    "name": "Stabillity Ball Wall Squat",
+    "slug": "stability-ball-wall-squat",
+    "name": "Stability Ball Wall Squat",
     "categories": [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Swiss Ball"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -20492,16 +20666,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "UNWEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/stabillity-ball-wall-squat.mp4"
+    "mediaPath": "/exercises/stability-ball-wall-squat.mp4"
   },
   {
-    "slug": "stacionary-bike",
-    "name": "Stacionary Bike",
+    "slug": "stationary-bike",
+    "name": "Stationary Bike",
     "categories": [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Cardio Machine"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -20518,10 +20692,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/stacionary-bike.mp4"
+    "mediaPath": "/exercises/stationary-bike.mp4"
   },
   {
     "slug": "stair-climber",
@@ -20548,14 +20722,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/stair-climber.mp4"
   },
   {
-    "slug": "standing-air-bike",
-    "name": "Standing Air Bike",
+    "slug": "standing-bicycle-crunch",
+    "name": "Standing Bicycle Crunch",
     "categories": [
       "Abs"
     ],
@@ -20563,24 +20737,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Hip Flexors"
-    ],
-    "secondaryMuscles": [
       "Obliques",
       "Upper Abs",
       "Lower Abs"
     ],
+    "secondaryMuscles": [
+      "Hip Flexors"
+    ],
     "tags": [
       "CORE",
-      "CARDIO",
       "FUNCTIONAL"
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/standing-air-bike.mp4"
+    "mediaPath": "/exercises/standing-bicycle-crunch.mp4"
   },
   {
     "slug": "standing-cable-ab-crunch",
@@ -20691,7 +20864,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/standing-calf-raise.mp4"
@@ -20861,7 +21034,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "UNILATERAL",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BAND",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/standing-hip-abduction.mp4"
@@ -21045,7 +21218,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "UNWEIGHTED",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/standing-russian-twist.mp4"
@@ -21130,7 +21303,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BARBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/static-front-hold.mp4"
@@ -21237,12 +21410,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Other"
     ],
     "primaryMuscles": [
-      "Upper Abs"
+      "Upper Abs",
+      "Lower Abs"
     ],
     "secondaryMuscles": [
-      "Lower Abs",
       "Obliques",
-      "Serratus Anterior"
+      "Quadriceps",
+      "Triceps"
     ],
     "tags": [
       "STRENGTH",
@@ -21294,9 +21468,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Dumbbell",
-      "Kettlebell",
-      "Barbell"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -21315,7 +21487,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "UNWEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/sumo-squat.mp4"
@@ -21346,7 +21518,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "WEIGHTED",
+    "weightType": "UNWEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/sumo-squat-off-stepbox.mp4"
@@ -21384,7 +21556,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "superman",
     "name": "Superman",
     "categories": [
-      "Legs"
+      "Back",
+      "Gluteal"
     ],
     "equipment": [
       "Bodyweight"
@@ -21395,9 +21568,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "secondaryMuscles": [
       "Gluteus Maximus",
       "Hamstrings",
-      "Infraspinatus",
-      "Rear Delts",
-      "Upper Traps"
+      "Middle Traps"
     ],
     "tags": [
       "CORE",
@@ -21419,7 +21590,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Chest"
     ],
     "equipment": [
-      "Rings"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Mid Chest"
@@ -21627,7 +21798,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Bodyweight"
+      "Swiss Ball"
     ],
     "primaryMuscles": [
       "Hamstrings"
@@ -21655,7 +21826,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Abs"
     ],
     "equipment": [
-      "Medicine Ball"
+      "Swiss Ball"
     ],
     "primaryMuscles": [
       "Lower Abs",
@@ -21682,8 +21853,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Back"
     ],
     "equipment": [
-      "Barbell",
-      "Landmine"
+      "Machine"
     ],
     "primaryMuscles": [
       "Lats"
@@ -21707,8 +21877,8 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/t-bar-bent-over-row.mp4"
   },
   {
-    "slug": "t-bar-chest-suported-row",
-    "name": "T-Bar Chest Suported Row",
+    "slug": "t-bar-chest-supported-row",
+    "name": "T-Bar Chest Supported Row",
     "categories": [
       "Back"
     ],
@@ -21716,15 +21886,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Lower Traps",
+      "Lats",
       "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Infraspinatus",
-      "Teres Major",
       "Rear Delts",
+      "Lower Traps",
+      "Infraspinatus",
       "Teres Minor",
-      "Upper Traps"
+      "Teres Major",
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -21735,7 +21906,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/t-bar-chest-suported-row.mp4"
+    "mediaPath": "/exercises/t-bar-chest-supported-row.mp4"
   },
   {
     "slug": "tate-press",
@@ -21910,6 +22081,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "trap-y-raise",
     "name": "Trap Y Raise",
     "categories": [
+      "Back",
       "Shoulders"
     ],
     "equipment": [
@@ -21917,14 +22089,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Bench"
     ],
     "primaryMuscles": [
-      "Rear Delts"
+      "Lower Traps",
+      "Middle Traps"
     ],
     "secondaryMuscles": [
-      "Upper Traps",
-      "Middle Traps",
       "Side Delts",
+      "Rear Delts",
       "Infraspinatus",
-      "Teres Minor"
+      "Front Delts"
     ],
     "tags": [
       "STRENGTH",
@@ -21980,14 +22152,15 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Cardio Machine"
     ],
     "primaryMuscles": [
+      "Quadriceps",
+      "Hamstrings",
+      "Gluteus Maximus",
+      "Gastrocnemius",
       "Soleus"
     ],
     "secondaryMuscles": [
-      "Quadriceps",
-      "Sartorius",
-      "Tibialis Anterior",
-      "Gastrocnemius",
-      "Obliques"
+      "Lower Abs",
+      "Adductors"
     ],
     "tags": [
       "CARDIO",
@@ -21995,7 +22168,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "BODYWEIGHT",
+    "weightType": "MACHINE",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/treadmill-run.mp4"
@@ -22133,21 +22306,23 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "trx-single-leg-bird-dog",
     "name": "TRX Single Leg Bird Dog",
     "categories": [
-      "Abs"
+      "Abs",
+      "Back",
+      "Gluteal"
     ],
     "equipment": [
       "Suspension Trainer"
     ],
     "primaryMuscles": [
       "Lower Abs",
-      "Quadriceps",
-      "Tibialis Anterior"
+      "Obliques",
+      "Spinal Erectors",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Upper Abs",
-      "Sartorius",
-      "Obliques",
+      "Front Delts",
       "Side Delts",
+      "Hamstrings",
       "Middle Traps"
     ],
     "tags": [
@@ -22195,21 +22370,27 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "turkish-get-up",
     "name": "Turkish Get Up",
     "categories": [
-      "Shoulders"
+      "Shoulders",
+      "Abs",
+      "Gluteal",
+      "Legs"
     ],
     "equipment": [
       "Kettlebell",
       "Dumbbell"
     ],
     "primaryMuscles": [
-      "Side Delts"
+      "Front Delts",
+      "Side Delts",
+      "Obliques",
+      "Lower Abs",
+      "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Sartorius",
       "Quadriceps",
-      "Gluteus Maximus",
-      "Forearm Flexors"
+      "Hamstrings",
+      "Triceps",
+      "Spinal Erectors"
     ],
     "tags": [
       "STRENGTH",
@@ -22253,22 +22434,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "unilateral-farmer-walk",
     "name": "Unilateral Farmer Walk",
     "categories": [
-      "Forearms"
+      "Forearms",
+      "Abs",
+      "Legs"
     ],
     "equipment": [
       "Dumbbell",
       "Kettlebell"
     ],
     "primaryMuscles": [
-      "Forearm Extensors",
-      "Forearm Flexors"
+      "Forearm Flexors",
+      "Brachioradialis",
+      "Obliques"
     ],
     "secondaryMuscles": [
-      "Obliques",
-      "Brachioradialis",
       "Quadriceps",
-      "Gastrocnemius",
-      "Soleus"
+      "Gluteus Maximus",
+      "Lower Abs",
+      "Upper Traps",
+      "Gastrocnemius"
     ],
     "tags": [
       "STRENGTH",
@@ -22277,7 +22461,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "UNILATERAL",
-    "weightType": "DUMBBELL",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/unilateral-farmer-walk.mp4"
@@ -22286,17 +22470,22 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "upward-dog",
     "name": "Upward Dog",
     "categories": [
-      "Abs"
+      "Back",
+      "Shoulders",
+      "Chest"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Lower Abs",
-      "Upper Abs"
+      "Spinal Erectors",
+      "Mid Chest",
+      "Front Delts"
     ],
     "secondaryMuscles": [
-      "Obliques"
+      "Lower Traps",
+      "Upper Chest",
+      "Triceps"
     ],
     "tags": [
       "MOBILITY",
@@ -22393,13 +22582,13 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "mediaPath": "/exercises/vertical-leg-press-smith-machine.mp4"
   },
   {
-    "slug": "walking-cardio",
-    "name": "Walking Cardio",
+    "slug": "walking",
+    "name": "Walking",
     "categories": [
       "Legs"
     ],
     "equipment": [
-      "Cardio Machine"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -22417,10 +22606,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "ALTERNATING",
-    "weightType": "UNWEIGHTED",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
-    "mediaPath": "/exercises/walking-cardio.mp4"
+    "mediaPath": "/exercises/walking.mp4"
   },
   {
     "slug": "walking-lunges",
@@ -22429,7 +22618,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Dumbbell"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Quadriceps"
@@ -22543,18 +22732,18 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "weighted-back-extension",
     "name": "Weighted Back Extension",
     "categories": [
+      "Back",
       "Gluteal"
     ],
     "equipment": [
       "Weight Plate"
     ],
     "primaryMuscles": [
+      "Spinal Erectors",
       "Gluteus Maximus"
     ],
     "secondaryMuscles": [
-      "Spinal Erectors",
-      "Hamstrings",
-      "Gluteus Medius"
+      "Hamstrings"
     ],
     "tags": [
       "STRENGTH",
@@ -22562,7 +22751,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-back-extension.mp4"
@@ -22593,7 +22782,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-bench-dips.mp4"
@@ -22624,7 +22813,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-chin-up.mp4"
@@ -22712,7 +22901,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-decline-crunch.mp4"
@@ -22743,7 +22932,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-dips.mp4"
@@ -22773,7 +22962,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-glute-bridge.mp4"
@@ -22801,7 +22990,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-hanging-leg-raise.mp4"
@@ -22837,21 +23026,27 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "weighted-muscle-up",
     "name": "Weighted Muscle-Up",
     "categories": [
-      "Triceps"
+      "Back",
+      "Biceps",
+      "Chest",
+      "Triceps",
+      "Shoulders"
     ],
     "equipment": [
       "Rings",
       "Pull-Up Bar"
     ],
     "primaryMuscles": [
-      "Lats"
+      "Lats",
+      "Biceps",
+      "Triceps",
+      "Mid Chest"
     ],
     "secondaryMuscles": [
-      "Teres Major",
-      "Infraspinatus",
-      "Teres Minor",
-      "Triceps",
-      "Middle Traps"
+      "Front Delts",
+      "Upper Traps",
+      "Lower Traps",
+      "Lower Abs"
     ],
     "tags": [
       "STRENGTH",
@@ -22860,7 +23055,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-muscle-up.mp4"
@@ -22958,7 +23153,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-pull-up.mp4"
@@ -22987,7 +23182,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "COMPOUND",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-push-up.mp4"
@@ -23104,7 +23299,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "BODYWEIGHT",
+    "weightType": "WEIGHTED",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/weighted-sit-up.mp4"
@@ -23140,7 +23335,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "weighted-woodchopper",
     "name": "Weighted Woodchopper",
     "categories": [
-      "Shoulders"
+      "Abs"
     ],
     "equipment": [
       "Dumbbell",
@@ -23154,11 +23349,10 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Obliques"
     ],
     "secondaryMuscles": [
-      "Front Delts",
-      "Rear Delts",
-      "Side Delts",
       "Lower Abs",
-      "Upper Abs"
+      "Upper Abs",
+      "Front Delts",
+      "Serratus Anterior"
     ],
     "tags": [
       "STRENGTH",
@@ -23182,14 +23376,16 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Machine"
     ],
     "primaryMuscles": [
-      "Infraspinatus"
+      "Lats",
+      "Middle Traps",
+      "Rear Delts"
     ],
     "secondaryMuscles": [
       "Lower Traps",
+      "Infraspinatus",
       "Teres Minor",
-      "Rear Delts",
       "Teres Major",
-      "Middle Traps"
+      "Biceps"
     ],
     "tags": [
       "STRENGTH",
@@ -23243,14 +23439,14 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "primaryMuscles": [
       "Lats",
-      "Teres Major"
+      "Middle Traps",
+      "Lower Traps"
     ],
     "secondaryMuscles": [
+      "Biceps",
+      "Rear Delts",
       "Infraspinatus",
-      "Teres Minor",
-      "Lower Traps",
-      "Triceps",
-      "Rear Delts"
+      "Teres Major"
     ],
     "tags": [
       "STRENGTH",
@@ -23321,22 +23517,25 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     "slug": "worlds-greatest-stretch",
     "name": "World’s Greatest Stretch",
     "categories": [
-      "Chest"
+      "Legs",
+      "Gluteal",
+      "Back",
+      "Shoulders"
     ],
     "equipment": [
       "Bodyweight"
     ],
     "primaryMuscles": [
-      "Infraspinatus",
-      "Lower Chest",
-      "Lower Traps",
-      "Mid Chest",
-      "Middle Traps",
-      "Serratus Anterior",
-      "Upper Chest"
+      "Gluteus Maximus",
+      "Hamstrings",
+      "Adductors",
+      "Spinal Erectors"
     ],
     "secondaryMuscles": [
-      "Spinal Erectors"
+      "Front Delts",
+      "Middle Traps",
+      "Lower Abs",
+      "Mid Chest"
     ],
     "tags": [
       "MOBILITY",

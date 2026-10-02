@@ -20,6 +20,7 @@ export const RETIRED_FITDEX_EXERCISE_SLUGS = [
   'band-russian-twist',
   'bottom-up-rotation',
   'concentration-hammer-curl',
+  'hand-gripper',
   'kas-glute-bridge',
   'kneeling-ring-push-up',
   'pull-around',
@@ -58,11 +59,16 @@ for (const migration of LEGACY_EXERCISE_MIGRATIONS) {
 
 function trackingTypeFor(definition: FitDexExerciseDefinition): ExerciseTrackingType {
   const name = definition.name.toLowerCase()
-  if (/farmer|walk|carry|sled|prowler/.test(name)) return definition.equipment.includes('Bodyweight') ? 'distance_duration' : 'weight_distance'
-  if (/running|treadmill run|rowing machine|walking cardio|elliptical|stair climber|air bike|jump rope/.test(name)) return 'distance_duration'
-  if (/hold|plank|hang|stretch|pose|mobility|mobilization|breathing|vaccum|vacuum|wall sit|lean planche/.test(name)) return 'duration'
+  if (/farmer|walk|carry|sled|prowler/.test(name) && !/walking lunges|monster walk/.test(name)) return definition.equipment.includes('Bodyweight') ? 'distance_duration' : 'weight_distance'
+  if (/running|treadmill|rowing machine|walking|elliptical|stair climber|air bike|ski ergometer|stationary bike/.test(name) && !/walking lunges|bicycle crunch/.test(name)) return 'distance_duration'
+  if (definition.equipment.includes('Foam Roller') || (/hold|plank|side bridge|stretch|pose|mobility|mobilization|breathing|vaccum|vacuum|wall sit|lean planche|dead hang|boxing|back lever|(?:downward|upward) dog|^flag$|planche$|front lever$|glutes roll|jump rope|l-sit|spinal twist|chest opener|forward bend/.test(name) && !/hang power clean|weighted hanging leg raise|kneeling back rotation stretch|band warm-up dynamic shoulder stretch|deep squat to wide fold with foot hold|rocking half frog stretch|world.?s greatest stretch/.test(name))) {
+    if (definition.weightType && !['BODYWEIGHT', 'UNWEIGHTED', 'ASSISTED_BODYWEIGHT'].includes(definition.weightType)) return 'weight_duration'
+    return 'duration'
+  }
+  if (name === 'band-assisted pull-up' || name === 'wall angel' || /monster walk|world.?s greatest stretch/.test(name)) return 'reps_only'
   if (definition.weightType === 'ASSISTED_BODYWEIGHT') return 'assisted_bodyweight'
-  if (definition.weightType === 'BODYWEIGHT' || definition.equipment.every((item) => ['Bodyweight', 'Pull-Up Bar', 'Bench', 'Rings', 'Other'].includes(item))) return 'bodyweight_reps'
+  if (definition.weightType === 'UNWEIGHTED') return 'reps_only'
+  if (definition.weightType === 'BODYWEIGHT' || definition.equipment.every((item) => ['Bodyweight', 'Pull-Up Bar', 'Dip Bar', 'Bench', 'Rings', 'Swiss Ball', 'Ab Wheel', 'Other', 'Slider', 'Jump Rope'].includes(item))) return 'bodyweight_reps'
   return 'weight_reps'
 }
 
@@ -94,8 +100,30 @@ function cardioMetricsFor(definition: FitDexExerciseDefinition): CardioMetric[] 
 
 function lateralityFor(definition: FitDexExerciseDefinition): Exercise['laterality'] {
   if (definition.laterality === 'UNILATERAL') return 'unilateral'
-  if (/alternat/i.test(definition.name)) return 'alternating'
+  if (definition.laterality === 'ALTERNATING' || /alternat/i.test(definition.name)) return 'alternating'
   return definition.laterality === 'BILATERAL' ? 'bilateral' : undefined
+}
+
+const TYPO_EXERCISE_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  'builtin-exercise:abdominal-vacuum': ['Abdominal Vaccum'],
+  'builtin-exercise:air-bicycle-crunch': ['Air Bike'],
+  'builtin-exercise:arm-circles-at-shoulder-height': ['Arm Circles'],
+  'builtin-exercise:cable-hip-abduction': ['Cable Hip Abducction'],
+  'builtin-exercise:cable-seated-supinated-grip-row': ['Cable Seated Supine Grip Row'],
+  'builtin-exercise:captains-chair-straight-leg-raises': ["Capitan's Chair Straight Leg Raises"],
+  'builtin-exercise:cossack-squat': ['Crossack Squat'],
+  'builtin-exercise:full-range-arm-circles': ['Arm Circle'],
+  'builtin-exercise:hanging-knees-to-elbows': ['Hanging Knees to Elbows Waist'],
+  'builtin-exercise:kettlebell-clean': ['Kettelbell Clean'],
+  'builtin-exercise:kettlebell-renegade-row': ['Kettlebel Renegade Row'],
+  'builtin-exercise:lying-straight-leg-raise': ['Lying Stright Leg Raise'],
+  'builtin-exercise:overhead-cable-triceps-extension-bar': ['Overhead Cable Triceps Exstension (bar)'],
+  'builtin-exercise:single-dumbbell-straight-leg-deadlift': ['Dumbbell Straight Leg Deadlift'],
+  'builtin-exercise:smith-machine-glute-kickback': ['Smith Machibe Glute Kickback'],
+  'builtin-exercise:stability-ball-wall-squat': ['Stabillity Ball Wall Squat'],
+  'builtin-exercise:stationary-bike': ['Stacionary Bike'],
+  'builtin-exercise:t-bar-chest-supported-row': ['T-Bar Chest Suported Row'],
+  'builtin-exercise:two-dumbbell-straight-leg-deadlift': ['Dumbbell Deadlift Straight Legs'],
 }
 
 function createExercise(definition: FitDexExerciseDefinition): Exercise {
@@ -104,7 +132,10 @@ function createExercise(definition: FitDexExerciseDefinition): Exercise {
   return {
     id,
     name: definition.name,
-    aliases: legacyAliasesBySuccessor.get(id) ?? [],
+    aliases: [
+      ...(legacyAliasesBySuccessor.get(id) ?? []),
+      ...(TYPO_EXERCISE_ALIASES[id] ?? []),
+    ],
     category: primaryCategory,
     categories: [...definition.categories],
     primaryCategory,
@@ -127,3 +158,15 @@ function createExercise(definition: FitDexExerciseDefinition): Exercise {
 }
 
 export const builtInExercises: readonly Exercise[] = ACTIVE_FITDEX_EXERCISES.map(createExercise)
+
+function stableDatasetHash(value: string) {
+  let hash = 0x811c9dc5
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
+}
+
+/** Changes whenever resolved canonical exercise data changes, including tracking rules. */
+export const BUILT_IN_EXERCISE_DATASET_SIGNATURE = `${BUILT_IN_EXERCISE_DATASET_VERSION}:${stableDatasetHash(JSON.stringify(builtInExercises))}`

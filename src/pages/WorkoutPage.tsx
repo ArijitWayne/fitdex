@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { RetroLoader } from '../components/ui/RetroLoader'
 import { ContextRail } from '../components/ui/ContextRail'
-import { PageFrame } from '../components/layout/PageFrame'
-import type { Exercise, RoutineExercise, WeeklyPlanFeedback, WorkoutRoutine } from '../data/models'
+import { CommandPageFrame } from '../components/layout/CommandPageFrame'
+import { CollapsibleModule } from '../components/ui/CollapsibleModule'
+import type { Exercise, PlanDaySnapshot, RoutineExercise, WeekdayId, WeeklyPlanFeedback, WorkoutRoutine } from '../data/models'
 import { ExerciseDex } from '../features/exerciseDex/ExerciseDex'
 import { ensureBuiltInExercises } from '../features/exerciseDex/seedExercises'
 import { ActiveWorkoutView, CompletedWorkoutDetail, WorkoutDeleteDialog } from '../features/workout/WorkoutSessionViews'
@@ -15,7 +16,7 @@ import { ActiveWorkoutExistsError, discardWorkout, getActiveWorkout, listRecentW
 import { GuideDialog } from '../features/help/GuideDialog'
 import { markTutorialSeen } from '../features/help/tutorialPreferences'
 import { workoutTutorialSteps } from '../features/help/tutorialSteps'
-import { WeeklyPlanDayTile, WeeklyPlanEditor, WeeklyPlanFeedbackDialog } from '../features/workout/WeeklyPlanViews'
+import { WeeklyPlanDayTile, WeeklyPlanEditor, WeeklyPlanFeedbackDialog, WEEKDAY_INITIALS, type WeeklyTileStateKey } from '../features/workout/WeeklyPlanViews'
 import { emptyWeeklyPlanDays, loadWeeklyPlan, WEEKDAY_LABELS, weekdayIdForLocalDateKey, weeklyPlanAssignmentLabel, type WeeklyPlan } from '../features/workout/weeklyPlan'
 import { acknowledgeWeeklyPlanFeedback, listWeeklyPlanFeedback, resolveWeeklyPlanFeedback } from '../features/workout/weeklyPlanFeedback'
 import { useAudio } from '../features/audio/useAudio'
@@ -53,6 +54,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const [showAllHistory, setShowAllHistory] = useState(false)
   const [preparedExercises, setPreparedExercises] = useState<Exercise[]>([])
   const [showWorkoutLanding, setShowWorkoutLanding] = useState(false)
+  const [selectedPlanDay, setSelectedPlanDay] = useState<WeekdayId>()
   const [planFeedback, setPlanFeedback] = useState<WeeklyPlanFeedback>()
   const overlayOpen = Boolean(planFeedback) || Boolean(replacementIntent) || routineChooserOpen || quickLaunchOpen
   const navigateBack = useBackNavigation('workout-subview', overlayOpen || view !== 'hub', () => {
@@ -225,7 +227,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
 
   if (view === 'prepare') return <PreparedWorkout exercises={preparedExercises} onBack={() => setView('hub')} onAdd={() => setView('prepare-picker')} onRemove={(id) => setPreparedExercises((current) => current.filter((exercise) => exercise.id !== id))} onStart={() => void begin(() => startPreparedWorkout(preparedExercises))} />
 
-  if (view === 'library') return <div className="page-stack workout-page"><div className="workout-library-toolbar"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setView('hub') }}><ArrowLeft size={18} aria-hidden="true" /> Back to Workout Hub</button></div><ExerciseDex onAddToRoutine={(exercise) => { setPendingExercise(exercise); setMessage(''); setView('add-to-routine') }} />{message ? <p className="workout-feedback" role="status">{message}</p> : null}</div>
+  if (view === 'library') return <div className="page-stack workout-page"><ExerciseDex onBackToWorkoutHub={() => { playEffect('select'); setView('hub') }} onAddToRoutine={(exercise) => { setPendingExercise(exercise); setMessage(''); setView('add-to-routine') }} />{message ? <p className="workout-feedback" role="status">{message}</p> : null}</div>
 
   if (view === 'picker' && selectedRoutine) {
     const existingExerciseIds = new Set(selectedRoutine.items.map((item) => item.exerciseId))
@@ -261,17 +263,15 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
   const visibleRoutines = showAllRoutines ? routines : routines.slice(0, 3)
   const visibleHistory = showAllHistory ? recentWorkouts : recentWorkouts.slice(0, 2)
 
-  return <PageFrame className="workout-page workout-hub" data-variant="mission-stack">
-    <header className="workout-hub-header">
-      <div><p className="eyebrow">Training</p><h1>Workout Hub</h1></div>
-      <div className="workout-hub-header-meta">
-        {gamification ? <span className="workout-level-badge">Level {gamification.progression.level}</span> : null}
-        <time dateTime={todayKey}>{headerDate.toLocaleDateString(undefined, { weekday: 'short' })}<br />{headerDate.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}</time>
-        <button className="workout-hub-help cmd-icon-btn page-help-btn" type="button" aria-label="How Workouts Work" title="How Workouts Work" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
-      </div>
-    </header>
+  const routinesSummary = routines.length
+    ? `${routines.map((r) => r.routine.name).slice(0, 3).join(', ')}${routines.length > 3 ? '…' : ''}`
+    : 'No saved routines'
+  const historySummary = recentWorkouts.length
+    ? `Last: ${recentWorkouts[0].workout.nameSnapshot} · ${new Date(recentWorkouts[0].workout.completedAt ?? recentWorkouts[0].workout.startedAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}`
+    : 'No completed workouts'
 
-    {loading ? <Panel><RetroLoader label="LOADING WORKOUT DATA..." /></Panel> : <main className="workout-hub-stack">
+  return <CommandPageFrame className="workout-page workout-hub" terminalTitle="FITDEX // TRAINING TERMINAL" terminalMeta={`${gamification ? `LV ${gamification.progression.level} · ` : ''}${headerDate.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' }).replace(/,/g, '').toUpperCase()}`} headerActions={<button className="workout-hub-help cmd-icon-btn page-help-btn" type="button" aria-label="How Workouts Work" title="How Workouts Work" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={16} aria-hidden="true" /></button>}>
+    {loading ? <Panel><RetroLoader label="LOADING WORKOUT DATA..." /></Panel> : <main className="workout-hub-stack" data-variant="mission-stack">
       {showWorkoutLanding ? <ContextRail eyebrow="First workout" title="Choose how you want to train" actions={<><button className="primary-button" type="button" onClick={() => void chooseFirstWorkoutPath('prepare')}>Build Today</button><button className="secondary-button" type="button" onClick={() => void chooseFirstWorkoutPath('create')}>Create Routine</button></>}><p><strong>Build Today</strong> prepares a one-off session without saving a routine. <strong>Create Routine</strong> saves a reusable template. No workout or timer starts until you press Start Workout.</p></ContextRail> : null}
       <section className={`workout-mission-card${activeWorkout ? hubTimerPaused ? ' is-paused' : ' is-active' : ''}`} aria-labelledby="today-mission-title">
         <div className="workout-mission-core">
@@ -299,30 +299,181 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
         {message ? <p className="workout-feedback" role="status">{message}</p> : null}
       </section>
 
-      <section className="workout-hub-panel workout-weekly-panel" aria-labelledby="weekly-plan-title">
-        <div className="workout-section-head"><h2 id="weekly-plan-title">Weekly Plan</h2><button type="button" onClick={() => { playEffect('select'); setView('plan') }}>Edit Plan</button></div>
+      <section className="workout-weekly-panel" aria-labelledby="weekly-plan-title">
+        <div className="workout-section-head"><h2 id="weekly-plan-title">Weekly Plan</h2><button className="text-button" type="button" onClick={() => { playEffect('select'); setView('plan') }}>Edit Plan</button></div>
         <div className="workout-week-grid">{WEEKDAY_IDS.map((day, index) => {
           const assignment = weeklyPlan.days[day]
           const dateKey = shiftLocalDateKey(weekStart, index)
           const snapshot = gamification?.snapshots.find((item) => item.localDate === dateKey)
-          const done = snapshot?.result === 'success'
-          const rest = assignment.type === 'rest_day'
-          return <WeeklyPlanDayTile key={day} day={day} label={weeklyPlanAssignmentLabel(assignment, routines.map((entry) => entry.routine))} today={day === todayId} completed={done} rest={rest} />
+          const isToday = day === todayId
+          const isPast = dateKey < todayKey
+
+          let stateKey: WeeklyTileStateKey = 'noplan'
+          if (snapshot?.result === 'success') stateKey = 'done'
+          else if (snapshot?.result === 'frozen') stateKey = 'freeze'
+          else if (snapshot?.result === 'missed') stateKey = 'miss'
+          else if (snapshot?.result === 'rest' || snapshot?.result === 'paused') stateKey = 'rest'
+          else if (snapshot?.result === 'no_plan') stateKey = 'noplan'
+          else if (assignment.type === 'rest_day') stateKey = 'rest'
+          else if (assignment.type === 'no_plan') stateKey = 'noplan'
+          else if (assignment.type === 'routine' || assignment.type === 'workout_day') {
+            stateKey = isPast ? 'miss' : 'plan'
+          }
+
+          const initial = WEEKDAY_INITIALS[day]
+          const routineLabel = weeklyPlanAssignmentLabel(assignment, routines.map((entry) => entry.routine))
+          const stateDesc = stateKey === 'done' ? 'completed'
+            : stateKey === 'freeze' ? 'missed, streak freeze used'
+            : stateKey === 'miss' ? 'missed'
+            : stateKey === 'plan' ? 'planned'
+            : stateKey === 'rest' ? 'rest day'
+            : 'no plan'
+          const accessibleLabel = `${WEEKDAY_LABELS[day]}${isToday ? ' (Today)' : ''}: ${routineLabel}, ${stateDesc}`
+
+          return (
+            <WeeklyPlanDayTile
+              key={day}
+              day={day}
+              initial={initial}
+              stateKey={stateKey}
+              today={isToday}
+              selected={selectedPlanDay === day}
+              accessibleLabel={accessibleLabel}
+              onClick={() => {
+                playEffect('select')
+                setSelectedPlanDay((curr?: WeekdayId) => curr === day ? undefined : day)
+              }}
+            />
+          )
         })}</div>
+        {selectedPlanDay ? (
+          <div className="workout-plan-detail-card" role="region" aria-label="Selected day plan details">
+            <div className="workout-plan-detail-header">
+              <strong>{WEEKDAY_LABELS[selectedPlanDay]}{selectedPlanDay === todayId ? ' · Today' : ''}</strong>
+              <small>{weeklyPlanAssignmentLabel(weeklyPlan.days[selectedPlanDay], routines.map((entry) => entry.routine))}</small>
+            </div>
+            <p className="workout-plan-detail-status">
+              {getPlanDayStatusSummary(selectedPlanDay, weeklyPlan.days[selectedPlanDay], shiftLocalDateKey(weekStart, WEEKDAY_IDS.indexOf(selectedPlanDay)), todayKey, gamification?.snapshots.find((item) => item.localDate === shiftLocalDateKey(weekStart, WEEKDAY_IDS.indexOf(selectedPlanDay))))}
+            </p>
+          </div>
+        ) : null}
       </section>
 
-      <section className="workout-hub-panel" aria-labelledby="saved-routines-title">
-        <div className="workout-section-head"><h2 id="saved-routines-title">Saved Routines</h2>{routines.length > 3 ? <button type="button" aria-expanded={showAllRoutines} onClick={() => { playEffect('select'); setShowAllRoutines((value) => !value) }}>{showAllRoutines ? 'Show Less' : 'View All'}</button> : null}</div>
-        {visibleRoutines.length ? <div className="workout-hub-rows">{visibleRoutines.map(({ routine, items }) => <button type="button" key={routine.id} onClick={() => openRoutine(routine.id)}><span><strong>{routine.name}</strong><small>{items.length} {items.length === 1 ? 'exercise' : 'exercises'} · {items.reduce((sum, item) => sum + item.plannedSets, 0)} planned sets</small></span><ChevronRight size={18} aria-hidden="true" /></button>)}</div> : <WorkoutEmpty title="No routines yet" body="Create a routine, or start an open workout and build as you train." />}
-        <button className="secondary-button workout-create-routine" type="button" onClick={() => { playEffect('select'); setView('create') }}><Plus size={17} aria-hidden="true" /> Create Routine</button>
-      </section>
+      <CollapsibleModule
+        id="workout-routines"
+        titleId="saved-routines-title"
+        title="Saved Routines"
+        badge={`${routines.length} ${routines.length === 1 ? 'Routine' : 'Routines'}`}
+        summary={routinesSummary}
+        defaultExpanded={false}
+      >
+        {visibleRoutines.length ? (
+          <div className="workout-hub-rows">
+            {visibleRoutines.map(({ routine, items }) => (
+              <button type="button" key={routine.id} onClick={() => openRoutine(routine.id)}>
+                <span>
+                  <strong>{routine.name}</strong>
+                  <small>
+                    {items.length} {items.length === 1 ? 'exercise' : 'exercises'} ·{' '}
+                    {items.reduce((sum, item) => sum + item.plannedSets, 0)} planned sets
+                  </small>
+                </span>
+                <ChevronRight size={18} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <WorkoutEmpty title="No routines yet" body="Create a routine, or start an open workout and build as you train." />
+        )}
+        {routines.length > 3 ? (
+          <button
+            className="text-button"
+            type="button"
+            style={{ fontSize: '0.74rem', marginTop: '4px' }}
+            onClick={() => {
+              playEffect('select')
+              setShowAllRoutines((value) => !value)
+            }}
+          >
+            {showAllRoutines ? 'Show Less Routines' : `View All (${routines.length})`}
+          </button>
+        ) : null}
+        <button
+          className="secondary-button workout-create-routine"
+          type="button"
+          onClick={() => {
+            playEffect('select')
+            setView('create')
+          }}
+        >
+          <Plus size={17} aria-hidden="true" /> Create Routine
+        </button>
+      </CollapsibleModule>
 
-      <button className="workout-dex-gateway" type="button" onClick={() => { playEffect('select'); setMessage(''); setView('library') }}><span className="workout-dex-icon"><BookOpen size={20} aria-hidden="true" /></span><span><strong>Exercise Dex</strong><small>804 moves · Browse exercises, favourites and categories</small></span><ChevronRight size={18} aria-hidden="true" /></button>
+      <button className="workout-dex-gateway" type="button" onClick={() => { playEffect('select'); setMessage(''); setView('library') }}><span className="workout-dex-icon"><BookOpen size={20} aria-hidden="true" /></span><span><strong>Exercise Dex</strong><small>802 moves · Browse exercises, favourites and categories</small></span><ChevronRight size={18} aria-hidden="true" /></button>
 
-      <section className="workout-hub-panel" aria-labelledby="recent-workouts-title">
-        <div className="workout-section-head"><h2 id="recent-workouts-title">Recent Workouts</h2>{recentWorkouts.length > 2 ? <button type="button" aria-expanded={showAllHistory} onClick={() => { playEffect('select'); setShowAllHistory((value) => !value) }}>{showAllHistory ? 'Show Less' : 'History'}</button> : null}</div>
-        {visibleHistory.length ? <div className="workout-hub-rows recent-workout-list">{visibleHistory.map((summary) => <div className="recent-workout-row" key={summary.workout.id}><button className="recent-workout-view" type="button" onClick={() => { playEffect('select'); setHistoryWorkoutId(summary.workout.id); setView('history') }}><span><strong>{summary.workout.nameSnapshot}</strong><small>{new Date(summary.workout.completedAt ?? summary.workout.startedAt).toLocaleDateString()} · {summary.exerciseCount} exercises · {summary.completedSetCount} sets · {formatDuration(summary.workout.durationSeconds ?? 0)}</small></span><ChevronRight size={18} aria-hidden="true" /></button><button className="recent-workout-delete" type="button" aria-label={`Delete ${summary.workout.nameSnapshot} workout`} onClick={() => { playEffect('select'); setDeleteWorkoutSummary(summary) }}><Trash2 size={18} aria-hidden="true" /></button></div>)}</div> : <WorkoutEmpty title="No completed workouts yet" body="Finish a workout and it will appear here." />}
-      </section>
+      <CollapsibleModule
+        id="workout-recent"
+        titleId="recent-workouts-title"
+        title="Recent Workouts"
+        badge={`${recentWorkouts.length} Recent`}
+        summary={historySummary}
+        defaultExpanded={false}
+      >
+        {visibleHistory.length ? (
+          <div className="workout-hub-rows recent-workout-list">
+            {visibleHistory.map((summary) => (
+              <div className="recent-workout-row" key={summary.workout.id}>
+                <button
+                  className="recent-workout-view"
+                  type="button"
+                  onClick={() => {
+                    playEffect('select')
+                    setHistoryWorkoutId(summary.workout.id)
+                    setView('history')
+                  }}
+                >
+                  <span>
+                    <strong>{summary.workout.nameSnapshot}</strong>
+                    <small>
+                      {new Date(summary.workout.completedAt ?? summary.workout.startedAt).toLocaleDateString()} ·{' '}
+                      {summary.exerciseCount} exercises · {summary.completedSetCount} sets ·{' '}
+                      {formatDuration(summary.workout.durationSeconds ?? 0)}
+                    </small>
+                  </span>
+                  <ChevronRight size={18} aria-hidden="true" />
+                </button>
+                <button
+                  className="recent-workout-delete"
+                  type="button"
+                  aria-label={`Delete ${summary.workout.nameSnapshot} workout`}
+                  onClick={() => {
+                    playEffect('select')
+                    setDeleteWorkoutSummary(summary)
+                  }}
+                >
+                  <Trash2 size={18} aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <WorkoutEmpty title="No completed workouts yet" body="Finish a workout and it will appear here." />
+        )}
+        {recentWorkouts.length > 2 ? (
+          <button
+            className="text-button"
+            type="button"
+            style={{ fontSize: '0.74rem', marginTop: '4px' }}
+            onClick={() => {
+              playEffect('select')
+              setShowAllHistory((value) => !value)
+            }}
+          >
+            {showAllHistory ? 'Show Less History' : `View Full History (${recentWorkouts.length})`}
+          </button>
+        ) : null}
+      </CollapsibleModule>
     </main>}
 
     {quickLaunchOpen ? <div className="workout-hub-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setQuickLaunchOpen(false) }}><section className="workout-quick-sheet" role="dialog" aria-modal="true" aria-labelledby="workout-options-title">
@@ -354,7 +505,7 @@ export function WorkoutPage({ initialView = 'hub', initialRoutineId, initialWork
     {deleteWorkoutSummary ? <WorkoutDeleteDialog workoutId={deleteWorkoutSummary.workout.id} workoutName={deleteWorkoutSummary.workout.nameSnapshot} onCancel={() => setDeleteWorkoutSummary(undefined)} onDeleted={() => { setRecentWorkouts((current) => current.filter((entry) => entry.workout.id !== deleteWorkoutSummary.workout.id)); setDeleteWorkoutSummary(undefined); void refresh() }} /> : null}
     {tutorialOpen ? <GuideDialog eyebrow="How Workouts Work" steps={workoutTutorialSteps} onClose={closeTutorial} /> : null}
     {feedbackDialog}
-  </PageFrame>
+  </CommandPageFrame>
 }
 
 function FlowHeading({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <div className="workout-flow-heading"><button className="dex-back-button" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Workout</p><h2>{title}</h2></div></div> }
@@ -371,7 +522,19 @@ function StartWorkoutSelection({ routines, onBack, onStartRoutine, onStartEmpty 
 
 function CreateRoutine({ onCancel, onCreated }: { onCancel: () => void; onCreated: (routine: WorkoutRoutine) => void | Promise<void> }) {
   const [name, setName] = useState(''); const [error, setError] = useState('')
-  return <div className="page-stack workout-page"><Panel className="workout-flow-panel"><FlowHeading title="Create routine" onBack={onCancel} /><form className="routine-form" onSubmit={(event) => { event.preventDefault(); void createRoutine(name).then(onCreated).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Routine could not be created.')) }}><label><span>Routine name</span><input value={name} maxLength={80} autoFocus onChange={(event) => setName(event.target.value)} placeholder="Push Day" /></label>{error ? <p className="form-error" role="alert">{error}</p> : null}<div className="routine-form-actions"><button className="secondary-button" type="button" onClick={onCancel}>Cancel</button><button className="primary-button" type="submit">Create</button></div></form></Panel></div>
+  return <CommandPageFrame className="workout-page workout-create-flow" terminalTitle="FITDEX // TRAINING TERMINAL" terminalMeta="ROUTINE BUILDER">
+    <header className="workout-create-header">
+      <button className="retro-workout-back" type="button" onClick={onCancel} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /><span>Workout Hub</span></button>
+      <div><h1>CREATE ROUTINE</h1><p>Reusable workout template.</p></div>
+    </header>
+    <section className="workout-create-module">
+      <form className="routine-form routine-create-form" onSubmit={(event) => { event.preventDefault(); void createRoutine(name).then(onCreated).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Routine could not be created.')) }}>
+        <label htmlFor="routine-name"><span>ROUTINE NAME</span><input id="routine-name" value={name} maxLength={80} autoFocus onChange={(event) => setName(event.target.value)} placeholder="Push Day" /></label>
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
+        <div className="routine-create-actions"><button className="primary-button" type="submit">CREATE ROUTINE</button><button className="routine-create-cancel" type="button" onClick={onCancel}>Cancel</button></div>
+      </form>
+    </section>
+  </CommandPageFrame>
 }
 
 function RoutineEditor({ entry, replacementOptions, message, onBack, onChanged, onAddExercise, onStart, onDeleted }: { entry: RoutineWithItems; replacementOptions: RoutineWithItems[]; message: string; onBack: () => void; onChanged: () => Promise<void>; onAddExercise: () => void; onStart: () => void; onDeleted: () => Promise<void> }) {
@@ -383,4 +546,34 @@ function RoutineEditor({ entry, replacementOptions, message, onBack, onChanged, 
 
 function RoutineItemRow({ item, first, last, onSets, onMove, onRemove }: { item: RoutineExercise; first: boolean; last: boolean; onSets: (sets: number) => Promise<void>; onMove: (direction: -1 | 1) => Promise<void>; onRemove: () => Promise<void> }) {
   return <li><div className="routine-exercise-copy"><strong>{item.exerciseNameSnapshot}</strong><label><span>Planned sets</span><input type="number" min={MIN_PLANNED_SETS} max={MAX_PLANNED_SETS} value={item.plannedSets} onChange={(event) => void onSets(Number(event.target.value))} /></label></div><div className="routine-order-controls"><button type="button" disabled={first} onClick={() => void onMove(-1)} aria-label={`Move ${item.exerciseNameSnapshot} up`}><ArrowUp size={17} aria-hidden="true" /></button><button type="button" disabled={last} onClick={() => void onMove(1)} aria-label={`Move ${item.exerciseNameSnapshot} down`}><ArrowDown size={17} aria-hidden="true" /></button><button type="button" onClick={() => void onRemove()} aria-label={`Remove ${item.exerciseNameSnapshot}`}><Trash2 size={17} aria-hidden="true" /></button></div></li>
+}
+
+function getPlanDayStatusSummary(
+  _day: WeekdayId,
+  assignment: import('../data/models').WeeklyPlanAssignment,
+  dateKey: string,
+  todayKey: string,
+  snapshot: PlanDaySnapshot | undefined
+): string {
+  const isPast = dateKey < todayKey
+
+  if (snapshot?.result === 'success') {
+    return 'Workout completed successfully.'
+  }
+  if (snapshot?.result === 'frozen') {
+    return 'Workout missed · Streak freeze protected your streak.'
+  }
+  if (snapshot?.result === 'missed') {
+    return 'Workout missed · Streak was not protected.'
+  }
+  if (snapshot?.result === 'rest' || assignment.type === 'rest_day' || snapshot?.result === 'paused') {
+    return 'Planned recovery day · Rest preserves your streak.'
+  }
+  if (assignment.type === 'no_plan' || snapshot?.result === 'no_plan') {
+    return 'No workout scheduled for this day.'
+  }
+  if (isPast) {
+    return 'Workout missed.'
+  }
+  return 'Scheduled workout · Ready to train when you are.'
 }

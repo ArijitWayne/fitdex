@@ -9,11 +9,11 @@ This document is the permanent source of truth for FitDex product phase statuses
 | Phase | Area | Status | Selected Design Direction | Implementation Summary |
 |---|---|---|---|---|
 | **Phase 1** | Home & Global Shell | **COMPLETE / LOCKED** | Handheld RPG Console Identity | AppShell, responsive header, 4 themes, bottom nav, centralized Android Back, Display Name, local audio. |
-| **Phase 2** | Workout & Exercise Dex | **COMPLETE / LOCKED** | Surgical Refinement + Compact Picker | Active workout engine, 804-exercise Dex v4, anatomy cards, routine CRUD, Weekly Plan, compact picker row hierarchy. |
+| **Phase 2** | Workout & Exercise Dex | **COMPLETE / LOCKED** | Surgical Refinement + Compact Picker | Active workout engine, 802-exercise Dex v4, anatomy cards, routine CRUD, Weekly Plan, compact picker row hierarchy. |
 | **Phase 3** | Food & Nutrition | **COMPLETE / LOCKED** | Goal-First (3A) + Compact (3B) | Daily Food Hub, compact meal cards, Recent/Frequent repository suggestions, Quick Log, custom categories, target guards. |
 | **Phase 5** | Journal & Activity Log | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 Field Notes | Read-only derived activity ledger (workouts + food), symmetric 2-dimension status, empty-meal suppression, chevron actions. |
 | **Phase 6** | Exercise Dex Standalone | **IMPLEMENTED / PHYSICAL QA PENDING** | V3 RPG Codex | RPG Codex hero with selected character avatar, permanent search field, Index/Favorites tabs, theme-family anatomy cards, compact results, Exercise Record reordered (media → facts → How to Perform). |
-| **Phase 7** | Settings | **COMPLETE / ANDROID QA APPROVED** | V2 — Profile / Loadout | Profile/Avatar hero, 3-column status grid (Theme, Units, Targets), grouped rows (Personalize, Your System, Data & Help), Units subview, unified Audio, Nutrition Targets with drafts, Android Media management, Backup & Restore replacement semantics, Field Guide replay, About. |
+| **Phase 7** | Settings | **COMPLETE / ANDROID QA APPROVED** | Command Hub | Compact profile hero; collapsible Personalize & Appearance, Units, Audio & Reminders, Nutrition Target Engine, and Data & App Information modules; Units, unified Audio, targets, Android Media, replacement-only Backup & Restore, Field Guide, and About. |
 | **Phase 8** | Guides & Tutorials | **IMPLEMENTED / PHYSICAL QA PENDING** | V2 — Mission Brief + Style B Pixel Command | Field Guide (7 steps with replay mode + Home help button), Workout tutorial (12 steps), Food tutorial (8 steps), Progress help (1 step), Journal help (1 step), Gamification guide (+50 XP achievement reward), and Pixel Command retro tactile controls. |
 
 ---
@@ -127,9 +127,10 @@ This document is the permanent source of truth for FitDex product phase statuses
 - **Weekly Plan**: Recurring weekly schedule with four day types: Routine Days (links to specific routine), Workout Days (open training), Rest Days, and No Plan days. Completed No Plan workouts count toward Plan Streak; saved-routine sessions infer that routine for the weekday, while ad-hoc sessions infer a generic Workout Day without creating a routine.
 - **History-Safe Plan Evolution**: Backward reconciliation credits real completed No Plan training without projecting the current plan backward. Rest Day workouts and workouts using a different saved routine remain logged but require an explicit choice before future weekday assignments change.
 - **Completion Feedback**: Weekly Plan tiles use an explicit `✓ DONE` state (`✓ DONE · TODAY` for today). Normal planned completion opens no message; inference, restored historical credit, and explicit plan decisions use durable one-shot feedback that is removed after acknowledgement.
+- **Saved Routines Entry State**: Workout Hub enters with Saved Routines collapsed. Expansion is user-controlled and is not restored across main-tab re-entry.
 
 ### 4.2 Exercise Dex & Exercise Picker
-- **Dataset Version 4**: 804 active built-in exercises with verified local MP4 demonstrations and complete instructions.
+- **Dataset Version 4**: 802 active built-in exercises with verified remote MP4 demonstrations and complete instructions.
 - **Nine Muscle Categories**: Chest, Back, Shoulders, Legs, Gluteal, Biceps, Triceps, Forearms, and Abs. Each category features theme-aware pixel art sprites.
 - **Anatomy Cards**: Distinctive masculine (Spartan) and feminine (Amazonian) muscle anatomy diagrams follow the active theme family (not user avatar). Anatomy views remain unflattened and central to the Dex experience.
 - **Favorites System**: Independent local user-preference records (`exercisePreferences`). Supports instant toggling, filtering, and searching within favorites.
@@ -307,7 +308,7 @@ The following features are explicitly out of scope for Phase 5:
 ### 8.1 Architecture & Design Selection
 - **Selected Direction**: **V3 — RPG Codex**.
 - **Role Separation**: Standalone Exercise Dex focuses on browsing, searching, favoriting, and learning movements; the contextual Workout Exercise Picker remains strictly optimized for fast addition with duplicate prevention and Phase 2 locked row hierarchy.
-- **Data Model & Media Continuity**: Full fidelity with the 804-exercise canonical catalog, 9 muscle categories, local `exercisePreferences` persistence for favorites, and remote/on-demand Cloudflare Workers CDN video resolver.
+- **Data Model & Media Continuity**: Full fidelity with the 802-exercise canonical catalog, 9 muscle categories, local `exercisePreferences` persistence for favorites, and remote/on-demand Cloudflare Workers CDN video resolver.
 
 ### 8.2 Standalone Landing & Codex Identity
 1. **Exercise Codex Hero**:
@@ -341,21 +342,19 @@ The Exercise Record uses the reference-first RPG Codex layout:
 ## 9. Phase 7 — Settings (COMPLETE / ANDROID QA APPROVED)
 
 ### 9.1 Design Character & Hierarchy
-- **Locked Design**: **V2 — Profile / Loadout**.
-- **Player Profile Hero**: Sits at the top of the Settings Utility Hub, displaying the user's active champion avatar (`AvatarPortrait` with 72px pixel art rendering), required local `displayName`, archetype label, and direct `Change` action.
-- **3-Stat Status Grid**: At-a-glance summary cards above the setting categories:
-  1. `Theme`: Active theme family & brightness mode (e.g. `Spartan · Dark`).
-  2. `Units`: Measurement system (e.g. `Metric · kg, km` or `Imperial · lb, mi`).
-  3. `Targets`: Nutrition target summary (e.g. `1,800 kcal · Protein off` or `Disabled`).
+- **Locked Design**: **Command Hub**.
+- **Player Profile Hero**: Compact top-of-hub identity summary uses active `AvatarPortrait`, `displayName`, archetype, and local-profile context without a separate avatar frame.
+- **Collapsible Modules**: `Personalize & Appearance`, `Units, Audio & Reminders`, `Nutrition Target Engine`, and `Data & App Information` preserve existing actions and summaries.
+- **Row Grammar**: Separate compact `icon | content | current value | chevron` cards replace shared divider lists. Spartan generic accents are teal/cyan; Amazonian generic accents are plum/orchid; gold stays rank/XP/reward semantic.
 - **Grouped Category Rows**:
-  1. **Personalize**:
+  1. **Personalize & Appearance**:
      - `Display Name & Avatar`: Local identity for this device (no account required). All 6 canonical avatars (Spartans: Aster, Leonidas, Brasidas; Amazonians: Artemis, Athena, Hippolyta).
      - `Appearance`: Theme family (Spartans / Amazonians) and Brightness (Dark / Light / System).
-  2. **Your System**:
+  2. **Units, Audio & Reminders**:
      - `Units`: Canonical Metric (`kg · km`) vs. Imperial (`lb · mi`) preference backed by `SettingsRecord.units` in Dexie.
      - `Audio`: Sound Effects toggle (`select.mp3`, `add.mp3`, `achievements_unlock.mp3`, `progress_complete.mp3`) and Background Music track selection (`Warrior`, `Hardened`, `Villain`, `None`).
      - `Nutrition Targets`: Full daily goal and calculation profile management.
-  3. **Data & Help**:
+  3. **Data & App Information**:
      - `Exercise Media` (conditional): Native Android offline video demonstration management.
      - `Backup & Restore`: Portable `.fitdex` export and safe replacement restore. `.fitdex` restore restores gamification state; it does not replay XP-producing historical events. Historical Plan Streak reconciliation is XP-neutral.
      - `Field Guide`: Replayable 7-topic tutorial.

@@ -22,9 +22,9 @@ export interface TrackingFields {
 
 export function getTrackingFields(type: ExerciseTrackingType): TrackingFields {
   return {
-    weight: type === 'weight_reps' || type === 'assisted_bodyweight' || type === 'weight_distance',
+    weight: type === 'weight_reps' || type === 'assisted_bodyweight' || type === 'weight_distance' || type === 'weight_duration',
     reps: type === 'weight_reps' || type === 'bodyweight_reps' || type === 'assisted_bodyweight' || type === 'reps_only' || type === 'duration_reps',
-    duration: type === 'duration' || type === 'distance_duration' || type === 'duration_optional_distance' || type === 'duration_reps',
+    duration: type === 'duration' || type === 'distance_duration' || type === 'duration_optional_distance' || type === 'duration_reps' || type === 'weight_duration',
     distance: type === 'distance_duration' || type === 'duration_optional_distance' || type === 'weight_distance',
   }
 }
@@ -58,6 +58,7 @@ const REQUIRED_SET_METRICS: Record<ExerciseTrackingType, readonly WorkoutSetMetr
   duration_optional_distance: ['durationSeconds'],
   weight_distance: ['weight', 'distance'],
   duration_reps: ['durationSeconds', 'reps'],
+  weight_duration: ['weight', 'durationSeconds'],
 }
 
 const SET_METRIC_LABELS: Record<WorkoutSetMetric, string> = {

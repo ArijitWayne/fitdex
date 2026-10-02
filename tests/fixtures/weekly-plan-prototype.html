@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en" data-theme-family="spartans" data-brightness="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FitDex · Retro Pixel Wall & Weekly Plan Prototype</title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <style>
+      /* Prototype Harness */
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body.proto-body {
+        margin: 0;
+        padding: 24px 16px 60px;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .proto-container {
+        width: 100%;
+        max-width: 620px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      /* Header & Controls */
+      .proto-header {
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .proto-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .proto-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .proto-tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        padding: 2px 7px;
+        border-radius: 3px;
+        background: var(--color-rpg-accent, #b67e26);
+        color: #111;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+
+      .proto-toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .proto-control-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .proto-control-label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        min-width: 80px;
+      }
+
+      .proto-btn {
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-family: var(--font-body);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.12s ease;
+      }
+
+      .proto-btn:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-muted);
+        color: var(--color-primary-text);
+      }
+
+      .proto-btn.active {
+        background: var(--color-primary);
+        color: #111;
+        border-color: var(--color-primary);
+        font-weight: 700;
+      }
+
+      /* Section Wrapper */
+      .proto-section {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .proto-section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--color-border-subtle, rgba(255,255,255,0.08));
+        padding-bottom: 6px;
+      }
+
+      .proto-section-title {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--color-text);
+        margin: 0;
+      }
+
+      .proto-section-subtitle {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+      }
+
+      /* ============================================================
+         STATE-INFUSED RETRO PIXEL WALL TOKENS
+         ============================================================ */
+      :root {
+        --wall-today-rim: #facc15;
+      }
+
+      /* Spartans Theme Base Shading */
+      [data-theme-family="spartans"][data-brightness="dark"] {
+        /* Base Neutral Wall */
+        --wall-base-deep: #12100e;
+        --wall-base-dark: #1c1815;
+        --wall-base-mid: #2a2420;
+        --wall-base-light: #3a322c;
+        --wall-base-mortar: #0c0a09;
+        --wall-base-highlight: #4d433b;
+        --wall-base-shadow: #080706;
+        --wall-letter-color: #f5f5f4;
+
+        /* Done (Emerald Stone Wall) */
+        --done-deep: #061a12;
+        --done-dark: #0d2b1f;
+        --done-mid: #143d2c;
+        --done-light: #1f573f;
+        --done-mortar: #04120c;
+        --done-highlight: #34d399;
+        --done-shadow: #020906;
+
+        /* Pending (Amber/Bronze Stone Wall) */
+        --plan-deep: #1c1206;
+        --plan-dark: #2d1e0c;
+        --plan-mid: #422d14;
+        --plan-light: #5c3f1d;
+        --plan-mortar: #140d04;
+        --plan-highlight: #fbbf24;
+        --plan-shadow: #0a0602;
+
+        /* Freeze (Icy Cobalt/Cyan Stone Wall) */
+        --freeze-deep: #081724;
+        --freeze-dark: #0f273d;
+        --freeze-mid: #163756;
+        --freeze-light: #214f7a;
+        --freeze-mortar: #05101a;
+        --freeze-highlight: #38bdf8;
+        --freeze-shadow: #030a10;
+
+        /* Missed (Crimson/Bloodstone Wall) */
+        --miss-deep: #1c090d;
+        --miss-dark: #2e1017;
+        --miss-mid: #421822;
+        --miss-light: #5e2431;
+        --miss-mortar: #140609;
+        --miss-highlight: #f87171;
+        --miss-shadow: #0b0305;
+
+        /* Rest (Slate Graphite Wall) */
+        --rest-deep: #111418;
+        --rest-dark: #1b2026;
+        --rest-mid: #272e38;
+        --rest-light: #374151;
+        --rest-mortar: #0b0d10;
+        --rest-highlight: #64748b;
+        --rest-shadow: #060709;
+
+        /* Inactive / No Plan (Muted Dark Grey Wall Tile) */
+        --noplan-deep: #0c0e12;
+        --noplan-dark: #13161b;
+        --noplan-mid: #1c2027;
+        --noplan-light: #282e38;
+        --noplan-mortar: #090a0d;
+        --noplan-highlight: #3f4756;
+        --noplan-shadow: #050608;
+        --noplan-letter: #525c6d;
+      }
+
+      [data-theme-family="spartans"][data-brightness="light"] {
+        /* Base Neutral Wall */
+        --wall-base-deep: #d6d3d1;
+        --wall-base-dark: #e7e5e4;
+        --wall-base-mid: #f5f5f4;
+        --wall-base-light: #ffffff;
+        --wall-base-mortar: #a8a29e;
+        --wall-base-highlight: #ffffff;
+        --wall-base-shadow: #78716c;
+        --wall-letter-color: #1c1917;
+
+        /* Done */
+        --done-deep: #d1fae5;
+        --done-dark: #a7f3d0;
+        --done-mid: #6ee7b7;
+        --done-light: #34d399;
+        --done-mortar: #059669;
+        --done-highlight: #ffffff;
+        --done-shadow: #047857;
+
+        /* Pending */
+        --plan-deep: #fef3c7;
+        --plan-dark: #fde68a;
+        --plan-mid: #fcd34d;
+        --plan-light: #fbbf24;
+        --plan-mortar: #d97706;
+        --plan-highlight: #ffffff;
+        --plan-shadow: #b45309;
+
+        /* Freeze */
+        --freeze-deep: #e0f2fe;
+        --freeze-dark: #bae6fd;
+        --freeze-mid: #7dd3fc;
+        --freeze-light: #38bdf8;
+        --freeze-mortar: #0284c7;
+        --freeze-highlight: #ffffff;
+        --freeze-shadow: #0369a1;
+
+        /* Missed */
+        --miss-deep: #ffe4e6;
+        --miss-dark: #fecdd3;
+        --miss-mid: #fda4af;
+        --miss-light: #fb7185;
+        --miss-mortar: #e11d48;
+        --miss-highlight: #ffffff;
+        --miss-shadow: #be123c;
+
+        /* Rest */
+        --rest-deep: #f1f5f9;
+        --rest-dark: #e2e8f0;
+        --rest-mid: #cbd5e1;
+        --rest-light: #94a3b8;
+        --rest-mortar: #64748b;
+        --rest-highlight: #ffffff;
+        --rest-shadow: #475569;
+
+        /* Inactive */
+        --noplan-deep: #e2e8f0;
+        --noplan-dark: #cbd5e1;
+        --noplan-mid: #94a3b8;
+        --noplan-light: #cbd5e1;
+        --noplan-mortar: #64748b;
+        --noplan-highlight: #f8fafc;
+        --noplan-shadow: #475569;
+        --noplan-letter: #64748b;
+      }
+
+      /* Amazonians Theme Base Shading */
+      [data-theme-family="amazonians"][data-brightness="dark"] {
+        --wall-base-deep: #09121a;
+        --wall-base-dark: #10212f;
+        --wall-base-mid: #173044;
+        --wall-base-light: #20435f;
+        --wall-base-mortar: #050c12;
+        --wall-base-highlight: #2c5a80;
+        --wall-base-shadow: #03070b;
+        --wall-letter-color: #f8fafc;
+
+        /* Done (Deep Jade Temple Wall) */
+        --done-deep: #051c17;
+        --done-dark: #0b3027;
+        --done-mid: #124538;
+        --done-light: #1b5f4e;
+        --done-mortar: #041410;
+        --done-highlight: #2dd4bf;
+        --done-shadow: #020907;
+
+        /* Pending (Amber Gold) */
+        --plan-deep: #1c1306;
+        --plan-dark: #2d200c;
+        --plan-mid: #423014;
+        --plan-light: #5c431d;
+        --plan-mortar: #140e04;
+        --plan-highlight: #fbbf24;
+        --plan-shadow: #0a0702;
+
+        /* Freeze (Cool Cyan Ice) */
+        --freeze-deep: #061926;
+        --freeze-dark: #0d2b40;
+        --freeze-mid: #143d5c;
+        --freeze-light: #1d5680;
+        --freeze-mortar: #04121c;
+        --freeze-highlight: #38bdf8;
+        --freeze-shadow: #020a10;
+
+        /* Missed (Crimson) */
+        --miss-deep: #1c080d;
+        --miss-dark: #2e0e16;
+        --miss-mid: #421621;
+        --miss-light: #5e202f;
+        --miss-mortar: #140509;
+        --miss-highlight: #f87171;
+        --miss-shadow: #0b0205;
+
+        /* Rest */
+        --rest-deep: #0e151c;
+        --rest-dark: #16222e;
+        --rest-mid: #203142;
+        --rest-light: #2d445c;
+        --rest-mortar: #090e13;
+        --rest-highlight: #60a5fa;
+        --rest-shadow: #05080c;
+
+        /* Inactive */
+        --noplan-deep: #0a0f14;
+        --noplan-dark: #111a22;
+        --noplan-mid: #1a2734;
+        --noplan-light: #26384a;
+        --noplan-mortar: #070a0e;
+        --noplan-highlight: #3b5066;
+        --noplan-shadow: #040608;
+        --noplan-letter: #50667d;
+      }
+
+      /* ============================================================
+         SECTION 1: STANDALONE TILE PREVIEW GRID
+         ============================================================ */
+      .proto-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+        gap: 12px;
+      }
+
+      .proto-preview-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 12px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+      }
+
+      .proto-preview-label {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .proto-preview-tile-holder {
+        width: 62px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .proto-preview-desc {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        line-height: 1.25;
+      }
+
+      /* ============================================================
+         PIXEL WALL TILES (A & B)
+         ============================================================ */
+      .pixel-wall-tile {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        cursor: pointer;
+        transition: transform 0.08s ease;
+      }
+
+      .pixel-wall-tile:active {
+        transform: translateY(2px);
+      }
+
+      .pixel-wall-tile .wall-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+      }
+
+      .pixel-wall-tile .wall-face-letter {
+        position: relative;
+        z-index: 2;
+        font-family: var(--font-display, monospace);
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        color: var(--wall-letter-color, #f5f5f4);
+        text-shadow: 0 1px 2px #000;
+        line-height: 1;
+        margin-top: 1px;
+      }
+
+      /* Inactive Tile Muted Letter */
+      .pixel-wall-tile.state-noplan .wall-face-letter {
+        color: var(--noplan-letter, #525c6d);
+        text-shadow: none;
+        opacity: 0.85;
+      }
+
+      /* Today Focus Overlay (Glow Rim + Pip) */
+      .pixel-wall-tile.is-today .today-focus-rim {
+        stroke: var(--wall-today-rim);
+        stroke-width: 2px;
+        filter: drop-shadow(0 0 3px var(--wall-today-rim));
+        opacity: 1;
+      }
+      .pixel-wall-tile.is-today::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        z-index: 4;
+        width: 10px;
+        height: 3px;
+        background: var(--wall-today-rim);
+        border-radius: 1px;
+        box-shadow: 0 0 3px var(--wall-today-rim);
+      }
+
+      /* ============================================================
+         SECTION 2: FULL WEEKLY PLAN WORKOUT HUB ROW
+         ============================================================ */
+      .workout-hub-mockup {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+
+      .workout-hub-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .workout-hub-title-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .workout-hub-title {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0;
+      }
+
+      .workout-hub-pill {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        color: var(--color-text-muted);
+      }
+
+      /* Responsive Fluid 7-Day Grid */
+      .weekly-plan-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: clamp(4px, 1.2vw, 8px);
+        width: 100%;
+      }
+
+      .weekly-tile-wrap {
+        aspect-ratio: 1 / 1.15;
+        min-height: 48px;
+        display: flex;
+      }
+
+      /* Inspector Callout on Tap */
+      .proto-inspector {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.78rem;
+      }
+
+      .proto-inspector-head {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--color-rpg-accent, #b67e26);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .proto-inspector-desc {
+        color: var(--color-text);
+        line-height: 1.35;
+      }
+    </style>
+  </head>
+  <body class="proto-body">
+    <div class="proto-container">
+      <!-- HEADER -->
+      <header class="proto-header">
+        <div class="proto-title-row">
+          <h1 class="proto-title">
+            FitDex Weekly Plan
+            <span class="proto-tag">State-Tinted Wall Prototype</span>
+          </h1>
+        </div>
+        <div class="proto-toolbar">
+          <div class="proto-control-row">
+            <span class="proto-control-label">Wall Style:</span>
+            <button type="button" class="proto-btn active" id="btn-opt-a" onclick="setWallOption('a')">Option A (Stone Slab Wall)</button>
+            <button type="button" class="proto-btn" id="btn-opt-b" onclick="setWallOption('b')">Option B (Masonry Brick Wall)</button>
+          </div>
+          <div class="proto-control-row">
+            <span class="proto-control-label">Theme:</span>
+            <button type="button" class="proto-btn active" id="btn-spartans" onclick="setTheme('spartans')">Spartans (Dungeon Stone)</button>
+            <button type="button" class="proto-btn" id="btn-amazonians" onclick="setTheme('amazonians')">Amazonians (Temple Slate)</button>
+          </div>
+          <div class="proto-control-row">
+            <span class="proto-control-label">Mode:</span>
+            <button type="button" class="proto-btn active" id="btn-dark" onclick="setBrightness('dark')">Dark Mode</button>
+            <button type="button" class="proto-btn" id="btn-light" onclick="setBrightness('light')">Light Mode</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           SECTION 1: STANDALONE TILE PREVIEW REVIEW
+           ============================================================ -->
+      <section class="proto-section">
+        <div class="proto-section-head">
+          <h2 class="proto-section-title">01. Standalone Wall Tile Preview</h2>
+          <span class="proto-section-subtitle">Full-face state-shaded material · Day initial only</span>
+        </div>
+
+        <div class="proto-preview-grid" id="preview-grid">
+          <!-- Populated by JS for selected Option A or B -->
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION 2: FULL WEEKLY PLAN WORKOUT ROW
+           ============================================================ -->
+      <section class="proto-section">
+        <div class="proto-section-head">
+          <h2 class="proto-section-title">02. Workout Hub Weekly Strip</h2>
+          <span class="proto-section-subtitle">M T W T F S S fluid pixel wall strip (tap for details)</span>
+        </div>
+
+        <div class="workout-hub-mockup">
+          <div class="workout-hub-header">
+            <div class="workout-hub-title-group">
+              <h3 class="workout-hub-title">Weekly Routine</h3>
+              <span class="workout-hub-pill">Week 4 · 4/7 Done</span>
+            </div>
+          </div>
+
+          <div class="weekly-plan-grid" id="weekly-plan-strip">
+            <!-- 7 Days populated by JS -->
+          </div>
+
+          <!-- Interactive Details Inspector on Selection -->
+          <div class="proto-inspector" id="inspector-card">
+            <div class="proto-inspector-head">
+              <span id="inspect-title">Thursday (Today) · Missed & Freeze Protected</span>
+              <span id="inspect-tag">FREEZE ACTIVE</span>
+            </div>
+            <div class="proto-inspector-desc" id="inspect-desc">
+              Workout was scheduled for today but missed; 1 streak freeze was automatically consumed to preserve the current 18-day streak.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================
+         SVG PIXEL WALL SHADER ENGINE & LOGIC
+         ============================================================ -->
+    <script>
+      let currentOption = 'a';
+      let currentTheme = 'spartans';
+      let currentBrightness = 'dark';
+      let selectedDayIndex = 3; // Thursday (Today)
+
+      const weekDays = [
+        { initial: 'M', name: 'Monday', stateKey: 'done', statusTag: 'COMPLETED', statusText: 'Chest & Triceps Power', desc: 'Workout completed successfully on schedule. 4 exercises logged.' },
+        { initial: 'T', name: 'Tuesday', stateKey: 'done', statusTag: 'COMPLETED', statusText: 'Back & Biceps Volume', desc: 'Workout completed successfully on schedule. 5 exercises logged.' },
+        { initial: 'W', name: 'Wednesday', stateKey: 'rest', statusTag: 'REST DAY', statusText: 'Active Recovery', desc: 'Planned rest & mobility day. Streak continues.' },
+        { initial: 'T', name: 'Thursday', stateKey: 'freeze', statusTag: 'FREEZE USED', isToday: true, statusText: 'Missed Workout (Protected)', desc: 'Workout scheduled for today was missed; 1 streak freeze used to protect streak.' },
+        { initial: 'F', name: 'Friday', stateKey: 'plan', statusTag: 'SCHEDULED', statusText: 'Legs & Core Power', desc: 'Upcoming scheduled workout. Ready to start.' },
+        { initial: 'S', name: 'Saturday', stateKey: 'miss', statusTag: 'MISSED', statusText: 'Shoulders & Arms', desc: 'Workout missed; no streak freeze available.' },
+        { initial: 'S', name: 'Sunday', stateKey: 'noplan', statusTag: 'NO PLAN', statusText: 'Open Day', desc: 'No routine scheduled for this day (inactive / unscheduled).' }
+      ];
+
+      const previewTiles = [
+        { title: 'Base Wall Tile', initial: 'M', stateKey: 'base', statusTag: 'BASE', desc: 'Neutral stone wall face' },
+        { title: 'Completed', initial: 'T', stateKey: 'done', statusTag: 'DONE', desc: 'Emerald stone wall shading' },
+        { title: 'Pending', initial: 'F', stateKey: 'plan', statusTag: 'PLAN', desc: 'Amber/gold stone wall shading' },
+        { title: 'Freeze Used', initial: 'T', stateKey: 'freeze', statusTag: 'FREEZE', desc: 'Icy cobalt stone wall shading' },
+        { title: 'Missed', initial: 'S', stateKey: 'miss', statusTag: 'MISS', desc: 'Crimson stone wall shading' },
+        { title: 'Rest Day', initial: 'W', stateKey: 'rest', statusTag: 'REST', desc: 'Graphite slate wall shading' },
+        { title: 'No Plan', initial: 'S', stateKey: 'noplan', statusTag: 'NONE', desc: 'Muted inactive grey wall tile' },
+        { title: 'Today State', initial: 'T', stateKey: 'done', statusTag: 'TODAY', isToday: true, desc: 'Golden focus rim + state tint' }
+      ];
+
+      function getStateColorPrefix(stateKey) {
+        switch(stateKey) {
+          case 'done': return '--done';
+          case 'plan': return '--plan';
+          case 'freeze': return '--freeze';
+          case 'miss': return '--miss';
+          case 'rest': return '--rest';
+          case 'noplan': return '--noplan';
+          default: return '--wall-base';
+        }
+      }
+
+      /* Option A: Stone Slab Wall (Full-face state-shaded slab with pixel seams) */
+      function renderSlabWallSvg(stateKey, isToday) {
+        const p = getStateColorPrefix(stateKey);
+        const isInactive = stateKey === 'noplan';
+
+        return `
+          <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none">
+            <!-- Drop Shadow Rim -->
+            <rect x="1" y="2" width="46" height="51" rx="1" fill="var(${p}-shadow)" />
+
+            <!-- Outer Stone Slab Foundation -->
+            <rect x="1" y="1" width="46" height="50" rx="1" fill="var(${p}-dark)" stroke="var(${p}-mortar)" stroke-width="1" />
+
+            <!-- Stepped Top/Left Highlight Bevel -->
+            <path d="M 2 2 L 46 2 L 43 5 L 5 5 L 5 47 L 2 50 Z" fill="var(${p}-highlight)" opacity="${isInactive ? '0.2' : '0.45'}" />
+
+            <!-- Stepped Bottom/Right Shadow Bevel -->
+            <path d="M 46 2 L 46 50 L 2 50 L 5 47 L 43 47 L 43 5 Z" fill="var(${p}-shadow)" opacity="0.65" />
+
+            <!-- Slab Face Plate (State-infused color) -->
+            <rect x="5" y="5" width="38" height="42" fill="var(${p}-mid)" stroke="var(${p}-mortar)" stroke-width="0.75" />
+
+            <!-- Horizontal Slab Mortar Seams -->
+            <line x1="5" y1="16" x2="43" y2="16" stroke="var(${p}-mortar)" stroke-width="1" />
+            <line x1="5" y1="17" x2="43" y2="17" stroke="var(${p}-highlight)" stroke-width="0.5" opacity="${isInactive ? '0.15' : '0.35'}" />
+            <line x1="5" y1="36" x2="43" y2="36" stroke="var(${p}-mortar)" stroke-width="1" />
+            <line x1="5" y1="37" x2="43" y2="37" stroke="var(${p}-highlight)" stroke-width="0.5" opacity="${isInactive ? '0.15' : '0.35'}" />
+
+            <!-- Pixel Corner Notches -->
+            <rect x="3" y="3" width="2" height="2" fill="var(${p}-highlight)" opacity="${isInactive ? '0.25' : '0.7'}" />
+            <rect x="43" y="3" width="2" height="2" fill="var(${p}-highlight)" opacity="${isInactive ? '0.25' : '0.7'}" />
+            <rect x="3" y="47" width="2" height="2" fill="var(${p}-shadow)" />
+            <rect x="43" y="47" width="2" height="2" fill="var(${p}-shadow)" />
+
+            <!-- Inactive Tile Inner Depressed Frame -->
+            ${isInactive ? `
+              <rect x="5" y="5" width="38" height="42" fill="none" stroke="var(--noplan-mortar)" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.6"/>
+            ` : ''}
+
+            <!-- Today Focus Rim -->
+            <rect class="today-focus-rim" x="1" y="1" width="46" height="50" rx="1" fill="none" stroke="transparent" stroke-width="1.5" opacity="0"/>
+          </svg>
+        `;
+      }
+
+      /* Option B: Masonry Brick Wall (Full-face state-shaded 3-course bricks) */
+      function renderBrickWallSvg(stateKey, isToday) {
+        const p = getStateColorPrefix(stateKey);
+        const isInactive = stateKey === 'noplan';
+
+        return `
+          <svg class="wall-svg" viewBox="0 0 48 54" preserveAspectRatio="none">
+            <!-- Outer Mortar Foundation -->
+            <rect x="1" y="2" width="46" height="51" fill="var(${p}-shadow)" />
+            <rect x="1" y="1" width="46" height="50" fill="var(${p}-mortar)" />
+
+            <!-- COURSE 1 (Top Bricks) -->
+            <!-- Brick 1A -->
+            <rect x="3" y="3" width="18" height="13" fill="var(${p}-mid)" stroke="var(${p}-mortar)" stroke-width="0.75" />
+            <path d="M 3 3 L 21 3 L 21 5 L 5 5 L 5 16 L 3 16 Z" fill="var(${p}-highlight)" opacity="${isInactive ? '0.2' : '0.45'}" />
+            <!-- Brick 1B -->
+            <rect x="23" y="3" width="22" height="13" fill="var(${p}-mid)" stroke="var(${p}-mortar)" stroke-width="0.75" />
+            <path d="M 23 3 L 45 3 L 45 5 L 25 5 L 25 16 L 23 16 Z" fill="var(${p}-highlight)" opacity="${isInactive ? '0.2' : '0.45'}" />
+
+            <!-- COURSE 2 (Center Main Brick Plate for Letter) -->
+            <rect x="3" y="18" width="42" height="18" fill="var(${p}-light)" stroke="var(${p}-mortar)" stroke-width="0.75" />
+            <path d="M 3 18 L 45 18 L 45 20 L 5 20 L 5 36 L 3 36 Z" fill="var(${p}-highlight)" opacity="${isInactive ? '0.2' : '0.4'}" />
+            <path d="M 45 18 L 45 36 L 3 36 L 5 34 L 43 34 L 43 20 Z" fill="var(${p}-shadow)" opacity="0.55" />
+
+            <!-- COURSE 3 (Bottom Bricks) -->
+            <!-- Brick 3A -->
+            <rect x="3" y="38" width="24" height="11" fill="var(${p}-mid)" stroke="var(${p}-mortar)" stroke-width="0.75" />
+            <path d="M 3 38 L 27 38 L 27 40 L 5 40 L 5 49 L 3 49 Z" fill="var(${p}-highlight)" opacity="${isInactive ? '0.2' : '0.45'}" />
+            <!-- Brick 3B -->
+            <rect x="29" y="38" width="16" height="11" fill="var(${p}-mid)" stroke="var(${p}-mortar)" stroke-width="0.75" />
+            <path d="M 29 38 L 45 38 L 45 40 L 31 40 L 31 49 L 29 49 Z" fill="var(${p}-highlight)" opacity="${isInactive ? '0.2' : '0.45'}" />
+
+            <!-- Outer Bevel Perimeter -->
+            <rect x="2" y="2" width="44" height="48" fill="none" stroke="var(${p}-mortar)" stroke-width="1" />
+
+            <!-- Inactive Tile Soft Mortar Hatch -->
+            ${isInactive ? `
+              <rect x="3" y="3" width="42" height="46" fill="none" stroke="var(--noplan-mortar)" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"/>
+            ` : ''}
+
+            <!-- Today Focus Rim -->
+            <rect class="today-focus-rim" x="1" y="1" width="46" height="50" rx="1" fill="none" stroke="transparent" stroke-width="1.5" opacity="0"/>
+          </svg>
+        `;
+      }
+
+      function createWallHtml(item, option, isInteractive = false, index = 0) {
+        const todayClass = item.isToday ? 'is-today' : '';
+        const noplanClass = item.stateKey === 'noplan' ? 'state-noplan' : '';
+        const clickAttr = isInteractive ? `onclick="selectDay(${index})"` : '';
+
+        if (option === 'a') {
+          return `
+            <div class="pixel-wall-tile ${noplanClass} ${todayClass}" ${clickAttr} title="${item.name || item.title}">
+              ${renderSlabWallSvg(item.stateKey, item.isToday)}
+              <span class="wall-face-letter">${item.initial}</span>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="pixel-wall-tile ${noplanClass} ${todayClass}" ${clickAttr} title="${item.name || item.title}">
+              ${renderBrickWallSvg(item.stateKey, item.isToday)}
+              <span class="wall-face-letter">${item.initial}</span>
+            </div>
+          `;
+        }
+      }
+
+      function renderPreview() {
+        const previewGrid = document.getElementById('preview-grid');
+        previewGrid.innerHTML = previewTiles.map(tile => `
+          <div class="proto-preview-card">
+            <span class="proto-preview-label">${tile.title}</span>
+            <div class="proto-preview-tile-holder">
+              ${createWallHtml(tile, currentOption)}
+            </div>
+            <span class="proto-preview-desc">${tile.desc}</span>
+          </div>
+        `).join('');
+      }
+
+      function renderWeeklyStrip() {
+        const strip = document.getElementById('weekly-plan-strip');
+        strip.innerHTML = weekDays.map((day, idx) => `
+          <div class="weekly-tile-wrap">
+            ${createWallHtml(day, currentOption, true, idx)}
+          </div>
+        `).join('');
+      }
+
+      function selectDay(index) {
+        selectedDayIndex = index;
+        const day = weekDays[index];
+        const inspectorTitle = document.getElementById('inspect-title');
+        const inspectorTag = document.getElementById('inspect-tag');
+        const inspectorDesc = document.getElementById('inspect-desc');
+
+        inspectorTitle.textContent = `${day.name} ${day.isToday ? '(Today)' : ''} · ${day.statusText}`;
+        inspectorTag.textContent = day.statusTag;
+        inspectorDesc.textContent = day.desc;
+      }
+
+      function setWallOption(opt) {
+        currentOption = opt;
+        document.getElementById('btn-opt-a').classList.toggle('active', opt === 'a');
+        document.getElementById('btn-opt-b').classList.toggle('active', opt === 'b');
+        renderPreview();
+        renderWeeklyStrip();
+      }
+
+      function setTheme(theme) {
+        currentTheme = theme;
+        document.documentElement.setAttribute('data-theme-family', theme);
+        document.getElementById('btn-spartans').classList.toggle('active', theme === 'spartans');
+        document.getElementById('btn-amazonians').classList.toggle('active', theme === 'amazonians');
+      }
+
+      function setBrightness(mode) {
+        currentBrightness = mode;
+        document.documentElement.setAttribute('data-brightness', mode);
+        document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
+        document.getElementById('btn-light').classList.toggle('active', mode === 'light');
+      }
+
+      // Initial Render
+      renderPreview();
+      renderWeeklyStrip();
+    </script>
+  </body>
+</html>

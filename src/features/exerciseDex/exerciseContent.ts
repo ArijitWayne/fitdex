@@ -1,6 +1,7 @@
 import type { ExerciseMediaStatus, ExerciseMediaType } from '../../data/models'
 import { ACTIVE_FITDEX_EXERCISES, builtInExercises } from './exerciseData.ts'
 import { createExerciseCopy } from './exerciseContentCopy.ts'
+import { CANONICAL_EXERCISE_ID_MIGRATIONS } from './exerciseMigration.ts'
 import type { FitDexExerciseDefinition } from './fitDexExerciseTypes.ts'
 
 export type ExerciseContentMatchQuality = 'Exact'
@@ -35,5 +36,5 @@ export const EXERCISE_CONTENT: Readonly<Record<string, ExerciseContent>> = Objec
 )
 
 export function getExerciseContent(exerciseId: string) {
-  return EXERCISE_CONTENT[exerciseId]
+  return EXERCISE_CONTENT[exerciseId] ?? EXERCISE_CONTENT[CANONICAL_EXERCISE_ID_MIGRATIONS[exerciseId] ?? '']
 }

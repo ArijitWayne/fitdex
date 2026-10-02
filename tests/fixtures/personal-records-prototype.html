@@ -1,0 +1,1419 @@
+<!doctype html>
+<html lang="en" data-theme-family="spartans" data-brightness="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FitDex · Record Book Chapters Prototype</title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <style>
+      /* ============================================================
+         PROTOTYPE HARNESS & CONTROLS
+         ============================================================ */
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      body.proto-body {
+        margin: 0;
+        padding: 16px 12px 60px;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .proto-app-wrapper {
+        width: 100%;
+        max-width: 560px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      /* Control Toolbar */
+      .proto-toolbar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 0.74rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+
+      .proto-toolbar-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .proto-toolbar-title {
+        font-family: var(--font-display);
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: var(--color-primary-text);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .proto-btn-group {
+        display: inline-flex;
+        gap: 3px;
+        background: var(--color-surface-raised);
+        padding: 3px;
+        border-radius: 6px;
+        border: 1px solid var(--color-border);
+      }
+
+      .proto-btn {
+        background: transparent;
+        color: var(--color-text-muted);
+        border: 0;
+        padding: 5px 9px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.12s ease;
+        text-transform: uppercase;
+      }
+
+      .proto-btn:hover {
+        color: var(--color-text);
+      }
+
+      .proto-btn.active {
+        background: var(--color-primary);
+        color: #111;
+        font-weight: 900;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      }
+
+      /* ============================================================
+         FITDEX COMMAND FRAME SHELL (SHARED HANDHELD CHASSIS)
+         ============================================================ */
+      .fitdex-command-frame {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        padding: 8px;
+        border: 3px solid var(--color-border-strong);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--color-app-surface) 92%, var(--color-text));
+        box-shadow: inset 0 0 0 2px var(--color-bg), 5px 6px 0 var(--color-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-sizing: border-box;
+      }
+
+      .fitdex-command-status {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 8px 8px;
+        color: var(--color-primary-text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .fitdex-command-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-terminal-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-success, #4ade80);
+        box-shadow: 0 0 4px var(--color-success, #4ade80);
+        flex-shrink: 0;
+      }
+
+      .fitdex-command-status-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cmd-icon-btn {
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        color: var(--color-text-muted);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .cmd-icon-btn:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary-text);
+      }
+
+      .fitdex-command-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      /* ============================================================
+         COMPACT INNER PAGE HEADER
+         ============================================================ */
+      .pr-subheader {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        padding: 2px 2px;
+      }
+
+      .pr-back-btn {
+        min-height: 32px;
+        padding: 4px 10px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.12s ease;
+      }
+
+      .pr-back-btn:hover {
+        border-color: var(--color-primary);
+        background: var(--color-primary-muted);
+        color: var(--color-primary-text);
+      }
+
+      .pr-header-title-block {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .pr-header-eyebrow {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 0.56rem;
+        font-weight: 800;
+        color: var(--color-rpg-accent);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .pr-header-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 900;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--color-text);
+        line-height: 1.15;
+      }
+
+      /* ============================================================
+         COMPACT SUMMARY METADATA STRIP
+         ============================================================ */
+      .pr-meta-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 10px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-rpg-accent);
+        border-radius: 6px;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 800;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .pr-meta-strip strong {
+        color: var(--color-primary-text);
+      }
+
+      /* ============================================================
+         CONTROLS ROW: SEARCH + COMPACT FILTER TRIGGER
+         ============================================================ */
+      .pr-index-controls {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+      }
+
+      .pr-search-bar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .pr-search-icon {
+        position: absolute;
+        left: 10px;
+        color: var(--color-text-muted);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+      }
+
+      .pr-search-bar input {
+        width: 100%;
+        min-width: 0;
+        height: 36px;
+        padding: 0 10px 0 32px;
+        border: 1.5px solid var(--color-border);
+        border-radius: 6px;
+        background: var(--color-surface);
+        color: var(--color-text);
+        font-family: var(--font-body);
+        font-size: 0.78rem;
+        outline: none;
+        transition: border-color 0.12s ease;
+      }
+
+      .pr-search-bar input:focus {
+        border-color: var(--color-primary);
+      }
+
+      .pr-filter-trigger-btn {
+        height: 36px;
+        padding: 0 10px;
+        border: 1.5px solid var(--color-border);
+        border-radius: 6px;
+        background: var(--color-surface);
+        color: var(--color-text);
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        transition: all 0.12s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .pr-filter-trigger-btn:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary-text);
+      }
+
+      .pr-filter-trigger-btn.has-filter {
+        background: var(--color-primary-muted);
+        border-color: var(--color-primary);
+        color: var(--color-primary-text);
+      }
+
+      /* Active Filter Pill */
+      .pr-active-filter-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 2px 2px;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+      }
+
+      .pr-active-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: var(--color-primary-muted);
+        border: 1px solid var(--color-primary);
+        color: var(--color-primary-text);
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .pr-pill-remove {
+        cursor: pointer;
+        font-weight: 900;
+        font-size: 0.75rem;
+        line-height: 1;
+        opacity: 0.8;
+      }
+
+      .pr-pill-remove:hover {
+        opacity: 1;
+      }
+
+      /* ============================================================
+         RECORD BOOK CHAPTER INDEX (LIST OF CHAPTERS)
+         ============================================================ */
+      .pr-chapter-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .pr-chapter-card {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        overflow: hidden;
+        transition: border-color 0.15s ease, transform 0.1s ease;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .pr-chapter-card:hover {
+        border-color: var(--color-primary);
+      }
+
+      .pr-chapter-header {
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        user-select: none;
+        background: transparent;
+        border: 0;
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        color: var(--color-text);
+      }
+
+      .pr-chapter-icon-slot {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 6px;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-rpg-accent);
+        flex-shrink: 0;
+      }
+
+      .pr-chapter-icon-slot svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.2;
+      }
+
+      .pr-chapter-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .pr-chapter-title-row {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+
+      .pr-chapter-name {
+        font-family: var(--font-display);
+        font-size: 0.86rem;
+        font-weight: 900;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--color-text);
+      }
+
+      .pr-chapter-count-badge {
+        font-family: var(--font-mono);
+        font-size: 0.58rem;
+        font-weight: 800;
+        padding: 1px 5px;
+        border-radius: 3px;
+        background: var(--color-primary-muted);
+        border: 1px solid var(--color-primary);
+        color: var(--color-primary-text);
+      }
+
+      .pr-chapter-latest {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .pr-chapter-latest strong {
+        color: var(--color-primary-text);
+      }
+
+      .pr-chapter-chevron {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        transition: transform 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .pr-chapter-card.is-open .pr-chapter-chevron {
+        transform: rotate(90deg);
+        color: var(--color-primary-text);
+      }
+
+      /* Accordion Drawer in Variant C2 */
+      .pr-chapter-accordion-body {
+        display: none;
+        padding: 8px 10px 10px;
+        background: color-mix(in srgb, var(--color-surface) 95%, var(--color-bg));
+        border-top: 1px solid var(--color-border);
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .pr-chapter-card.is-open .pr-chapter-accordion-body {
+        display: flex;
+      }
+
+      /* ============================================================
+         RECORD CARDS (REUSED VARIANT A RECORD BOOK CARDS)
+         ============================================================ */
+      .pr-card {
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        overflow: hidden;
+        transition: border-color 0.15s ease;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        opacity: 1;
+      }
+
+      .pr-card.is-expandable:hover {
+        border-color: var(--color-primary);
+      }
+
+      .pr-card-main {
+        padding: 9px 11px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        background: transparent;
+        border: 0;
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        color: var(--color-text);
+        user-select: none;
+        opacity: 1;
+      }
+
+      button.pr-card-main {
+        cursor: pointer;
+        font: inherit;
+      }
+
+      div.pr-card-main {
+        cursor: default;
+      }
+
+      .pr-card-main:disabled {
+        cursor: default;
+        opacity: 1;
+        color: var(--color-text);
+      }
+
+      .pr-badge-slot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        min-width: 26px;
+        border-radius: 5px;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+        color: var(--color-primary-text);
+        flex-shrink: 0;
+      }
+
+      .pr-badge-slot svg {
+        width: 15px;
+        height: 15px;
+        stroke-width: 2.1;
+      }
+
+      .pr-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .pr-card-title {
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        font-weight: 850;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--color-text);
+        overflow-wrap: break-word;
+        word-break: break-word;
+        line-height: 1.25;
+        min-width: 0;
+      }
+
+      .pr-card-meta {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        color: var(--color-text-muted);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .pr-tag-badge {
+        font-size: 0.52rem;
+        font-weight: 800;
+        padding: 1px 4px;
+        border-radius: 3px;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .pr-card-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        justify-self: end;
+        text-align: right;
+        min-width: 0;
+      }
+
+      .pr-primary-value-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1px;
+        min-width: 0;
+      }
+
+      .pr-primary-value {
+        font-family: var(--font-mono);
+        font-size: 0.86rem;
+        font-weight: 900;
+        color: var(--color-primary-text);
+        white-space: nowrap;
+      }
+
+      .pr-primary-label {
+        font-family: var(--font-mono);
+        font-size: 0.56rem;
+        font-weight: 700;
+        color: var(--color-rpg-accent);
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .pr-card-chevron {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: var(--color-text-muted);
+        transition: transform 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .pr-card.is-expanded .pr-card-chevron {
+        transform: rotate(90deg);
+        color: var(--color-primary-text);
+      }
+
+      .pr-card-drawer {
+        display: none;
+        padding: 8px 12px 10px;
+        background: color-mix(in srgb, var(--color-surface) 95%, var(--color-bg));
+        border-top: 1px solid var(--color-border);
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .pr-card.is-expanded .pr-card-drawer {
+        display: flex;
+      }
+
+      .pr-drawer-eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.56rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
+        margin: 0 0 2px;
+      }
+
+      .pr-submetric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        gap: 6px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .pr-submetric-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 5px 8px;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        min-width: 0;
+      }
+
+      .pr-submetric-chip-label {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+
+      .pr-submetric-chip-label strong {
+        font-family: var(--font-mono);
+        font-size: 0.58rem;
+        font-weight: 800;
+        color: var(--color-text);
+        word-break: normal;
+        overflow-wrap: break-word;
+        line-height: 1.3;
+      }
+
+      .pr-submetric-chip-label small {
+        font-size: 0.52rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        word-break: normal;
+      }
+
+      .pr-submetric-chip-val {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 900;
+        color: var(--color-primary-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+        text-align: right;
+      }
+
+      /* ============================================================
+         FILTER / SORT MODAL SHEET
+         ============================================================ */
+      .proto-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .proto-modal-backdrop.is-open {
+        display: flex;
+      }
+
+      .proto-filter-sheet {
+        background: var(--color-surface);
+        border: 2px solid var(--color-border-strong);
+        border-radius: 14px;
+        width: 100%;
+        max-width: 440px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .proto-sheet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .proto-sheet-header h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--color-primary-text);
+      }
+
+      .proto-sheet-close {
+        background: transparent;
+        border: 0;
+        color: var(--color-text-muted);
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+
+      .proto-sheet-section {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .proto-sheet-label {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        font-weight: 800;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .proto-sheet-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .proto-sheet-opt-btn {
+        padding: 6px 12px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .proto-sheet-opt-btn.active {
+        background: var(--color-primary-muted);
+        border-color: var(--color-primary);
+        color: var(--color-primary-text);
+      }
+
+      /* View Switching States */
+      .proto-view-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .proto-view-section.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="proto-body">
+    <div class="proto-app-wrapper">
+      <!-- ============================================================
+           INTERACTIVE PROTOTYPE CONTROLS
+           ============================================================ -->
+      <section class="proto-toolbar" aria-label="Prototype Controls">
+        <div class="proto-toolbar-row">
+          <div class="proto-toolbar-title">
+            <span>📖 RECORD BOOK CHAPTERS PROTOTYPE</span>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: 0.62rem; color: var(--color-rpg-accent); font-weight: 800;">VARIANT C1 / C2 ARCHITECTURE</span>
+        </div>
+
+        <div class="proto-toolbar-row">
+          <span>Chapter Navigation:</span>
+          <div class="proto-btn-group">
+            <button type="button" class="proto-btn active" id="btn-var-c1" onclick="setVariant('c1')">C1 · SUBVIEWS (RECOMMENDED)</button>
+            <button type="button" class="proto-btn" id="btn-var-c2" onclick="setVariant('c2')">C2 · ACCORDION INLINE</button>
+          </div>
+        </div>
+
+        <div class="proto-toolbar-row">
+          <span>Theme Preset:</span>
+          <div class="proto-btn-group">
+            <button type="button" class="proto-btn active" id="theme-sd" onclick="setTheme('spartans', 'dark')">Spartan Dark</button>
+            <button type="button" class="proto-btn" id="theme-sl" onclick="setTheme('spartans', 'light')">Spartan Light</button>
+            <button type="button" class="proto-btn" id="theme-ad" onclick="setTheme('amazonians', 'dark')">Amazon Dark</button>
+            <button type="button" class="proto-btn" id="theme-al" onclick="setTheme('amazonians', 'light')">Amazon Light</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           MAIN RECORD BOOK SHELL (MATCHES SHARED COMMANDPAGEFRAME)
+           ============================================================ -->
+      <main class="fitdex-command-frame" id="pr-command-chassis">
+        <!-- Terminal Status Top Rail -->
+        <header class="fitdex-command-status">
+          <div class="fitdex-command-title">
+            <span class="status-terminal-dot"></span>
+            <span>FITDEX // RECORD BOOK</span>
+          </div>
+          <div class="fitdex-command-status-right">
+            <span>LV 14 · ELITE</span>
+            <button class="cmd-icon-btn" type="button" title="How Record Book Works">?</button>
+          </div>
+        </header>
+
+        <div class="fitdex-command-stack">
+          <!-- 1. CHAPTER INDEX VIEW (DEFAULT LANDING VIEW) -->
+          <div id="view-index" class="proto-view-section">
+            <header class="pr-subheader">
+              <button type="button" class="pr-back-btn" onclick="alert('Navigates back to Progress Dashboard')">‹ Progress</button>
+              <div class="pr-header-title-block">
+                <p class="pr-header-eyebrow">Record Archive</p>
+                <h1 class="pr-header-title">Personal Records</h1>
+              </div>
+            </header>
+
+            <!-- Light Compact Meta Strip -->
+            <div class="pr-meta-strip">
+              <span id="index-meta-stats"><strong>21</strong> Exercises · <strong>48</strong> Records</span>
+              <span>Latest · <strong>29 Sep 2026</strong></span>
+            </div>
+
+            <!-- Controls Row: Search + Filter/Sort Trigger -->
+            <div class="pr-index-controls">
+              <div class="pr-search-bar">
+                <span class="pr-search-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </span>
+                <input type="search" id="index-search-input" placeholder="Search any exercise by name..." oninput="handleSearch(this.value)" />
+              </div>
+              <button type="button" class="pr-filter-trigger-btn" id="btn-filter-trigger" onclick="openFilterModal()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                <span>Filter / Sort</span>
+              </button>
+            </div>
+
+            <!-- Active Filter Row (Shown if filter applied) -->
+            <div id="active-filter-banner" class="pr-active-filter-row" style="display: none;">
+              <span class="pr-active-pill">
+                <span id="active-filter-text">WEIGHT</span>
+                <span class="pr-pill-remove" onclick="clearFilter()">✕</span>
+              </span>
+              <span style="color: var(--color-text-muted);" id="active-filter-match-count">12 exercises</span>
+            </div>
+
+            <!-- Chapter List (7 Canonical FitDex Chapters) -->
+            <div class="pr-chapter-list" id="chapter-cards-container">
+              <!-- Rendered dynamically by JS -->
+            </div>
+          </div>
+
+          <!-- 2. FOCUSED CHAPTER SUBVIEW (FOR VARIANT C1) -->
+          <div id="view-chapter" class="proto-view-section hidden">
+            <header class="pr-subheader">
+              <button type="button" class="pr-back-btn" onclick="backToIndex()">‹ Chapters</button>
+              <div class="pr-header-title-block">
+                <p class="pr-header-eyebrow" id="chapter-view-eyebrow">Chapter 01</p>
+                <h1 class="pr-header-title" id="chapter-view-title">Chest</h1>
+              </div>
+            </header>
+
+            <div class="pr-meta-strip">
+              <span id="chapter-view-count"><strong>3</strong> Exercises with Records</span>
+              <span id="chapter-view-latest">Latest · 29 Sep 2026</span>
+            </div>
+
+            <!-- Record Cards in this Chapter -->
+            <div class="pr-chapter-list" id="chapter-records-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- 3. FLAT SEARCH RESULTS VIEW (AUTOMATICALLY ACTIVE WHEN SEARCHING) -->
+          <div id="view-search-results" class="proto-view-section hidden">
+            <div class="pr-meta-strip">
+              <span id="search-results-count"><strong>0</strong> Matches Found</span>
+              <span style="color: var(--color-primary-text); cursor: pointer;" onclick="clearSearch()">Clear Search ✕</span>
+            </div>
+
+            <div class="pr-chapter-list" id="search-results-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ============================================================
+         FILTER & SORT MODAL SHEET
+         ============================================================ -->
+    <div class="proto-modal-backdrop" id="filter-modal-backdrop" onclick="closeFilterModal(event)">
+      <div class="proto-filter-sheet" onclick="event.stopPropagation()">
+        <div class="proto-sheet-header">
+          <h3>Filter &amp; Sort Record Book</h3>
+          <button type="button" class="proto-sheet-close" onclick="closeFilterModal()">✕</button>
+        </div>
+
+        <div class="proto-sheet-section">
+          <span class="proto-sheet-label">Filter by Tracking Dimension</span>
+          <div class="proto-sheet-options">
+            <button type="button" class="proto-sheet-opt-btn active" data-filter="all" onclick="selectFilter('all')">All Dimensions</button>
+            <button type="button" class="proto-sheet-opt-btn" data-filter="weight" onclick="selectFilter('weight')">Weight</button>
+            <button type="button" class="proto-sheet-opt-btn" data-filter="bodyweight_reps" onclick="selectFilter('bodyweight_reps')">Bodyweight / Reps</button>
+            <button type="button" class="proto-sheet-opt-btn" data-filter="duration" onclick="selectFilter('duration')">Duration</button>
+            <button type="button" class="proto-sheet-opt-btn" data-filter="distance" onclick="selectFilter('distance')">Distance</button>
+          </div>
+        </div>
+
+        <div class="proto-sheet-section">
+          <span class="proto-sheet-label">Sort Order (Within Chapters &amp; Search)</span>
+          <div class="proto-sheet-options">
+            <button type="button" class="proto-sheet-opt-btn active" data-sort="recent" onclick="selectSort('recent')">Latest PR Date</button>
+            <button type="button" class="proto-sheet-opt-btn" data-sort="name" onclick="selectSort('name')">Alphabetical (A–Z)</button>
+          </div>
+        </div>
+
+        <button type="button" class="pr-back-btn" style="width: 100%; justify-content: center; min-height: 38px; margin-top: 6px;" onclick="closeFilterModal()">
+          Apply Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MOCK DATA & SCRIPT (FITDEX CANONICAL CHAPTERS)
+         ============================================================ */ -->
+    <script>
+      // 7 Canonical FitDex Chapters with real exercises and tracking dimensions
+      const CHAPTERS_DATA = [
+        {
+          id: 'chest',
+          name: 'Chest',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h3.5l4.5 3 4.5-3H20v4c0 4.5-3.5 8-8 9-4.5-1-8-4.5-8-9V6z"/><path d="M4 11c2.5 2 5 2 8 0"/><path d="M12 11c3 2 5.5 2 8 0"/><path d="M12 9v5"/></svg>',
+          records: [
+            { id: 'c1', name: 'Barbell Bench Press', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '29 Sep 2026', primaryVal: '105 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '29 Sep 2026', val: '105 kg × 5' }, { label: 'Best Set Volume', date: '24 Sep 2026', val: '100 kg × 8 (800 kg)' }] },
+            { id: 'c2', name: 'Incline Dumbbell Press', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '24 Aug 2026', primaryVal: '36 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '24 Aug 2026', val: '36 kg × 7' }] },
+            { id: 'c3', name: 'Push-Ups', category: 'bodyweight_reps', type: 'bodyweight_reps', badge: 'Bodyweight', date: '20 Aug 2026', primaryVal: '38 reps', primaryLabel: 'Highest', support: [] }
+          ]
+        },
+        {
+          id: 'back',
+          name: 'Back',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l3.5-2h11L21 6l-3.5 12H6.5L3 6z"/><path d="M12 4v14"/><path d="M5 9c2.5 2 5 3 7 3s4.5-1 7-3"/><path d="M6.5 13.5c2 1.5 4 2 5.5 2s3.5-.5 5.5-2"/></svg>',
+          records: [
+            { id: 'b1', name: 'Pull-Ups', category: 'bodyweight_reps', type: 'bodyweight_reps', badge: 'Bodyweight', date: '26 Sep 2026', primaryVal: '16 reps', primaryLabel: 'Highest', support: [] },
+            { id: 'b2', name: 'Conventional Deadlift', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '18 Sep 2026', primaryVal: '180 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '18 Sep 2026', val: '180 kg × 2' }, { label: 'Best Set Volume', date: '10 Sep 2026', val: '160 kg × 5 (800 kg)' }] },
+            { id: 'b3', name: 'Lat Pulldown', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '30 Jul 2026', primaryVal: '85 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '30 Jul 2026', val: '85 kg × 8' }] },
+            { id: 'b4', name: 'Rowing Machine', category: 'distance', type: 'distance_duration', badge: 'Distance', date: '12 Aug 2026', primaryVal: '2,000 m', primaryLabel: 'Longest Dist', support: [{ label: 'Longest Duration', date: '12 Aug 2026', val: '7m 18s' }] }
+          ]
+        },
+        {
+          id: 'shoulders',
+          name: 'Shoulders',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13V9a4 4 0 0 1 4-4h2.5l3.5 3 3.5-3H18a4 4 0 0 1 4 4v4"/><path d="M6 9a3 3 0 0 0-3 3"/><path d="M18 9a3 3 0 0 1 3 3"/><path d="M6.5 5.5l2.5 6.5"/><path d="M17.5 5.5l-2.5 6.5"/><path d="M9 12h6"/></svg>',
+          records: [
+            { id: 's1', name: 'Overhead Shoulder Press', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '01 Sep 2026', primaryVal: '65 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '01 Sep 2026', val: '65 kg × 4' }] },
+            { id: 's2', name: 'Dumbbell Lateral Raise', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '14 Aug 2026', primaryVal: '16 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '14 Aug 2026', val: '16 kg × 12' }] }
+          ]
+        },
+        {
+          id: 'legs',
+          name: 'Legs & Glutes',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-1 7.5 1 8.5h-3.5l-1-7-2.5-4-2.5 4-1 7H5l1-8.5L5 4z"/><path d="M8.5 11.5h1"/><path d="M14.5 11.5h1"/></svg>',
+          records: [
+            { id: 'l1', name: 'Barbell Back Squat', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '24 Sep 2026', primaryVal: '140 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '24 Sep 2026', val: '140 kg × 3' }, { label: 'Best Set Volume', date: '18 Sep 2026', val: '130 kg × 6 (780 kg)' }] },
+            { id: 'l2', name: 'Leg Press', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '08 Aug 2026', primaryVal: '280 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '08 Aug 2026', val: '280 kg × 8' }] },
+            { id: 'l3', name: 'Dumbbell Romanian Deadlift', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '20 Jul 2026', primaryVal: '40 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '20 Jul 2026', val: '40 kg × 10' }] },
+            { id: 'l4', name: 'Wall Sit', category: 'duration', type: 'duration', badge: 'Duration', date: '25 Jul 2026', primaryVal: '2m 15s', primaryLabel: 'Longest', support: [] },
+            { id: 'l5', name: "Farmer's Walk", category: 'weight', type: 'weight_distance', badge: 'Weight + Dist', date: '08 Sep 2026', primaryVal: '32 kg', primaryLabel: 'Heaviest', support: [{ label: 'Longest Distance', date: '08 Sep 2026', val: '120 m' }] }
+          ]
+        },
+        {
+          id: 'arms',
+          name: 'Arms (Biceps & Triceps)',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.5c0 3.5 2.5 5.5 6 5.5h4c3.3 0 6-2.5 6-6V9a2 2 0 0 0-2-2h-1.5"/><path d="M3 13.5c0-2.8 1.8-4.5 4.5-4.5 2.2 0 3.8 1.5 4.8 3.5"/><path d="M15.5 7V4.5a1.5 1.5 0 0 0-1.5-1.5h-1a1.5 1.5 0 0 0-1.5 1.5V7"/><path d="M7.5 9c1-2 2.8-3.5 5.5-3.5"/></svg>',
+          records: [
+            { id: 'a1', name: 'Assisted Triceps Dips', category: 'bodyweight_reps', type: 'assisted_bodyweight', badge: 'Assisted', date: '21 Sep 2026', primaryVal: '14 reps', primaryLabel: 'Highest', support: [{ label: 'Lowest Assist at Best Reps', date: '21 Sep 2026', val: '14 reps · 10 kg assist' }] },
+            { id: 'a2', name: 'Barbell Biceps Curl', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '16 Aug 2026', primaryVal: '42.5 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '16 Aug 2026', val: '42.5 kg × 6' }] },
+            { id: 'a3', name: 'Diamond Push-Ups', category: 'bodyweight_reps', type: 'bodyweight_reps', badge: 'Bodyweight', date: '15 Jul 2026', primaryVal: '20 reps', primaryLabel: 'Highest', support: [] },
+            { id: 'a4', name: 'Hammer Curl', category: 'weight', type: 'weight_reps', badge: 'Weight & Reps', date: '10 Jul 2026', primaryVal: '22 kg', primaryLabel: 'Heaviest', support: [{ label: 'Best Reps at Heaviest', date: '10 Jul 2026', val: '22 kg × 8' }] }
+          ]
+        },
+        {
+          id: 'core',
+          name: 'Core & Abs',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14l-2 18H7L5 3z"/><path d="M12 3v18"/><path d="M6.5 7.5h11"/><path d="M7 12h10"/><path d="M7.5 16.5h9"/></svg>',
+          records: [
+            { id: 'co1', name: 'Plank', category: 'duration', type: 'duration', badge: 'Duration', date: '15 Sep 2026', primaryVal: '3m 45s', primaryLabel: 'Longest', support: [] },
+            { id: 'co2', name: 'Hanging Knee Raises', category: 'bodyweight_reps', type: 'reps_only', badge: 'Reps Only', date: '04 Sep 2026', primaryVal: '22 reps', primaryLabel: 'Highest', support: [] }
+          ]
+        },
+        {
+          id: 'cardio',
+          name: 'Cardio & Conditioning',
+          icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.78L12 20.67l7.65-7.66.77-.78a5.4 5.4 0 0 0 0-7.65z"/><path d="M3.5 12h3.5l2-3.5 3 7 2-3.5h6.5"/></svg>',
+          records: [
+            { id: 'ca1', name: 'Treadmill Running', category: 'distance', type: 'distance_duration', badge: 'Distance', date: '12 Sep 2026', primaryVal: '5.2 km', primaryLabel: 'Longest Dist', support: [{ label: 'Longest Duration', date: '12 Sep 2026', val: '26m 15s' }] },
+            { id: 'ca2', name: 'Stationary Bike', category: 'distance', type: 'distance_duration', badge: 'Distance', date: '28 Aug 2026', primaryVal: '12.4 km', primaryLabel: 'Longest Dist', support: [{ label: 'Longest Duration', date: '28 Aug 2026', val: '30m 00s' }] },
+            { id: 'ca3', name: 'Jump Rope', category: 'duration', type: 'duration_reps', badge: 'Duration + Reps', date: '04 Aug 2026', primaryVal: '10m 00s', primaryLabel: 'Longest', support: [{ label: 'Highest Reps', date: '04 Aug 2026', val: '1,200 jumps' }] }
+          ]
+        }
+      ];
+
+      let currentVariant = 'c1'; // 'c1' (subviews) or 'c2' (accordion)
+      let activeFilter = 'all';
+      let activeSort = 'recent';
+      let searchQuery = '';
+      let openAccordionId = null;
+
+      function setTheme(family, brightness) {
+        document.documentElement.setAttribute('data-theme-family', family);
+        document.documentElement.setAttribute('data-brightness', brightness);
+        document.querySelectorAll('#theme-sd, #theme-sl, #theme-ad, #theme-al').forEach(btn => btn.classList.remove('active'));
+        if (family === 'spartans' && brightness === 'dark') document.getElementById('theme-sd').classList.add('active');
+        if (family === 'spartans' && brightness === 'light') document.getElementById('theme-sl').classList.add('active');
+        if (family === 'amazonians' && brightness === 'dark') document.getElementById('theme-ad').classList.add('active');
+        if (family === 'amazonians' && brightness === 'light') document.getElementById('theme-al').classList.add('active');
+      }
+
+      function setVariant(variant) {
+        currentVariant = variant;
+        document.getElementById('btn-var-c1').classList.toggle('active', variant === 'c1');
+        document.getElementById('btn-var-c2').classList.toggle('active', variant === 'c2');
+        openAccordionId = null;
+        backToIndex();
+      }
+
+      function matchCategoryFilter(item, cat) {
+        if (cat === 'all') return true;
+        if (cat === 'weight') return item.type === 'weight_reps' || item.type === 'weight_distance' || item.type === 'weight_duration';
+        if (cat === 'bodyweight_reps') return item.type === 'bodyweight_reps' || item.type === 'reps_only' || item.type === 'assisted_bodyweight';
+        if (cat === 'duration') return item.type === 'duration' || item.type === 'duration_reps' || item.type === 'distance_duration';
+        if (cat === 'distance') return item.type === 'distance_duration' || item.type === 'weight_distance';
+        return true;
+      }
+
+      function renderIndex() {
+        const container = document.getElementById('chapter-cards-container');
+        let totalExercises = 0;
+        let totalPrs = 0;
+
+        const renderedChapters = CHAPTERS_DATA.map(chapter => {
+          let records = chapter.records.filter(r => matchCategoryFilter(r, activeFilter));
+          if (activeSort === 'name') {
+            records.sort((a, b) => a.name.localeCompare(b.name));
+          }
+          if (records.length === 0) return ''; // Hide 0-result chapters
+
+          totalExercises += records.length;
+          totalPrs += records.reduce((sum, r) => sum + 1 + (r.support ? r.support.length : 0), 0);
+
+          const latestRec = records[0];
+          const isOpen = (currentVariant === 'c2' && openAccordionId === chapter.id);
+
+          return `
+            <article class="pr-chapter-card ${isOpen ? 'is-open' : ''}" id="chapter-card-${chapter.id}">
+              <button type="button" class="pr-chapter-header" onclick="handleChapterClick('${chapter.id}')">
+                <div class="pr-chapter-icon-slot">
+                  ${chapter.icon}
+                </div>
+                <div class="pr-chapter-info">
+                  <div class="pr-chapter-title-row">
+                    <span class="pr-chapter-name">${chapter.name}</span>
+                    <span class="pr-chapter-count-badge">${records.length}</span>
+                  </div>
+                  <span class="pr-chapter-latest">Latest · ${latestRec.name} · <strong>${latestRec.primaryVal}</strong></span>
+                </div>
+                <span class="pr-chapter-chevron">${currentVariant === 'c1' ? '›' : (isOpen ? '▼' : '▶')}</span>
+              </button>
+              ${currentVariant === 'c2' ? `
+                <div class="pr-chapter-accordion-body">
+                  ${records.map(r => renderRecordCard(r)).join('')}
+                </div>
+              ` : ''}
+            </article>
+          `;
+        }).filter(Boolean).join('');
+
+        container.innerHTML = renderedChapters || `<div class="pr-meta-strip"><span>No chapters matching current filter</span></div>`;
+        document.getElementById('index-meta-stats').innerHTML = `<strong>${totalExercises}</strong> Exercises · <strong>${totalPrs}</strong> Records`;
+      }
+
+      // Semantic PR Metric Icons (Custom Retro FitDex Icon Family)
+      const PR_METRIC_ICONS = {
+        weight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 5v14M2 8v8M22 8v8M6 12h12M2 12H6M18 12h4"/></svg>',
+        reps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4"/><path d="M19 4v4h-4M5 20v-4h4"/><path d="M10 9.5v5M14 9.5v5"/></svg>',
+        duration: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M10 2h4M12 2v3M19 6l-1.5 1.5"/></svg>',
+        distance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H13a4 4 0 0 0 4-4V9.5"/><path d="M15.5 6H11a4 4 0 0 0-4 4v4.5"/></svg>'
+      };
+
+      function getRecordIcon(item) {
+        if (item.primaryMetric) {
+          return PR_METRIC_ICONS[item.primaryMetric] || PR_METRIC_ICONS.weight;
+        }
+        if (item.primaryLabel === 'Heaviest' || item.type === 'weight_reps') return PR_METRIC_ICONS.weight;
+        if (item.primaryLabel === 'Highest' || item.type === 'bodyweight_reps' || item.type === 'reps_only' || item.type === 'assisted_bodyweight') return PR_METRIC_ICONS.reps;
+        if (item.primaryLabel === 'Longest' || item.type === 'duration' || item.type === 'duration_reps') return PR_METRIC_ICONS.duration;
+        if (item.primaryLabel === 'Longest Dist' || item.type === 'distance_duration' || item.category === 'distance') return PR_METRIC_ICONS.distance;
+        if (item.type === 'weight_distance') {
+          return item.primaryLabel === 'Longest Dist' ? PR_METRIC_ICONS.distance : PR_METRIC_ICONS.weight;
+        }
+        return PR_METRIC_ICONS.weight;
+      }
+
+      function renderRecordCard(item) {
+        const hasSupport = item.support && item.support.length > 0;
+        return `
+          <article class="pr-card ${hasSupport ? 'is-expandable' : 'is-static'}" data-name="${item.name.toLowerCase()}">
+            ${hasSupport ? `
+              <button type="button" class="pr-card-main" onclick="toggleCard(this)">
+                <div class="pr-badge-slot">${getRecordIcon(item)}</div>
+                <div class="pr-card-info">
+                  <strong class="pr-card-title">${item.name}</strong>
+                  <div class="pr-card-meta">
+                    <span class="pr-tag-badge">${item.badge}</span>
+                    <span>${item.date}</span>
+                  </div>
+                </div>
+                <div class="pr-card-right">
+                  <div class="pr-primary-value-block">
+                    <span class="pr-primary-value">${item.primaryVal}</span>
+                    <span class="pr-primary-label">${item.primaryLabel}</span>
+                  </div>
+                  <span class="pr-card-chevron" aria-hidden="true">▶</span>
+                </div>
+              </button>
+            ` : `
+              <div class="pr-card-main">
+                <div class="pr-badge-slot">${getRecordIcon(item)}</div>
+                <div class="pr-card-info">
+                  <strong class="pr-card-title">${item.name}</strong>
+                  <div class="pr-card-meta">
+                    <span class="pr-tag-badge">${item.badge}</span>
+                    <span>${item.date}</span>
+                  </div>
+                </div>
+                <div class="pr-card-right">
+                  <div class="pr-primary-value-block">
+                    <span class="pr-primary-value">${item.primaryVal}</span>
+                    <span class="pr-primary-label">${item.primaryLabel}</span>
+                  </div>
+                </div>
+              </div>
+            `}
+            ${hasSupport ? `
+              <div class="pr-card-drawer">
+                <span class="pr-drawer-eyebrow">Supporting Record Milestones</span>
+                <div class="pr-submetric-grid">
+                  ${item.support.map(s => `
+                    <div class="pr-submetric-chip">
+                      <div class="pr-submetric-chip-label">
+                        <strong>${s.label}</strong>
+                        <small>${s.date}</small>
+                      </div>
+                      <span class="pr-submetric-chip-val">${s.val}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </article>
+        `;
+      }
+
+      function handleChapterClick(chapterId) {
+        if (currentVariant === 'c1') {
+          // Open dedicated Chapter Subview
+          openChapterView(chapterId);
+        } else {
+          // Inline accordion in C2
+          openAccordionId = (openAccordionId === chapterId) ? null : chapterId;
+          renderIndex();
+        }
+      }
+
+      function openChapterView(chapterId) {
+        const chapter = CHAPTERS_DATA.find(c => c.id === chapterId);
+        if (!chapter) return;
+
+        let records = chapter.records.filter(r => matchCategoryFilter(r, activeFilter));
+        if (activeSort === 'name') {
+          records.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        document.getElementById('chapter-view-eyebrow').textContent = `Chapter · ${chapter.name.toUpperCase()}`;
+        document.getElementById('chapter-view-title').textContent = chapter.name;
+        document.getElementById('chapter-view-count').innerHTML = `<strong>${records.length}</strong> Exercises with Records`;
+        document.getElementById('chapter-view-latest').textContent = `Latest · ${records[0] ? records[0].date : '—'}`;
+
+        document.getElementById('chapter-records-container').innerHTML = records.map(r => renderRecordCard(r)).join('');
+
+        document.getElementById('view-index').classList.add('hidden');
+        document.getElementById('view-search-results').classList.add('hidden');
+        document.getElementById('view-chapter').classList.remove('hidden');
+      }
+
+      function backToIndex() {
+        document.getElementById('view-chapter').classList.add('hidden');
+        document.getElementById('view-search-results').classList.add('hidden');
+        document.getElementById('view-index').classList.remove('hidden');
+        renderIndex();
+      }
+
+      function toggleCard(btn) {
+        const card = btn.closest('.pr-card');
+        card.classList.toggle('is-expanded');
+      }
+
+      // Search Mode Handling
+      function handleSearch(query) {
+        searchQuery = query.toLowerCase().trim();
+        if (!searchQuery) {
+          document.getElementById('view-search-results').classList.add('hidden');
+          document.getElementById('view-chapter').classList.add('hidden');
+          document.getElementById('view-index').classList.remove('hidden');
+          renderIndex();
+          return;
+        }
+
+        // Aggregate all records matching search across all chapters
+        let allMatching = [];
+        CHAPTERS_DATA.forEach(chapter => {
+          chapter.records.forEach(r => {
+            if (r.name.toLowerCase().includes(searchQuery) && matchCategoryFilter(r, activeFilter)) {
+              allMatching.push(r);
+            }
+          });
+        });
+
+        if (activeSort === 'name') {
+          allMatching.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        document.getElementById('view-index').classList.add('hidden');
+        document.getElementById('view-chapter').classList.add('hidden');
+        document.getElementById('view-search-results').classList.remove('hidden');
+
+        document.getElementById('search-results-count').innerHTML = `<strong>${allMatching.length}</strong> Matches for "${searchQuery}"`;
+        document.getElementById('search-results-container').innerHTML = allMatching.length
+          ? allMatching.map(r => renderRecordCard(r)).join('')
+          : `<div class="pr-meta-strip"><span>No exercise records found</span></div>`;
+      }
+
+      function clearSearch() {
+        document.getElementById('index-search-input').value = '';
+        handleSearch('');
+      }
+
+      // Filter / Sort Modal Management
+      function openFilterModal() {
+        document.getElementById('filter-modal-backdrop').classList.add('is-open');
+      }
+
+      function closeFilterModal(e) {
+        document.getElementById('filter-modal-backdrop').classList.remove('is-open');
+      }
+
+      function selectFilter(filterKey) {
+        activeFilter = filterKey;
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.getAttribute('data-filter') === filterKey));
+        updateFilterUI();
+        if (searchQuery) {
+          handleSearch(searchQuery);
+        } else {
+          renderIndex();
+        }
+      }
+
+      function selectSort(sortKey) {
+        activeSort = sortKey;
+        document.querySelectorAll('[data-sort]').forEach(b => b.classList.toggle('active', b.getAttribute('data-sort') === sortKey));
+        if (searchQuery) {
+          handleSearch(searchQuery);
+        } else {
+          renderIndex();
+        }
+      }
+
+      function clearFilter() {
+        selectFilter('all');
+      }
+
+      function updateFilterUI() {
+        const triggerBtn = document.getElementById('btn-filter-trigger');
+        const activeBanner = document.getElementById('active-filter-banner');
+        if (activeFilter === 'all') {
+          triggerBtn.classList.remove('has-filter');
+          activeBanner.style.display = 'none';
+        } else {
+          triggerBtn.classList.add('has-filter');
+          activeBanner.style.display = 'flex';
+          const labelMap = {
+            weight: 'Weight Dimension',
+            bodyweight_reps: 'Bodyweight / Reps',
+            duration: 'Duration Dimension',
+            distance: 'Distance Dimension'
+          };
+          document.getElementById('active-filter-text').textContent = labelMap[activeFilter] || activeFilter;
+        }
+      }
+
+      // Initial Render
+      renderIndex();
+    </script>
+  </body>
+</html>

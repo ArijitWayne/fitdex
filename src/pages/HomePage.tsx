@@ -27,7 +27,7 @@ import { UpdateDetailsModal } from '../features/updater/UpdateDetailsModal'
 
 export type HomeWorkoutEntry = 'hub' | 'active' | 'start' | 'library' | 'create' | 'plan' | 'start-empty' | 'start-routine' | 'history'
 
-export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpenFieldGuide }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void; onOpenFieldGuide?: () => void }) {
+export function HomePage({ onNavigate, onOpenWorkout, onOpenFieldGuide }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenFieldGuide?: () => void }) {
   const { selectedAvatar } = useAvatar()
   const { displayName } = useProfile()
   const { playEffect } = useAudio()
@@ -86,7 +86,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
 
       <section className="home-hero home-mobile-hero home-command-home fitdex-page-frame">
         <header className="home-command-status">
-          <span>FitDex</span>
+          <span><i className="status-terminal-dot" aria-hidden="true" />FitDex // Home Terminal</span>
           <div className="home-command-status-actions" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
             <time dateTime={todayDateKey}>{formatCommandDate(now)}</time>
             {onOpenFieldGuide ? (
@@ -102,6 +102,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
             ) : null}
           </div>
         </header>
+        <section className="home-command-hero">
         <div className="home-hero-player home-command-player">
           <AvatarPortrait avatar={selectedAvatar} size="medium" priority />
           <div className="home-hero-player-copy">
@@ -124,9 +125,11 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
           </div>
         )}
 
+        </section>
+
         {data ? <TodayWorkoutPanel data={data} now={now} onOpenWorkout={onOpenWorkout} /> : <section className="home-hero-quest is-loading" aria-live="polite"><p className="eyebrow">Today's Quest</p><h2>Loading mission…</h2></section>}
 
-        {data ? <MobileHomeSupport data={data} onNavigate={onNavigate} onOpenWorkout={onOpenWorkout} onOpenAchievements={onOpenAchievements} playEffect={playEffect} /> : null}
+        {data ? <MobileHomeSupport data={data} onNavigate={onNavigate} onOpenWorkout={onOpenWorkout} playEffect={playEffect} /> : null}
         {error ? <p className="form-error" role="alert">{error}</p> : null}
       </section>
 
@@ -139,7 +142,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenAchievements, onOpen
         <Panel className="home-dashboard-panel home-gamification" eyebrow="Your progress">
           <button className="gamification-level-button" type="button" onClick={() => { playEffect('select'); setGamificationView('rank') }}><LevelProgress data={data.gamification} compact /><ChevronRight aria-hidden="true" /></button>
           <button className="home-streak-button" type="button" onClick={() => { playEffect('select'); setGamificationView('streak') }}><Flame aria-hidden="true" /><span><strong>{data.gamification.streak.current}</strong><small>Plan Streak</small></span><em>{data.gamification.freezeBalance} {data.gamification.freezeBalance === 1 ? 'Freeze' : 'Freezes'} available</em><ChevronRight aria-hidden="true" /></button>
-          {data.gamification.latestAchievement ? <div className="home-latest-achievement"><GamificationBadge kind="achievement" size="small" src={achievementAssetPath(data.gamification.latestAchievement.definition.id)} label={data.gamification.latestAchievement.definition.name} /><span><small>Latest Achievement</small><strong>{data.gamification.latestAchievement.definition.name}</strong><em>Unlocked {new Date(data.gamification.latestAchievement.unlocked.unlockedAt).toLocaleDateString()}</em></span><button className="text-button" type="button" onClick={() => { playEffect('select'); if (onOpenAchievements) onOpenAchievements(); else onNavigate('progress') }}>View Achievements</button></div> : null}
+          {data.gamification.latestAchievement ? <div className="home-latest-achievement"><GamificationBadge kind="achievement" size="small" src={achievementAssetPath(data.gamification.latestAchievement.definition.id)} label={data.gamification.latestAchievement.definition.name} /><span><small>Latest Achievement</small><strong>{data.gamification.latestAchievement.definition.name}</strong><em>Unlocked {new Date(data.gamification.latestAchievement.unlocked.unlockedAt).toLocaleDateString()}</em></span><button className="text-button" type="button" onClick={() => { playEffect('select'); onNavigate('progress') }}>View Achievements</button></div> : null}
         </Panel>
 
         <Panel className="home-dashboard-panel home-week-plan" eyebrow="This week" title={data.weeklyPlan.configured ? 'Recurring workout plan' : 'No workout plan yet'}>
@@ -229,7 +232,7 @@ function openMobileMission(data: HomeDashboardData, onOpenWorkout: (entry: HomeW
   onOpenWorkout('hub')
 }
 
-function MobileHomeSupport({ data, onNavigate, onOpenWorkout, onOpenAchievements, playEffect }: { data: HomeDashboardData; onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenAchievements?: () => void; playEffect: (effect: 'select') => void }) {
+function MobileHomeSupport({ data, onNavigate, onOpenWorkout, playEffect }: { data: HomeDashboardData; onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; playEffect: (effect: 'select') => void }) {
   const progressSummary = data.newestPr
     ? `${data.newestPr.exerciseName} PR · ${formatPersonalRecordMetric(data.newestPr.metrics[0], data.units)}`
     : data.gamification.latestAchievement
@@ -254,14 +257,14 @@ function MobileHomeSupport({ data, onNavigate, onOpenWorkout, onOpenAchievements
       <CommandRow number="01" title="Today's Mission" summary={mission.summary} selected onClick={() => { playEffect('select'); openMobileMission(data, onOpenWorkout) }} />
       <CommandRow number="02" title="Nutrition" summary={`${formatNumber(data.food.kcal)} kcal · ${formatNumber(data.food.protein)} g protein`} onClick={() => { playEffect('select'); onNavigate('food') }} />
       <CommandRow number="03" title="Progress" summary={progressSummary} onClick={() => { playEffect('select'); onNavigate('progress') }} />
-      <CommandRow number="04" title="Achievements" summary={achievementSummary} onClick={() => { playEffect('select'); if (onOpenAchievements) onOpenAchievements(); else onNavigate('progress') }} />
-      <MobileMusicRow number="05" />
+      <CommandRow number="04" title="Achievements" summary={achievementSummary} onClick={() => { playEffect('select'); onNavigate('progress') }} />
+      <CommandRow number="05" title="Journal" summary={journalSummary} onClick={() => { playEffect('select'); onNavigate('journal') }} />
+      <MobileMusicRow number="06" />
     </nav>
-    <section className="home-mobile-more" aria-labelledby="home-more-title"><p className="eyebrow" id="home-more-title">More from today</p><button className="home-mobile-journal-gateway" type="button" onClick={() => { playEffect('select'); onNavigate('journal') }}><span className="home-journal-mark" aria-hidden="true"><NotebookTabs /></span><span><strong>Today's Journal</strong><small>{journalSummary}</small><em>Workouts, meals, and daily history</em></span><span className="home-journal-action">Open daily record <ChevronRight aria-hidden="true" /></span></button></section>
   </section>
 }
 
-function CommandRow({ number, title, summary, selected = false, onClick }: { number: string; title: string; summary: string; selected?: boolean; onClick: () => void }) { return <button className={selected ? 'home-command-row is-selected' : 'home-command-row'} type="button" onClick={onClick}><span>{number}</span><b>{title}</b><small>{summary}</small><ChevronRight aria-hidden="true" /></button> }
+function CommandRow({ number, title, summary, selected = false, onClick }: { number: string; title: string; summary: string; selected?: boolean; onClick: () => void }) { return <button className={selected ? 'home-command-row is-selected' : 'home-command-row'} type="button" onClick={onClick}><span className="home-command-number">{number}</span><b>{title}</b><small>{summary}</small><ChevronRight aria-hidden="true" /></button> }
 
 function MobileMusicRow({ number }: { number: string }) {
   const { ready, backgroundMusic, backgroundMusicPaused, playEffect, setBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } = useAudio()
@@ -371,4 +374,3 @@ function HomeConsistencyRail({ data, onOpenStreak }: { data: HomeDashboardData; 
     </button>
   )
 }
-

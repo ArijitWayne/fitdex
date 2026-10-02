@@ -20,7 +20,7 @@ Software licenses ([PolyForm Noncommercial 1.0.0](LICENSES/PolyForm-Noncommercia
 | **Gamification Art & Badges** | `public/gamification/` | **All Rights Reserved** | Ascending rank crests and 52 RPG achievement badges. Copyright © 2026 Arijit Bhaduri. |
 | **PWA & App Launcher Icons** | `public/favicon.svg`<br>`public/pwa-icon.svg`<br>`public/pwa-maskable.svg`<br>`android/app/src/main/res/` | **All Rights Reserved** | Responsive web icons and dynamic Android adaptive launcher icon sets. Copyright © 2026 Arijit Bhaduri. |
 | **Promotional & Showcase Art** | `src/assets/hero.png`<br>`docs/` showcase assets | **All Rights Reserved** | Product showcase, README hero graphics, and game-manual presentation mockups. Copyright © 2026 Arijit Bhaduri. |
-| **Exercise Demonstration Videos** | `public/exercises/*.mp4`<br>`https://fitdex-media.fitdexapp.workers.dev` | **Separate media terms** | Exercise demonstration media is distributed separately and is not licensed under the FitDex software licenses. Rights may vary by individual asset. |
+| **Exercise Demonstration Videos** | `https://fitdex-media.fitdexapp.workers.dev/exercises/` | **Separate media terms** | Exercise demonstration media is distributed separately, external to this app repository, and is not licensed under the FitDex software licenses. Rights may vary by individual asset. |
 | **Sound Effects (SFX)** | `public/audio/select.mp3`<br>`public/audio/add.mp3`<br>`public/audio/achievements_unlock.mp3`<br>`public/audio/progress_complete.mp3` | **Rights review pending** | Semantic retro 8-bit sound effects bundled for application audio. Subject to respective creator terms. |
 | **Background Music (BGM)** | `public/audio/bgm-warrior.mp3`<br>`public/audio/bgm-hardened.mp3`<br>`public/audio/bgm-villain.mp3` | **Rights review pending** | Looping retro RPG soundtrack pieces bundled for application audio. Subject to respective creator terms. |
 | **Interface Icons (Lucide)** | React components via `lucide-react` | **Third-party / ISC License** | Standard UI iconography rendered via the upstream [Lucide](https://lucide.dev/) library. |
@@ -38,7 +38,7 @@ The FitDex project name, wordmarks, faction crests, character portraits, and bad
 
 ## 3. Exercise Demonstration Media Policy
 
-The FitDex Exercise Dex catalogs 804 exercises with associated demonstration media referenced by deterministic path (`mediaPath = /exercises/<slug>.mp4`).
+The FitDex Exercise Dex catalogs 802 exercises with associated demonstration media referenced by deterministic path (`mediaPath = /exercises/<slug>.mp4`).
 
 - Video media is hosted and streamed from a separate media distribution worker (`https://fitdex-media.fitdexapp.workers.dev`) and can optionally be cached locally within the Android app.
 - Exercise demonstration media is not covered by the PolyForm Noncommercial 1.0.0 or MIT licenses.

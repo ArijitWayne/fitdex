@@ -1,10 +1,11 @@
-import { ArrowLeft, CircleHelp, ShieldCheck, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, ChevronRight, CircleHelp, ShieldCheck, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Panel } from '../../components/ui/Panel.tsx'
+import { CommandPageFrame } from '../../components/layout/CommandPageFrame.tsx'
 import { ContextRail } from '../../components/ui/ContextRail.tsx'
 import { dateFromLocalDateKey, getLocalDateKey, shiftLocalDateKey } from '../../utils/localDate.ts'
 import { GuideDialog } from '../help/GuideDialog.tsx'
-import { ACHIEVEMENT_CATEGORIES, achievementById, type AchievementCategory } from './achievementCatalog.ts'
+import { ACHIEVEMENT_CATEGORIES, achievementById, unlockedFirst, type AchievementCategory } from './achievementCatalog.ts'
 import { achievementAssetPath, MAX_PAUSE_DAYS, MAX_PAUSES_PER_ROLLING_YEAR, RANKS, rankAssetPath, SUCCESSFUL_DAYS_PER_FREEZE, XP_REWARDS } from './gamificationConfig.ts'
 import { GamificationBadge } from './GamificationBadge.tsx'
 import { loadGamificationDashboard, loadPendingGamificationNotifications, markGamificationNotificationsSeen, planStreakPause, type GamificationDashboard } from './gamificationRepository.ts'
@@ -25,14 +26,46 @@ export function LevelProgress({ data, compact = false }: { data: GamificationDas
 }
 
 export function RankDetailView({ data, onBack }: { data: GamificationDashboard; onBack: () => void }) {
-  return <div className="page-stack gamification-detail"><Subheader title="Level & Rank" onBack={onBack} /><Panel eyebrow="Your progress"><LevelProgress data={data} /></Panel><Panel eyebrow="Rank journey" title="Nine ranks · No divisions"><ol className="rank-journey">{RANKS.map((rank) => <li className={rank.id === data.progression.rank.id ? 'is-current' : ''} key={rank.id} aria-current={rank.id === data.progression.rank.id ? 'step' : undefined}><GamificationBadge kind="rank" src={rankAssetPath(rank)} label={`${rank.name} emblem`} size="small" locked={data.progression.level < rank.minLevel} /><span><strong>{rank.name}</strong><small>{rank.minLevel === rank.maxLevel ? `Level ${rank.minLevel}` : `Levels ${rank.minLevel}–${rank.maxLevel}`}</small></span>{rank.id === data.progression.rank.id ? <em>Current</em> : null}</li>)}</ol></Panel><XpRules /><RecentXp data={data} /></div>
+  const { progression } = data
+  const percent = progression.maxLevel ? 100 : Math.min(100, (progression.xpIntoLevel / progression.xpRequiredForNextLevel) * 100)
+  const { playEffect } = useAudio()
+  const [helpOpen, setHelpOpen] = useState(false)
+
+  return <CommandPageFrame className="rank-detail-view" terminalTitle="FITDEX // GAMIFICATION" terminalMeta={`LV ${progression.level}`} headerActions={<button className="cmd-icon-btn" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }} aria-label="How Gamification Works" title="How Gamification Works"><CircleHelp size={15} aria-hidden="true" /></button>}>
+    <header className="rank-detail-header">
+      <button className="rank-detail-back" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back to Progress"><ArrowLeft size={16} aria-hidden="true" /><span>Progress</span></button>
+      <div><h1>Level &amp; Rank</h1><p>Level {progression.level} · {progression.rank.name}</p></div>
+    </header>
+
+    <section className="rank-detail-module rank-detail-current" aria-labelledby="current-rank-title">
+      <h2 id="current-rank-title">Current Rank</h2>
+      <div className="rank-detail-current-body">
+        <span className="rank-detail-current-badge"><GamificationBadge kind="rank" src={rankAssetPath(progression.rank)} label={`${progression.rank.name} rank emblem`} size="large" /></span>
+        <div className="rank-detail-current-copy">
+          <strong>{progression.rank.name} · Level {progression.level}</strong>
+          <small>{progression.maxLevel ? `${progression.totalXp.toLocaleString()} XP · MAX LEVEL` : `${progression.totalXp.toLocaleString()} XP · ${progression.xpIntoLevel.toLocaleString()} / ${progression.xpRequiredForNextLevel.toLocaleString()} TO NEXT LEVEL`}</small>
+          <div className="rank-detail-progress" role="progressbar" aria-label={progression.maxLevel ? 'Maximum level reached' : `Level ${progression.level} XP progress`} aria-valuemin={0} aria-valuemax={progression.maxLevel ? 100 : progression.xpRequiredForNextLevel} aria-valuenow={progression.maxLevel ? 100 : progression.xpIntoLevel}><i style={{ width: `${percent}%` }} /></div>
+        </div>
+      </div>
+    </section>
+
+    <section className="rank-detail-module rank-detail-journey" aria-labelledby="rank-journey-title">
+      <h2 id="rank-journey-title">Rank Journey</h2>
+      <ol className="rank-journey">{RANKS.map((rank) => {
+        const isCurrent = rank.id === progression.rank.id
+        const isFuture = progression.level < rank.minLevel
+        return <li className={`${isCurrent ? 'is-current ' : ''}${isFuture ? 'is-future' : ''}`.trim()} key={rank.id} aria-current={isCurrent ? 'step' : undefined}>
+          <GamificationBadge kind="rank" src={rankAssetPath(rank)} label={`${rank.name} emblem`} size="small" locked={isFuture} />
+          <span><strong>{rank.name}</strong><small>{rank.minLevel === rank.maxLevel ? `Level ${rank.minLevel}` : `Levels ${rank.minLevel}–${rank.maxLevel}`}</small></span>
+          {isCurrent ? <em>Current</em> : null}
+        </li>
+      })}</ol>
+    </section>
+    {helpOpen ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setHelpOpen(false)} /> : null}
+  </CommandPageFrame>
 }
 
 export function XpRules() { return <Panel eyebrow="How you earn XP"><dl className="xp-rules"><div><dt>Planned Routine</dt><dd>+30</dd></div><div><dt>Workout Day</dt><dd>+30</dd></div><div><dt>Unplanned Workout</dt><dd>+20</dd></div><div><dt>New Personal Record</dt><dd>+15</dd></div><div><dt>Full Food Log</dt><dd>+5</dd></div><div><dt>Calorie Target</dt><dd>+5</dd></div><div><dt>Protein Target</dt><dd>+5</dd></div><div><dt>Achievement Unlocked</dt><dd>+50</dd></div></dl></Panel> }
-
-function RecentXp({ data }: { data: GamificationDashboard }) { return <Panel eyebrow="Recent XP">{data.xpEvents.length ? <ul className="recent-xp">{data.xpEvents.slice(0, 10).map((event) => <li key={event.id}><span><strong>{xpEventLabel(event)}</strong><small>{new Date(event.occurredAt).toLocaleString()}</small></span><b>+{event.amount}</b></li>)}</ul> : <p>No XP earned yet.</p>}</Panel> }
-
-function xpEventLabel(event: GamificationDashboard['xpEvents'][number]) { if (event.type === 'personal_record') return `${event.metadata?.exerciseName ?? 'Exercise'} PR`; if (event.type === 'full_food_log') return 'All four meals logged'; if (event.type === 'achievement_unlock') return `Achievement: ${event.metadata?.name ?? 'Unlocked'}`; return String(event.metadata?.name ?? event.type.replaceAll('_', ' ')) }
 
 export function FreezeSnowflakeIcon({ className }: { className?: string }) {
   return (
@@ -56,17 +89,12 @@ export function StreakDetailView({ data, onBack, onChanged }: { data: Gamificati
   useEffect(() => { void loadFirstUseGuidance().then((guidance) => setShowFirstUse(!guidance.streakProtection)) }, [])
   if (showFirstUse) {
     return (
-      <div className="page-stack gamification-detail">
-        <div className="consistency-deck-header">
-          <button className="consistency-deck-back-btn" type="button" onClick={() => { playEffect('select'); onBack() }}>
-            ‹ Back to Home
-          </button>
-          <span className="consistency-deck-title">CONSISTENCY DECK</span>
-        </div>
+      <CommandPageFrame className="consistency-deck" terminalTitle="FITDEX // CONSISTENCY" terminalMeta="STREAK PROTECTION">
+        <ConsistencyDeckHeader onBack={() => { playEffect('select'); onBack() }} />
         <ContextRail title="Streak protection" actions={<button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('streakProtection'); setShowFirstUse(false) }}>View My Streak</button>}>
           <p>Freezes cover one missed planned day automatically. Travel / Sickness Pause protects 1–7 days without progress or Freeze use.</p>
         </ContextRail>
-      </div>
+      </CommandPageFrame>
     )
   }
   const successfulCount = data.snapshots.filter((snapshot) => snapshot.result === 'success').length
@@ -74,74 +102,66 @@ export function StreakDetailView({ data, onBack, onChanged }: { data: Gamificati
   const nextFreezePercent = (nextFreezeProgress / SUCCESSFUL_DAYS_PER_FREEZE) * 100
 
   return (
-    <div className="page-stack consistency-deck">
-      <div className="consistency-deck-header">
-        <button className="consistency-deck-back-btn" type="button" onClick={() => { playEffect('select'); onBack() }}>
-          ‹ Back to Home
-        </button>
-        <span className="consistency-deck-title">CONSISTENCY DECK</span>
-      </div>
+    <CommandPageFrame className="consistency-deck" terminalTitle="FITDEX // CONSISTENCY" terminalMeta="STREAK PROTECTION">
+      <ConsistencyDeckHeader onBack={() => { playEffect('select'); onBack() }} />
 
-      <div className="consistency-hero-box">
-        <p className="consistency-hero-eyebrow">CURRENT PLAN STREAK</p>
-        <strong className="consistency-hero-val">{data.streak.current}</strong>
-        <span className="consistency-hero-meta">BEST STREAK · {data.streak.best} {data.streak.best === 1 ? 'DAY' : 'DAYS'}</span>
-      </div>
+      <section className="consistency-streak-card">
+        <p>CURRENT PLAN STREAK</p>
+        <strong>{data.streak.current} {data.streak.current === 1 ? 'DAY' : 'DAYS'}</strong>
+        <small>BEST · {data.streak.best} {data.streak.best === 1 ? 'DAY' : 'DAYS'}</small>
+      </section>
 
-      <section className="consistency-deck-section">
+      <section className="consistency-deck-module consistency-protection-card">
         <h2 className="consistency-deck-heading">FREEZE PROTECTION</h2>
-        <div className="freeze-balance-row">
-          <FreezeSnowflakeIcon className="freeze-snowflake-icon" />
-          <strong>{data.freezeBalance} {data.freezeBalance === 1 ? 'FREEZE AVAILABLE' : 'FREEZES AVAILABLE'}</strong>
-        </div>
-        <p className="consistency-deck-copy">
-          Freezes are applied automatically when a planned workout day is missed. Balance is unlimited and never expires.
-        </p>
+        <article className="consistency-detail-card freeze-balance-card">
+          <span className="consistency-card-icon"><FreezeSnowflakeIcon className="freeze-snowflake-icon" /></span>
+          <span className="consistency-card-copy"><small>FREEZE BALANCE</small><strong>{data.freezeBalance} {data.freezeBalance === 1 ? 'FREEZE AVAILABLE' : 'FREEZES AVAILABLE'}</strong><p>Applied automatically after a missed planned day.</p></span>
+          {data.freezeBalance > 0 ? <em className="consistency-ready-state">READY</em> : null}
+        </article>
+        <article className="consistency-detail-card next-freeze-card">
+          <span className="consistency-card-icon"><ShieldCheck aria-hidden="true" /></span>
+          <span className="consistency-card-copy"><small>NEXT FREEZE</small><strong>{nextFreezeProgress} / {SUCCESSFUL_DAYS_PER_FREEZE} successful days</strong></span>
+          <span className="consistency-progress-value">{Math.round(nextFreezePercent)}%</span>
+          <div className="consistency-freeze-progress" role="progressbar" aria-label="Progress to next Streak Freeze" aria-valuemin={0} aria-valuemax={SUCCESSFUL_DAYS_PER_FREEZE} aria-valuenow={nextFreezeProgress}><i style={{ width: `${nextFreezePercent}%` }} /></div>
+          <small className="consistency-helper">+1 Freeze every {SUCCESSFUL_DAYS_PER_FREEZE} successful planned training days.</small>
+        </article>
       </section>
 
-      <section className="consistency-deck-section">
-        <h2 className="consistency-deck-heading">NEXT FREEZE PROGRESS</h2>
-        <div className="home-hero-xp" role="progressbar" aria-label="Progress to next Streak Freeze" aria-valuemin={0} aria-valuemax={SUCCESSFUL_DAYS_PER_FREEZE} aria-valuenow={nextFreezeProgress}>
-          <i style={{ width: `${nextFreezePercent}%` }} />
-        </div>
-        <p className="consistency-deck-progress-meta">
-          <strong>{nextFreezeProgress} / {SUCCESSFUL_DAYS_PER_FREEZE}</strong> successful planned training days toward next Freeze
-        </p>
-        <small className="consistency-deck-subcopy">
-          +1 Freeze is earned every {SUCCESSFUL_DAYS_PER_FREEZE} successful planned training days.
-        </small>
-      </section>
-
-      <section className="consistency-deck-section">
+      <section className="consistency-deck-module consistency-pause-section">
         <h2 className="consistency-deck-heading">TRAVEL / SICKNESS PAUSE</h2>
         {data.activePause ? (
           <div className="active-pause-card">
             <strong>{data.activePause.reason === 'travel' ? 'TRAVEL PAUSE ACTIVE' : 'SICKNESS PAUSE ACTIVE'}</strong>
             <p>{data.activePause.startDate} to {data.activePause.endDate}</p>
-            <small>Streak is protected from interruptions. XP and daily mission progress are paused.</small>
+            <small>Streak protected. XP and daily mission progress are paused.</small>
           </div>
         ) : null}
-        <p className="consistency-deck-copy">
-          Protect 1–7 consecutive days for travel or sickness without losing the Plan Streak or consuming a Freeze.
-        </p>
-        <p className="consistency-deck-meta">
-          Maximum {MAX_PAUSE_DAYS} days · {MAX_PAUSES_PER_ROLLING_YEAR} uses per rolling 12 months.
-        </p>
-        <p className="consistency-deck-allowance">
-          Pauses available: {data.pauseUsesRemaining} / {MAX_PAUSES_PER_ROLLING_YEAR}
-        </p>
+        <article className="consistency-detail-card pause-allowance-card">
+          <span className="consistency-card-icon"><ShieldCheck aria-hidden="true" /></span>
+          <span className="consistency-card-copy"><small>PAUSE ALLOWANCE</small><strong>{data.pauseUsesRemaining} / {MAX_PAUSES_PER_ROLLING_YEAR} pauses available</strong><p>Protect 1–{MAX_PAUSE_DAYS} days for travel or sickness. No Freeze use. Plan Streak stays intact.</p></span>
+          <span className="consistency-policy">Max {MAX_PAUSE_DAYS} days · rolling 12 months</span>
+        </article>
         <button
           className="pause-action-btn"
           type="button"
           disabled={!data.pauseUsesRemaining}
           onClick={() => { playEffect('select'); setPauseOpen(true) }}
         >
-          PLAN A PAUSE ›
+          PLAN A PAUSE <span aria-hidden="true">›</span>
         </button>
       </section>
 
       {pauseOpen ? <PauseDialog onClose={() => setPauseOpen(false)} onSaved={async () => { setPauseOpen(false); onChanged(await loadGamificationDashboard()) }} /> : null}
-    </div>
+    </CommandPageFrame>
+  )
+}
+
+function ConsistencyDeckHeader({ onBack }: { onBack: () => void }) {
+  return (
+    <header className="consistency-deck-header">
+      <button className="consistency-deck-back-btn" type="button" onClick={onBack}>‹ HOME</button>
+      <div><h1>CONSISTENCY DECK</h1><p>Plan protection and recovery.</p></div>
+    </header>
   )
 }
 
@@ -177,7 +197,7 @@ function PauseDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   const openPicker = (e: React.MouseEvent<HTMLInputElement> | React.FocusEvent<HTMLInputElement>) => {
     try {
       e.currentTarget.showPicker?.()
-    } catch {}
+    } catch { }
   }
 
   return (
@@ -265,9 +285,42 @@ function PauseDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 export function AchievementsView({ data, onBack }: { data: GamificationDashboard; onBack?: () => void }) {
   const { playEffect } = useAudio()
   const [category, setCategory] = useState<'ALL' | AchievementCategory>('ALL')
-  const rows = data.achievements.filter((entry) => category === 'ALL' || entry.definition.category === category)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const rows = unlockedFirst(data.achievements.filter((entry) => category === 'ALL' || entry.definition.category === category))
   const unlockedCount = data.unlocks.length
-  return <div className="page-stack achievements-page">{onBack ? <Subheader title="Achievements" onBack={onBack} /> : null}<Panel eyebrow="Achievements" title={`${unlockedCount} / 52 unlocked`}><div className="gamification-progress" role="progressbar" aria-label="Achievement completion" aria-valuemin={0} aria-valuemax={52} aria-valuenow={unlockedCount}><i style={{ width: `${(unlockedCount / 52) * 100}%` }} /></div><p>{Math.round((unlockedCount / 52) * 100)}% complete</p></Panel><div className="achievement-filters" role="group" aria-label="Achievement category">{(['ALL', ...ACHIEVEMENT_CATEGORIES] as const).map((filter) => <button type="button" key={filter} aria-pressed={category === filter} onClick={() => { playEffect('select'); setCategory(filter) }}>{filter === 'EXERCISE_DEX' ? 'Exercise Dex' : titleCase(filter)}</button>)}</div><section className="achievement-grid" aria-label="Achievements">{rows.map(({ definition, unlocked, progress }) => { const value = Math.min(progress, definition.target); return <article className={`panel achievement-card${unlocked ? ' is-unlocked' : ' is-locked'}`} key={definition.id}><GamificationBadge kind="achievement" src={achievementAssetPath(definition.id)} label={definition.name} locked={!unlocked} /><div><p className="eyebrow">{titleCase(definition.category)}</p><h2>{definition.name}</h2><p>{definition.description}</p>{unlocked ? <small>Unlocked {new Date(unlocked.unlockedAt).toLocaleDateString()}</small> : definition.dormant ? <small>Locked · nutrition targets not configured</small> : <><div className="gamification-progress" role="progressbar" aria-label={`${definition.name} progress`} aria-valuemin={0} aria-valuemax={definition.target} aria-valuenow={value}><i style={{ width: `${(value / definition.target) * 100}%` }} /></div><small>{formatProgress(value)} / {formatProgress(definition.target)}</small></>}</div></article> })}</section></div>
+  const total = data.achievements.length
+  const completionPercent = total ? Math.round((unlockedCount / total) * 100) : 0
+
+  return <CommandPageFrame className="achievement-archive-page" terminalTitle="FITDEX // GAMIFICATION" terminalMeta={`${unlockedCount} / ${total}`} headerActions={<button className="cmd-icon-btn" type="button" onClick={() => { playEffect('select'); setHelpOpen(true) }} aria-label="How Gamification Works" title="How Gamification Works"><CircleHelp size={15} aria-hidden="true" /></button>}>
+    <header className="achievement-archive-header">
+      {onBack ? <button className="achievement-archive-back" type="button" onClick={() => { playEffect('select'); onBack() }} aria-label="Back to Progress"><ArrowLeft size={16} aria-hidden="true" /><span>Progress</span></button> : null}
+      <div><h1>Achievements</h1><p>{unlockedCount} unlocked · {completionPercent}% complete.</p></div>
+    </header>
+
+    <section className="achievement-archive-progress" aria-labelledby="achievement-progress-title">
+      <h2 id="achievement-progress-title">Archive Progress</h2>
+      <div className="achievement-archive-progress-body">
+        <strong>{unlockedCount} / {total}</strong>
+        <small>Keep building your record</small>
+        <div className="achievement-archive-meter" role="progressbar" aria-label="Achievement completion" aria-valuemin={0} aria-valuemax={total} aria-valuenow={unlockedCount}><i style={{ width: `${completionPercent}%` }} /></div>
+        <div className="achievement-filters" role="group" aria-label="Achievement category">{(['ALL', ...ACHIEVEMENT_CATEGORIES] as const).map((filter) => <button type="button" key={filter} aria-pressed={category === filter} onClick={() => { playEffect('select'); setCategory(filter) }}>{filter === 'EXERCISE_DEX' ? 'Exercise Dex' : titleCase(filter)}</button>)}</div>
+      </div>
+    </section>
+
+    <section className="achievement-archive-module" aria-labelledby="achievement-archive-title">
+      <h2 id="achievement-archive-title">Achievement Archive</h2>
+      <div className="achievement-grid" aria-label="Achievements">{rows.map(({ definition, unlocked, progress }) => {
+        const value = Math.min(progress, definition.target)
+        const status = unlocked ? new Date(unlocked.unlockedAt).toLocaleDateString() : definition.dormant ? 'Locked' : `${formatProgress(value)} / ${formatProgress(definition.target)}`
+        return <article className={`achievement-card${unlocked ? ' is-unlocked' : ' is-locked'}`} key={definition.id}>
+          <GamificationBadge kind="achievement" src={achievementAssetPath(definition.id)} label={definition.name} locked={!unlocked} />
+          <div className="achievement-card-copy"><h3>{definition.name}</h3><p><span>{titleCase(definition.category)}</span> · {definition.description}</p>{!unlocked && !definition.dormant ? <div className="achievement-card-meter" role="progressbar" aria-label={`${definition.name} progress`} aria-valuemin={0} aria-valuemax={definition.target} aria-valuenow={value}><i style={{ width: `${(value / definition.target) * 100}%` }} /></div> : null}</div>
+          <small className="achievement-card-status">{status}</small>
+        </article>
+      })}</div>
+    </section>
+    {helpOpen ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setHelpOpen(false)} /> : null}
+  </CommandPageFrame>
 }
 
 export function GamificationNotificationDialog() {
@@ -324,7 +377,6 @@ function AchievementUnlockList({ unlocks }: { unlocks: Awaited<ReturnType<typeof
   })}</ul>
 }
 
-export function GamificationHelpButton({ variant = 'default' }: { variant?: 'default' | 'settings-row' }) { const [open, setOpen] = useState(false); const { playEffect } = useAudio(); return <><button className={variant === 'settings-row' ? 'settings-row' : 'page-help-button'} type="button" onClick={() => { playEffect('select'); setOpen(true) }}>{variant === 'settings-row' ? <><span className="settings-row-copy"><strong>Gamification Guide</strong><small>XP rules and progress</small></span><span className="settings-row-value">Open<span className="settings-chev" aria-hidden="true">›</span></span></> : <><CircleHelp size={18} aria-hidden="true" /> How Gamification Works</>}</button>{open ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setOpen(false)} /> : null}</> }
-function Subheader({ title, onBack }: { title: string; onBack: () => void }) { const { playEffect } = useAudio(); return <header className="progress-subheader"><button className="back-button" type="button" aria-label="Back" onClick={() => { playEffect('select'); onBack() }}><ArrowLeft aria-hidden="true" /></button><div><p className="eyebrow">Gamification</p><h1>{title}</h1></div></header> }
+export function GamificationHelpButton({ variant = 'default' }: { variant?: 'default' | 'settings-row' }) { const [open, setOpen] = useState(false); const { playEffect } = useAudio(); return <><button className={variant === 'settings-row' ? 'settings-row' : 'page-help-button'} type="button" onClick={() => { playEffect('select'); setOpen(true) }}>{variant === 'settings-row' ? <><span className="settings-row-icon"><CircleHelp size={20} aria-hidden="true" /></span><span className="settings-row-copy"><strong>Gamification Guide</strong><small>XP rules and progress</small></span><span className="settings-row-value">Open</span><ChevronRight className="settings-row-chevron" size={17} strokeWidth={2.25} aria-hidden="true" /></> : <><CircleHelp size={18} aria-hidden="true" /> How Gamification Works</>}</button>{open ? <GuideDialog eyebrow="Fitness consistency" steps={gamificationHelpSteps} onClose={() => setOpen(false)} /> : null}</> }
 function titleCase(value: string) { return value.toLowerCase().replaceAll('_', ' ').replace(/(^|\s)\S/g, (letter) => letter.toUpperCase()) }
 function formatProgress(value: number) { return Number.isInteger(value) ? value.toLocaleString() : value.toFixed(1) }

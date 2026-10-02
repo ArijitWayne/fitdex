@@ -16,11 +16,11 @@ assert.throws(() => assertReleaseBranchAndClean({ run: () => ' M package.json' }
 assert.throws(() => assertReleaseBranchAndClean({ run: (_command, args) => args[1] === '--show-current' ? 'main' : '' }))
 assert.deepEqual(
   await getReleasePlan({ type: 'patch', firstRelease: false }),
-  { currentVersion: '1.1.1', currentVersionCode: 5, version: '1.1.2', versionCode: 6, tag: 'v1.1.2', apk: 'fitdex.1.1.2.apk', checksum: 'fitdex.1.1.2.apk.sha256' },
+  { currentVersion: '2.0.0', currentVersionCode: 6, version: '2.0.1', versionCode: 7, tag: 'v2.0.1', apk: 'fitdex.2.0.1.apk', checksum: 'fitdex.2.0.1.apk.sha256' },
 )
 assert.deepEqual(
   await getReleasePlan({ firstRelease: true }),
-  { currentVersion: '1.1.1', currentVersionCode: 5, version: '1.1.1', versionCode: 6, tag: 'v1.1.1', apk: 'fitdex.1.1.1.apk', checksum: 'fitdex.1.1.1.apk.sha256' },
+  { currentVersion: '2.0.0', currentVersionCode: 6, version: '2.0.0', versionCode: 7, tag: 'v2.0.0', apk: 'fitdex.2.0.0.apk', checksum: 'fitdex.2.0.0.apk.sha256' },
 )
 assert.equal(parseVersionCode('versionCode 3'), 3)
 assert.deepEqual(artifactNames('1.0.1'), { apk: 'fitdex.1.0.1.apk', checksum: 'fitdex.1.0.1.apk.sha256' })

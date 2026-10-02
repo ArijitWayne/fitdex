@@ -1,11 +1,11 @@
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleHelp, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { liveQuery } from 'dexie'
-import { PageFrame } from '../components/layout/PageFrame'
+import { CommandPageFrame } from '../components/layout/CommandPageFrame'
+import { CollapsibleModule } from '../components/ui/CollapsibleModule'
 import { ContextRail } from '../components/ui/ContextRail'
 import { RetroLoader } from '../components/ui/RetroLoader'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
-import { FOOD_MEALS } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
 import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getFrequentFoods, getRecentFoods, listCustomCategories, listFoodEntries, listMealEntries, searchRememberedFoods, type FoodDraft } from '../features/food/foodRepository'
 import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, type NutritionBreakdown } from '../features/food/foodModel'
@@ -20,6 +20,8 @@ import { calculateRmr, calculateTdee, evaluateCalorieDay, evaluateProteinDay } f
 import { loadGamificationDashboard, type GamificationDashboard } from '../features/gamification/gamificationRepository'
 import { isLocalToday } from '../utils/localDate'
 import { acknowledgeFirstUse, loadFirstUseGuidance } from '../features/help/firstUseGuidance'
+
+const CANONICAL_MEAL_ORDER: readonly FoodMeal[] = ['breakfast', 'lunch', 'dinner', 'supper'] as const
 
 type View =
   | { kind: 'overview' }
@@ -88,13 +90,16 @@ function TargetMetric({ label, current, target, unit, difference, status, semant
   const usableTarget = Number.isFinite(target) && target > 0
   const percent = usableTarget ? Math.min(100, Math.max(0, (current / target) * 100)) : 0
   const differenceCopy = usableTarget ? difference >= 0 ? `${difference} ${unit} remaining` : `${Math.abs(difference)} ${unit} ${unit === 'g' ? 'over target' : 'over'}` : 'Target unavailable'
-  return <section className={`daily-target-metric${semantic ? ` is-${semantic}` : ''}${usableTarget ? '' : ' is-unavailable'}`}>
-    <header><p className="eyebrow">{label}</p><b>{status}</b></header>
-    <strong>{Math.round(current)}{usableTarget ? ` / ${Math.round(target)} ${unit}` : ` ${unit}`}</strong>
-    <small>{differenceCopy}</small>
-    {usableTarget ? <div className="gamification-progress" role="progressbar" aria-label={`${label}: ${Math.round(current)} of ${Math.round(target)} ${unit}`} aria-valuemin={0} aria-valuemax={target} aria-valuenow={current}><i style={{ width: `${percent}%` }} /></div> : <div className="gamification-progress is-unavailable" aria-hidden="true"><i /></div>}
+  return <div className={`food-target-cell daily-target-metric${semantic ? ` is-${semantic}` : ''}${usableTarget ? '' : ' is-unavailable'}`}>
+    <div className="food-target-top">
+      <p className="eyebrow">{label}</p>
+      <b className="food-target-status-label">{status}</b>
+    </div>
+    <strong>{Math.round(current)}{usableTarget ? <small className="food-target-sub"> / {Math.round(target)} {unit}</small> : ` ${unit}`}</strong>
+    <small className="food-target-diff">{differenceCopy}</small>
+    {usableTarget ? <div className="food-bar-track gamification-progress" role="progressbar" aria-label={`${label}: ${Math.round(current)} of ${Math.round(target)} ${unit}`} aria-valuemin={0} aria-valuemax={target} aria-valuenow={current}><div className="food-bar-fill" style={{ width: `${percent}%` }} /></div> : <div className="food-bar-track gamification-progress is-unavailable" aria-hidden="true"><div className="food-bar-fill" /></div>}
     {onInfo ? <button className="daily-target-status" type="button" onClick={onInfo}>View calorie details</button> : null}
-  </section>
+  </div>
 }
 
 function DailyTargetsCard({ targets, totals, onEdit, onLog }: { targets: NutritionTargets; totals: FoodNutrition; onEdit: () => void; onLog: () => void }) {
@@ -114,13 +119,25 @@ function DailyTargetsCard({ targets, totals, onEdit, onLog }: { targets: Nutriti
   const proteinStatus = !proteinTargetUsable ? 'Target unavailable' : proteinDay.achievementEligible ? 'Target achieved' : 'In progress'
 
   return <>
-    <section className="panel food-goal-command" aria-labelledby="daily-targets-title">
-      <header><div><p className="eyebrow" id="daily-targets-title">Daily command</p><h2>Calories and protein</h2></div><button className="text-button" type="button" onClick={() => { playEffect('select'); onEdit() }}>Edit targets</button></header>
-      <div className="food-goal-grid">
+    <section className="food-goal-command proto-primary-card" aria-labelledby="daily-targets-title">
+      <div className="proto-card-top">
+        <div className="proto-card-tag-wrap">
+          <span className="proto-card-tag" id="daily-targets-title">Today's Nutrition</span>
+          <span className="eyebrow sr-only">Daily command</span>
+          <h2 className="sr-only">Calories and protein</h2>
+        </div>
+        <div className="proto-card-top-right">
+          <span className={`proto-card-badge${calorieSemantic ? ` is-${calorieSemantic}` : ''}`}>
+            {statusCopy[calorie.status]}
+          </span>
+          <button className="text-button food-edit-targets" type="button" onClick={() => { playEffect('select'); onEdit() }}>Edit</button>
+        </div>
+      </div>
+      <div className="food-target-grid food-goal-grid">
         <TargetMetric label="Calories" current={calories} target={targets.calorieTarget} unit="kcal" difference={calorieDifference} status={statusCopy[calorie.status]} semantic={calorieSemantic} onInfo={() => { playEffect('select'); setDetailsOpen(true) }} />
         <TargetMetric label="Protein" current={protein} target={targets.proteinTargetGrams} unit="g" difference={proteinDifference} status={proteinStatus} semantic={proteinDay.achievementEligible ? 'success' : undefined} />
       </div>
-      <button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={18} aria-hidden="true" /> Log Food</button>
+      <button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={16} aria-hidden="true" /> Log Food</button>
       <p className="food-goal-command-note">{calorie.status === 'above_target' ? 'Daily intake is above calorie target. Review the meal log for context.' : calories === 0 ? 'No food logged yet. Start with any meal.' : 'Calories and protein lead. Full nutrition stays available below.'}</p>
     </section>
     {detailsOpen ? <div className="food-dialog-backdrop"><section className="food-dialog target-status-dialog" role="dialog" aria-modal="true" aria-labelledby="target-status-title"><header><div><p className="eyebrow">Daily targets</p><h2 id="target-status-title">{statusCopy[calorie.status]}</h2></div><button type="button" aria-label="Close target details" onClick={() => { playEffect('select'); setDetailsOpen(false) }}><X /></button></header><dl className="target-detail-list"><div><dt>Your target</dt><dd>{targets.calorieTarget} kcal</dd></div><div><dt>You consumed</dt><dd>{Math.round(calories)} kcal</dd></div><div><dt>Estimated maintenance</dt><dd>≈ {tdee} kcal</dd></div>{targets.goal === 'lose' ? <div><dt>Estimated deficit</dt><dd>≈ {Math.round(calorie.estimatedDeficit)} kcal</dd></div> : null}</dl><p>{calorie.status === 'target_achieved' ? "You're within your planned calorie range for today." : calorie.status === 'below_target_outer' ? "You're below your planned target today. Staying closer to your planned intake is generally more consistent with your target." : calorie.status === 'too_far_below' ? 'Your logged intake is significantly below your estimated energy needs today. FitDex does not count this toward calorie-target progress.' : calorie.status === 'below_safety_floor' ? 'Your logged intake is very low today. FitDex does not count this toward calorie-target progress.' : "You're outside your calorie target range today. This does not count toward calorie-target progress."}</p><p className="muted">Calorie needs are estimates. FitDex is not medical advice.</p><button className="primary-button" type="button" onClick={() => { playEffect('select'); setDetailsOpen(false) }}>Continue</button></section></div> : null}
@@ -128,7 +145,7 @@ function DailyTargetsCard({ targets, totals, onEdit, onLog }: { targets: Nutriti
 }
 
 function TargetsOffCard({ totals, onLog }: { totals: FoodNutrition; onLog: () => void }) {
-  return <section className="panel food-goal-command is-targets-off" aria-labelledby="daily-logged-title"><header><div><p className="eyebrow" id="daily-logged-title">Daily logged</p><h2>Targets off</h2></div></header><MacroStrip nutrition={totals} /><button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={18} aria-hidden="true" /> Log Food</button></section>
+  return <section className="food-goal-command proto-primary-card is-targets-off" aria-labelledby="daily-logged-title"><div className="proto-card-top"><span className="proto-card-tag" id="daily-logged-title">Today's Nutrition</span><span className="proto-card-badge">Targets Off</span></div><MacroStrip nutrition={totals} /><button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={16} aria-hidden="true" /> Log Food</button></section>
 }
 
 export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
@@ -138,7 +155,6 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const [entriesLoading, setEntriesLoading] = useState(true)
   const [view, setView] = useState<View>({ kind: 'overview' })
   const [tutorialOpen, setTutorialOpen] = useState(false)
-  const [nutritionOpen, setNutritionOpen] = useState(false)
   const [targets, setTargets] = useState<NutritionTargets>()
   const [gamification, setGamification] = useState<GamificationDashboard>()
   const [showFoodLanding, setShowFoodLanding] = useState(false)
@@ -168,75 +184,500 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const openAdd = (meal: FoodMeal) => { playEffect('select'); setView({ kind: 'add', meal }) }
 
   if (view.kind === 'add') return <FoodEditor date={date} meal={view.meal} editing={view.editing} onBack={() => { playEffect('select'); setView({ kind: 'meal', meal: view.meal }) }} onSaved={async (notice) => { await refresh(); setView({ kind: 'meal', meal: view.meal, notice }) }} />
-  if (view.kind === 'meal') return <MealDetail date={date} meal={view.meal} entries={entries.filter((entry) => entry.meal === view.meal)} notice={view.notice} onBack={() => { playEffect('select'); setView({ kind: 'overview' }) }} onAdd={() => openAdd(view.meal)} onEdit={(editing) => { playEffect('select'); setView({ kind: 'add', meal: view.meal, editing }) }} onChanged={refresh} />
+  if (view.kind === 'meal') return <MealDetail date={date} meal={view.meal} entries={entries.filter((entry) => entry.meal === view.meal)} notice={view.notice} onBack={() => { playEffect('select'); setView({ kind: 'overview' }) }} onSelectMeal={(m) => { playEffect('select'); setView({ kind: 'meal', meal: m }) }} onAdd={() => openAdd(view.meal)} onEdit={(editing) => { playEffect('select'); setView({ kind: 'add', meal: view.meal, editing }) }} onOpenHelp={() => { playEffect('select'); setTutorialOpen(true) }} onChanged={refresh} />
 
-  return <PageFrame className="page-stack food-page" data-food-design="goal-first">
-    <header className="food-header">
-      <div className="food-header-title">
-        <div><p className="eyebrow">Nutrition hub</p><h1>Food</h1></div>
-        <div className="food-header-meta">
-          {gamification ? <span className="workout-level-badge">Level {gamification.progression.level}</span> : null}
-          <button className="food-today-button" type="button" disabled={isLocalToday(date)} onClick={() => navigateDate(normalizeDate(new Date()))}>Today</button>
-          <button className="workout-hub-help cmd-icon-btn page-help-btn" type="button" aria-label="How Food Works" title="How Food Works" onClick={() => { playEffect('select'); setTutorialOpen(true) }}><CircleHelp size={18} aria-hidden="true" /></button>
+  const macrosSummary = `${Math.round(totals.carbs ?? 0)}g C · ${Math.round(totals.protein ?? 0)}g P · ${Math.round(totals.fat ?? 0)}g F · ${Math.round(totals.kcal ?? 0)} kcal`
+  const terminalDate = new Date()
+  const terminalMeta = `${gamification ? `LV ${gamification.progression.level} · ` : ''}${terminalDate.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' }).replace(/,/g, '').toUpperCase()}`
+
+  return (
+    <CommandPageFrame className="page-stack food-page"
+      data-food-design="goal-first"
+      terminalTitle="FITDEX // NUTRITION TERMINAL"
+      terminalMeta={terminalMeta}
+      headerActions={
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            className="food-today-button"
+            type="button"
+            style={{ padding: '2px 6px', fontSize: '0.62rem', height: '22px' }}
+            disabled={isLocalToday(date)}
+            onClick={() => navigateDate(normalizeDate(new Date()))}
+          >
+            Today
+          </button>
+          <button
+            className="workout-hub-help cmd-icon-btn page-help-btn"
+            type="button"
+            aria-label="How Food Works"
+            title="How Food Works"
+            onClick={() => {
+              playEffect('select')
+              setTutorialOpen(true)
+            }}
+          >
+            <CircleHelp size={16} aria-hidden="true" />
+          </button>
         </div>
+      }
+    >
+      <div className="food-date-nav" style={{ margin: '0 0 4px' }}>
+        <button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}>
+          <ChevronLeft />
+        </button>
+        <span>
+          <strong>{formatDate(date)}</strong>
+          <small>{isLocalToday(date) ? 'Today' : 'Selected day'}</small>
+        </span>
+        <button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}>
+          <ChevronRight />
+        </button>
       </div>
-      <div className="food-date-nav"><button type="button" aria-label="Previous day" onClick={() => navigateDate(shiftDate(date, -1))}><ChevronLeft /></button><span><strong>{formatDate(date)}</strong><small>{isLocalToday(date) ? 'Today' : 'Selected day'}</small></span><button type="button" aria-label="Next day" onClick={() => navigateDate(shiftDate(date, 1))}><ChevronRight /></button></div>
-    </header>
-    {entriesLoading ? <section className="panel food-loading"><RetroLoader label="LOADING NUTRITION..." /></section> : <>
-      {showFoodLanding ? <ContextRail
-        title={targets?.enabled && targets.calorieTarget > 0 ? 'Log food against your targets' : 'Log food with or without targets'}
-        actions={targets?.enabled && targets.calorieTarget > 0 ? (
-          <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log First Food</button>
-        ) : (
-          <>
-            <button className="primary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); openAdd('breakfast') }}>Log Without Targets</button>
-            {onOpenSettings ? <button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('foodLanding'); setShowFoodLanding(false); onOpenSettings() }}>Set My Targets</button> : null}
-          </>
-        )}
-      >
-        {targets?.enabled && targets.calorieTarget > 0 ? (
-          <p>Calories and protein lead while full nutrition stays available below. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log to reuse a saved snapshot.</p>
-        ) : (
-          <p>Food remains fully usable without targets. Log Breakfast, Lunch, Supper, or Dinner at any time. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log.</p>
-        )}
-      </ContextRail> : null}
-      {showFirstFoodFeedback && entries.length > 0 ? <ContextRail
-        eyebrow="Logged result"
-        title="Your totals updated from real food data"
-        actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('firstFoodFeedback'); setShowFirstFoodFeedback(false) }}>Understood</button>}
-      >
-        {targets?.enabled && targets.calorieTarget > 0 ? (
-          <p>{Math.round(totals.kcal ?? 0)} / {Math.round(targets.calorieTarget)} kcal · {Math.round(totals.protein ?? 0)} / {Math.round(targets.proteinTargetGrams)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.</p>
-        ) : (
-          <p>{Math.round(totals.kcal ?? 0)} kcal · {Math.round(totals.protein ?? 0)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.</p>
-        )}
-      </ContextRail> : null}
-      {targets?.enabled && targets.calorieTarget > 0 ? <DailyTargetsCard targets={targets} totals={totals} onEdit={() => onOpenSettings?.()} onLog={() => openAdd('breakfast')} /> : <TargetsOffCard totals={totals} onLog={() => openAdd('breakfast')} />}
-      <section className="food-meals-section" aria-labelledby="food-meals-title"><header><div><p className="eyebrow">Daily checkpoints</p><h2 id="food-meals-title">Meals</h2></div><span>{entries.length} {entries.length === 1 ? 'item' : 'items'} logged</span></header><div className="food-meal-list">{FOOD_MEALS.map((meal) => { const mealEntries = entries.filter((entry) => entry.meal === meal); const mealTotals = nutritionTotals(mealEntries); return <article className="food-meal-card" key={meal}><button className="food-meal-open" type="button" onClick={() => { playEffect('select'); setView({ kind: 'meal', meal }) }}><MealIcon meal={meal} /><span className="food-meal-title"><strong>{FOOD_MEAL_LABELS[meal]}</strong><small>{mealEntries.length ? `${mealEntries.length} ${mealEntries.length === 1 ? 'item' : 'items'} · ${valueOrDash(mealTotals.kcal, 'kcal')} · ${valueOrDash(mealTotals.protein)}` : 'No food logged'}</small><em className={mealEntries.length ? undefined : 'is-empty'}>{mealEntries.length ? 'Logged' : 'Empty'}</em></span><ChevronRight aria-hidden="true" /></button><button className="food-meal-add" type="button" onClick={() => openAdd(meal)}><Plus size={16} aria-hidden="true" /> Add</button></article> })}</div></section>
-      <section className="food-nutrition-details"><button className="food-nutrition-toggle" type="button" aria-expanded={nutritionOpen} onClick={() => setNutritionOpen((open) => !open)}><span><strong>Nutrition Details</strong><small>Carbs · Fat · Fiber · Sugar · Sat. fat · Sodium</small></span>{nutritionOpen ? <ChevronUp /> : <ChevronDown />}</button>{nutritionOpen ? <div className="food-nutrition-content"><MacroStrip nutrition={totals} secondary /><NutritionBreakdownCard key={date} entries={entries} totals={totals} /></div> : null}</section>
-    </>}
-    {tutorialOpen ? <GuideDialog eyebrow="How Food Works" steps={foodTutorialSteps} onClose={() => { setTutorialOpen(false); void markTutorialSeen('food') }} /> : null}
-  </PageFrame>
+
+      {entriesLoading ? (
+        <section className="panel food-loading">
+          <RetroLoader label="LOADING NUTRITION..." />
+        </section>
+      ) : (
+        <>
+          {showFoodLanding ? (
+            <ContextRail
+              title={targets?.enabled && targets.calorieTarget > 0 ? 'Log food against your targets' : 'Log food with or without targets'}
+              actions={
+                targets?.enabled && targets.calorieTarget > 0 ? (
+                  <button
+                    className="primary-button"
+                    type="button"
+                    onClick={() => {
+                      playEffect('select')
+                      void acknowledgeFirstUse('foodLanding')
+                      setShowFoodLanding(false)
+                      openAdd('breakfast')
+                    }}
+                  >
+                    Log First Food
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="primary-button"
+                      type="button"
+                      onClick={() => {
+                        playEffect('select')
+                        void acknowledgeFirstUse('foodLanding')
+                        setShowFoodLanding(false)
+                        openAdd('breakfast')
+                      }}
+                    >
+                      Log Without Targets
+                    </button>
+                    {onOpenSettings ? (
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => {
+                          playEffect('select')
+                          void acknowledgeFirstUse('foodLanding')
+                          setShowFoodLanding(false)
+                          onOpenSettings()
+                        }}
+                      >
+                        Set My Targets
+                      </button>
+                    ) : null}
+                  </>
+                )
+              }
+            >
+              {targets?.enabled && targets.calorieTarget > 0 ? (
+                <p>Calories and protein lead while full nutrition stays available below. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log to reuse a saved snapshot.</p>
+              ) : (
+                <p>Food remains fully usable without targets. Log Breakfast, Lunch, Supper, or Dinner at any time. Use Recent and Frequent for remembered foods, Search to find local entries, or Quick Log.</p>
+              )}
+            </ContextRail>
+          ) : null}
+
+          {showFirstFoodFeedback && entries.length > 0 ? (
+            <ContextRail
+              eyebrow="Logged result"
+              title="Your totals updated from real food data"
+              actions={
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => {
+                    playEffect('select')
+                    void acknowledgeFirstUse('firstFoodFeedback')
+                    setShowFirstFoodFeedback(false)
+                  }}
+                >
+                  Understood
+                </button>
+              }
+            >
+              {targets?.enabled && targets.calorieTarget > 0 ? (
+                <p>
+                  {Math.round(totals.kcal ?? 0)} / {Math.round(targets.calorieTarget)} kcal · {Math.round(totals.protein ?? 0)} / {Math.round(targets.proteinTargetGrams)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.
+                </p>
+              ) : (
+                <p>
+                  {Math.round(totals.kcal ?? 0)} kcal · {Math.round(totals.protein ?? 0)} g protein logged today. Add, edit, or delete entries and totals recalculate automatically.
+                </p>
+              )}
+            </ContextRail>
+          ) : null}
+
+          {/* 1. DAILY TARGETS & SUMMARY (PRIMARY - ALWAYS VISIBLE) */}
+          {targets?.enabled && targets.calorieTarget > 0 ? <DailyTargetsCard targets={targets} totals={totals} onEdit={() => onOpenSettings?.()} onLog={() => openAdd('breakfast')} /> : <TargetsOffCard totals={totals} onLog={() => openAdd('breakfast')} />}
+
+          {/* 2. MEALS LOGGING TILES (PRIMARY - ALWAYS VISIBLE) */}
+          <section className="food-meals-section proto-panel-card" aria-labelledby="food-meals-title">
+            <div className="proto-card-top">
+              <span className="proto-card-tag" id="food-meals-title">{entries.length === 1 ? '1 Meal item logged' : `${entries.length} Meal items logged`}</span>
+            </div>
+            <div className="food-quick-log-grid food-meal-list">
+              {CANONICAL_MEAL_ORDER.map((meal) => {
+                const mealEntries = entries.filter((entry) => entry.meal === meal)
+                const mealTotals = nutritionTotals(mealEntries)
+                return (
+                  <button
+                    key={meal}
+                    className="food-quick-btn food-meal-card"
+                    type="button"
+                    onClick={() => {
+                      playEffect('select')
+                      setView({ kind: 'meal', meal })
+                    }}
+                  >
+                    <MealIcon meal={meal} />
+                    <strong className="food-meal-name">{FOOD_MEAL_LABELS[meal]}</strong>
+                    <small className="food-meal-stat">
+                      {mealEntries.length ? `${Math.round(mealTotals.kcal ?? 0)} kcal` : '+ Log'}
+                    </small>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          {/* 3. NUTRITION BREAKDOWN & MACROS (COLLAPSIBLE DRAWER) */}
+          <CollapsibleModule
+            id="food-macros"
+            title="Nutrition Details &amp; Macro Breakdown"
+            badge="Macros"
+            summary={macrosSummary}
+            defaultExpanded={false}
+          >
+            <div className="food-nutrition-content">
+              <div className="macro-pill-row">
+                <div className="macro-pill">
+                  <strong>{Math.round(totals.carbs ?? 0)}g</strong>
+                  <span>Carbs {totals.kcal ? `(${Math.round(((totals.carbs ?? 0) * 4 / totals.kcal) * 100)}%)` : ''}</span>
+                </div>
+                <div className="macro-pill">
+                  <strong>{Math.round(totals.protein ?? 0)}g</strong>
+                  <span>Protein {totals.kcal ? `(${Math.round(((totals.protein ?? 0) * 4 / totals.kcal) * 100)}%)` : ''}</span>
+                </div>
+                <div className="macro-pill">
+                  <strong>{Math.round(totals.fat ?? 0)}g</strong>
+                  <span>Fat {totals.kcal ? `(${Math.round(((totals.fat ?? 0) * 9 / totals.kcal) * 100)}%)` : ''}</span>
+                </div>
+              </div>
+              <div className="proto-item-row">
+                <div className="proto-item-info">
+                  <strong>Fiber &amp; Micronutrients</strong>
+                  <small>Fiber: {Math.round(totals.fiber ?? 0)}g · Sugar: {Math.round(totals.sugar ?? 0)}g · Sodium: {Math.round(totals.sodium ?? 0)}mg</small>
+                </div>
+                <span className="proto-item-value">Details</span>
+              </div>
+              <MacroStrip nutrition={totals} secondary />
+              <NutritionBreakdownCard key={date} entries={entries} totals={totals} />
+            </div>
+          </CollapsibleModule>
+
+          {/* 4. TODAY'S LOGGED ITEMS (COLLAPSIBLE DRAWER) */}
+          {entries.length > 0 ? (
+            <CollapsibleModule
+              id="food-logged-items"
+              title="Today's Logged Items"
+              badge={`${entries.length} ${entries.length === 1 ? 'Item' : 'Items'}`}
+              summary={CANONICAL_MEAL_ORDER.map((m) => {
+                const count = entries.filter((e) => e.meal === m).length
+                return count ? `${FOOD_MEAL_LABELS[m]} (${count})` : null
+              }).filter(Boolean).join(' · ') || 'No items'}
+              defaultExpanded={false}
+            >
+              <div className="food-logged-list">
+                {entries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="proto-item-row"
+                    onClick={() => {
+                      playEffect('select')
+                      setView({ kind: 'add', meal: entry.meal, editing: entry })
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="proto-item-info">
+                      <strong>{entry.foodName}</strong>
+                      <small>{FOOD_MEAL_LABELS[entry.meal]} · {Math.round(entry.kcal ?? 0)} kcal · {Math.round(entry.protein ?? 0)}g P</small>
+                    </div>
+                    <span className="proto-item-value">Edit</span>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleModule>
+          ) : null}
+        </>
+      )}
+
+      {tutorialOpen ? (
+        <GuideDialog
+          eyebrow="How Food Works"
+          steps={foodTutorialSteps}
+          onClose={() => {
+            setTutorialOpen(false)
+            void markTutorialSeen('food')
+          }}
+        />
+      ) : null}
+    </CommandPageFrame>
+  )
 }
 
-function MealDetail({ date, meal, entries, notice, onBack, onAdd, onEdit, onChanged }: { date: string; meal: FoodMeal; entries: FoodLogEntry[]; notice?: string; onBack: () => void; onAdd: () => void; onEdit: (entry: FoodLogEntry) => void; onChanged: () => Promise<void> }) {
+function MealDetail({
+  date,
+  meal,
+  entries,
+  notice,
+  onBack,
+  onSelectMeal,
+  onAdd,
+  onEdit,
+  onOpenHelp,
+  onChanged,
+}: {
+  date: string
+  meal: FoodMeal
+  entries: FoodLogEntry[]
+  notice?: string
+  onBack: () => void
+  onSelectMeal: (meal: FoodMeal) => void
+  onAdd: () => void
+  onEdit: (entry: FoodLogEntry) => void
+  onOpenHelp?: () => void
+  onChanged: () => Promise<void>
+}) {
   const { playEffect } = useAudio()
   const [pendingDelete, setPendingDelete] = useState<FoodLogEntry>()
   useBackNavigation('food-entry-delete', Boolean(pendingDelete), () => setPendingDelete(undefined), 50)
   const totals = nutritionTotals(entries)
-  const remove = async () => { if (!pendingDelete) return; await deleteFoodLog(pendingDelete.id); setPendingDelete(undefined); await onChanged() }
+  const hasEntries = entries.length > 0
+  const remove = async () => {
+    if (!pendingDelete) return
+    await deleteFoodLog(pendingDelete.id)
+    setPendingDelete(undefined)
+    await onChanged()
+  }
 
-  return <div className="page-stack food-page food-meal-detail">
-    <header className="food-subheader"><button className="back-button" type="button" aria-label="Back to Food" onClick={onBack}><ArrowLeft /></button><MealIcon meal={meal} /><div><p className="eyebrow">{formatDate(date)}</p><h1>{FOOD_MEAL_LABELS[meal]}</h1></div></header>
-    {notice ? <div className="food-success" role="status"><strong>{notice}</strong><span>Stored nutrition snapshot logged unchanged.</span></div> : null}
-    <section className="panel food-meal-totals"><p className="eyebrow">Meal totals</p><MacroStrip nutrition={totals} /><div className="food-meal-secondary"><MacroStrip nutrition={totals} secondary /></div></section>
-    <section className="food-entry-list" aria-label={`${FOOD_MEAL_LABELS[meal]} entries`}>{entries.length ? entries.map((entry) => {
-      const categoryLabel = entry.categoryKind === 'unresolved' ? 'Uncategorized' : entry.categoryName
-      return <article className="food-entry" key={entry.id}><FoodCategoryIcon categoryId={entry.categoryId ?? 'other'} label={categoryLabel} color={entry.customCategoryColor} /><div className="food-entry-copy"><h2>{entry.foodName}</h2><p>{categoryLabel} · {valueOrDash(entry.kcal, 'kcal')} · {valueOrDash(entry.protein)}</p></div><div className="food-entry-actions"><button type="button" aria-label={`Edit ${entry.foodName}`} onClick={() => onEdit(entry)}><Pencil size={18} /></button><button type="button" aria-label={`Delete ${entry.foodName}`} onClick={() => { playEffect('select'); setPendingDelete(entry) }}><Trash2 size={18} /></button></div></article>
-    }) : <div className="panel food-detail-empty"><MealIcon meal={meal} /><h2>No Food Logged</h2><p>Start logging your {FOOD_MEAL_LABELS[meal].toLowerCase()}.</p><button className="primary-button" type="button" onClick={onAdd}><Plus size={18} /> Add Food</button></div>}</section>
-    {entries.length ? <button className="primary-button food-sticky-add" type="button" onClick={onAdd}><Plus size={18} /> Add Food</button> : null}
-    {pendingDelete ? <div className="food-dialog-backdrop"><section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title"><header><div><p className="eyebrow">{FOOD_MEAL_LABELS[meal]} entry</p><h2 id="delete-food-title">Delete Food Entry?</h2></div></header><p>Remove “{pendingDelete.foodName}” from {FOOD_MEAL_LABELS[meal]}?</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section></div> : null}
-  </div>
+  const formatKcal = hasEntries && totals.kcal !== undefined
+    ? `${Math.round(totals.kcal)} KCAL`
+    : (hasEntries ? '0 KCAL' : '— KCAL')
+  const formatProtein = hasEntries && totals.protein !== undefined
+    ? `${totals.protein.toFixed(1).replace(/\.0$/, '')}G PROTEIN`
+    : (hasEntries ? '0G PROTEIN' : '— PROTEIN')
+  const formatCarbs = hasEntries && totals.carbs !== undefined
+    ? `${totals.carbs.toFixed(1).replace(/\.0$/, '')}g`
+    : (hasEntries ? '0g' : '—')
+  const formatFat = hasEntries && totals.fat !== undefined
+    ? `${totals.fat.toFixed(1).replace(/\.0$/, '')}g`
+    : (hasEntries ? '0g' : '—')
+  const formatFiber = hasEntries && totals.fiber !== undefined
+    ? `${totals.fiber.toFixed(1).replace(/\.0$/, '')}g`
+    : (hasEntries ? '0g' : '—')
+  const formatSugar = hasEntries && totals.sugar !== undefined
+    ? `${totals.sugar.toFixed(1).replace(/\.0$/, '')}g`
+    : '—'
+  const formatSatFat = hasEntries && totals.saturatedFat !== undefined
+    ? `${totals.saturatedFat.toFixed(1).replace(/\.0$/, '')}g`
+    : '—'
+  const formatSodium = hasEntries && totals.sodium !== undefined
+    ? `${Math.round(totals.sodium)}mg`
+    : '—'
+
+  return (
+    <CommandPageFrame
+      className="page-stack food-page food-meal-detail"
+      terminalTitle="FITDEX // FOOD LOG"
+      terminalMeta={formatDate(date).toUpperCase()}
+      headerActions={
+        onOpenHelp ? (
+          <button
+            className="workout-hub-help cmd-icon-btn page-help-btn"
+            type="button"
+            aria-label="How Food Works"
+            title="How Food Works"
+            onClick={onOpenHelp}
+          >
+            <CircleHelp size={16} aria-hidden="true" />
+          </button>
+        ) : null
+      }
+    >
+      <header className="proto-subhead">
+        <button className="proto-back" type="button" aria-label="Back to Food" onClick={onBack}>
+          ‹ FOOD
+        </button>
+        <h1>{FOOD_MEAL_LABELS[meal]}</h1>
+        <p>{formatDate(date)}</p>
+      </header>
+
+      {notice ? (
+        <div className="food-success" role="status">
+          <strong>{notice}</strong>
+          <span>Stored nutrition snapshot logged unchanged.</span>
+        </div>
+      ) : null}
+
+      <section className="proto-module is-primary is-wide food-meal-totals-module">
+        <header className="proto-module-head">
+          <h2>Meal totals</h2>
+        </header>
+        <div className="proto-module-body">
+          <div className="proto-meal-head">
+            <div className="proto-meal-slot">
+              <img className="proto-meal-art" src={`/food/meals/meal-${meal}.webp`} alt="" />
+            </div>
+            <div className="proto-status">
+              <strong>{formatKcal}</strong>
+              <small>{formatProtein}</small>
+            </div>
+          </div>
+          <div className="proto-data">
+            <div><b>{formatCarbs}</b><small>CARBS</small></div>
+            <div><b>{formatFat}</b><small>FAT</small></div>
+            <div><b>{formatFiber}</b><small>FIBER</small></div>
+          </div>
+          <small className="proto-secondary-nutrients">
+            Sugar {formatSugar} · Sat fat {formatSatFat} · Sodium {formatSodium}
+          </small>
+        </div>
+      </section>
+
+      <section className="proto-module is-wide food-meal-entries-module" aria-label={`${FOOD_MEAL_LABELS[meal]} entries`}>
+        <header className="proto-module-head">
+          <h2>{FOOD_MEAL_LABELS[meal]} entries</h2>
+        </header>
+        <div className="proto-module-body">
+          <div className="proto-tabs food-meal-selector" role="group" aria-label="Meal">
+            {CANONICAL_MEAL_ORDER.map((m) => (
+              <button
+                key={m}
+                className={`proto-tab ${m === meal ? 'is-selected' : ''}`}
+                type="button"
+                onClick={() => onSelectMeal(m)}
+              >
+                {FOOD_MEAL_LABELS[m].toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          {hasEntries ? (
+            <div className="proto-card-stack">
+              {entries.map((entry) => {
+                const categoryLabel = entry.categoryKind === 'unresolved' ? 'Uncategorized' : entry.categoryName
+                const catId = entry.categoryId ?? 'other'
+                const kcalStr = entry.kcal !== undefined ? `${Math.round(entry.kcal)} kcal` : '— kcal'
+                const proteinStr = entry.protein !== undefined ? `${entry.protein.toFixed(1).replace(/\.0$/, '')}g protein` : '— protein'
+                return (
+                  <div key={entry.id} className="proto-record-card proto-food-entry-card">
+                    <FoodCategoryIcon categoryId={catId} label={categoryLabel} color={entry.customCategoryColor} />
+                    <span
+                      className="proto-row-copy"
+                      onClick={() => onEdit(entry)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') onEdit(entry)
+                      }}
+                    >
+                      <b>{entry.foodName}</b>
+                      <small>{categoryLabel} · {kcalStr} · {proteinStr}</small>
+                    </span>
+                    <div className="proto-food-entry-actions">
+                      <button
+                        className="proto-row-meta proto-food-edit-btn"
+                        type="button"
+                        aria-label={`Edit ${entry.foodName}`}
+                        onClick={() => onEdit(entry)}
+                      >
+                        EDIT
+                      </button>
+                      <button
+                        className="proto-food-delete-btn"
+                        type="button"
+                        aria-label={`Delete ${entry.foodName}`}
+                        onClick={() => {
+                          playEffect('select')
+                          setPendingDelete(entry)
+                        }}
+                      >
+                        <Trash2 size={13} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="proto-meal-empty-state">
+              <div className="proto-meal-empty-slot">
+                <img className="proto-meal-empty-art" src={`/food/meals/meal-${meal}.webp`} alt="" />
+              </div>
+              <div className="proto-meal-empty-copy">
+                <strong>NO FOOD LOGGED</strong>
+                <small>Start logging your {FOOD_MEAL_LABELS[meal].toLowerCase()}.</small>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="proto-module is-wide food-meal-action-module">
+        <header className="proto-module-head">
+          <h2>Log food</h2>
+        </header>
+        <div className="proto-module-body">
+          <button className="proto-primary food-add-action-btn" type="button" onClick={onAdd}>
+            <Plus size={16} aria-hidden="true" /> Add Food
+          </button>
+        </div>
+      </section>
+
+      {pendingDelete ? (
+        <div className="food-dialog-backdrop">
+          <section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title">
+            <header>
+              <div>
+                <p className="eyebrow">{FOOD_MEAL_LABELS[meal]} entry</p>
+                <h2 id="delete-food-title">Delete Food Entry?</h2>
+              </div>
+            </header>
+            <p>Remove “{pendingDelete.foodName}” from {FOOD_MEAL_LABELS[meal]}?</p>
+            <div className="food-dialog-actions">
+              <button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>
+                Cancel
+              </button>
+              <button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>
+                Delete
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </CommandPageFrame>
+  )
 }
 
 function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; meal: FoodMeal; editing?: FoodLogEntry; onBack: () => void; onSaved: (notice?: string) => Promise<void> }) {
@@ -415,6 +856,11 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
   useBackNavigation('food-category-create', creating && !pendingDelete, () => { setCreating(false); setError('') }, 60)
   useBackNavigation('food-category-sheet', !creating && !pendingDelete, onClose, 50)
   useEffect(() => { void listCustomCategories().then(setCustom); void loadFirstUseGuidance().then((guidance) => setShowCustomHint(!guidance.customFoodCategory)) }, [])
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [])
 
   const create = async () => {
     setError('')
@@ -449,7 +895,13 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
 
   return <div className="food-dialog-backdrop"><section className="food-dialog food-category-dialog" role="dialog" aria-modal="true" aria-labelledby="category-title">
     <header><div><p className="eyebrow">Food category</p><h2 id="category-title">{creating ? 'Create Category' : 'Select Category'}</h2></div><button type="button" aria-label="Close category picker" onClick={() => { playEffect('select'); onClose() }}><X /></button></header>
-    {showCustomHint ? <ContextRail title="Custom categories are local labels" actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('customFoodCategory'); setShowCustomHint(false) }}>Got it</button>}><p>If predefined categories do not fit, create a reusable custom category with its own accent color. It organizes remembered foods; historical log snapshots remain preserved.</p></ContextRail> : null}
-    {creating ? <div className="custom-category-form"><button className="text-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="primary-button" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}>Cancel</button></div> : <><section className="food-category-section"><p className="eyebrow">Standard Categories</p><div className="category-grid">{PREDEFINED_FOOD_CATEGORIES.map((category) => <button className={selectedId === category.id && !selectedCustomId ? 'is-selected' : ''} type="button" key={category.id} onClick={() => select(category.id)}><FoodCategoryIcon categoryId={category.id} label={category.name} /><span>{category.name}</span></button>)}</div></section><section className="food-category-section"><p className="eyebrow">Custom Categories</p>{custom.length ? <div className="food-custom-category-list">{custom.map((category) => <div className="custom-category-option" key={category.id}><button className={selectedCustomId === category.id ? 'is-selected' : ''} type="button" onClick={() => select('other', category.id, category.name, category.color)}><FoodCategoryIcon categoryId="other" label={category.name} color={category.color} /><span>{category.name}</span></button><button className="custom-category-delete" type="button" aria-label={`Delete ${category.name} category`} onClick={() => { playEffect('select'); setPendingDelete(category) }}><Trash2 size={15} /></button></div>)}</div> : <p className="food-suggestion-empty">No custom categories.</p>}</section>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(true); setError('') }}><Plus size={18} /> Create Category</button></>}
+    <div className="food-category-content">
+      {showCustomHint ? <ContextRail title="Custom categories are local labels" actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('customFoodCategory'); setShowCustomHint(false) }}>Got it</button>}><p>If predefined categories do not fit, create a reusable custom category with its own accent color. It organizes remembered foods; historical log snapshots remain preserved.</p></ContextRail> : null}
+      {creating ? <div className="custom-category-form"><button className="text-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="primary-button" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}>Cancel</button></div> : <>
+        <section className="food-category-section food-standard-categories"><p className="eyebrow">Standard Categories</p><div className="category-grid">{PREDEFINED_FOOD_CATEGORIES.map((category) => <button className={selectedId === category.id && !selectedCustomId ? 'is-selected' : ''} type="button" key={category.id} onClick={() => select(category.id)}><FoodCategoryIcon categoryId={category.id} label={category.name} /><span>{category.name}</span></button>)}</div></section>
+        <section className="food-category-section food-custom-categories"><p className="eyebrow">Custom Categories</p>{custom.length ? <div className="food-custom-category-list">{custom.map((category) => <div className="custom-category-option" key={category.id}><button className={selectedCustomId === category.id ? 'is-selected' : ''} type="button" onClick={() => select('other', category.id, category.name, category.color)}><FoodCategoryIcon categoryId="other" label={category.name} color={category.color} /><span>{category.name}</span></button><button className="custom-category-delete" type="button" aria-label={`Delete ${category.name} category`} onClick={() => { playEffect('select'); setPendingDelete(category) }}><Trash2 size={15} /></button></div>)}</div> : <p className="food-suggestion-empty">No custom categories.</p>}</section>
+        {error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button food-create-category" type="button" onClick={() => { playEffect('select'); setCreating(true); setError('') }}><Plus size={18} /> Create Category</button>
+      </>}
+    </div>
   </section>{pendingDelete ? <section className="food-dialog food-confirm-dialog food-category-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title"><header><div><p className="eyebrow">Custom category</p><h2 id="delete-category-title">Delete Category?</h2></div></header><p>“{pendingDelete.name}” will be removed.</p><p>Remembered foods in this category will also be removed. Historical food logs remain and become Uncategorized.</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section> : null}</div>
 }

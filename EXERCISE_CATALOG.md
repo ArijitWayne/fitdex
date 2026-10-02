@@ -2,7 +2,7 @@
 
 ## Canonical dataset
 
-FitDex includes a comprehensive, built-in Exercise Dex dataset containing **804 unique canonical exercises** across nine muscle categories. FitDex authors and maintains tracking metadata, local persistence models, written execution instructions, migration behavior, and tactile UI presentation.
+FitDex includes a comprehensive, built-in Exercise Dex dataset containing **802 unique canonical exercises** across nine muscle categories. FitDex authors and maintains tracking metadata, local persistence models, written execution instructions, migration behavior, and tactile UI presentation.
 
 The active built-in dataset is version **4**. Every active built-in entry includes verified demonstration media. Canonical IDs follow the stable format `builtin-exercise:<slug>`. Category names do not enter IDs, ensuring category membership updates never alter canonical identity.
 
@@ -19,9 +19,9 @@ The active built-in dataset is version **4**. Every active built-in entry includ
 | Triceps | 67 |
 | Forearms | 29 |
 | Abs | 104 |
-| **Total** | **805** |
+| **Total** | **803** |
 
-`split-squat-front-foot-elevated` is multi-category across Legs and Gluteal (yielding 804 unique exercises and 805 category memberships).
+`split-squat-front-foot-elevated` is multi-category across Legs and Gluteal (yielding 802 unique exercises and 803 category memberships).
 
 ## Public taxonomy
 
@@ -43,7 +43,7 @@ Aliases provide collision-free legacy names that resolve to mapped canonical exe
 
 ## Content and media
 
-All 804 active records have FitDex-authored *How to perform* and *How it helps* guidance alongside verified demonstration media.
+All 802 active records have FitDex-authored *How to perform* and *How it helps* guidance alongside verified demonstration media.
 
 Demonstration media is addressed by canonical slug (`/exercises/<slug>.mp4`). In native Android builds, local video files are stripped from the packaged APK and resolved on-demand or downloaded selectively into private app storage.
 

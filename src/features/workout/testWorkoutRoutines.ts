@@ -86,7 +86,7 @@ assert.ok(builtInExercises.some((exercise) => exercise.id === canonical.id))
 // Database/migration readiness: v7 retains the v5 routine table and v4 catalog.
 assert.equal(DATABASE_SCHEMA_VERSION, 7)
 assert.equal(BUILT_IN_EXERCISE_DATASET_VERSION, 4)
-assert.equal(builtInExercises.length, 804)
+assert.equal(builtInExercises.length, 802)
 assert.ok(db.tables.some((table) => table.name === 'routineExercises'))
 const databaseSource = fs.readFileSync('src/data/database.ts', 'utf8')
 const repositorySource = fs.readFileSync('src/features/workout/routineRepository.ts', 'utf8')

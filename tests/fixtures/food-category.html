@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="stylesheet" href="/src/index.css" />
+    <title>Food Category Responsive QA</title>
+  </head>
+  <body style="overflow: hidden">
+    <main class="food-page">
+      <div class="food-dialog-backdrop">
+        <section class="food-dialog food-category-dialog" role="dialog" aria-modal="true" aria-labelledby="category-title">
+          <header>
+            <div><p class="eyebrow">Food category</p><h2 id="category-title">Select Category</h2></div>
+            <button type="button" aria-label="Close category picker"><svg width="24" height="24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" /></svg></button>
+          </header>
+          <div class="food-category-content">
+            <section class="food-category-section food-standard-categories">
+              <p class="eyebrow">Standard Categories</p>
+              <div class="category-grid" id="standard-grid"></div>
+            </section>
+            <section class="food-category-section food-custom-categories">
+              <p class="eyebrow">Custom Categories</p>
+              <div id="custom-state"></div>
+            </section>
+            <button class="secondary-button food-create-category" type="button"><span aria-hidden="true">＋</span> Create Category</button>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script type="module">
+      const categories = [
+        ['chicken', 'Chicken'], ['eggs', 'Eggs'], ['meat', 'Meat'], ['fish-seafood', 'Fish & Seafood'],
+        ['dairy', 'Dairy'], ['grains-rice', 'Grains & Rice'], ['flour-wheat', 'Flour & Wheat'], ['fruits', 'Fruits'],
+        ['vegetables', 'Vegetables'], ['nuts-seeds', 'Nuts & Seeds'], ['drinks', 'Drinks'], ['supplements', 'Supplements'],
+        ['desserts-snacks', 'Desserts / Snacks'], ['processed-foods', 'Processed Foods'], ['junk-food', 'Junk Food'], ['other', 'Other'],
+      ]
+      const sprite = (id, label) => id === 'other'
+        ? `<span class="food-sprite food-custom-sprite" role="img" aria-label="${label} category" style="--food-custom-icon:url('/food/categories/category-other.webp')"><span class="food-custom-mask" aria-hidden="true"></span></span>`
+        : `<span class="food-sprite" role="img" aria-label="${label} category"><img src="/food/categories/category-${id}.webp" alt=""><svg width="24" height="24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" fill="currentColor"></rect></svg></span>`
+      document.querySelector('#standard-grid').innerHTML = categories.map(([id, label], index) => `<button class="${index === 0 ? 'is-selected' : ''}" type="button">${sprite(id, label)}<span>${label}</span></button>`).join('')
+
+      const state = new URLSearchParams(location.search).get('state')
+      const customState = document.querySelector('#custom-state')
+      if (state === 'populated') {
+        const names = ['Chinese', 'Corporate', 'Desi Meals', 'Pulses', 'Deliberately Long Custom Category Name For Layout Safety']
+        customState.outerHTML = `<div class="food-custom-category-list">${names.map((name) => `<div class="custom-category-option"><button type="button">${sprite('other', name)}<span>${name}</span></button><button class="custom-category-delete" type="button" aria-label="Delete ${name} category"><svg width="15" height="15" aria-hidden="true"><path d="M3 4h9M5 4V2h5v2M5 6v6M8 6v6M11 6v6" stroke="currentColor"></path></svg></button></div>`).join('')}</div>`
+      } else {
+        customState.outerHTML = '<p class="food-suggestion-empty">No custom categories.</p>'
+      }
+    </script>
+  </body>
+</html>

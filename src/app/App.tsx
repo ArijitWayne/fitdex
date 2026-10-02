@@ -32,7 +32,7 @@ import { AppBootSequence } from '../features/boot/AppBootSequence'
 import { onNotificationRoute } from '../features/notifications/notificationDelivery'
 import { reconcileNotificationSchedules } from '../features/notifications/notificationScheduler'
 
-const rootLocation: AppLocation = { destination: 'home', settingsOpen: false, workoutEntry: 'hub', progressEntry: 'overview' }
+const rootLocation: AppLocation = { destination: 'home', settingsOpen: false, workoutEntry: 'hub' }
 
 function App() {
   return <ThemeProvider><AvatarProvider><ProfileProvider><AppContent /></ProfileProvider></AvatarProvider></ThemeProvider>
@@ -67,7 +67,6 @@ function AppContent() {
       destination,
       settingsOpen: false,
       workoutEntry: destination === 'workout' ? 'hub' : location.workoutEntry,
-      progressEntry: destination === 'progress' ? 'overview' : location.progressEntry,
     })
   }
 
@@ -148,7 +147,7 @@ function AppContent() {
         setNotificationSettingsView(undefined)
         const destination = category === 'workout' ? 'workout' : 'food'
         settingsOriginRef.current = null
-        navigate({ destination, settingsOpen: false, workoutEntry: destination === 'workout' ? 'hub' : location.workoutEntry, progressEntry: location.progressEntry })
+        navigate({ destination, settingsOpen: false, workoutEntry: destination === 'workout' ? 'hub' : location.workoutEntry })
       }
     })
   }, [family, location])
@@ -188,13 +187,13 @@ function AppContent() {
             initialView={notificationSettingsView}
           />
         ) : location.destination === 'home' ? (
-          <HomePage onNavigate={navigateDestination} onOpenAchievements={() => navigate({ ...location, destination: 'progress', settingsOpen: false, progressEntry: 'achievements' })} onOpenWorkout={(entry, targetId) => navigate({ ...location, destination: 'workout', settingsOpen: false, workoutEntry: entry, workoutTargetId: targetId })} onOpenFieldGuide={() => setTutorialOpen(true)} />
+          <HomePage onNavigate={navigateDestination} onOpenWorkout={(entry, targetId) => navigate({ ...location, destination: 'workout', settingsOpen: false, workoutEntry: entry, workoutTargetId: targetId })} onOpenFieldGuide={() => setTutorialOpen(true)} />
         ) : location.destination === 'workout' ? (
           <WorkoutPage key={`workout:${location.workoutEntry}:${location.workoutTargetId ?? ''}`} initialView={location.workoutEntry} initialRoutineId={location.workoutEntry === 'start-routine' ? location.workoutTargetId : undefined} initialWorkoutId={location.workoutEntry === 'history' ? location.workoutTargetId : undefined} />
         ) : location.destination === 'food' ? (
           <FoodPage onOpenSettings={openSettings} />
         ) : location.destination === 'progress' ? (
-          <ProgressPage key={`progress:${location.progressEntry}`} initialView={location.progressEntry} />
+          <ProgressPage />
         ) : (
           <JournalPage />
         )}
