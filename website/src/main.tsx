@@ -3,12 +3,36 @@ import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useLocation } from './router'
 import { useReleases } from './releases/api'
-import { ChangelogView } from './ChangelogView'
+import { ChangelogView, formatDate, formatBytes, CopyButton } from './ChangelogView'
 import './styles.css'
 
 const github = 'https://github.com/ArijitWayne/fitdex'
 const pwa = 'https://fitdex.fitdexapp.workers.dev/'
-const upcomingRelease = '2.0.0'
+
+export type ReleaseMetadata = {
+  version: string
+  versionCode: number
+  tag: string
+  apk: string
+  apkDownloadUrl: string
+  checksum: string
+  sha256: string
+  releaseNotes: string
+  publishedAt: string
+}
+
+// Published-release fallback. Live GitHub metadata remains the source of truth.
+export const release: ReleaseMetadata = {
+  version: '2.0.0',
+  versionCode: 6,
+  tag: 'v2.0.0',
+  apk: 'fitdex.2.0.0.apk',
+  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.0.0/fitdex.2.0.0.apk',
+  checksum: 'fitdex.2.0.0.apk.sha256',
+  sha256: '8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67',
+  releaseNotes: 'RELEASE_NOTES.md',
+  publishedAt: '2026-10-02T12:55:06Z',
+}
 
 type ShotProps = { src: string; alt: string; label: string; className?: string }
 
@@ -102,6 +126,8 @@ function App() {
     }
   }
 
+  const latest = releaseState.latest
+
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
@@ -119,7 +145,7 @@ function App() {
           >
             <img src="/branding/fitdex-logo-spartan.png" alt="" />
             <span>FITDEX</span>
-            <b>FITDEX 2.0 // UPCOMING</b>
+            <b>{latest ? `v${latest.version} // LATEST` : 'FITDEX 2.0'}</b>
           </a>
           <button
             className="menu-button"
@@ -144,9 +170,9 @@ function App() {
             <a className="nav-github" href={github} target="_blank" rel="noreferrer">GITHUB ↗</a>
             <a
               className="nav-download"
-              href="#download"
+              href={latest?.apkDownloadUrl || '#download'}
               onClick={(e) => {
-                handleNavClick('#download', e)
+                if (!latest?.apkDownloadUrl) handleNavClick('#download', e)
               }}
             >
               GET FITDEX
@@ -156,9 +182,9 @@ function App() {
             <a className="text-link" href={github} target="_blank" rel="noreferrer">GITHUB ↗</a>
             <a
               className="button small"
-              href="#download"
+              href={latest?.apkDownloadUrl || '#download'}
               onClick={(e) => {
-                handleNavClick('#download', e)
+                if (!latest?.apkDownloadUrl) handleNavClick('#download', e)
               }}
             >
               GET FITDEX
@@ -181,7 +207,20 @@ function App() {
                   <p className="lede">Major evolution of FitDex. Premium redesign. Refined exercise tracking.</p>
                   <p className="muted">802 active exercises. Local-first data. Demos load on demand.</p>
                   <div className="actions">
-                    <a className="button" href="#release-notes" onClick={(e) => handleNavClick('#release-notes', e)}>FITDEX 2.0 STATUS</a>
+                    {latest?.apkDownloadUrl ? (
+                      <a
+                        className="button download-btn"
+                        href={latest.apkDownloadUrl}
+                        aria-label={`Download APK ${latest.apkSize ? `(${formatBytes(latest.apkSize)})` : ''}`}
+                      >
+                        <span className="btn-primary-text">DOWNLOAD APK</span>
+                        {latest.apkSize ? <span className="btn-meta-badge">{formatBytes(latest.apkSize)}</span> : null}
+                      </a>
+                    ) : (
+                      <a className="button" href="#download" onClick={(e) => handleNavClick('#download', e)}>
+                        DOWNLOAD APK
+                      </a>
+                    )}
                     <a
                       className="button secondary"
                       href="/changelog"
@@ -316,26 +355,141 @@ function App() {
                 </div>
               )}
 
-              <div className="shell release-grid">
-                <div>
-                  <p className="eyebrow">NEXT RELEASE // FITDEX 2.0</p>
-                  <h2>v{upcomingRelease}</h2>
-                  <p className="release-status">PUBLICATION PENDING</p>
-                  <p className="lede">Major UI overhaul. Refined Exercise Dex. Improved tracking logic.</p>
-                  <ul className="release-highlights-list">
-                    <li>802 active movements</li>
-                    <li>Exercise media and slug cleanup</li>
-                    <li>Navigation and theme-system refinement</li>
-                  </ul>
-                  <a className="button secondary" href="/changelog" onClick={(e) => { e.preventDefault(); navigate('/changelog') }}>VIEW PUBLISHED ARCHIVE</a>
+              {latest ? (
+                <div className="shell release-grid">
+                  <div>
+                    <p className="eyebrow">RELEASE // LATEST</p>
+                    <h2>v{latest.version}</h2>
+                    <p className="release-status">LATEST STABLE BUILD</p>
+                    <p className="muted">Published {formatDate(latest.publishedAt)} · tag {latest.tag}</p>
+
+                    <div className="action-row" style={{ marginTop: '20px' }}>
+                      {latest.apkDownloadUrl ? (
+                        <a
+                          className="button download-btn"
+                          href={latest.apkDownloadUrl}
+                          aria-label={`Download APK ${latest.apkSize ? `(${formatBytes(latest.apkSize)})` : ''}`}
+                        >
+                          <span className="btn-primary-text">DOWNLOAD APK</span>
+                          {latest.apkSize ? <span className="btn-meta-badge">{formatBytes(latest.apkSize)}</span> : null}
+                        </a>
+                      ) : null}
+                      <a
+                        className="button secondary"
+                        href="/changelog"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          navigate('/changelog')
+                        }}
+                      >
+                        VIEW FULL CHANGELOG
+                      </a>
+                      <a className="button secondary" href={latest.githubReleaseUrl} target="_blank" rel="noreferrer">
+                        GITHUB RELEASE ↗
+                      </a>
+                    </div>
+
+                    {latest.sha256 && (
+                      <div className="checksum-block" style={{ marginTop: '20px' }}>
+                        <div className="checksum-label-row">
+                          <span className="checksum-title">SHA-256 CHECKSUM</span>
+                          <span className="checksum-filename">{latest.apkFileName || `fitdex.${latest.version}.apk`}</span>
+                        </div>
+                        <div className="checksum-box">
+                          <code className="checksum-hash">{latest.sha256}</code>
+                          <CopyButton text={latest.sha256} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <dl className="release-data">
+                      <div><dt>VERSION</dt><dd>v{latest.version}</dd></div>
+                      <div><dt>VERSION CODE</dt><dd>{latest.versionCode ?? 6}</dd></div>
+                      <div><dt>PUBLISHED AT</dt><dd>{formatDate(latest.publishedAt)}</dd></div>
+                      <div><dt>WHAT&apos;S NEW</dt><dd>{latest.releaseNotes.new?.length ? `${latest.releaseNotes.new.length} items logged` : 'Reviewed on GitHub'}</dd></div>
+                      <div><dt>IMPROVEMENTS</dt><dd>{latest.releaseNotes.improved?.length ? `${latest.releaseNotes.improved.length} items logged` : 'Reviewed on GitHub'}</dd></div>
+                      <div><dt>FIXES</dt><dd>{latest.releaseNotes.fixed?.length ? `${latest.releaseNotes.fixed.length} items logged` : 'Reviewed on GitHub'}</dd></div>
+                      <div><dt>APK ARTIFACT</dt><dd>{latest.apkFileName || 'Available on GitHub'}</dd></div>
+                    </dl>
+
+                    <div className="support-panel" style={{ marginTop: '20px' }}>
+                      <div><strong>FITDEX 2.0+</strong><span>SUPPORTED</span></div>
+                      <div><strong>FITDEX 1.x</strong><span>END OF SUPPORT</span></div>
+                      <p>FitDex 1.x may use outdated exercise data, tracking rules, and media links.</p>
+                      <p>Upgrade to FitDex 2.0+ for current Exercise Dex and tracking system.</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="support-panel">
-                  <div><strong>FITDEX 2.0+</strong><span>SUPPORTED</span></div>
-                  <div><strong>FITDEX 1.x</strong><span>END OF SUPPORT</span></div>
-                  <p>FitDex 1.x may use outdated exercise data, tracking rules, and media links.</p>
-                  <p>Upgrade to FitDex 2.0+ for current Exercise Dex and tracking system.</p>
+              ) : (
+                <div className="shell release-grid">
+                  <div>
+                    <p className="eyebrow">RELEASE // LATEST</p>
+                    <h2>FITDEX v{release.version}</h2>
+                    <p className="release-status">LATEST STABLE BUILD</p>
+                    <p className="muted">
+                      Published {formatDate(release.publishedAt)} · tag {release.tag}
+                    </p>
+                    <div className="action-row" style={{ marginTop: '20px' }}>
+                      <a
+                        className="button download-btn"
+                        href={release.apkDownloadUrl}
+                      >
+                        <span className="btn-primary-text">DOWNLOAD APK</span>
+                      </a>
+                      <a
+                        className="button secondary"
+                        href="/changelog"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          navigate('/changelog')
+                        }}
+                      >
+                        VIEW FULL CHANGELOG
+                      </a>
+                      <a
+                        className="button secondary"
+                        href={`https://github.com/ArijitWayne/fitdex/releases/tag/${release.tag}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        GITHUB RELEASE ↗
+                      </a>
+                    </div>
+
+                    <div className="checksum-block" style={{ marginTop: '20px' }}>
+                      <div className="checksum-label-row">
+                        <span className="checksum-title">SHA-256 CHECKSUM</span>
+                        <span className="checksum-filename">{release.apk}</span>
+                      </div>
+                      <div className="checksum-box">
+                        <code className="checksum-hash">{release.sha256}</code>
+                        <CopyButton text={release.sha256} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <dl className="release-data">
+                      <div><dt>VERSION</dt><dd>v{release.version}</dd></div>
+                      <div><dt>VERSION CODE</dt><dd>{release.versionCode}</dd></div>
+                      <div><dt>PUBLISHED AT</dt><dd>{formatDate(release.publishedAt)}</dd></div>
+                      <div><dt>WHAT&apos;S NEW</dt><dd>Major FitDex 2.0 UI overhaul</dd></div>
+                      <div><dt>IMPROVEMENTS / FIXES</dt><dd>802 active exercises &amp; refined tracking</dd></div>
+                      <div><dt>APK DOWNLOAD</dt><dd>{release.apk}</dd></div>
+                      <div><dt>SHA-256</dt><dd>Verified</dd></div>
+                    </dl>
+
+                    <div className="support-panel" style={{ marginTop: '20px' }}>
+                      <div><strong>FITDEX 2.0+</strong><span>SUPPORTED</span></div>
+                      <div><strong>FITDEX 1.x</strong><span>END OF SUPPORT</span></div>
+                      <p>FitDex 1.x may use outdated exercise data, tracking rules, and media links.</p>
+                      <p>Upgrade to FitDex 2.0+ for current Exercise Dex and tracking system.</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </section>
 
             <section className="section" id="download">
@@ -344,9 +498,33 @@ function App() {
                   <p className="eyebrow">PRIMARY PLATFORM</p>
                   <h2>ANDROID</h2>
                   <p className="lede">Signed APK</p>
-                  <p className="release-status">FITDEX 2.0.0 PUBLICATION PENDING</p>
-                  <p className="muted">APK link appears here after final GitHub publication.</p>
-                  <a className="text-link" href="/changelog" onClick={(e) => { e.preventDefault(); navigate('/changelog') }}>VIEW PUBLISHED APK ARCHIVE</a>
+                  {latest?.apkDownloadUrl ? (
+                    <a
+                      className="button download-btn"
+                      href={latest.apkDownloadUrl}
+                      style={{ marginTop: '14px' }}
+                    >
+                      <span className="btn-primary-text">DOWNLOAD APK</span>
+                      {latest.apkSize ? <span className="btn-meta-badge">{formatBytes(latest.apkSize)}</span> : null}
+                    </a>
+                  ) : (
+                    <a
+                      className="button download-btn"
+                      href={release.apkDownloadUrl}
+                      style={{ marginTop: '14px' }}
+                    >
+                      <span className="btn-primary-text">DOWNLOAD APK</span>
+                    </a>
+                  )}
+                  <p className="release-status" style={{ marginTop: '14px' }}>
+                    {latest ? `v${latest.version} // LATEST STABLE BUILD` : `v${release.version} // LATEST STABLE BUILD`}
+                  </p>
+                  {(latest?.sha256 || release.sha256) && (
+                    <p className="muted" style={{ marginTop: '6px', fontSize: '0.78rem' }}>
+                      SHA-256: <code>{(latest?.sha256 || release.sha256).slice(0, 16)}...</code>
+                    </p>
+                  )}
+                  <a className="text-link" href="/changelog" onClick={(e) => { e.preventDefault(); navigate('/changelog') }} style={{ marginTop: '14px', display: 'inline-block' }}>VIEW PUBLISHED APK ARCHIVE</a>
                 </article>
                 <article>
                   <p className="eyebrow">LIVE PLATFORM</p>

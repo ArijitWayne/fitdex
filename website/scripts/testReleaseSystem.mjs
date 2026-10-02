@@ -218,6 +218,55 @@ assert.equal(normalizedV111.versionCode, 5, 'VersionCode 5 extracted from body')
 assert.equal(normalizedV111.sha256, 'bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07', 'SHA-256 hash extracted from body')
 assert.equal(normalizedV111.releaseNotes.fixed?.length, 3, 'User-facing fixes intact in normalized release')
 
+// 8d. v2.0.0 release normalization and 4 published releases ordering
+const v200ReleaseBody = `### RELEASE HIGHLIGHTS
+
+- Premium shared shell and redesigned Home, Workout, Exercise Dex, Food, Journal, Progress, Consistency, and Settings surfaces.
+- Exercise Dex now ships 802 active canonical exercises with refined tracking methods and remote on-demand demonstration media.
+- Exercise media is external to app assets at \`https://fitdex-media.fitdexapp.workers.dev/exercises/\`.
+
+### NOTES
+
+- Android versionCode: 6
+- Build: 6
+- SHA-256: 8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67`
+
+const parsedV200Notes = parseReleaseNotes(v200ReleaseBody)
+assert.equal(parsedV200Notes.new?.length, 3, 'Must parse 3 user-facing release highlights')
+assert.ok(parsedV200Notes.new.some((item) => item.includes('802 active canonical exercises')), '802 exercises highlight must remain')
+
+const mockAllReleases = [
+  {
+    tag_name: 'v2.0.0', draft: false, prerelease: false, published_at: '2026-10-02T12:55:06Z',
+    html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v2.0.0', body: v200ReleaseBody,
+    assets: [{ name: 'fitdex.2.0.0.apk', size: 65000000, digest: 'sha256:8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67', browser_download_url: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.0.0/fitdex.2.0.0.apk' }],
+  },
+  {
+    tag_name: 'v1.1.1', draft: false, prerelease: false, published_at: '2026-09-27T10:50:51Z',
+    html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v1.1.1', body: v111ReleaseBody,
+    assets: [{ name: 'fitdex.1.1.1.apk', size: 64005821, digest: 'sha256:bc2a8bde968dac6b392588e6263cfd72bf189c4307ed84c093e0634a7e73cf07', browser_download_url: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.1.1/fitdex.1.1.1.apk' }],
+  },
+  {
+    tag_name: 'v1.1.0', draft: false, prerelease: false, published_at: '2026-09-27T09:38:12Z',
+    html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v1.1.0', body: 'v1.1.0 body',
+    assets: [{ name: 'fitdex.1.1.0.apk', size: 63000000, browser_download_url: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.1.0/fitdex.1.1.0.apk' }],
+  },
+  {
+    tag_name: 'v1.0.0', draft: false, prerelease: false, published_at: '2026-09-20T19:00:18Z',
+    html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v1.0.0', body: currentReleaseBody,
+    assets: [{ name: 'fitdex.1.0.0.apk', size: 61348089, browser_download_url: 'https://github.com/ArijitWayne/fitdex/releases/download/v1.0.0/fitdex.1.0.0.apk' }],
+  },
+]
+
+const normalizedAll = normalizeGitHubReleases(mockAllReleases)
+assert.equal(normalizedAll.length, 4, 'Should normalize exactly 4 published releases')
+assert.equal(normalizedAll[0].version, '2.0.0', 'v2.0.0 must be the newest/current release')
+assert.equal(normalizedAll[0].versionCode, 6, 'v2.0.0 versionCode must be 6')
+assert.equal(normalizedAll[0].sha256, '8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67')
+assert.equal(normalizedAll[1].version, '1.1.1', 'v1.1.1 must be historical second entry')
+assert.equal(normalizedAll[2].version, '1.1.0', 'v1.1.0 must be historical third entry')
+assert.equal(normalizedAll[3].version, '1.0.0', 'v1.0.0 must be historical fourth entry')
+
 // 9. Fallback 'other' notes when headings not recognized
 const rawNotes = `This is a raw unstructured changelog.\nSecond line of changes.`
 const parsedRaw = parseReleaseNotes(rawNotes)
@@ -246,11 +295,16 @@ assert.equal(normNoApk.apkDownloadUrl, undefined, 'Missing APK asset must leave 
 // 12. Missing checksum behavior
 assert.equal(normNoApk.sha256, undefined, 'Missing checksum must not be fabricated')
 
-// 13. Upcoming baseline must remain truthful before public publication.
-assert.match(mainSource, /const upcomingRelease = '2\.0\.0'/, 'Landing page must declare FitDex 2.0.0 as upcoming baseline')
-assert.match(mainSource, /PUBLICATION PENDING/, 'Landing page must state publication is pending')
+// 13. Published v2.0.0 release state in production files
+assert.doesNotMatch(mainSource, /PUBLICATION PENDING/, 'Landing page must no longer contain PUBLICATION PENDING')
+assert.doesNotMatch(mainSource, /const upcomingRelease/, 'Landing page must not use upcomingRelease variable')
+assert.match(mainSource, /version:\s*'2\.0\.0'/, 'Landing page must declare FitDex 2.0.0 in fallback release')
+assert.match(mainSource, /versionCode:\s*6/, 'Landing page must declare versionCode 6 in fallback release')
+assert.match(mainSource, /8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67/, 'Landing page must contain v2.0.0 SHA-256 hash')
 assert.match(mainSource, /FitDex 1\.x may use outdated exercise data, tracking rules, and media links\./, 'Landing page must explain legacy support status')
-assert.doesNotMatch(mainSource, /href=\{latest\.apkDownloadUrl\}/, 'Landing page must not label an older APK as FitDex 2.0.0')
+assert.match(mainSource, /FITDEX 2\.0\+/, 'Landing page must state FITDEX 2.0+ support status')
+assert.match(mainSource, /SUPPORTED/, 'Landing page must state SUPPORTED')
+assert.match(mainSource, /END OF SUPPORT/, 'Landing page must state END OF SUPPORT')
 
 // 14. /changelog empty state in ChangelogView.tsx
 assert.match(changelogSource, /NO PUBLIC RELEASES YET\./, 'Empty archive title must exist in ChangelogView.tsx')
@@ -280,8 +334,6 @@ assert.doesNotMatch(mainSource, /<dd>Named ranks<\/dd>/, 'Hero must no longer us
 assert.match(mainSource, /<dt>802<\/dt><dd>EXERCISES<\/dd>/, 'Hero must contain 802 EXERCISES')
 assert.match(mainSource, /<dt>LOCAL<\/dt><dd>FIRST STORAGE<\/dd>/, 'Hero must contain LOCAL FIRST STORAGE')
 assert.match(mainSource, /<dt>\$0<\/dt><dd>FOREVER FREE<\/dd>/, 'Hero must contain $0 FOREVER FREE')
-assert.doesNotMatch(mainSource, /LATEST RELEASE<\/a>/, 'Pre-release hero must not claim LATEST RELEASE as action')
-assert.match(mainSource, /FITDEX 2\.0 STATUS/, 'Hero must present FitDex 2.0 release status')
 assert.match(mainSource, /802 active exercises\. Local-first data\. Demos load on demand\./, 'Hero must state accurate media positioning')
 
 // 18. Standalone screenshots section removed while contextual screenshots remain

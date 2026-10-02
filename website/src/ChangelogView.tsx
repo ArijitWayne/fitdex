@@ -113,7 +113,7 @@ export function ChangelogView({ releaseState, onNavigate }: ChangelogViewProps) 
                 <span className="stat-lbl">PUBLISHED</span>
               </div>
               <div className="stat-cell">
-                <span className="stat-num">{releases[0]?.version ? `v${releases[0].version}` : 'v1.0.0'}</span>
+                <span className="stat-num">{releases[0]?.version ? `v${releases[0].version}` : 'v2.0.0'}</span>
                 <span className="stat-lbl">CURRENT</span>
               </div>
               <div className="stat-cell">
