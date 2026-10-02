@@ -1,37 +1,56 @@
 # FitDex Release Notes
 
+## v2.0.1
+
+Released: October 2, 2026
+Android versionCode: 7
+
+### Fixes
+
+- **Android Update Downloads:** Fixed an issue where updates could fail when the updater cache folder already existed.
+- **Update Retry Reliability:** Retry Download now safely replaces incomplete update files before downloading again.
+
+### Release Info
+
+- Version: 2.0.1
+- Version Code: 7
+- Package ID: com.fitdex.app
+- APK: fitdex.2.0.1.apk
+
+---
+
 ## v2.0.0
 
-Released: October 2, 2026  
+Released: October 2, 2026
 Android versionCode: 6
 
 ### New Features
 
-- **Unified Retro Handheld Shell**: Comprehensive UI modernization across Home, Workout, Food, Journal, Progress, and Settings inside a tactile shared page frame.
-- **Standalone Exercise Codex**: Dedicated RPG Codex library with persistent search, theme-family muscle anatomy cards, and reference-first exercise detail records.
-- **Journal Field Notes**: Symmetric dual-dimension daily activity ledger displaying completed workouts and logged meals with empty-state suppression.
-- **Settings Command Hub**: Modular settings center with active avatar hero, evidence-based nutrition target calculators, and offline media controls.
-- **Active Drag-and-Drop Reordering**: Dedicated touch-friendly exercise reordering engine for active workout sessions without mutating saved routine templates.
+- **Unified Retro Handheld Shell:** Redesigned the core app with a unified, tactile retro handheld interface across all screens.
+- **Standalone Exercise Codex:** Added a dedicated codex library with fast search, muscle anatomy cards, and movement records.
+- **Journal Field Notes:** Added a dual-dimension activity ledger showing completed workouts and logged meals side by side.
+- **Settings Command Hub:** Added a centralized settings hub with avatar management, nutrition calculators, and media controls.
+- **Active Drag-and-Drop Reordering:** Added drag-and-drop exercise reordering during active workouts without altering saved routines.
 
 ### Improvements
 
-- **Refined 802-Movement Catalog**: Cleaned and validated the Exercise Dex catalog to 802 active canonical movements with comprehensive instructions and muscle targets.
-- **Remote On-Demand Media Architecture**: Moved video demonstrations to remote CDN streaming with Android caching, drastically reducing APK and app installation size.
-- **Exercise Detail Hierarchy**: Reordered Exercise Record structure to present verified facts (muscles, equipment, tracking method) directly before execution instructions.
-- **Food & Nutrition Daily Hub**: Streamlined Goal-First daily overview with macronutrient bars, recent/frequent suggestions, and rapid one-tap Quick Log.
-- **Workout & Routine Engine**: Refined active workout logger, separated set deletion controls with confirmation guards, and enhanced rest timer continuity.
-- **Progress & Character Analytics**: Cleaned period comparisons (7D, 30D, 90D, All), accurate resistance volume tonnage metrics, and multi-metric Personal Record archives.
-- **Faction-Aware Visual System**: Refined Spartan and Amazonian palettes, crisp typography, Style B Pixel Command tactile controls, and high-contrast Dark and Light modes.
-- **Local-First Data Integrity**: Maintained 100% on-device Dexie persistence and full backward compatibility for `.fitdex` backup and restore archives.
+- **Refined 802-Movement Catalog:** Audited and standardized the exercise library to 802 movements with detailed execution instructions.
+- **Remote On-Demand Media:** Streamlined demonstration videos through on-demand CDN streaming, significantly reducing app installation size.
+- **Exercise Detail Hierarchy:** Restructured exercise record pages to highlight target muscles and tracking methods before instructions.
+- **Food & Nutrition Daily Hub:** Streamlined the nutrition overview with macronutrient progress bars, quick logging, and smart suggestions.
+- **Workout & Routine Engine:** Polished active session logging, rest timer continuity, and added confirmation guards for set deletion.
+- **Progress & Character Analytics:** Enhanced tonnage calculations, period trend comparisons, and multi-metric personal record archives.
+- **Faction-Aware Visual System:** Polished Spartan and Amazonian color themes, high-contrast dark and light modes, and tactile styling.
+- **Local-First Data Integrity:** Maintained 100% on-device database persistence and seamless backup/restore compatibility.
 
 ### Fixes
 
-- **Exercise Tracking Methods**: Fixed tracking-method mismatches and edge cases that previously prevented logging sets on specific exercise types.
-- **Exercise Catalog & Media Cleanup**: Resolved catalog inconsistencies, duplicate aliases, broken slugs, and outdated demonstration links.
-- **Workout Session Isolation**: Ensured active session reordering and set modifications remain strictly isolated to the active session without affecting saved routines.
-- **Journal Activity Ledger Display**: Fixed empty meal card rendering on workout-only days by properly suppressing unpopulated meal groups.
-- **Equipment & Instruction Fallbacks**: Fixed equipment typing and execution instruction fallbacks for custom and legacy exercises.
-- **Navigation & Scroll Stability**: Resolved view-transition jitter and preserved viewport scroll position during in-page tab and filter switching.
+- **Exercise Tracking Methods:** Resolved tracking-method mismatches that could prevent logging sets on specific movement types.
+- **Exercise Catalog & Media Cleanup:** Fixed catalog inconsistencies, duplicate aliases, broken slugs, and outdated demonstration links.
+- **Workout Session Isolation:** Prevented in-session exercise reordering and set adjustments from overwriting saved routine templates.
+- **Journal Activity Ledger Display:** Fixed empty meal cards incorrectly appearing on workout-only days in the activity ledger.
+- **Equipment & Instruction Fallbacks:** Corrected equipment classification and instruction fallbacks for legacy or custom exercises.
+- **Navigation & Scroll Stability:** Fixed view-transition flicker and preserved scroll position when switching tabs and filters.
 
 ### Release Info
 

@@ -46,6 +46,52 @@ export async function cleanStaleUpdateApks(): Promise<void> {
 }
 
 /**
+ * Helper to determine if a filesystem error represents an already existing directory.
+ */
+export function isDirectoryAlreadyExistsError(err: unknown): boolean {
+  if (!err) return false;
+  const message = err instanceof Error ? err.message : String(err);
+  return (
+    /already exists/i.test(message) ||
+    (err as { code?: string })?.code === 'FILE_EXISTS' ||
+    (err as { code?: string })?.code === 'DIR_EXISTS'
+  );
+}
+
+/**
+ * Ensures the updater cache directory exists.
+ * Capacitor Filesystem mkdir throws on Android when the directory already exists.
+ * This helper makes directory creation idempotent while preserving genuine filesystem errors.
+ */
+export async function ensureUpdatesDirectory(): Promise<void> {
+  try {
+    await Filesystem.mkdir({
+      path: UPDATER_CACHE_DIR,
+      directory: Directory.Cache,
+      recursive: true,
+    });
+  } catch (err: unknown) {
+    if (isDirectoryAlreadyExistsError(err)) {
+      return;
+    }
+
+    try {
+      const stat = await Filesystem.stat({
+        path: UPDATER_CACHE_DIR,
+        directory: Directory.Cache,
+      });
+      if (stat.type === 'directory') {
+        return;
+      }
+    } catch {
+      // stat failed or path is not a directory, surface original error
+    }
+
+    throw err;
+  }
+}
+
+/**
  * Downloads the APK directly from the GitHub asset URL to local cache storage.
  * Streams directly to disk without buffering the file in JS memory.
  */
@@ -63,11 +109,7 @@ export async function downloadUpdateApk(
 
   try {
     await cleanStaleUpdateApks();
-    await Filesystem.mkdir({
-      path: UPDATER_CACHE_DIR,
-      directory: Directory.Cache,
-      recursive: true,
-    });
+    await ensureUpdatesDirectory();
 
     const destination = await Filesystem.getUri({
       path: UPDATER_RELATIVE_PATH,

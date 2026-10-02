@@ -428,4 +428,34 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
   console.log('✓ Checksum invariant checks passed');
 }
 
+// 14. Cache Directory Idempotency & Stale APK Isolation
+{
+  const { isDirectoryAlreadyExistsError, UPDATER_RELATIVE_PATH, UPDATER_CACHE_DIR, UPDATER_APK_FILENAME } =
+    await import('./nativeAppInstaller.ts');
+
+  // Real Android error message
+  const realAndroidError = new Error(
+    "Directory at '/data/user/0/com.fitdex.app/cache/updates/' already exists, cannot be overwritten.",
+  );
+  assert.equal(isDirectoryAlreadyExistsError(realAndroidError), true);
+
+  // Generic filesystem exists variants
+  assert.equal(isDirectoryAlreadyExistsError(new Error('Directory already exists')), true);
+  assert.equal(isDirectoryAlreadyExistsError({ code: 'FILE_EXISTS', message: 'File exists' }), true);
+  assert.equal(isDirectoryAlreadyExistsError({ code: 'DIR_EXISTS', message: 'Dir exists' }), true);
+
+  // Unexpected errors must not be swallowed as directory-exists
+  assert.equal(isDirectoryAlreadyExistsError(new Error('EACCES: permission denied')), false);
+  assert.equal(isDirectoryAlreadyExistsError(new Error('ENOSPC: no space left on device')), false);
+  assert.equal(isDirectoryAlreadyExistsError(new Error('EROFS: read-only file system')), false);
+  assert.equal(isDirectoryAlreadyExistsError(null), false);
+  assert.equal(isDirectoryAlreadyExistsError(undefined), false);
+
+  // Stale APK path isolation invariant
+  assert.equal(UPDATER_RELATIVE_PATH, `${UPDATER_CACHE_DIR}/${UPDATER_APK_FILENAME}`);
+  assert.equal(UPDATER_RELATIVE_PATH, 'updates/fitdex-update.apk');
+
+  console.log('✓ Cache directory idempotency, error discrimination & stale APK target isolation passed');
+}
+
 console.log('--- ALL PHASE 7 UPDATER TESTS PASSED SUCCESSFULLY ---');
