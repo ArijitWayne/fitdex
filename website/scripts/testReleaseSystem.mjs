@@ -295,12 +295,12 @@ assert.equal(normNoApk.apkDownloadUrl, undefined, 'Missing APK asset must leave 
 // 12. Missing checksum behavior
 assert.equal(normNoApk.sha256, undefined, 'Missing checksum must not be fabricated')
 
-// 13. Published v2.0.0 release state in production files
+// 13. Published v2.1.0 release state in production files
 assert.doesNotMatch(mainSource, /PUBLICATION PENDING/, 'Landing page must no longer contain PUBLICATION PENDING')
 assert.doesNotMatch(mainSource, /const upcomingRelease/, 'Landing page must not use upcomingRelease variable')
-assert.match(mainSource, /version:\s*'2\.0\.0'/, 'Landing page must declare FitDex 2.0.0 in fallback release')
-assert.match(mainSource, /versionCode:\s*6/, 'Landing page must declare versionCode 6 in fallback release')
-assert.match(mainSource, /8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67/, 'Landing page must contain v2.0.0 SHA-256 hash')
+assert.match(mainSource, /version:\s*'2\.1\.0'/, 'Landing page must declare FitDex 2.1.0 in fallback release')
+assert.match(mainSource, /versionCode:\s*9/, 'Landing page must declare versionCode 9 in fallback release')
+assert.match(mainSource, /a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3/, 'Landing page must contain v2.1.0 SHA-256 hash')
 assert.match(mainSource, /FitDex 1\.x may use outdated exercise data, tracking rules, and media links\./, 'Landing page must explain legacy support status')
 assert.match(mainSource, /FITDEX 2\.0\+/, 'Landing page must state FITDEX 2.0+ support status')
 assert.match(mainSource, /SUPPORTED/, 'Landing page must state SUPPORTED')
@@ -318,6 +318,7 @@ assert.doesNotMatch(changelogSource, /data-demo-apk/, 'ChangelogView.tsx must no
 
 // 16. Route presence & #latest assignment
 assert.match(mainSource, /pathname === '\/changelog'/, 'Route for /changelog must be handled')
+assert.match(mainSource, /pathname === '\/install'/, 'Route for /install must be handled')
 assert.match(changelogSource, /id=\{isLatest \? 'latest' : `tag-\$\{rel\.tag\}`\}/, 'Newest release must receive id="latest"')
 assert.match(changelogSource, /DOWNLOAD APK/, 'Primary download button label must be DOWNLOAD APK')
 assert.match(changelogSource, /LATEST STABLE BUILD/, 'Latest release card must show stable state')
@@ -329,6 +330,8 @@ assert.match(cssSource, /\.archive-stream \{ display:flex; flex-direction:column
 // 17. Hero content parity with approved prototype
 assert.match(mainSource, /VIEW CHANGELOG/, 'Hero must contain VIEW CHANGELOG action')
 assert.match(mainSource, /href="\/changelog"/, 'VIEW CHANGELOG must route to /changelog')
+assert.match(mainSource, /INSTALL GUIDE/, 'Hero must offer installation help')
+assert.match(mainSource, /INSTALL ON iPHONE/, 'Homepage must offer iPhone installation help')
 assert.doesNotMatch(mainSource, /<dd>Achievements<\/dd>/, 'Hero must no longer use Achievements metric')
 assert.doesNotMatch(mainSource, /<dd>Named ranks<\/dd>/, 'Hero must no longer use Named ranks metric')
 assert.match(mainSource, /<dt>802<\/dt><dd>EXERCISES<\/dd>/, 'Hero must contain 802 EXERCISES')
@@ -359,27 +362,27 @@ const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf
 const socialPreviewAsset = await readFile(new URL('../public/branding/social-preview.jpg', import.meta.url))
 assert.ok(socialPreviewAsset.length > 0, 'social-preview.jpg must exist in public/branding/')
 
-assert.match(indexHtml, /<title>FitDex 2\.0 — Train\. Track\. Evolve\.<\/title>/, 'Title tag must reflect FitDex 2.0')
-assert.match(indexHtml, /<meta name="description" content="FitDex 2\.0 is a local-first Android fitness tracker with 802 active exercises and refined tracking\." \/>/, 'Description meta must reflect verified release positioning')
+assert.match(indexHtml, /<title>FitDex — Train\. Track\. Evolve\.<\/title>/, 'Title tag must use version-independent product positioning')
+assert.match(indexHtml, /<meta name="description" content="FitDex is a local-first fitness tracker for Android and web\." \/>/, 'Description meta must use current platform positioning')
 assert.match(indexHtml, /<meta name="theme-color" content="#0e1212" \/>/, 'Theme color must match Spartan dark background')
 assert.match(indexHtml, /<link rel="canonical" href="https:\/\/fitdexinfo\.vercel\.app\/" \/>/, 'Canonical link must point to production domain')
 
 assert.match(indexHtml, /<meta property="og:type" content="website" \/>/, 'og:type must be website')
 assert.match(indexHtml, /<meta property="og:site_name" content="FitDex" \/>/, 'og:site_name must be FitDex')
-assert.match(indexHtml, /<meta property="og:title" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'og:title must reflect FitDex 2.0')
-assert.match(indexHtml, /<meta property="og:description" content="A local-first Android fitness tracker with 802 active exercises and refined tracking\." \/>/, 'og:description must reflect verified release positioning')
+assert.match(indexHtml, /<meta property="og:title" content="FitDex — Train\. Track\. Evolve\." \/>/, 'og:title must use version-independent product positioning')
+assert.match(indexHtml, /<meta property="og:description" content="A local-first fitness tracker for Android and web\." \/>/, 'og:description must use current platform positioning')
 assert.match(indexHtml, /<meta property="og:url" content="https:\/\/fitdexinfo\.vercel\.app\/" \/>/, 'og:url must match')
 assert.match(indexHtml, /<meta property="og:image" content="https:\/\/fitdexinfo\.vercel\.app\/branding\/social-preview\.jpg" \/>/, 'og:image must match')
-assert.match(indexHtml, /<meta property="og:image:alt" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'og:image:alt must reflect FitDex 2.0')
+assert.match(indexHtml, /<meta property="og:image:alt" content="FitDex — Train\. Track\. Evolve\." \/>/, 'og:image:alt must use current product positioning')
 assert.match(indexHtml, /<meta property="og:image:type" content="image\/jpeg" \/>/, 'og:image:type must be image/jpeg')
 assert.match(indexHtml, /<meta property="og:image:width" content="1774" \/>/, 'og:image:width must be 1774')
 assert.match(indexHtml, /<meta property="og:image:height" content="887" \/>/, 'og:image:height must be 887')
 
 assert.match(indexHtml, /<meta name="twitter:card" content="summary_large_image" \/>/, 'twitter:card must be summary_large_image')
-assert.match(indexHtml, /<meta name="twitter:title" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'twitter:title must reflect FitDex 2.0')
-assert.match(indexHtml, /<meta name="twitter:description" content="A local-first Android fitness tracker with 802 active exercises and refined tracking\." \/>/, 'twitter:description must reflect verified release positioning')
+assert.match(indexHtml, /<meta name="twitter:title" content="FitDex — Train\. Track\. Evolve\." \/>/, 'twitter:title must use version-independent product positioning')
+assert.match(indexHtml, /<meta name="twitter:description" content="A local-first fitness tracker for Android and web\." \/>/, 'twitter:description must use current platform positioning')
 assert.match(indexHtml, /<meta name="twitter:image" content="https:\/\/fitdexinfo\.vercel\.app\/branding\/social-preview\.jpg" \/>/, 'twitter:image must match')
-assert.match(indexHtml, /<meta name="twitter:image:alt" content="FitDex 2\.0 — Train\. Track\. Evolve\." \/>/, 'twitter:image:alt must reflect FitDex 2.0')
+assert.match(indexHtml, /<meta name="twitter:image:alt" content="FitDex — Train\. Track\. Evolve\." \/>/, 'twitter:image:alt must use current product positioning')
 
 assert.match(indexHtml, /<link rel="icon" href="\/branding\/fitdex-icon-spartan\.png" type="image\/png" \/>/, 'Favicon link must remain Spartan icon')
 

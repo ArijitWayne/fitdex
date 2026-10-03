@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
 
-export type RoutePath = '/' | '/changelog'
+export type RoutePath = '/' | '/changelog' | '/install'
 
 function normalizePath(pathname: string): RoutePath {
   const clean = pathname.replace(/\/+$/, '')
   if (clean === '/changelog') return '/changelog'
+  if (clean === '/install') return '/install'
   return '/'
 }
 

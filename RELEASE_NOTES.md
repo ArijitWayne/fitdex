@@ -37,8 +37,6 @@ FitDex 2.1.0 is a major polish and consistency update focused on making FitDex f
 
 Signed APK and integrity metadata are verified. Manual 2.0.1 to 2.1.0 upgrade validation remains pending.
 
----
-
 ## v2.0.1
 
 Released: October 2, 2026
@@ -55,8 +53,6 @@ Android versionCode: 7
 - Version Code: 7
 - Package ID: com.fitdex.app
 - APK: fitdex.2.0.1.apk
-
----
 
 ## v2.0.0
 
@@ -104,8 +100,6 @@ Android versionCode: 6
 
 FitDex 1.x is no longer supported. Upgrade to FitDex 2.0+ for the current Exercise Dex and tracking system.
 
----
-
 ## v1.1.1
 
 Released: September 27, 2026
@@ -116,8 +110,6 @@ Android versionCode: 5
 - Android updates now download directly inside FitDex instead of handing APK downloads off to the browser.
 - Added reliable in-app download progress, SHA-256 verification, retry handling, and native Android installer launch.
 - Improved handling for Android's "Install unknown apps" permission flow.
-
----
 
 ## v1.1.0
 
@@ -168,8 +160,6 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
 - Fixed active-workout exercise reorder persistence.
 - Fixed per-set trash control overlapping Log control.
 - Fixed HOW TO PERFORM fallback equipment typing for custom and legacy exercises.
-
----
 
 ## v1.0.0
 

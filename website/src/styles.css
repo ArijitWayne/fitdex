@@ -155,3 +155,45 @@ footer { padding-block:44px; background:#090c0c; } .footer-grid { display:flex; 
   .action-row { flex-direction:column; align-items:stretch; }
   .action-row .button { width:100%; justify-content:center; }
 }
+
+/* Installation guide: distinct deployment paths, no download interstitial. */
+.install-hero { padding-top:58px; background:linear-gradient(135deg,rgba(46,152,149,.13),transparent 54%); }
+.install-hero h1 { max-width:620px; }
+.install-hero .lede { max-width:52ch; }
+.install-platform-choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; max-width:760px; margin-top:34px; }
+.install-channel { display:grid; grid-template-columns:42px 1fr auto; gap:14px; align-items:center; min-height:104px; padding:19px; border:1px solid var(--line); background:rgba(23,29,28,.9); box-shadow:var(--shadow); color:var(--ink); text-decoration:none; transition:transform 160ms var(--ease-out),border-color 160ms ease,background-color 160ms ease,box-shadow 160ms var(--ease-out); }
+.install-channel svg,.install-step-top svg { width:34px; height:34px; fill:none; stroke:var(--teal-light); stroke-width:2; stroke-linecap:square; stroke-linejoin:miter; }
+.ios-ecosystem-glyph { color:var(--teal-light); }
+.platform-ios-icon { float:right; width:42px; height:42px; margin:-6px -6px 0 12px; }
+.install-channel b { display:block; font:900 1.2rem var(--display); letter-spacing:.06em; }
+.install-channel small { display:block; margin-top:2px; color:var(--teal-light); font:800 .68rem var(--mono); letter-spacing:.08em; }
+.install-channel i { color:var(--faint); font:800 .72rem var(--mono); font-style:normal; }
+.install-channel:hover { transform:translateY(-3px); border-color:var(--teal-light); background:var(--panel-raised); box-shadow:6px 7px 0 #050707; }
+.install-channel:active { transform:translate(3px,3px) scale(.98); box-shadow:1px 1px 0 #050707; }
+.install-section-heading { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,.68fr); gap:48px; align-items:end; padding-bottom:30px; border-bottom:1px solid var(--line); }
+.install-section-heading h2 { margin-bottom:0; }
+.install-section-heading > p { margin:0 0 7px; color:var(--muted); font-size:1rem; line-height:1.55; }
+.install-steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-top:28px; }
+.ios-steps { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.install-step { min-width:0; min-height:250px; padding:18px; border:1px solid var(--line); background:rgba(14,18,18,.62); }
+.install-step-top { display:flex; justify-content:space-between; align-items:flex-start; min-height:42px; }
+.install-step-number { color:var(--teal-light); font:900 1rem var(--mono); letter-spacing:.08em; }
+.install-step-top svg { width:28px; height:28px; }
+.install-step h3 { margin:20px 0 10px; font-size:1.18rem; line-height:1.05; }
+.install-step p { margin:0; color:var(--muted); font-size:.88rem; line-height:1.52; }
+.install-step .button { width:100%; margin-top:16px; font-size:.72rem; }
+.install-device-note { display:grid; grid-template-columns:auto 1fr; gap:15px; margin-top:18px; padding:15px 18px; border-left:3px solid var(--gold); background:rgba(210,161,68,.08); color:#ded8c4; font-size:.88rem; line-height:1.5; }
+.install-device-note strong { color:var(--gold); font:900 .72rem var(--mono); letter-spacing:.08em; }
+.install-trust-panel { display:grid; grid-template-columns:minmax(180px,.62fr) minmax(220px,1fr); gap:22px; margin-top:24px; padding:22px; border:1px solid rgba(99,190,184,.55); background:rgba(23,29,28,.88); box-shadow:var(--shadow); }
+.install-trust-panel h3 { margin:0; font-size:1.55rem; }
+.install-trust-panel ul { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 18px; margin:0; padding:0; list-style:none; color:#d7dfdb; font-size:.88rem; }
+.install-trust-panel li::before { content:'✓'; margin-right:8px; color:var(--teal-light); font-weight:900; }
+.install-trust-panel code { color:#a5e2dc; }
+.install-checksum { grid-column:1 / -1; padding-top:17px; border-top:1px solid var(--line); }
+.install-checksum > span { display:block; margin-bottom:6px; color:var(--muted); font:800 .64rem var(--mono); letter-spacing:.06em; overflow-wrap:anywhere; }
+.install-return { margin-top:30px; }
+.install-return .text-link { border:0; background:none; padding:0; cursor:pointer; }
+
+@media (max-width:1000px) { .install-steps { grid-template-columns:repeat(3,minmax(0,1fr)); } .ios-steps { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:700px) { .install-section-heading { grid-template-columns:1fr; gap:16px; } .install-platform-choices,.install-steps,.ios-steps { grid-template-columns:1fr; } .install-step { min-height:0; } .install-trust-panel { grid-template-columns:1fr; } .install-trust-panel ul { grid-template-columns:1fr; } }
+@media (max-width:480px) { .install-hero { padding-top:36px; } .install-channel { min-height:86px; padding:15px; } .install-channel b { font-size:1.05rem; } .install-device-note { grid-template-columns:1fr; gap:7px; padding:14px; } .install-trust-panel { padding:17px; } }
