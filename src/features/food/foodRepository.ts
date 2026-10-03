@@ -109,6 +109,33 @@ export async function addFoodLog(date: string, meal: FoodMeal, draft: FoodDraft)
   return entry
 }
 
+export async function updateRememberedFood(id: string, draft: FoodDraft) {
+  const name = draft.name.trim().replace(/\s+/g, ' ')
+  const normalizedName = normalizeFoodName(name)
+  if (!name || !normalizedName) throw new Error('Food name is required.')
+  validateNutrition(draft)
+  return db.transaction('rw', [db.rememberedFoods, db.customFoodCategories], async () => {
+    const existing = await db.rememberedFoods.get(id)
+    if (!existing) throw new Error('Remembered food not found.')
+    const duplicate = await db.rememberedFoods.where('normalizedName').equals(normalizedName).first()
+    if (duplicate && duplicate.id !== id) throw new Error('A remembered food with this name already exists.')
+    const category = await resolveCategory(draft)
+    const updated: RememberedFood = {
+      ...existing, name, normalizedName, categoryId: draft.categoryId, ...category, ...nutritionFrom(draft), updatedAt: nowIso(),
+    }
+    if (category.categoryKind === 'predefined') {
+      delete updated.customCategoryId
+      delete updated.customCategoryName
+      delete updated.customCategoryColor
+    }
+    for (const key of ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'saturatedFat', 'sodium'] as const) {
+      if (draft[key] === undefined) delete updated[key]
+    }
+    await db.rememberedFoods.put(updated)
+    return updated
+  })
+}
+
 export async function editFoodLog(id: string, draft: FoodDraft) {
   const name = draft.name.trim().replace(/\s+/g, ' ')
   if (!name) throw new Error('Food name is required.')

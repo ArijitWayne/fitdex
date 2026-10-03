@@ -379,11 +379,15 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
 
 // 12. Native Update Adapter & Web Fallback Invariants
 {
-  const { isNativeAndroid, UPDATER_CACHE_DIR, UPDATER_APK_FILENAME, UPDATER_RELATIVE_PATH } = await import('./nativeAppInstaller.ts');
+  const { isNativeAndroid, UPDATER_CACHE_DIR, getUpdateArtifactPaths } = await import('./nativeAppInstaller.ts');
 
   assert.equal(UPDATER_CACHE_DIR, 'updates');
-  assert.equal(UPDATER_APK_FILENAME, 'fitdex-update.apk');
-  assert.equal(UPDATER_RELATIVE_PATH, 'updates/fitdex-update.apk');
+  assert.deepEqual(getUpdateArtifactPaths('2.1.0', 9), {
+    fileName: 'fitdex-2.1.0-9.apk',
+    temporaryFileName: 'fitdex-2.1.0-9.apk.part',
+    relativePath: 'updates/fitdex-2.1.0-9.apk',
+    temporaryRelativePath: 'updates/fitdex-2.1.0-9.apk.part',
+  });
 
   // In Node test environment, isNativeAndroid returns false (evaluates web/node adapter)
   assert.equal(isNativeAndroid(), false);
@@ -430,7 +434,7 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
 
 // 14. Cache Directory Idempotency & Stale APK Isolation
 {
-  const { isDirectoryAlreadyExistsError, UPDATER_RELATIVE_PATH, UPDATER_CACHE_DIR, UPDATER_APK_FILENAME } =
+  const { isDirectoryAlreadyExistsError, getUpdateArtifactPaths } =
     await import('./nativeAppInstaller.ts');
 
   // Real Android error message
@@ -451,11 +455,60 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
   assert.equal(isDirectoryAlreadyExistsError(null), false);
   assert.equal(isDirectoryAlreadyExistsError(undefined), false);
 
-  // Stale APK path isolation invariant
-  assert.equal(UPDATER_RELATIVE_PATH, `${UPDATER_CACHE_DIR}/${UPDATER_APK_FILENAME}`);
-  assert.equal(UPDATER_RELATIVE_PATH, 'updates/fitdex-update.apk');
-
+  // Target files isolate every release. Old 2.0.1 artifacts cannot be reused.
+  const oldArtifact = getUpdateArtifactPaths('2.0.1', 7);
+  const targetArtifact = getUpdateArtifactPaths('2.1.0', 9);
+  assert.equal(oldArtifact.relativePath, 'updates/fitdex-2.0.1-7.apk');
+  assert.equal(targetArtifact.relativePath, 'updates/fitdex-2.1.0-9.apk');
+  assert.notEqual(oldArtifact.relativePath, targetArtifact.relativePath);
+  assert.equal(targetArtifact.temporaryRelativePath, 'updates/fitdex-2.1.0-9.apk.part');
+  assert.throws(() => getUpdateArtifactPaths('../2.1.0', 9));
+  assert.throws(() => getUpdateArtifactPaths('2.1.0', 0));
   console.log('✓ Cache directory idempotency, error discrimination & stale APK target isolation passed');
+}
+
+// 15. Updater safety contract: fresh metadata, scoped cleanup, atomic finalization.
+{
+  const fs = await import('node:fs');
+  const installer = fs.readFileSync('src/features/updater/nativeAppInstaller.ts', 'utf8');
+  const service = fs.readFileSync('src/features/updater/updaterService.ts', 'utf8');
+  const nativePlugin = fs.readFileSync('android/app/src/main/java/com/fitdex/app/AppInstallerPlugin.java', 'utf8');
+  const vite = fs.readFileSync('vite.config.ts', 'utf8');
+
+  assert.match(installer, /FileTransfer\.downloadFile/);
+  assert.match(installer, /temporaryRelativePath/);
+  assert.match(installer, /Filesystem\.rename/);
+  assert.match(installer, /UPDATER_FILE_PATTERN/);
+  assert.match(installer, /Filesystem\.readdir/);
+  assert.match(service, /cache:\s*'no-store'/);
+  assert.match(service, /Official release integrity metadata is incomplete/);
+  assert.match(service, /verifyRes\.sizeBytes !== expectedApkSize/);
+  assert.match(service, /canInstallPackages/);
+  assert.match(nativePlugin, /FileProvider\.getUriForFile/);
+  assert.match(nativePlugin, /FLAG_GRANT_READ_URI_PERMISSION/);
+  assert.match(nativePlugin, /ClipData\.newRawUri/);
+  assert.match(nativePlugin, /APK path is not a FitDex updater artifact/);
+  assert.match(vite, /navigateFallbackDenylist/);
+  assert.match(vite, /\\.apk/);
+  console.log('✓ Fresh download, validation, updater-only cleanup, FileProvider, and PWA cache contracts passed');
+}
+
+// 16. Release Notes Modal Single Latest Stable Contract & Hardware Styling
+{
+  const fs = await import('node:fs');
+  const modal = fs.readFileSync('src/features/updater/ReleaseNotesModal.tsx', 'utf8');
+  const css = fs.readFileSync('src/styles/updater.css', 'utf8');
+
+  assert.match(modal, /<strong id="notes-dialog-title">LATEST RELEASE<\/strong>/);
+  assert.doesNotMatch(modal, /CHANGELOG ARCHIVE/);
+  assert.match(modal, /const latestRelease: AppRelease = useMemo/);
+  assert.match(modal, /release-telemetry-grid/);
+  assert.doesNotMatch(modal, /releases\.map/);
+  assert.match(css, /\.release-notes-dialog\s*\{[^}]*border-radius:\s*16px;/s);
+  assert.match(css, /\.retro-release-card\s*\{[^}]*border-radius:\s*14px;/s);
+  assert.match(css, /\.release-telemetry-grid\s*\{[^}]*border-radius:\s*8px;/s);
+
+  console.log('✓ Release Notes Modal single latest stable contract & rounded hardware styling passed');
 }
 
 console.log('--- ALL PHASE 7 UPDATER TESTS PASSED SUCCESSFULLY ---');

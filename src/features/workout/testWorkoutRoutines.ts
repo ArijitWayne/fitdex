@@ -16,9 +16,18 @@ import {
   removeRoutineItem,
   renameRoutineRecord,
 } from './routineModel.ts'
+import { shouldReplaceActiveWorkout } from './workoutModel.ts'
 
 const firstTimestamp = '2026-08-23T12:00:00.000Z'
 const secondTimestamp = '2026-08-23T12:05:00.000Z'
+
+// Active-session replacement is based on routine identity, never weekly-plan presence or routine display name.
+const activePush = { routineId: 'routine:push' } as Workout
+const activePull = { routineId: 'routine:pull' } as Workout
+assert.equal(shouldReplaceActiveWorkout(undefined, 'routine:push'), false)
+assert.equal(shouldReplaceActiveWorkout(activePush, 'routine:push'), false)
+assert.equal(shouldReplaceActiveWorkout(activePull, 'routine:push'), true)
+assert.equal(shouldReplaceActiveWorkout({} as Workout, 'routine:push'), true)
 
 // A-C: create, persistable record shape, and rename.
 const routine = createRoutineRecord('  Push   Day  ', firstTimestamp, 'routine:test')

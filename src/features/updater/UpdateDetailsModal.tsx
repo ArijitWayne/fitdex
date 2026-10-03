@@ -12,7 +12,7 @@ interface UpdateDetailsModalProps {
   onClose: () => void;
 }
 
-type ModalUpdateState = 'idle' | 'downloading' | 'verifying' | 'ready' | 'error' | 'checksum_error';
+type ModalUpdateState = 'idle' | 'downloading' | 'verifying' | 'launchingInstaller' | 'ready' | 'error' | 'checksum_error' | 'install_permission';
 
 function renderTokens(tokens: InlineToken[]): React.ReactNode {
   return tokens.map((token, idx) => {
@@ -75,6 +75,8 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
       setErrorMessage(result.error || 'Update failed.');
       if (result.checksumMismatch) {
         setUpdateState('checksum_error');
+      } else if (result.installPermissionRequired) {
+        setUpdateState('install_permission');
       } else {
         setUpdateState('error');
       }
@@ -98,7 +100,7 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
     return parseReleaseNotes(release.releaseNotes);
   }, [release.releaseNotes]);
 
-  const isBusy = updateState === 'downloading' || updateState === 'verifying';
+  const isBusy = updateState === 'downloading' || updateState === 'verifying' || updateState === 'launchingInstaller';
 
   return (
     <div className="guide-backdrop active" role="presentation">
@@ -199,10 +201,26 @@ export const UpdateDetailsModal: React.FC<UpdateDetailsModalProps> = ({
             </div>
           )}
 
+          {updateState === 'launchingInstaller' && (
+            <div className="update-status-box verifying" role="status" aria-live="polite">
+              <div className="update-status-text">
+                <strong>OPENING ANDROID INSTALLER</strong>
+                <p>Preparing verified update for Android Package Installer.</p>
+              </div>
+            </div>
+          )}
+
+          {updateState === 'install_permission' && (
+            <div className="update-error-banner" role="alert">
+              <strong>INSTALL PERMISSION REQUIRED</strong>
+              <p>Allow FitDex to install unknown apps in Android Settings. Then return and retry.</p>
+            </div>
+          )}
+
           {updateState === 'checksum_error' && (
             <div className="update-error-banner checksum-error" role="alert">
               <strong>UPDATE VERIFICATION FAILED</strong>
-              <p>The downloaded APK checksum does not match published release metadata. For security, installation was blocked.</p>
+              <p>The downloaded APK does not pass official size and checksum checks. Installation was blocked.</p>
             </div>
           )}
 

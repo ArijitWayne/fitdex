@@ -946,3 +946,11 @@ The main application runtime is independent of Vercel and never blocks on the ma
 - Android `versionCode` remains `2`.
 - Application ID remains `com.fitdex.app`.
 - No git tag, GitHub release, or production APK was published during Phase 7. Release state remains unreleased pre-launch.
+
+## 51. FitDex v2.1.0 Release Candidate Preparation
+
+FitDex is prepared for v2.1.0 with semantic version `2.1.0` and Android `versionCode 9`. This is release preparation only: no signed v2.1.0 APK, Git tag, GitHub Release, APK size, or SHA-256 is recorded until final artifact and device validation exist.
+
+The finalized UI system uses rounded handheld shell hierarchy, tactile navigation/actions, semantic faction-aware tokens, pixel header utility artwork, and shared Battle Music deck. Active BGM tracks use equalizer motion; `NONE` is selected through static mute state rather than an inactive row.
+
+Android updater artifacts are version-specific and updater-owned. Interrupted downloads stay `.part` files and are never installable. Retry cleans stale updater artifacts only, starts a fresh download, verifies APK size and SHA-256 before installer handoff, and never clears user data. Release gate requires real-device upgrade validation from 2.0.1 to 2.1.0 with matching release signing lineage and preserved data.

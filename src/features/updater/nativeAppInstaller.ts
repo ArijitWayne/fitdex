@@ -23,8 +23,34 @@ export interface UpdateDownloadProgress {
 }
 
 export const UPDATER_CACHE_DIR = 'updates';
-export const UPDATER_APK_FILENAME = 'fitdex-update.apk';
-export const UPDATER_RELATIVE_PATH = `${UPDATER_CACHE_DIR}/${UPDATER_APK_FILENAME}`;
+const UPDATER_FILE_PREFIX = 'fitdex-';
+const UPDATER_FILE_PATTERN = /^fitdex-[0-9]+\.[0-9]+\.[0-9]+(?:-[a-zA-Z0-9.-]+)?(?:-[0-9]+)?\.apk(?:\.part)?$/;
+
+export interface UpdateArtifactPaths {
+  fileName: string;
+  temporaryFileName: string;
+  relativePath: string;
+  temporaryRelativePath: string;
+}
+
+/** Returns updater-only cache paths. Release metadata controls version, never a remote filename. */
+export function getUpdateArtifactPaths(version: string, versionCode?: number): UpdateArtifactPaths {
+  if (!/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/.test(version)) {
+    throw new Error('Release version cannot be used for an update file name.');
+  }
+  if (versionCode !== undefined && (!Number.isInteger(versionCode) || versionCode < 1)) {
+    throw new Error('Release versionCode cannot be used for an update file name.');
+  }
+
+  const suffix = versionCode === undefined ? version : `${version}-${versionCode}`;
+  const fileName = `${UPDATER_FILE_PREFIX}${suffix}.apk`;
+  return {
+    fileName,
+    temporaryFileName: `${fileName}.part`,
+    relativePath: `${UPDATER_CACHE_DIR}/${fileName}`,
+    temporaryRelativePath: `${UPDATER_CACHE_DIR}/${fileName}.part`,
+  };
+}
 
 export function isNativeAndroid(): boolean {
   return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
@@ -36,12 +62,15 @@ export function isNativeAndroid(): boolean {
 export async function cleanStaleUpdateApks(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
   try {
-    await Filesystem.deleteFile({
-      path: UPDATER_RELATIVE_PATH,
-      directory: Directory.Cache,
-    });
+    const entries = await Filesystem.readdir({ path: UPDATER_CACHE_DIR, directory: Directory.Cache });
+    await Promise.all(entries.files
+      .filter((entry) => entry.type === 'file' && UPDATER_FILE_PATTERN.test(entry.name))
+      .map((entry) => Filesystem.deleteFile({
+        path: `${UPDATER_CACHE_DIR}/${entry.name}`,
+        directory: Directory.Cache,
+      }).catch(() => undefined)));
   } catch {
-    // Ignore non-existent file errors
+    // No updater cache directory yet, or cache cleanup will be retried before download.
   }
 }
 
@@ -97,6 +126,7 @@ export async function ensureUpdatesDirectory(): Promise<void> {
  */
 export async function downloadUpdateApk(
   apkUrl: string,
+  artifact: UpdateArtifactPaths,
   onProgress?: (progress: UpdateDownloadProgress) => void,
 ): Promise<{ success: boolean; localPath?: string; error?: string }> {
   if (!isNativeAndroid()) {
@@ -108,11 +138,14 @@ export async function downloadUpdateApk(
   }
 
   try {
+    await ensureUpdatesDirectory();
+    // Never treat an existing target or interrupted transfer as valid. Cleanup is
+    // intentionally scoped to FitDex updater files only.
     await cleanStaleUpdateApks();
     await ensureUpdatesDirectory();
 
     const destination = await Filesystem.getUri({
-      path: UPDATER_RELATIVE_PATH,
+      path: artifact.temporaryRelativePath,
       directory: Directory.Cache,
     });
 
@@ -140,7 +173,7 @@ export async function downloadUpdateApk(
       });
 
       const stat = await Filesystem.stat({
-        path: UPDATER_RELATIVE_PATH,
+        path: artifact.temporaryRelativePath,
         directory: Directory.Cache,
       });
 
@@ -148,18 +181,32 @@ export async function downloadUpdateApk(
         throw new Error('Downloaded APK file is empty.');
       }
 
+      await Filesystem.deleteFile({ path: artifact.relativePath, directory: Directory.Cache }).catch(() => undefined);
+      await Filesystem.rename({
+        from: artifact.temporaryRelativePath,
+        to: artifact.relativePath,
+        directory: Directory.Cache,
+      });
+
+      const completed = await Filesystem.stat({ path: artifact.relativePath, directory: Directory.Cache });
+      if (!completed.size || completed.size !== stat.size) {
+        throw new Error('Downloaded APK could not be finalized.');
+      }
+      const completedUri = await Filesystem.getUri({ path: artifact.relativePath, directory: Directory.Cache });
+
       onProgress?.({
-        bytes: stat.size,
-        totalBytes: stat.size,
+        bytes: completed.size,
+        totalBytes: completed.size,
         percent: 100,
       });
 
-      return { success: true, localPath: destination.uri };
+      return { success: true, localPath: completedUri.uri };
     } finally {
       await progressListener.remove();
     }
   } catch (err: unknown) {
-    await cleanStaleUpdateApks().catch(() => undefined);
+    await Filesystem.deleteFile({ path: artifact.temporaryRelativePath, directory: Directory.Cache }).catch(() => undefined);
+    await Filesystem.deleteFile({ path: artifact.relativePath, directory: Directory.Cache }).catch(() => undefined);
     const message = err instanceof Error ? err.message : 'Download failed.';
     return { success: false, error: message };
   }

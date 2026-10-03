@@ -14,6 +14,9 @@ import {
   verifyDownloadedApk,
   launchApkInstaller,
   cleanStaleUpdateApks,
+  canInstallPackages,
+  openInstallSettings,
+  getUpdateArtifactPaths,
   type UpdateDownloadProgress,
 } from './nativeAppInstaller.ts';
 
@@ -53,9 +56,8 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
 
   try {
     const response = await fetch(GITHUB_RELEASES_API, {
-      headers: {
-        Accept: 'application/vnd.github.v3+json',
-      },
+      headers: { Accept: 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' },
+      cache: 'no-store',
       signal: controller.signal,
     });
 
@@ -151,7 +153,8 @@ export async function fetchReleaseHistory(): Promise<AppRelease[]> {
     const timeoutId = setTimeout(() => controller.abort(), 7000);
 
     const response = await fetch(GITHUB_RELEASES_API, {
-      headers: { Accept: 'application/vnd.github.v3+json' },
+      headers: { Accept: 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' },
+      cache: 'no-store',
       signal: controller.signal,
     });
 
@@ -174,8 +177,8 @@ export async function fetchReleaseHistory(): Promise<AppRelease[]> {
 export async function handoffApkDownload(
   release: AppRelease,
   onProgress?: (progress: UpdateDownloadProgress) => void,
-  onStatusChange?: (status: 'downloading' | 'verifying' | 'ready' | 'error') => void,
-): Promise<{ success: boolean; error?: string; checksumMismatch?: boolean }> {
+  onStatusChange?: (status: 'downloading' | 'verifying' | 'launchingInstaller' | 'ready' | 'error') => void,
+): Promise<{ success: boolean; error?: string; checksumMismatch?: boolean; installPermissionRequired?: boolean }> {
   const url = release.apkDownloadUrl || release.githubReleaseUrl;
 
   if (!url) {
@@ -189,24 +192,43 @@ export async function handoffApkDownload(
 
   try {
     if (isNativeAndroid()) {
+      let artifact;
+      const expectedApkSize = release.apkSize;
+      try {
+        artifact = getUpdateArtifactPaths(release.version, release.versionCode);
+      } catch {
+        return { success: false, error: 'Release metadata has an invalid target version.' };
+      }
+      if (!release.sha256 || typeof expectedApkSize !== 'number' || !Number.isSafeInteger(expectedApkSize) || expectedApkSize <= 0) {
+        return { success: false, error: 'Official release integrity metadata is incomplete. Installation was blocked.' };
+      }
       onStatusChange?.('downloading');
-      const downloadRes = await downloadUpdateApk(url, onProgress);
+      const downloadRes = await downloadUpdateApk(url, artifact, onProgress);
       if (!downloadRes.success || !downloadRes.localPath) {
         return { success: false, error: downloadRes.error || 'Failed to download update APK.' };
       }
 
       onStatusChange?.('verifying');
       const verifyRes = await verifyDownloadedApk(downloadRes.localPath, release.sha256);
-      if (!verifyRes.matches) {
+      if (!verifyRes.sizeBytes || verifyRes.sizeBytes !== expectedApkSize || !verifyRes.matches) {
         await cleanStaleUpdateApks().catch(() => undefined);
         return {
           success: false,
           checksumMismatch: true,
-          error: `Checksum verification failed. Downloaded APK does not match release SHA-256.`,
+          error: 'Downloaded APK failed integrity verification.',
         };
       }
 
-      onStatusChange?.('ready');
+      if (!await canInstallPackages()) {
+        await openInstallSettings().catch(() => undefined);
+        return {
+          success: false,
+          installPermissionRequired: true,
+          error: 'Allow FitDex to install unknown apps, then retry the update.',
+        };
+      }
+
+      onStatusChange?.('launchingInstaller');
       const installRes = await launchApkInstaller(downloadRes.localPath);
       if (!installRes.success) {
         return { success: false, error: installRes.error || 'Failed to launch installer.' };

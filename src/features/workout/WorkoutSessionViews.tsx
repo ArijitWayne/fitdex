@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
 import { RetroLoader } from '../../components/ui/RetroLoader'
 import { ContextRail } from '../../components/ui/ContextRail'
+import { CommandPageFrame } from '../../components/layout/CommandPageFrame'
 import { db } from '../../data/database'
 import type { Exercise, ExerciseEquipment, ExerciseTrackingType, WorkoutExercise, WorkoutSet } from '../../data/models'
 import { displayDistanceFromKm, displayWeightFromKg, getUnitContext, storeDistanceAsKm, storeWeightAsKg, type UnitContext } from '../../utils/units.ts'
@@ -345,7 +346,7 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const acknowledgePause = () => { playEffect('select'); setPauseGuidance(false); void acknowledgeFirstUse('workoutPause') }
   const acknowledgeRest = () => { playEffect('select'); setRestGuidance(false); void acknowledgeFirstUse('workoutRest') }
   const startRest = () => {
-    if (restActive) return
+    if (restActive || exerciseCount === 0) return
     playEffect('select')
     setRest(DEFAULT_REST_SECONDS)
   }
@@ -376,325 +377,331 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
     })
   }
 
-  return <div className="page-stack active-workout-page">
-    <header className="session-header active-workout-header">
-      <div className="session-top-row">
-        <button
-          className="session-hub-link"
-          type="button"
-          onClick={() => { playEffect('select'); onExit() }}
-          aria-label="Back to Workout Hub"
-        >
-          ← Training Hub
-        </button>
-        <span className={`session-state-badge ${timerPaused ? 'is-paused' : 'is-active'}`}>
-          <span className="state-pulse" aria-hidden="true"></span>
-          <span>{timerPaused ? 'Paused' : 'In Progress'}</span>
-        </span>
-      </div>
-
-      <div className="session-title-wrap active-workout-title-row">
-        {isEditingTitle ? (
-          <form className="active-workout-name-form" onSubmit={(event) => { event.preventDefault(); setIsEditingTitle(false) }}>
-            <input
-              className="session-title-input active-workout-name"
-              aria-label="Workout name"
-              maxLength={80}
-              autoFocus
-              defaultValue={detail.workout.nameSnapshot}
-              key={`${detail.workout.id}:${detail.workout.nameSnapshot}`}
-              onBlur={(event) => {
-                setIsEditingTitle(false)
-                void run(() => renameActiveWorkout(workoutId, event.target.value))
-              }}
-            />
-          </form>
-        ) : (
-          <>
-            <h1 className="session-title active-workout-name-text">{detail.workout.nameSnapshot}</h1>
+  return (
+    <CommandPageFrame
+      className="workout-page active-workout-command-frame"
+      terminalTitle="FITDEX // TRAINING TERMINAL"
+    >
+      <div className="page-stack active-workout-page">
+        <header className="session-header active-workout-header">
+          <div className="session-top-row">
             <button
-              className="session-edit-title active-workout-rename-btn text-button"
+              className="session-hub-link back-command-key"
               type="button"
-              onClick={() => { playEffect('select'); setIsEditingTitle(true) }}
+              onClick={() => { playEffect('select'); onExit() }}
+              aria-label="Back to Workout Hub"
             >
-              Edit
+              <ArrowLeft size={18} strokeWidth={2.5} aria-hidden="true" /><span>Training Hub</span>
             </button>
-          </>
-        )}
-      </div>
-
-    </header>
-
-    <section className="session-control-pane" aria-label="Workout controls">
-      <div className="session-stats-bar">
-        <div className="stat-duration">
-          <div className="stat-duration-left">
-            <span>Time</span>
-            <strong>{formatDuration(getWorkoutDuration(detail.workout, now, exerciseCount))}</strong>
-          </div>
-          <div className="active-workout-top-actions">
-            {!timerHasStarted ? (
-              <button
-                className={`pause-toggle-btn ${exerciseCount > 0 ? 'is-start-ready' : 'is-unavailable'}`}
-                type="button"
-                aria-label={exerciseCount > 0 ? 'Start workout timer' : 'Start workout timer (add an exercise first)'}
-                onClick={() => {
-                  if (exerciseCount === 0) {
-                    playEffect('select')
-                    setTimerNotice(true)
-                    return
-                  }
-                  playEffect('select')
-                  setTimerNotice(false)
-                  void run(() => resumeWorkout(workoutId))
-                }}
-              >
-                <Play size={11} aria-hidden="true" />
-                <span>START TIMER</span>
-              </button>
-            ) : (
-              <button
-                className="pause-toggle-btn secondary-button"
-                type="button"
-                aria-label={timerPaused ? 'Resume workout timer' : 'Pause workout timer'}
-                onClick={() => {
-                  if (timerPaused && exerciseCount === 0) {
-                    playEffect('select')
-                    setTimerNotice(true)
-                    return
-                  }
-                  playEffect('select')
-                  setTimerNotice(false)
-                  void run(() => timerPaused ? resumeWorkout(workoutId) : pauseWorkout(workoutId))
-                }}
-              >
-                {timerPaused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
-                <span>{timerPaused ? 'RESUME TIMER' : 'PAUSE'}</span>
-              </button>
-            )}
-            <button
-              className={`rest-toggle-btn secondary-button ${restActive ? 'is-resting' : ''}`}
-              type="button"
-              disabled={restActive}
-              aria-label={restActive ? 'Rest timer active' : 'Start rest timer'}
-              title={restActive ? 'Rest timer active' : 'Start rest timer'}
-              onClick={startRest}
-            >
-              <Hourglass size={14} aria-hidden="true" />
-              <span>{restActive ? 'REST ACTIVE' : 'START REST'}</span>
-            </button>
-          </div>
-        </div>
-        <div className="stat-progress">
-          <span>Sets Logged:</span>
-          <strong aria-live="polite">{loggedSets} / {allSets.length}</strong>
-          <span className="visually-hidden">{loggedSets}/{allSets.length} sets logged</span>
-        </div>
-      </div>
-    </section>
-
-    {timerNotice ? (
-      <div className="workout-feedback timer-attempt-feedback" role="alert">
-        <div className="timer-attempt-content">
-          <strong>ADD AN EXERCISE FIRST</strong>
-          <p>Add at least one exercise to start your workout timer.</p>
-        </div>
-        <button
-          type="button"
-          className="text-button timer-attempt-dismiss"
-          aria-label="Dismiss notice"
-          onClick={() => { playEffect('select'); setTimerNotice(false) }}
-        >
-          ✕
-        </button>
-      </div>
-    ) : null}
-
-    {timerGuidance ? <ContextRail eyebrow="Workout Timer" title="Start the timer when you're ready" actions={<button className="secondary-button" type="button" onClick={acknowledgeTimer}>GOT IT</button>}><p>Your workout is ready. Start the timer when you begin training. If you need to stop training for a while, pause the timer. Resume it when you're ready to continue.</p></ContextRail> : null}
-    {isPauseTimerGuidanceEligible(timerGuidance, pauseGuidance, timerHasStarted) ? <ContextRail eyebrow="Pause Timer" title="Pause when training stops" actions={<button className="secondary-button" type="button" onClick={acknowledgePause}>GOT IT</button>}><p>Pause the workout timer when you step away. Resume it when you are ready to train again.</p></ContextRail> : null}
-    {isRestTimerGuidanceEligible(timerGuidance, pauseGuidance, restGuidance) ? <ContextRail eyebrow="Rest Timer" title="Rest timer" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>Take a rest whenever you need one between sets. Your workout timer keeps running while the rest timer tracks your recovery. Use Start Rest when you're ready for a break.</p></ContextRail> : null}
-
-    {detail.exercises.length ? <div className="active-exercise-list workout-feed">{detail.exercises.map((item, index) => {
-      const isCurrent = currentExerciseId === item.exercise.id
-      const unloggedIndex = item.sets.findIndex((s) => getWorkoutSetLogState(applySetDraft(s, setDrafts.get(s.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') !== 'logged')
-      const activeSetIndex = unloggedIndex === -1 ? undefined : unloggedIndex
-      const loggedCount = item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length
-      const trackingType = item.exercise.trackingTypeSnapshot ?? 'reps_only'
-      const isMenuOpen = openMenuExerciseId === item.exercise.id
-      const fields = getTrackingFields(trackingType)
-      const isDualMetric = [fields.weight, fields.reps, fields.duration, fields.distance].filter(Boolean).length > 1
-      const isComplete = loggedCount === item.sets.length && item.sets.length > 0
-
-      return <Panel className={isCurrent ? 'active-exercise-card is-current' : 'active-exercise-card'} key={item.exercise.id}>
-        <div className="active-exercise-header-row exercise-block-header" onClick={() => setCurrentExerciseId(item.exercise.id)}>
-          <span className="exercise-index exercise-order">{index + 1}</span>
-          <div className="exercise-header-text">
-            <div className="exercise-header-title active-exercise-heading">
-              <strong className="exercise-name">{item.exercise.exerciseNameSnapshot ?? 'Historical exercise'}</strong>
-            </div>
-            {item.exercise.exerciseCategorySnapshot || exerciseEquipment.get(item.exercise.exerciseId) ? (
-              <span className="exercise-tag">
-                {[item.exercise.exerciseCategorySnapshot, exerciseEquipment.get(item.exercise.exerciseId)].filter(Boolean).join(' · ')}
-              </span>
-            ) : null}
-          </div>
-          <div className="exercise-header-meta">
-            <span className={`set-count-pill ${isComplete ? 'is-complete' : ''}`} aria-live="polite">
-              {loggedCount}/{item.sets.length} Sets
-              <span className="visually-hidden"> sets logged</span>
+            <span className={`session-state-badge ${timerPaused ? 'is-paused' : 'is-active'}`}>
+              <span className="state-pulse" aria-hidden="true"></span>
+              <span>{timerPaused ? 'Paused' : 'In Progress'}</span>
             </span>
-            <div className="active-exercise-menu-wrap">
+          </div>
+
+          <div className="session-title-wrap active-workout-title-row">
+            {isEditingTitle ? (
+              <form className="active-workout-name-form" onSubmit={(event) => { event.preventDefault(); setIsEditingTitle(false) }}>
+                <input
+                  className="session-title-input active-workout-name"
+                  aria-label="Workout name"
+                  maxLength={80}
+                  autoFocus
+                  defaultValue={detail.workout.nameSnapshot}
+                  key={`${detail.workout.id}:${detail.workout.nameSnapshot}`}
+                  onBlur={(event) => {
+                    setIsEditingTitle(false)
+                    void run(() => renameActiveWorkout(workoutId, event.target.value))
+                  }}
+                />
+              </form>
+            ) : (
+              <>
+                <h1 className="session-title active-workout-name-text">{detail.workout.nameSnapshot}</h1>
+                <button
+                  className="session-edit-title active-workout-rename-btn text-button"
+                  type="button"
+                  onClick={() => { playEffect('select'); setIsEditingTitle(true) }}
+                >
+                  Edit
+                </button>
+              </>
+            )}
+          </div>
+        </header>
+
+        <section className="session-control-pane" aria-label="Workout controls">
+          <div className="session-stats-bar">
+            <div className="active-workout-top-actions session-command-bank">
+              {!timerHasStarted ? (
+                <button
+                  className={`pause-toggle-btn ${exerciseCount > 0 ? 'is-start-ready' : 'is-unavailable'}`}
+                  type="button"
+                  aria-label={exerciseCount > 0 ? 'Start workout timer' : 'Start workout timer (add an exercise first)'}
+                  onClick={() => {
+                    if (exerciseCount === 0) {
+                      playEffect('select')
+                      setTimerNotice(true)
+                      return
+                    }
+                    playEffect('select')
+                    setTimerNotice(false)
+                    void run(() => resumeWorkout(workoutId))
+                  }}
+                >
+                  <Play size={11} aria-hidden="true" />
+                  <span>START TIMER</span>
+                </button>
+              ) : (
+                <button
+                  className="pause-toggle-btn secondary-button"
+                  type="button"
+                  aria-label={timerPaused ? 'Resume workout timer' : 'Pause workout timer'}
+                  onClick={() => {
+                    if (timerPaused && exerciseCount === 0) {
+                      playEffect('select')
+                      setTimerNotice(true)
+                      return
+                    }
+                    playEffect('select')
+                    setTimerNotice(false)
+                    void run(() => timerPaused ? resumeWorkout(workoutId) : pauseWorkout(workoutId))
+                  }}
+                >
+                  {timerPaused ? <Play size={11} aria-hidden="true" /> : <Pause size={11} aria-hidden="true" />}
+                  <span>{timerPaused ? 'RESUME TIMER' : 'PAUSE'}</span>
+                </button>
+              )}
               <button
-                className="exercise-menu-trigger menu-trigger-btn"
+                className={`rest-toggle-btn secondary-button ${restActive ? 'is-resting' : ''}`}
                 type="button"
-                aria-label={`Options for ${item.exercise.exerciseNameSnapshot ?? 'exercise'}`}
-                aria-expanded={isMenuOpen}
-                onClick={(e) => { e.stopPropagation(); setOpenMenuExerciseId(isMenuOpen ? undefined : item.exercise.id) }}
+                disabled={restActive || exerciseCount === 0}
+                aria-label={restActive ? 'Rest timer active' : 'Start rest timer'}
+                title={restActive ? 'Rest timer active' : 'Start rest timer'}
+                onClick={startRest}
               >
-                <MoreHorizontal size={18} aria-hidden="true" />
+                <Hourglass size={14} aria-hidden="true" />
+                <span>{restActive ? 'REST ACTIVE' : 'START REST'}</span>
               </button>
-              {isMenuOpen ? (
-                <div className="exercise-context-menu" role="menu" onClick={(e) => e.stopPropagation()}>
+            </div>
+
+            <div className="stat-duration session-timer-center">
+              <strong className="session-timer-digits">{formatDuration(getWorkoutDuration(detail.workout, now, exerciseCount))}</strong>
+              <span className="session-timer-label">Time</span>
+            </div>
+
+            <div className="stat-progress session-status-telemetry">
+              <span className="session-status-label">Sets Logged</span>
+              <strong className="session-status-value" aria-live="polite">{loggedSets} / {allSets.length}</strong>
+              <span className="visually-hidden">{loggedSets}/{allSets.length} sets logged</span>
+            </div>
+          </div>
+        </section>
+
+        {timerNotice ? (
+          <div className="workout-feedback timer-attempt-feedback" role="alert">
+            <div className="timer-attempt-content">
+              <strong>ADD AN EXERCISE FIRST</strong>
+              <p>Add at least one exercise to start your workout timer.</p>
+            </div>
+            <button
+              type="button"
+              className="text-button timer-attempt-dismiss"
+              aria-label="Dismiss notice"
+              onClick={() => { playEffect('select'); setTimerNotice(false) }}
+            >
+              ✕
+            </button>
+          </div>
+        ) : null}
+
+        {timerGuidance ? <ContextRail eyebrow="Workout Timer" title="Start the timer when you're ready" actions={<button className="secondary-button" type="button" onClick={acknowledgeTimer}>GOT IT</button>}><p>Your workout is ready. Start the timer when you begin training. If you need to stop training for a while, pause the timer. Resume it when you're ready to continue.</p></ContextRail> : null}
+        {isPauseTimerGuidanceEligible(timerGuidance, pauseGuidance, timerHasStarted) ? <ContextRail eyebrow="Pause Timer" title="Pause when training stops" actions={<button className="secondary-button" type="button" onClick={acknowledgePause}>GOT IT</button>}><p>Pause the workout timer when you step away. Resume it when you are ready to train again.</p></ContextRail> : null}
+        {isRestTimerGuidanceEligible(timerGuidance, pauseGuidance, restGuidance) ? <ContextRail eyebrow="Rest Timer" title="Rest timer" actions={<button className="secondary-button" type="button" onClick={acknowledgeRest}>Got it</button>}><p>Take a rest whenever you need one between sets. Your workout timer keeps running while the rest timer tracks your recovery. Use Start Rest when you're ready for a break.</p></ContextRail> : null}
+
+        {detail.exercises.length ? <div className="active-exercise-list workout-feed">{detail.exercises.map((item, index) => {
+          const isCurrent = currentExerciseId === item.exercise.id
+          const unloggedIndex = item.sets.findIndex((s) => getWorkoutSetLogState(applySetDraft(s, setDrafts.get(s.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') !== 'logged')
+          const activeSetIndex = unloggedIndex === -1 ? undefined : unloggedIndex
+          const loggedCount = item.sets.filter((set) => getWorkoutSetLogState(applySetDraft(set, setDrafts.get(set.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged').length
+          const trackingType = item.exercise.trackingTypeSnapshot ?? 'reps_only'
+          const isMenuOpen = openMenuExerciseId === item.exercise.id
+          const fields = getTrackingFields(trackingType)
+          const isDualMetric = [fields.weight, fields.reps, fields.duration, fields.distance].filter(Boolean).length > 1
+          const isComplete = loggedCount === item.sets.length && item.sets.length > 0
+
+          return <Panel className={isCurrent ? 'active-exercise-card is-current' : 'active-exercise-card'} key={item.exercise.id}>
+            <div className="active-exercise-header-row exercise-block-header" onClick={() => setCurrentExerciseId(item.exercise.id)}>
+              <span className="exercise-index exercise-order">{index + 1}</span>
+              <div className="exercise-header-text">
+                <div className="exercise-header-title active-exercise-heading">
+                  <strong className="exercise-name">{item.exercise.exerciseNameSnapshot ?? 'Historical exercise'}</strong>
+                </div>
+                {item.exercise.exerciseCategorySnapshot || exerciseEquipment.get(item.exercise.exerciseId) ? (
+                  <span className="exercise-tag">
+                    {[item.exercise.exerciseCategorySnapshot, exerciseEquipment.get(item.exercise.exerciseId)].filter(Boolean).join(' · ')}
+                  </span>
+                ) : null}
+              </div>
+              <div className="exercise-header-meta">
+                <span className={`set-count-pill ${isComplete ? 'is-complete' : ''}`} aria-live="polite">
+                  {loggedCount}/{item.sets.length} Sets
+                  <span className="visually-hidden"> sets logged</span>
+                </span>
+                <div className="active-exercise-menu-wrap">
                   <button
+                    className="exercise-menu-trigger menu-trigger-btn"
                     type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setOpenMenuExerciseId(undefined)
-                      void openExerciseDetail(item.exercise)
-                    }}
+                    aria-label={`Options for ${item.exercise.exerciseNameSnapshot ?? 'exercise'}`}
+                    aria-expanded={isMenuOpen}
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuExerciseId(isMenuOpen ? undefined : item.exercise.id) }}
                   >
-                    <BookOpen size={16} aria-hidden="true" /> How to perform
+                    <MoreHorizontal size={18} aria-hidden="true" />
                   </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setOpenMenuExerciseId(undefined)
-                      setReordering(true)
+                  {isMenuOpen ? (
+                    <div className="exercise-context-menu" role="menu" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setOpenMenuExerciseId(undefined)
+                          void openExerciseDetail(item.exercise)
+                        }}
+                      >
+                        <BookOpen size={16} aria-hidden="true" /> How to perform
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setOpenMenuExerciseId(undefined)
+                          setReordering(true)
+                        }}
+                      >
+                        <ArrowUpDown size={16} aria-hidden="true" /> Reorder exercises
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setOpenMenuExerciseId(undefined)
+                          toggleExerciseNotes(item.exercise.id)
+                        }}
+                      >
+                        <Pencil size={16} aria-hidden="true" /> Exercise notes
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="danger-menu-item"
+                        onClick={() => {
+                          setOpenMenuExerciseId(undefined)
+                          if (renderedExerciseHasData(item.exercise.id)) setConfirmExerciseRemovalId(item.exercise.id)
+                          else void run(() => removeActiveExercise(item.exercise.id))
+                        }}
+                      >
+                        <Trash2 size={16} aria-hidden="true" /> Remove exercise
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            <div className="active-exercise-body set-table-wrap">
+              <div className={`set-table-header ${isDualMetric ? 'dual-metric' : 'single-metric'}`}>
+                <span>Set</span>
+                <span>Previous</span>
+                {fields.weight ? <span><span className="metric-label-long">{trackingType === 'assisted_bodyweight' ? 'Assist' : 'Weight'} ({units.weightLabel})</span><span className="metric-label-short">{units.weightLabel}</span></span> : null}
+                {fields.reps ? <span>Reps</span> : null}
+                {fields.duration ? <span>Time (s)</span> : null}
+                {fields.distance ? <span>Dist ({units.distanceLabel})</span> : null}
+                <span style={{ textAlign: 'center' }}>Log</span>
+                <span aria-hidden="true" />
+              </div>
+              <div className="set-list">
+                {item.sets.map((set, setIndex) => (
+                  <ActiveSetRow
+                    key={set.id}
+                    set={set}
+                    draft={setDrafts.get(set.id)}
+                    setNumber={setIndex + 1}
+                    trackingType={trackingType}
+                    previous={previous.get(item.exercise.exerciseId)?.[setIndex]}
+                    units={units}
+                    layoutClass={isDualMetric ? 'dual-metric' : 'single-metric'}
+                    isActiveSet={isCurrent && activeSetIndex !== undefined && setIndex === activeSetIndex}
+                    onDraftChange={(field, value) => updateDraft(set.id, field, value)}
+                    onDraftSaved={(field, value) => clearDraftField(set.id, field, value)}
+                    onSaved={refresh}
+                    onStartRest={startRest}
+                    onRequestDelete={() => requestSetRemoval(set, applySetDraft(set, setDrafts.get(set.id)), trackingType)}
+                  />
+                ))}
+              </div>
+              <div className="exercise-footer-actions">
+                <button className="add-set-btn add-set-button" type="button" onClick={(e) => { e.stopPropagation(); void run(async () => { await addWorkoutSet(item.exercise.id); playEffect('add') }) }}><Plus size={14} aria-hidden="true" /> Add Set</button>
+                <button className="text-button note-toggle-btn" type="button" onClick={(e) => { e.stopPropagation(); playEffect('select'); toggleExerciseNotes(item.exercise.id) }}>{expandedNotes.has(item.exercise.id) ? 'Hide notes' : 'Notes'}</button>
+              </div>
+              {expandedNotes.has(item.exercise.id) ? (
+                <div className="exercise-note-field is-visible">
+                  <textarea
+                    defaultValue={item.exercise.notes ?? ''}
+                    placeholder="Form notes, seat angle, bench notch…"
+                    onBlur={(e) => {
+                      const val = e.target.value.trim()
+                      void db.workoutExercises.update(item.exercise.id, { notes: val || undefined })
                     }}
-                  >
-                    <ArrowUpDown size={16} aria-hidden="true" /> Reorder exercises
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setOpenMenuExerciseId(undefined)
-                      toggleExerciseNotes(item.exercise.id)
-                    }}
-                  >
-                    <Pencil size={16} aria-hidden="true" /> Exercise notes
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="danger-menu-item"
-                    onClick={() => {
-                      setOpenMenuExerciseId(undefined)
-                      if (renderedExerciseHasData(item.exercise.id)) setConfirmExerciseRemovalId(item.exercise.id)
-                      else void run(() => removeActiveExercise(item.exercise.id))
-                    }}
-                  >
-                    <Trash2 size={16} aria-hidden="true" /> Remove exercise
-                  </button>
+                  />
                 </div>
               ) : null}
             </div>
-          </div>
-        </div>
-        <div className="active-exercise-body set-table-wrap">
-          <div className={`set-table-header ${isDualMetric ? 'dual-metric' : 'single-metric'}`}>
-            <span>Set</span>
-            <span>Previous</span>
-            {fields.weight ? <span><span className="metric-label-long">{trackingType === 'assisted_bodyweight' ? 'Assist' : 'Weight'} ({units.weightLabel})</span><span className="metric-label-short">{units.weightLabel}</span></span> : null}
-            {fields.reps ? <span>Reps</span> : null}
-            {fields.duration ? <span>Time (s)</span> : null}
-            {fields.distance ? <span>Dist ({units.distanceLabel})</span> : null}
-            <span style={{ textAlign: 'center' }}>Log</span>
-            <span aria-hidden="true" />
-          </div>
-          <div className="set-list">
-            {item.sets.map((set, setIndex) => (
-              <ActiveSetRow
-                key={set.id}
-                set={set}
-                draft={setDrafts.get(set.id)}
-                setNumber={setIndex + 1}
-                trackingType={trackingType}
-                previous={previous.get(item.exercise.exerciseId)?.[setIndex]}
-                units={units}
-                layoutClass={isDualMetric ? 'dual-metric' : 'single-metric'}
-                isActiveSet={isCurrent && activeSetIndex !== undefined && setIndex === activeSetIndex}
-                onDraftChange={(field, value) => updateDraft(set.id, field, value)}
-                onDraftSaved={(field, value) => clearDraftField(set.id, field, value)}
-                onSaved={refresh}
-                onStartRest={startRest}
-                onRequestDelete={() => requestSetRemoval(set, applySetDraft(set, setDrafts.get(set.id)), trackingType)}
-              />
-            ))}
-          </div>
-          <div className="exercise-footer-actions">
-            <button className="add-set-btn add-set-button" type="button" onClick={(e) => { e.stopPropagation(); void run(async () => { await addWorkoutSet(item.exercise.id); playEffect('add') }) }}><Plus size={14} aria-hidden="true" /> Add Set</button>
-            <button className="text-button note-toggle-btn" type="button" onClick={(e) => { e.stopPropagation(); playEffect('select'); toggleExerciseNotes(item.exercise.id) }}>{expandedNotes.has(item.exercise.id) ? 'Hide notes' : 'Notes'}</button>
-          </div>
-          {expandedNotes.has(item.exercise.id) ? (
-            <div className="exercise-note-field is-visible">
-              <textarea
-                defaultValue={item.exercise.notes ?? ''}
-                placeholder="Form notes, seat angle, bench notch…"
-                onBlur={(e) => {
-                  const val = e.target.value.trim()
-                  void db.workoutExercises.update(item.exercise.id, { notes: val || undefined })
-                }}
-              />
-            </div>
+          </Panel>
+        })}</div> : <Panel><p className="eyebrow">Empty workout</p><h2>Add your first exercise</h2><p>Use the complete Exercise Dex to build today’s session.</p></Panel>}
+
+        <div className="workout-notes-section">
+          <button
+            type="button"
+            className="text-button note-toggle-btn workout-notes-toggle"
+            onClick={() => { playEffect('select'); setShowSessionNotes(!showSessionNotes) }}
+          >
+            <Pencil size={14} aria-hidden="true" /> {showSessionNotes || detail.workout.notes ? 'Workout notes' : '+ Add session notes'}
+          </button>
+          {showSessionNotes ? (
+            <label className="workout-notes">
+              <span className="visually-hidden">Workout notes</span>
+              <textarea defaultValue={detail.workout.notes ?? ''} onBlur={(event) => void run(() => updateWorkoutNotes(workoutId, event.target.value))} placeholder="Optional session notes" />
+            </label>
           ) : null}
         </div>
-      </Panel>
-    })}</div> : <Panel><p className="eyebrow">Empty workout</p><h2>Add your first exercise</h2><p>Use the complete Exercise Dex to build today’s session.</p></Panel>}
-
-    <div className="workout-notes-section">
-      <button
-        type="button"
-        className="text-button note-toggle-btn workout-notes-toggle"
-        onClick={() => { playEffect('select'); setShowSessionNotes(!showSessionNotes) }}
-      >
-        <Pencil size={14} aria-hidden="true" /> {showSessionNotes || detail.workout.notes ? 'Workout notes' : '+ Add session notes'}
-      </button>
-      {showSessionNotes ? (
-        <label className="workout-notes">
-          <span className="visually-hidden">Workout notes</span>
-          <textarea defaultValue={detail.workout.notes ?? ''} onBlur={(event) => void run(() => updateWorkoutNotes(workoutId, event.target.value))} placeholder="Optional session notes" />
-        </label>
-      ) : null}
-    </div>
-    {feedback ? <p className="workout-feedback" role="status">{feedback}</p> : null}
-    <div className="active-workout-secondary-actions">
-      <button className="text-button active-discard-button" type="button" onClick={() => setConfirmDiscard(true)}>Discard workout</button>
-    </div>
-
-    {rest !== undefined ? (
-      <div className="rest-timer-dock" role="timer">
-        <div className="rest-timer-pill">
-          <span>⏱ Rest</span>
-          <span className="rest-time-display">{formatDuration(rest).slice(3)}</span>
-          <button type="button" className="timer-pill-btn" onClick={() => { playEffect('select'); setRest((current) => current === undefined ? undefined : current + 30) }}>+30s</button>
-          <button type="button" className="timer-pill-btn" onClick={() => { playEffect('select'); setRest((current) => current === undefined || current <= 15 ? undefined : current - 15) }}>-15s</button>
-          <button type="button" className="timer-pill-btn is-skip" aria-label="Dismiss rest timer" onClick={() => { playEffect('select'); setRest(undefined) }}>✕</button>
+        {feedback ? <p className="workout-feedback" role="status">{feedback}</p> : null}
+        <div className="active-workout-secondary-actions">
+          <button className="text-button active-discard-button" type="button" onClick={() => setConfirmDiscard(true)}>Discard workout</button>
         </div>
-      </div>
-    ) : null}
 
-    <div className="active-workout-final-actions session-bottom-bar">
-      <button className="secondary-button btn-bottom-secondary" type="button" onClick={() => { playEffect('select'); setPicker(true) }}><Plus size={16} aria-hidden="true" /> Add exercise</button>
-      <button className="primary-button btn-bottom-primary" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>{finishBusy ? 'Checking workout…' : 'Finish workout'}</button>
-    </div>
-    {finishValidation ? <FinishValidationDialog validation={finishValidation} onClose={() => setFinishValidation(undefined)} /> : null}
-    {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => { playEffect('progress_complete'); onCompleted(workoutId) }).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
-    {confirmDiscard ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="alertdialog" aria-modal="true" aria-labelledby="discard-workout-title"><h2 id="discard-workout-title">Discard workout?</h2><p>This session will not appear in history or previous performance.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmDiscard(false)}>Keep workout</button><button className="danger-button" type="button" onClick={() => void discardWorkout(workoutId).then(onExit)}>Discard</button></section></div> : null}
-    {confirmSetRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm set-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-set-title"><h2 id="remove-active-set-title">Delete set?</h2><p>This set contains entered workout data. Deleting it will remove this set from the current workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmSetRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const setId = confirmSetRemovalId; setConfirmSetRemovalId(undefined); void run(() => deleteActiveSet(setId)) }}>Delete set</button></section></div> : null}
-    {confirmExerciseRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-exercise-title"><h2 id="remove-active-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmExerciseRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exerciseId = confirmExerciseRemovalId; setConfirmExerciseRemovalId(undefined); void run(() => removeActiveExercise(exerciseId)) }}>Remove</button></section></div> : null}
-  </div>
+        {rest !== undefined ? (
+          <div className="rest-timer-dock" role="timer">
+            <div className="rest-timer-pill">
+              <span>⏱ Rest</span>
+              <span className="rest-time-display">{formatDuration(rest).slice(3)}</span>
+              <button type="button" className="timer-pill-btn" onClick={() => { playEffect('select'); setRest((current) => current === undefined ? undefined : current + 30) }}>+30s</button>
+              <button type="button" className="timer-pill-btn" onClick={() => { playEffect('select'); setRest((current) => current === undefined || current <= 15 ? undefined : current - 15) }}>-15s</button>
+              <button type="button" className="timer-pill-btn is-skip" aria-label="Dismiss rest timer" onClick={() => { playEffect('select'); setRest(undefined) }}>✕</button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="active-workout-final-actions session-bottom-bar">
+          <button className="secondary-button btn-bottom-secondary" type="button" onClick={() => { playEffect('select'); setPicker(true) }}><Plus size={16} aria-hidden="true" /> Add exercise</button>
+          <button className="primary-button btn-bottom-primary" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>{finishBusy ? 'Checking workout…' : 'Finish workout'}</button>
+        </div>
+        {finishValidation ? <FinishValidationDialog validation={finishValidation} onClose={() => setFinishValidation(undefined)} /> : null}
+        {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => { playEffect('progress_complete'); onCompleted(workoutId) }).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
+        {confirmDiscard ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="alertdialog" aria-modal="true" aria-labelledby="discard-workout-title"><h2 id="discard-workout-title">Discard workout?</h2><p>This session will not appear in history or previous performance.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmDiscard(false)}>Keep workout</button><button className="danger-button" type="button" onClick={() => void discardWorkout(workoutId).then(onExit)}>Discard</button></section></div> : null}
+        {confirmSetRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm set-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-set-title"><h2 id="remove-active-set-title">Delete set?</h2><p>This set contains entered workout data. Deleting it will remove this set from the current workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmSetRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const setId = confirmSetRemovalId; setConfirmSetRemovalId(undefined); void run(() => deleteActiveSet(setId)) }}>Delete set</button></section></div> : null}
+        {confirmExerciseRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-exercise-title"><h2 id="remove-active-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmExerciseRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exerciseId = confirmExerciseRemovalId; setConfirmExerciseRemovalId(undefined); void run(() => removeActiveExercise(exerciseId)) }}>Remove</button></section></div> : null}
+      </div>
+    </CommandPageFrame>
+  )
 }
 
 

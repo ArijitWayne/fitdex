@@ -17,9 +17,19 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
-        <item name="windowSplashScreenBackground">#060908</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <item name="android:windowBackground">@drawable/fitdex_splash_spartan_background</item>
+        <item name="windowSplashScreenBackground">@color/fitdex_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/fitdex_splash_spartan</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+    </style>
+
+    <style name="AppTheme.NoActionBarLaunch.Spartan" parent="AppTheme.NoActionBarLaunch">
+        <item name="android:windowBackground">@drawable/fitdex_splash_spartan_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/fitdex_splash_spartan</item>
+    </style>
+
+    <style name="AppTheme.NoActionBarLaunch.Amazonian" parent="AppTheme.NoActionBarLaunch">
+        <item name="android:windowBackground">@drawable/fitdex_splash_amazonian_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/fitdex_splash_amazonian</item>
     </style>
 </resources>

@@ -20850,7 +20850,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
       "Legs"
     ],
     "equipment": [
-      "Machine"
+      "Bodyweight"
     ],
     "primaryMuscles": [
       "Gastrocnemius"
@@ -20864,7 +20864,7 @@ export const FITDEX_EXERCISES: readonly FitDexExerciseDefinition[] = [
     ],
     "mechanics": "ISOLATION",
     "laterality": "BILATERAL",
-    "weightType": "MACHINE",
+    "weightType": "BODYWEIGHT",
     "mediaStatus": "available",
     "mediaType": "video/mp4",
     "mediaPath": "/exercises/standing-calf-raise.mp4"

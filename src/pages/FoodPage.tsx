@@ -7,7 +7,7 @@ import { ContextRail } from '../components/ui/ContextRail'
 import { RetroLoader } from '../components/ui/RetroLoader'
 import type { CustomFoodCategory, FoodLogEntry, FoodMeal, FoodNutrition, NutritionTargets, PredefinedFoodCategoryId, RememberedFood } from '../data/models'
 import { CustomFoodCategoryIcon, FoodCategoryIcon, MealIcon } from '../features/food/FoodIcons'
-import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getFrequentFoods, getRecentFoods, listCustomCategories, listFoodEntries, listMealEntries, searchRememberedFoods, type FoodDraft } from '../features/food/foodRepository'
+import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getFrequentFoods, getRecentFoods, listCustomCategories, listFoodEntries, listMealEntries, searchRememberedFoods, updateRememberedFood, type FoodDraft } from '../features/food/foodRepository'
 import { calculateMacroCalorieBreakdown, calculateMealCalorieBreakdown, categoryName, customCategoryCssColor, CUSTOM_CATEGORY_COLORS, dateFromKey, FOOD_MEAL_LABELS, normalizeDate, nutritionTotals, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, shiftDate, type NutritionBreakdown } from '../features/food/foodModel'
 import { GuideDialog } from '../features/help/GuideDialog'
 import { foodTutorialSteps } from '../features/help/tutorialSteps'
@@ -145,7 +145,7 @@ function DailyTargetsCard({ targets, totals, onEdit, onLog }: { targets: Nutriti
 }
 
 function TargetsOffCard({ totals, onLog }: { totals: FoodNutrition; onLog: () => void }) {
-  return <section className="food-goal-command proto-primary-card is-targets-off" aria-labelledby="daily-logged-title"><div className="proto-card-top"><span className="proto-card-tag" id="daily-logged-title">Today's Nutrition</span><span className="proto-card-badge">Targets Off</span></div><MacroStrip nutrition={totals} /><button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={16} aria-hidden="true" /> Log Food</button></section>
+  return <section className="food-goal-command proto-primary-card is-targets-off" aria-labelledby="daily-logged-title"><header className="food-targets-off-header"><div><p className="eyebrow">Daily command</p><h2 id="daily-logged-title">Today's Nutrition Targets Are Off</h2></div><span className="food-targets-off-status">Targets off</span></header><p className="food-targets-off-copy">Targets are disabled. Logged totals still appear here.</p><MacroStrip nutrition={totals} /><button className="primary-button food-primary-log" type="button" onClick={onLog}><Plus size={16} aria-hidden="true" /> Log Food</button></section>
 }
 
 export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
@@ -193,7 +193,7 @@ export function FoodPage({ onOpenSettings }: { onOpenSettings?: () => void }) {
   return (
     <CommandPageFrame className="page-stack food-page"
       data-food-design="goal-first"
-      terminalTitle="FITDEX // NUTRITION TERMINAL"
+      terminalTitle="FITDEX // NUTRITION"
       terminalMeta={terminalMeta}
       headerActions={
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -526,11 +526,10 @@ function MealDetail({
       }
     >
       <header className="proto-subhead">
-        <button className="proto-back" type="button" aria-label="Back to Food" onClick={onBack}>
-          ‹ FOOD
+        <button className="proto-back back-command-key" type="button" aria-label="Back to Food" onClick={onBack}>
+          <ArrowLeft size={18} strokeWidth={2.5} aria-hidden="true" /><span>FOOD</span>
         </button>
-        <h1>{FOOD_MEAL_LABELS[meal]}</h1>
-        <p>{formatDate(date)}</p>
+        <div className="page-navigation-title-block"><h1>{FOOD_MEAL_LABELS[meal]}</h1><p>{formatDate(date)}</p></div>
       </header>
 
       {notice ? (
@@ -657,7 +656,7 @@ function MealDetail({
 
       {pendingDelete ? (
         <div className="food-dialog-backdrop">
-          <section className="food-dialog food-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title">
+          <section className="food-dialog food-confirm-dialog food-entry-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-food-title">
             <header>
               <div>
                 <p className="eyebrow">{FOOD_MEAL_LABELS[meal]} entry</p>
@@ -784,6 +783,13 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
     setSaving(true)
     try {
       if (editing) await editFoodLog(editing.id, draft)
+      else if (rememberedSource) {
+        const remembered = await updateRememberedFood(rememberedSource.id, draft)
+        const beforeCount = (await listMealEntries(date, meal)).length
+        await addFoodLog(date, meal, rememberedFoodDraft(remembered))
+        const effect = foodSaveEffect(false, beforeCount)
+        if (effect) playEffect(effect)
+      }
       else {
         const beforeCount = (await listMealEntries(date, meal)).length
         await addFoodLog(date, meal, draft)
@@ -806,7 +812,7 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
   const editorBack = stage === 'details' && !editing ? showSuggestions : onBack
   const editorTitle = editing ? 'Edit Food' : rememberedSource ? 'Edit Details' : 'New Food'
 
-  return <div className="page-stack food-page food-editor-page">
+  return <div className={`page-stack food-page food-editor-page${stage === 'suggestions' ? ' food-add-shell' : ' food-entry-shell'}`}>
     <header className="food-subheader"><button className="back-button" type="button" aria-label="Go back" onClick={editorBack}><ArrowLeft /></button><MealIcon meal={meal} /><div><p className="eyebrow">{stage === 'suggestions' ? 'Add Food' : editorTitle} · {formatDate(date)}</p><h1>{FOOD_MEAL_LABELS[meal]}</h1></div></header>
     {stage === 'suggestions' ? <section className="food-suggestions" aria-label={`Add food to ${FOOD_MEAL_LABELS[meal]}`}>
       <label className="search-box"><Search size={18} aria-hidden="true" /><span className="sr-only">Search remembered local foods</span><input id="food-search" type="search" autoFocus value={query} onChange={(event) => updateQuery(event.target.value)} placeholder="Search your foods..." />{query ? <button className="search-clear" type="button" aria-label="Clear search" onClick={() => updateQuery('')}><X size={17} /></button> : <span className="search-clear" aria-hidden="true" />}</label>
@@ -815,16 +821,16 @@ function FoodEditor({ date, meal, editing, onBack, onSaved }: { date: string; me
         suggestions.length ? <div className="food-groups"><SuggestionGroup title="Matches" foods={suggestions} meal={meal} quickLoggingId={quickLoggingId} onQuickLog={quickLog} onEdit={fillRemembered} /></div> : <section className="empty-results"><h2>No Matches Found</h2><p>No remembered local foods match “{query.trim() || 'Food'}”.</p><button className="secondary" type="button" onClick={startCreate}><Plus size={16} aria-hidden="true" /> Create “{query.trim() || 'Food'}”</button></section>
       ) : <div className="food-groups"><SuggestionGroup title="Recent" foods={suggestions} meal={meal} quickLoggingId={quickLoggingId} onQuickLog={quickLog} onEdit={fillRemembered} empty="No foods remembered yet." /><SuggestionGroup title="Frequent" foods={uniqueFrequent} meal={meal} quickLoggingId={quickLoggingId} onQuickLog={quickLog} onEdit={fillRemembered} /></div>}
       {error ? <p className="form-error" role="alert">{error.message}</p> : null}
-      {!query ? <button className="primary food-create-new" type="button" onClick={startCreate}><Plus size={18} aria-hidden="true" /> Create New Food</button> : null}
+      {!query ? <button className="food-create-new food-command-key" type="button" onClick={startCreate}><Plus size={18} aria-hidden="true" /> Create New Food</button> : null}
     </section> : <section className="panel food-form">
       <label className={`field${error?.field === 'name' ? ' is-invalid' : ''}`}><span>Food name <b>Required</b></span><input value={name} onChange={(event) => { setName(event.target.value); if (error?.field === 'name') setError(undefined) }} autoFocus={!editing && !rememberedSource} required aria-invalid={error?.field === 'name'} />{error?.field === 'name' ? <small className="field-error">{error.message}</small> : null}</label>
       <div className="field"><span>Category <b>Required</b></span><button className="food-category-picker" type="button" onClick={() => { playEffect('select'); setCategoryOpen(true) }}><FoodCategoryIcon categoryId={categoryId} label={customCategoryLabel ?? categoryName(categoryId)} color={customCategoryColor} /><span><strong>{customCategoryLabel ?? categoryName(categoryId)}</strong><small>Tap to select category</small></span><ChevronRight /></button></div>
       <fieldset className="nutrition-fields"><legend>Core nutrition</legend><NutritionInput field="kcal" label="Calories" unit="kcal" value={nutrition.kcal} error={error} onChange={updateNutrition} /><NutritionInput field="protein" label="Protein" unit="g" value={nutrition.protein} error={error} onChange={updateNutrition} /><NutritionInput field="carbs" label="Carbs" unit="g" value={nutrition.carbs} error={error} onChange={updateNutrition} /><NutritionInput field="fat" label="Fat" unit="g" value={nutrition.fat} error={error} onChange={updateNutrition} /></fieldset>
       <button className="food-more-toggle" type="button" aria-expanded={moreOpen} onClick={() => setMoreOpen(!moreOpen)}><span><strong>More Nutrition</strong><small>Fiber · Sugar · Sat. fat · Sodium</small></span>{moreOpen ? <ChevronUp /> : <ChevronDown />}</button>
       {moreOpen ? <fieldset className="nutrition-fields"><legend>Secondary nutrition</legend><NutritionInput field="fiber" label="Fiber" unit="g" value={nutrition.fiber} error={error} onChange={updateNutrition} /><NutritionInput field="sugar" label="Sugar" unit="g" value={nutrition.sugar} error={error} onChange={updateNutrition} /><NutritionInput field="saturatedFat" label="Saturated Fat" unit="g" value={nutrition.saturatedFat} error={error} onChange={updateNutrition} /><NutritionInput field="sodium" label="Sodium" unit="mg" value={nutrition.sodium} error={error} onChange={updateNutrition} /></fieldset> : null}
-      {rememberedSource ? <p className="food-editor-note">Saved remembered-food defaults stay unchanged. This creates a new {FOOD_MEAL_LABELS[meal]} snapshot.</p> : editing ? <p className="food-editor-note">Only this logged entry changes. Remembered defaults stay unchanged.</p> : null}
+      {rememberedSource ? <p className="food-editor-note">Saved remembered-food defaults update. This creates a new {FOOD_MEAL_LABELS[meal]} snapshot.</p> : editing ? <p className="food-editor-note">Only this logged entry changes. Remembered defaults stay unchanged.</p> : null}
       {error && !error.field ? <p className="form-error" role="alert">{error.message}</p> : null}
-      <button className="primary-button" type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Saving…' : editing ? 'Save Changes' : `Add to ${FOOD_MEAL_LABELS[meal]}`}</button>
+      <div className="food-entry-actions"><button className="primary-button" type="button" disabled={saving} onClick={() => void save()}>{saving ? 'Saving…' : editing ? 'Save Changes' : `Add to ${FOOD_MEAL_LABELS[meal]}`}</button></div>
     </section>}
     {categoryOpen ? <CategoryDialog selectedId={categoryId} selectedCustomId={customCategoryId} onClose={() => setCategoryOpen(false)} onSelect={(id, customId, label, color) => { setCategoryId(id); setCustomCategoryId(customId); setCustomCategoryLabel(label); setCustomCategoryColor(color); setCategoryOpen(false) }} /> : null}
   </div>
@@ -897,10 +903,10 @@ function CategoryDialog({ selectedId, selectedCustomId, onClose, onSelect }: { s
     <header><div><p className="eyebrow">Food category</p><h2 id="category-title">{creating ? 'Create Category' : 'Select Category'}</h2></div><button type="button" aria-label="Close category picker" onClick={() => { playEffect('select'); onClose() }}><X /></button></header>
     <div className="food-category-content">
       {showCustomHint ? <ContextRail title="Custom categories are local labels" actions={<button className="secondary-button" type="button" onClick={() => { playEffect('select'); void acknowledgeFirstUse('customFoodCategory'); setShowCustomHint(false) }}>Got it</button>}><p>If predefined categories do not fit, create a reusable custom category with its own accent color. It organizes remembered foods; historical log snapshots remain preserved.</p></ContextRail> : null}
-      {creating ? <div className="custom-category-form"><button className="text-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<button className="primary-button" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}>Cancel</button></div> : <>
+      {creating ? <div className="custom-category-form"><button className="text-button custom-category-back" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}><ChevronLeft /> Categories</button><label className={`field custom-category-name-field${error ? ' is-invalid' : ''}`}><span>Category name</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value); setError('') }} /></label><div className="custom-category-preview" aria-live="polite"><CustomFoodCategoryIcon label={name.trim() || 'Custom category'} color={color} /><div><span className="eyebrow">Live icon preview</span><strong>{name.trim() || 'Custom category'}</strong><small>{color} accent</small></div></div><fieldset className="color-picker"><legend>Icon accent color</legend>{CUSTOM_CATEGORY_COLORS.map((item) => <label key={item} data-color={item} style={{ '--food-category-color': customCategoryCssColor(item) } as CSSProperties}><input type="radio" name="category-color" aria-label={`Icon accent color: ${item}`} checked={color === item} onChange={() => setColor(item)} /><span aria-hidden="true" /></label>)}</fieldset>{error ? <p className="form-error" role="alert">{error}</p> : null}<div className="custom-category-actions"><button className="primary-button food-command-key" type="button" disabled={!name.trim()} onClick={() => void create()}>Create Category</button><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setCreating(false); setError('') }}>Cancel</button></div></div> : <>
         <section className="food-category-section food-standard-categories"><p className="eyebrow">Standard Categories</p><div className="category-grid">{PREDEFINED_FOOD_CATEGORIES.map((category) => <button className={selectedId === category.id && !selectedCustomId ? 'is-selected' : ''} type="button" key={category.id} onClick={() => select(category.id)}><FoodCategoryIcon categoryId={category.id} label={category.name} /><span>{category.name}</span></button>)}</div></section>
         <section className="food-category-section food-custom-categories"><p className="eyebrow">Custom Categories</p>{custom.length ? <div className="food-custom-category-list">{custom.map((category) => <div className="custom-category-option" key={category.id}><button className={selectedCustomId === category.id ? 'is-selected' : ''} type="button" onClick={() => select('other', category.id, category.name, category.color)}><FoodCategoryIcon categoryId="other" label={category.name} color={category.color} /><span>{category.name}</span></button><button className="custom-category-delete" type="button" aria-label={`Delete ${category.name} category`} onClick={() => { playEffect('select'); setPendingDelete(category) }}><Trash2 size={15} /></button></div>)}</div> : <p className="food-suggestion-empty">No custom categories.</p>}</section>
-        {error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button food-create-category" type="button" onClick={() => { playEffect('select'); setCreating(true); setError('') }}><Plus size={18} /> Create Category</button>
+        {error ? <p className="form-error" role="alert">{error}</p> : null}<button className="secondary-button food-create-category food-command-key" type="button" onClick={() => { playEffect('select'); setCreating(true); setError('') }}><Plus size={16} strokeWidth={2.5} aria-hidden="true" /> Create Category</button>
       </>}
     </div>
   </section>{pendingDelete ? <section className="food-dialog food-confirm-dialog food-category-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-category-title"><header><div><p className="eyebrow">Custom category</p><h2 id="delete-category-title">Delete Category?</h2></div></header><p>“{pendingDelete.name}” will be removed.</p><p>Remembered foods in this category will also be removed. Historical food logs remain and become Uncategorized.</p><div className="food-dialog-actions"><button className="secondary-button" type="button" onClick={() => { playEffect('select'); setPendingDelete(undefined) }}>Cancel</button><button className="food-danger-button" type="button" onClick={() => { playEffect('select'); void remove() }}>Delete</button></div></section> : null}</div>

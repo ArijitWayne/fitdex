@@ -24,6 +24,7 @@
             android:icon="@mipmap/ic_launcher_spartan"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_spartan_round"
+            android:theme="@style/AppTheme.NoActionBarLaunch.Spartan"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,6 +39,7 @@
             android:icon="@mipmap/ic_launcher_amazonian"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_amazonian_round"
+            android:theme="@style/AppTheme.NoActionBarLaunch.Amazonian"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

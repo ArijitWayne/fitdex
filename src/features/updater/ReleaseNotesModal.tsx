@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { AppRelease } from './updaterModel';
 import { fetchReleaseHistory, handoffApkDownload } from './updaterService';
+import { parseReleaseNotes, parseInlineMarkdown, type InlineToken } from './releaseNotesParser';
 import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion';
 import { useBackNavigation } from '../navigation/useBackNavigation';
 
@@ -8,48 +9,16 @@ interface ReleaseNotesModalProps {
   onClose: () => void;
 }
 
-type ReleaseSection = 'new' | 'improvements' | 'fixes';
-
-const sectionHeadings: Record<ReleaseSection, string> = {
-  new: "WHAT'S NEW",
-  improvements: 'IMPROVEMENTS',
-  fixes: 'FIXES',
-};
-
-function releaseSectionForHeading(line: string): ReleaseSection | null {
-  const heading = line.replace(/^#{1,6}\s*/, '').replace(/:$/, '').trim().toUpperCase();
-  if (heading === 'NEW' || heading === "WHAT'S NEW" || heading === 'WHATS NEW') return 'new';
-  if (heading === 'IMPROVED' || heading === 'IMPROVEMENTS') return 'improvements';
-  if (heading === 'FIXED' || heading === 'FIXES') return 'fixes';
-  return null;
-}
-
-function splitReleaseNotes(notes: string) {
-  const summary: string[] = [];
-  const sections: Partial<Record<ReleaseSection, string[]>> = {};
-  let currentSection: ReleaseSection | null = null;
-
-  for (const line of notes.split('\n')) {
-    const section = releaseSectionForHeading(line);
-    if (section) {
-      currentSection = section;
-      sections[section] ??= [];
-    } else if (/^#{1,6}\s+/.test(line)) {
-      currentSection = null;
-      summary.push(line.replace(/^#{1,6}\s*/, ''));
-    } else if (currentSection) {
-      sections[currentSection]?.push(line);
-    } else {
-      summary.push(line);
+function renderTokens(tokens: InlineToken[]): React.ReactNode {
+  return tokens.map((token, idx) => {
+    if (token.type === 'bold') {
+      return <strong key={idx}>{token.text}</strong>;
     }
-  }
-
-  return {
-    summary: summary.join('\n').trim(),
-    sections: (Object.keys(sectionHeadings) as ReleaseSection[])
-      .map((section) => ({ section, content: sections[section]?.join('\n').trim() }))
-      .filter((item): item is { section: ReleaseSection; content: string } => Boolean(item.content)),
-  };
+    if (token.type === 'code') {
+      return <code key={idx} className="inline-code">{token.text}</code>;
+    }
+    return <React.Fragment key={idx}>{token.text}</React.Fragment>;
+  });
 }
 
 function formatPublishedDate(date: string): string {
@@ -90,11 +59,31 @@ export const ReleaseNotesModal: React.FC<ReleaseNotesModalProps> = ({ onClose })
     };
   }, []);
 
+  const latestRelease: AppRelease = useMemo(() => {
+    if (releases.length > 0) {
+      return releases[0];
+    }
+    return {
+      version: APP_VERSION,
+      versionCode: APP_BUILD_NUMBER,
+      tag: `v${APP_VERSION}`,
+      publishedAt: new Date().toISOString(),
+      githubReleaseUrl: 'https://github.com/ArijitWayne/fitdex',
+      releaseNotes: `### WHAT'S NEW\n- Local-first workout engine and progression logging.\n- Exercise Dex, retro sound FX, and dual-faction themes.\n- Cold-launch boot vignette and background update engine.`,
+    };
+  }, [releases]);
+
+  const parsedNotes = useMemo(() => {
+    return parseReleaseNotes(latestRelease.releaseNotes);
+  }, [latestRelease.releaseNotes]);
+
   const downloadRelease = async (release: AppRelease) => {
     setDownloadingTag(release.tag);
     await handoffApkDownload(release);
     setDownloadingTag(null);
   };
+
+  const isBaseline = releases.length === 0 && !loading;
 
   return (
     <div className="guide-backdrop active" role="presentation">
@@ -107,7 +96,7 @@ export const ReleaseNotesModal: React.FC<ReleaseNotesModalProps> = ({ onClose })
         <header className="guide-topline release-notes-header">
           <div className="guide-title-box">
             <span className="guide-eyebrow">SETTINGS / RELEASE NOTES</span>
-            <strong id="notes-dialog-title">CHANGELOG ARCHIVE</strong>
+            <strong id="notes-dialog-title">LATEST RELEASE</strong>
           </div>
           <button
             ref={closeButtonRef}
@@ -122,68 +111,95 @@ export const ReleaseNotesModal: React.FC<ReleaseNotesModalProps> = ({ onClose })
 
         <div className="update-dialog-body release-archive-body">
           {loading ? (
-            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-              SCANNING RELEASE ARCHIVE...
+            <div className="release-loading-state" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+              SCANNING LATEST RELEASE...
             </div>
-          ) : releases.length > 0 ? (
-            releases.map((rel, index) => {
-              const notes = splitReleaseNotes(rel.releaseNotes);
-              return (
-                <article className="retro-release-card" key={rel.tag}>
-                  <header className="release-card-header">
-                    <div className="release-card-version">
-                      <strong>v{rel.version}</strong>
-                      {rel.versionCode && <span className="release-badge">BUILD {rel.versionCode}</span>}
-                      {index === 0 && <span className="release-badge latest">LATEST</span>}
-                    </div>
-                    <time className="release-date" dateTime={rel.publishedAt}>{formatPublishedDate(rel.publishedAt)}</time>
-                  </header>
-
-                  {notes.summary && <p className="release-card-summary">{notes.summary}</p>}
-
-                  {notes.sections.map(({ section, content }) => (
-                    <section className={`release-archive-section ${section}`} key={section}>
-                      <h3>{sectionHeadings[section]}</h3>
-                      <pre>{content}</pre>
-                    </section>
-                  ))}
-
-                  {rel.apkDownloadUrl && (
-                    <div className="release-card-actions">
-                      <button
-                        type="button"
-                        className="cmd-btn primary compact"
-                        onClick={() => void downloadRelease(rel)}
-                        disabled={downloadingTag === rel.tag}
-                      >
-                        {downloadingTag === rel.tag
-                          ? 'OPENING DOWNLOAD...'
-                          : `DOWNLOAD APK${rel.apkSize ? ` (${(rel.apkSize / (1024 * 1024)).toFixed(1)} MB)` : ''}`}
-                      </button>
-                    </div>
-                  )}
-                </article>
-              );
-            })
           ) : (
-            <article className="retro-release-card local-baseline-card">
+            <article className={`retro-release-card ${isBaseline ? 'local-baseline-card' : ''}`}>
               <header className="release-card-header">
                 <div className="release-card-version">
-                  <strong>v{APP_VERSION}</strong>
-                  <span className="release-badge">BUILD {APP_BUILD_NUMBER}</span>
-                  <span className="release-badge local">LOCAL BASELINE</span>
-                  <span className="release-badge">PRE-RELEASE</span>
+                  <strong>v{latestRelease.version}</strong>
+                  {latestRelease.versionCode ? <span className="release-badge">BUILD {latestRelease.versionCode}</span> : null}
+                  <span className="release-badge latest">{isBaseline ? 'LOCAL BASELINE' : 'LATEST'}</span>
                 </div>
+                <time className="release-date" dateTime={latestRelease.publishedAt}>
+                  {formatPublishedDate(latestRelease.publishedAt)}
+                </time>
               </header>
-              <p className="release-card-summary">Initial local FitDex baseline. No public stable GitHub Release has been published yet.</p>
-              <section className="release-archive-section new">
-                <h3>INITIAL RELEASE</h3>
-                <ul>
-                  <li>Local-first workout engine and progression logging.</li>
-                  <li>Exercise Dex, retro sound FX, and dual-faction themes.</li>
-                  <li>Cold-launch boot vignette and background update engine.</li>
-                </ul>
-              </section>
+
+              <div className="release-telemetry-grid">
+                <div className="telemetry-item">
+                  <span className="telemetry-label">VERSION</span>
+                  <strong className="telemetry-val">{latestRelease.version}</strong>
+                </div>
+                {latestRelease.versionCode ? (
+                  <div className="telemetry-item">
+                    <span className="telemetry-label">BUILD</span>
+                    <strong className="telemetry-val">{latestRelease.versionCode}</strong>
+                  </div>
+                ) : null}
+                <div className="telemetry-item">
+                  <span className="telemetry-label">PUBLISHED</span>
+                  <span className="telemetry-val">{formatPublishedDate(latestRelease.publishedAt)}</span>
+                </div>
+                {latestRelease.apkSize ? (
+                  <div className="telemetry-item">
+                    <span className="telemetry-label">APK SIZE</span>
+                    <span className="telemetry-val">{(latestRelease.apkSize / (1024 * 1024)).toFixed(1)} MB</span>
+                  </div>
+                ) : null}
+              </div>
+
+              {parsedNotes.summary.length > 0 ? (
+                <div className="release-card-summary">
+                  {parsedNotes.summary.map((paragraph, idx) => (
+                    <p key={idx} className="release-summary-paragraph">
+                      {renderTokens(parseInlineMarkdown(paragraph))}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+
+              {parsedNotes.sections.length > 0 ? (
+                <div className="release-sections-stack">
+                  {parsedNotes.sections.map((section, sIdx) => (
+                    <section className={`release-archive-section ${section.type}`} key={sIdx}>
+                      <div className="release-section-header">
+                        <span className={`release-section-tag tag-${section.type}`}>{section.title}</span>
+                      </div>
+                      {section.paragraphs.map((p, pIdx) => (
+                        <p key={pIdx} className="release-note-paragraph">
+                          {renderTokens(parseInlineMarkdown(p))}
+                        </p>
+                      ))}
+                      {section.items.length > 0 ? (
+                        <ul className="release-note-list">
+                          {section.items.map((item, iIdx) => (
+                            <li key={iIdx} className="release-note-item">
+                              {renderTokens(parseInlineMarkdown(item))}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </section>
+                  ))}
+                </div>
+              ) : null}
+
+              {latestRelease.apkDownloadUrl ? (
+                <div className="release-card-actions">
+                  <button
+                    type="button"
+                    className="cmd-btn primary compact release-download-btn"
+                    onClick={() => void downloadRelease(latestRelease)}
+                    disabled={downloadingTag === latestRelease.tag}
+                  >
+                    {downloadingTag === latestRelease.tag
+                      ? 'OPENING DOWNLOAD...'
+                      : `DOWNLOAD APK${latestRelease.apkSize ? ` (${(latestRelease.apkSize / (1024 * 1024)).toFixed(1)} MB)` : ''}`}
+                  </button>
+                </div>
+              ) : null}
             </article>
           )}
         </div>

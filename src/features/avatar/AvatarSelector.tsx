@@ -15,17 +15,27 @@ export function AvatarSelector({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={compact ? 'avatar-selector is-compact' : 'avatar-selector'}>
-      <aside className="selected-avatar-detail" aria-live="polite" aria-label={`Selected champion: ${selectedAvatar.name}`}>
+      <aside className="selected-avatar-detail" data-faction={selectedAvatar.faction} aria-live="polite" aria-label={`Selected champion: ${selectedAvatar.name}`}>
         <AvatarPortrait avatar={selectedAvatar} size="small" />
-        <div><p className="eyebrow">Selected champion</p><strong>{selectedAvatar.name}</strong><span>{selectedAvatar.archetype}</span></div>
-        <blockquote>“{selectedAvatar.tagline}”</blockquote>
+        <div className="selected-avatar-content">
+          <p className="eyebrow">Selected champion</p>
+          <div className="selected-avatar-title-row">
+            <strong>{selectedAvatar.name}</strong>
+            <span>{selectedAvatar.archetype}</span>
+          </div>
+          <blockquote>“{selectedAvatar.tagline}”</blockquote>
+        </div>
       </aside>
       {groups.map((group) => (
-        <fieldset className="avatar-group" key={group.faction}>
-          <legend>{group.label}</legend>
+        <fieldset className="avatar-group" key={group.faction} data-faction={group.faction}>
+          <legend className={`avatar-group-legend avatar-group-legend-${group.faction}`}>{group.label}</legend>
           <div className="avatar-grid">
             {AVATARS.filter((avatar) => avatar.faction === group.faction).map((avatar) => (
-              <label className={selectedAvatar.id === avatar.id ? 'avatar-option is-selected' : 'avatar-option'} key={avatar.id}>
+              <label
+                className={selectedAvatar.id === avatar.id ? 'avatar-option is-selected' : 'avatar-option'}
+                key={avatar.id}
+                data-faction={avatar.faction}
+              >
                 <input type="radio" name="avatar" value={avatar.id} checked={selectedAvatar.id === avatar.id} onChange={() => { playEffect('select'); selectAvatar(avatar.id) }} />
                 <AvatarPortrait avatar={avatar} size={compact ? 'small' : 'medium'} />
                 <span className="avatar-option-copy"><strong>{avatar.name}</strong><small>{avatar.archetype}</small></span>

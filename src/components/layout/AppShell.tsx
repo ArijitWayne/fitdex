@@ -1,6 +1,7 @@
-import { ChartNoAxesColumnIncreasing, Dumbbell, House, Moon, NotebookTabs, Settings, Sun, Utensils } from 'lucide-react'
+import { ChartNoAxesColumnIncreasing, Dumbbell, House, NotebookTabs, Utensils } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { RetroGearIcon, RetroMoonIcon, RetroSunIcon } from './HeaderUtilityIcons'
 import type { AppDestination } from '../../types/navigation'
 import { useAudio } from '../../features/audio/useAudio'
 import { brandingForTheme } from '../../branding/branding'
@@ -49,7 +50,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, on
         {!online ? <div className="connectivity-status" role="status" aria-live="polite"><span aria-hidden="true">●</span> Offline</div> : null}
         <div className="header-actions">
           <button
-            className="icon-button"
+            className="header-utility-key theme-utility-key"
             type="button"
             aria-label={resolvedBrightness === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             onClick={() => {
@@ -57,10 +58,10 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, on
               setBrightness(resolvedBrightness === 'dark' ? 'light' : 'dark')
             }}
           >
-            {resolvedBrightness === 'dark' ? <Sun size={20} strokeWidth={2} aria-hidden="true" /> : <Moon size={20} strokeWidth={2} aria-hidden="true" />}
+            {resolvedBrightness === 'dark' ? <RetroSunIcon className="retro-theme-icon" /> : <RetroMoonIcon className="retro-theme-icon" />}
           </button>
           <button
-            className={`icon-button ${settingsOpen ? 'is-active' : ''}`}
+            className={`header-utility-key settings-utility-key ${settingsOpen ? 'is-active' : ''}`}
             type="button"
             aria-label="Open settings"
             aria-pressed={settingsOpen}
@@ -70,7 +71,7 @@ export function AppShell({ children, destination, onNavigate, onOpenSettings, on
               else onOpenSettings()
             }}
           >
-            <Settings size={21} strokeWidth={2} aria-hidden="true" />
+            <RetroGearIcon className="retro-gear-icon" />
           </button>
         </div>
       </header>

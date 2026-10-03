@@ -42,6 +42,16 @@
   --color-on-xp: #261a0a;
   --color-overlay: rgba(18, 20, 19, .76);
   --color-shadow: rgba(47, 51, 48, .16);
+  --color-utility-sun-base: #f2b83f;
+  --color-utility-sun-highlight: #fff0a7;
+  --color-utility-sun-shadow: #b16a1d;
+  --color-utility-moon-base: #aeb9c2;
+  --color-utility-moon-highlight: #edf3f2;
+  --color-utility-moon-crater: #77838d;
+  --color-utility-moon-shadow: #4f5c66;
+  --color-utility-gear-base: #8c989b;
+  --color-utility-gear-highlight: #d8e1df;
+  --color-utility-gear-shadow: #536266;
   --color-faction-spartans: #1f8582;
   --color-faction-amazonians: #785178;
 
@@ -107,6 +117,9 @@
   --color-on-xp: #281a09;
   --color-overlay: rgba(31, 22, 27, .77);
   --color-shadow: rgba(62, 45, 54, .16);
+  --color-utility-gear-base: #b8754d;
+  --color-utility-gear-highlight: #f0c58f;
+  --color-utility-gear-shadow: #75442d;
 }
 
 /* Spartans dark: black iron and graphite dominate; teal and bronze stay accents. */
@@ -135,6 +148,18 @@
   --color-on-xp: #21170a;
   --color-overlay: rgba(5, 8, 8, .82);
   --color-shadow: rgba(0, 0, 0, .24);
+  --color-utility-sun-base: #f4bd43;
+  --color-utility-sun-highlight: #fff2ab;
+  --color-utility-sun-shadow: #b56e22;
+  --color-utility-moon-base: #b5c0c9;
+  --color-utility-moon-highlight: #edf3f2;
+  --color-utility-moon-crater: #77848f;
+  --color-utility-moon-shadow: #4d5b65;
+  --color-utility-gear-base: #657378;
+  --color-utility-gear-highlight: #b9c9ca;
+  --color-utility-gear-shadow: #364348;
+  --color-faction-spartans: #2e9895;
+  --color-faction-amazonians: #a878a8;
 }
 
 /* Amazonians dark: charcoal/aubergine dominates; plum, wine and copper are details. */
@@ -163,6 +188,18 @@
   --color-on-xp: #271a09;
   --color-overlay: rgba(12, 7, 11, .82);
   --color-shadow: rgba(0, 0, 0, .25);
+  --color-utility-sun-base: #f4bd43;
+  --color-utility-sun-highlight: #fff2ab;
+  --color-utility-sun-shadow: #b56e22;
+  --color-utility-moon-base: #b5c0c9;
+  --color-utility-moon-highlight: #edf3f2;
+  --color-utility-moon-crater: #77848f;
+  --color-utility-moon-shadow: #4d5b65;
+  --color-utility-gear-base: #8e563b;
+  --color-utility-gear-highlight: #db9a68;
+  --color-utility-gear-shadow: #522f25;
+  --color-faction-spartans: #2e9895;
+  --color-faction-amazonians: #a878a8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -191,6 +228,18 @@
     --color-on-xp: #21170a;
     --color-overlay: rgba(5, 8, 8, .82);
     --color-shadow: rgba(0, 0, 0, .24);
+    --color-utility-sun-base: #f4bd43;
+    --color-utility-sun-highlight: #fff2ab;
+    --color-utility-sun-shadow: #b56e22;
+    --color-utility-moon-base: #b5c0c9;
+    --color-utility-moon-highlight: #edf3f2;
+    --color-utility-moon-crater: #77848f;
+    --color-utility-moon-shadow: #4d5b65;
+    --color-utility-gear-base: #657378;
+    --color-utility-gear-highlight: #b9c9ca;
+    --color-utility-gear-shadow: #364348;
+    --color-faction-spartans: #2e9895;
+    --color-faction-amazonians: #a878a8;
   }
 
   :root[data-theme-family='amazonians'][data-brightness='system'] {
@@ -218,7 +267,20 @@
     --color-on-xp: #271a09;
     --color-overlay: rgba(12, 7, 11, .82);
     --color-shadow: rgba(0, 0, 0, .25);
+    --color-utility-sun-base: #f4bd43;
+    --color-utility-sun-highlight: #fff2ab;
+    --color-utility-sun-shadow: #b56e22;
+    --color-utility-moon-base: #b5c0c9;
+    --color-utility-moon-highlight: #edf3f2;
+    --color-utility-moon-crater: #77848f;
+    --color-utility-moon-shadow: #4d5b65;
+    --color-utility-gear-base: #8e563b;
+    --color-utility-gear-highlight: #db9a68;
+    --color-utility-gear-shadow: #522f25;
+    --color-faction-spartans: #2e9895;
+    --color-faction-amazonians: #a878a8;
   }
+
 }
 
 * { box-sizing: border-box; }

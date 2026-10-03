@@ -159,8 +159,8 @@ export function StreakDetailView({ data, onBack, onChanged }: { data: Gamificati
 function ConsistencyDeckHeader({ onBack }: { onBack: () => void }) {
   return (
     <header className="consistency-deck-header">
-      <button className="consistency-deck-back-btn" type="button" onClick={onBack}>‹ HOME</button>
-      <div><h1>CONSISTENCY DECK</h1><p>Plan protection and recovery.</p></div>
+      <button className="consistency-deck-back-btn back-command-key" type="button" onClick={onBack}><ArrowLeft size={18} strokeWidth={2.5} aria-hidden="true" /><span>HOME</span></button>
+      <div className="page-navigation-title-block"><h1>CONSISTENCY DECK</h1><p>Plan protection and recovery.</p></div>
     </header>
   )
 }

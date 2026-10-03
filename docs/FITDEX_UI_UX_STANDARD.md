@@ -73,7 +73,7 @@ Prototypes and views must never invent independent color palettes or custom hex 
 
 #### VIII. Motion Doctrine
 - Short, deliberate, crisp transitions (150ms–200ms cubic-bezier).
-- Avoid floating springs, elastic physics, or continuous decorative rotations. Full support for `prefers-reduced-motion: reduce`.
+- Avoid floating springs and elastic physics. Continuous motion is reserved for persistent utility-state artwork, such as Settings gear rotation; it must stop under `prefers-reduced-motion: reduce`.
 
 #### IX. Phone-First Envelope
 - Primary validation target is 320px–480px (360px, 375px, 390px, 412px, 430px). Every view must be compact, responsive, and 100% horizontal-scroll-free before desktop expansion.
@@ -156,6 +156,7 @@ The global `AppShell` owns root layout chrome, header branding, global navigatio
 - Center/Status: Connectivity indicator (shown only when offline).
 - Faction selection (Spartans / Amazonians) lives strictly inside Settings → Appearance.
 - Uniform visual language, dimensions, and padding across all primary pages (Home, Workout, Food, Progress, Journal, Exercise Dex, Settings).
+- Utility icons use original pixel-art SVGs: retro sun for light mode, full moon for dark mode, and faction-aware rotating gear for Settings. Each remains an independent tactile control.
 
 **Appearance Terminology Standard**:
 - **Faction**: Visual identity and branding family (`Spartans` / `Amazonians`).
@@ -216,6 +217,14 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
 - Streak protection uses exact wording "ROLLING 12 MONTHS" (never "calendar year") for Travel/Sickness Pause and protected material plan changes. Freeze economy provides initial balance = 2, +1 Freeze per 15 successful planned training days, unlimited balance, and durable idempotent reward dialogs.
 - Consistency Deck (`StreakDetailView`) matches the approved tactical console prototype structure, omitting the redundant "THIS WEEK" schedule grid (which is housed in Workout Hub). All modules follow hard rectangular borders, compact console hierarchy, theme-adaptive vector icons, and direct native date controls with >=44px touch targets.
 
+### 2.14 v2.1 Shell and BGM Deck Pattern
+
+- Use rounded handheld outer shells with tighter nested modules. Rounded geometry signals device enclosure, not soft floating-card UI.
+- Navigation and primary actions retain tactile borders, hard depth, visible pressed states, and clear selected-state treatment.
+- Battle Music uses one shared BGM deck on Home and Settings. Active tracks show animated equalizer bars; `NONE` remains an active selection with a static pixel mute icon and `MUSIC OFF` label.
+- All deck, shell, header, and selected-state colors inherit semantic theme tokens. No faction-specific feature palette may be introduced.
+- Prefer spacing and hierarchy over legacy divider-heavy radio lists.
+
 
 ---
 
@@ -275,7 +284,7 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
 - **Faction Accent**: Spartan uses teal/cyan and Amazonian uses plum/orchid. Gold remains semantic rank/XP/reward color, green success/recovery, and red destructive/error.
 - **Notifications V1**: Master control plus App Updates, Today's Planned Workout, and Calories Below Daily Target only. Built with authoritative full bordered-card retro panels, dedicated category header bands (`APP`, `WORKOUT`, `NUTRITION`), and compact expandable `WHEN IT SENDS` disclosures (`▸` collapsed / `▾` open). Category rows never expose sound names, sound pickers, or previews (internal sounds: Workout → `morning_notification.mp3`, Nutrition → `warning_notification.mp3`, Update → `update_notification.mp3`). Workout/Nutrition use compact custom 12-hour time dialogs. Permission follows explicit master intent; `NOT NOW` restores Off. Developer-only test controls never ship in release UI.
 - **Inline Summary Badges**: Display verified current state inline in navigation rows (`Arijit · Leonidas`, `Spartan · Dark`, `Metric`, `SFX On · Warrior`, `1,800 kcal · Protein off`).
-- **Unified Audio Entry**: Sound Effects switch and Background Music track options (`Warrior`, `Hardened`, `Villain`, `None`) consolidated in a dedicated subview.
+- **Unified Audio Entry**: Sound Effects switch and shared Battle Music deck (`Warrior`, `Hardened`, `Villain`, `None`) are consolidated in a dedicated subview. Active tracks use equalizer motion; `None` uses static mute state.
 - **Units Management**: Direct selection between Metric (`kg · km`) and Imperial (`lb · mi`) backed by `SettingsRecord.units` in Dexie.
 - **Nutrition Targets — V3 Nutrition Codex**: Authoritative retro reference and configuration ledger using Style B Pixel Command controls (0px radius, 2px semantic borders, 3px hard block shadows). Structured into `Baseline Parameters` (clean fields with no decorative `RECORD 01` stamps, dropdown with hidden TDEE factors), `Energy Accounting` (RMR, TDEE, Calorie recommendations, and protein allocation), and `Daily Targets` (stepper inputs with direct typing, calculated/manual source badges, `NOT SET` zero state, and `g/day · g/kg · kcal · %` telemetry metadata).
 - **Replacement-Only Restore**: Full `.fitdex` restore communicates literal replace-not-merge semantics with optional safety backup.
@@ -319,5 +328,5 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
 - **Motion**: Reduced-motion mode shortens boot to a static ready state and brief handoff. It removes staged warrior animation while retaining readable status feedback.
 - **Update Notification**: Update checks run in the background and never delay startup, navigation, or normal use. A non-blocking banner appears only for a newer stable public GitHub Release; users can review details or dismiss it.
 - **Update Dialogs**: Update details use a focused accessible modal with installed and target version/build, publication date, APK size when available, release notes, checksum when provided, and an explicit download/install handoff. Escape and close controls dismiss the modal.
-- **Settings & About**: About offers a manual check and Release Notes. It reports update availability, offline state, and fetch errors clearly. With no public stable GitHub Release, it says no public release exists and identifies installed `v1.0.0` only as a local baseline.
+- **Settings & About**: About offers a manual check and Release Notes. It reports update availability, offline state, and fetch errors clearly. With no public stable GitHub Release, it identifies installed version/build as local baseline.
 - **Offline & Error Copy**: Explain unavailable network or release data without claiming a release exists, without fabricating current-public-release confirmation, and with a clear retry path where applicable.

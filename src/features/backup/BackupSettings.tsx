@@ -119,13 +119,32 @@ export function BackupSettings() {
   const continueAfterRestore = () => window.location.reload()
   const summary = incoming ? summarizeFitDexBackup(incoming) : undefined
 
-  return <section className="settings-section backup-settings" aria-labelledby="storage-heading">
-    <div className="settings-section-heading"><span>09</span><div><h2 id="storage-heading">Data &amp; Storage</h2><p>Your device is the source of truth.</p></div></div>
-    <section className="backup-action" aria-labelledby="backup-action-heading"><div><p className="eyebrow">Backup</p><h3 id="backup-action-heading">Protect your FitDex data with a portable backup.</h3></div><button ref={createButtonRef} className="secondary-button" type="button" disabled={busy} onClick={() => openCreate()}><Download size={18} aria-hidden="true" /> Create Backup</button></section>
-    <section className="backup-action" aria-labelledby="restore-action-heading"><div><p className="eyebrow">Restore</p><h3 id="restore-action-heading">Restore your data from a FitDex backup.</h3></div><input ref={fileInputRef} className="sr-only" type="file" accept={resolveBackupAccept()} aria-label="Choose .fitdex File" onChange={(event) => void readFile(event.target.files?.[0])} /><button ref={chooseButtonRef} className="secondary-button" type="button" disabled={busy} onClick={chooseFile}><Upload size={18} aria-hidden="true" /> {busy ? 'Reading backup…' : 'Choose .fitdex File'}</button></section>
-    <p className="backup-privacy-note">Your data stays on your device unless you choose to save or share the backup elsewhere.</p>
-    <p className="backup-security-note">Backup files contain your FitDex data. Store them somewhere you trust.</p>
-    {status ? <p className={isError ? 'form-error' : 'display-name-status'} role={isError ? 'alert' : 'status'}>{status}</p> : null}
+  return (
+    <section className="settings-detail-card settings-backup-card" aria-labelledby="storage-heading">
+      <div className="backup-intro-block">
+        <h2 id="storage-heading" className="backup-intro-title">Data &amp; Storage</h2>
+        <p className="backup-intro-copy">Your device is the source of truth.</p>
+      </div>
+      <section className="backup-action" aria-labelledby="backup-action-heading">
+        <div>
+          <p className="eyebrow">Backup</p>
+          <h3 id="backup-action-heading">Protect your FitDex data with a portable backup.</h3>
+        </div>
+        <button ref={createButtonRef} className="secondary-button" type="button" disabled={busy} onClick={() => openCreate()}><Download size={18} aria-hidden="true" /> Create Backup</button>
+      </section>
+      <section className="backup-action" aria-labelledby="restore-action-heading">
+        <div>
+          <p className="eyebrow">Restore</p>
+          <h3 id="restore-action-heading">Restore your data from a FitDex backup.</h3>
+        </div>
+        <input ref={fileInputRef} className="sr-only" type="file" accept={resolveBackupAccept()} aria-label="Choose .fitdex File" onChange={(event) => void readFile(event.target.files?.[0])} />
+        <button ref={chooseButtonRef} className="secondary-button" type="button" disabled={busy} onClick={chooseFile}><Upload size={18} aria-hidden="true" /> {busy ? 'Reading backup…' : 'Choose .fitdex File'}</button>
+      </section>
+      <div className="appearance-note backup-note-block">
+        <p className="backup-privacy-note">Your data stays on your device unless you choose to save or share the backup elsewhere.</p>
+        <p className="backup-security-note">Backup files contain your FitDex data. Store them somewhere you trust.</p>
+      </div>
+      {status ? <p className={isError ? 'form-error' : 'display-name-status'} role={isError ? 'alert' : 'status'}>{status}</p> : null}
 
     {dialog?.kind === 'create' ? <BackupDialog title="Create FitDex Backup" eyebrow="Portable local backup" onClose={() => dialog.returnToRestore && incoming ? setDialog({ kind: 'confirm' }) : setDialog(undefined)}>
       <p>This backup includes your workouts, food logs, routines, progress, settings and gamification data.</p>
@@ -153,7 +172,8 @@ export function BackupSettings() {
       {dialog.externalPreferenceFailures.length ? <p className="form-error" role="status">Your FitDex data was restored, but this browser could not persist: {dialog.externalPreferenceFailures.join(', ')}. Those display/setup preferences may keep their current values after reload.</p> : null}
       <div className="backup-dialog-actions"><button className="primary-button" type="button" onClick={continueAfterRestore}>Continue</button></div>
     </BackupDialog> : null}
-  </section>
+    </section>
+  )
 }
 
 function BackupDialog({ title, eyebrow, role = 'dialog', onClose, children }: { title: string; eyebrow: string; role?: 'dialog' | 'alertdialog'; onClose: () => void; children: ReactNode }) {

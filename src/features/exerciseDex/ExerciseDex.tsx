@@ -21,6 +21,7 @@ import {
 } from './exerciseCatalog'
 import { getExerciseCategorySprite } from './exerciseCategorySprites'
 import { getExerciseContent } from './exerciseContent'
+import { TRACKING_AUDIT_ROWS_1_TO_804 } from './trackingAudit1To804Map'
 import { downloadExerciseMedia, getExerciseMediaPlayback, removeDownloadedExerciseMedia, supportsNativeExerciseMedia, type MediaPlayback } from '../exerciseMedia/exerciseMediaStore'
 import { ensureBuiltInExercises } from './seedExercises'
 import { listFavouriteExerciseIds, setExerciseFavourite } from './exerciseFavouriteRepository'
@@ -503,43 +504,58 @@ export function ExerciseDetail({ exercise, favourite, onBack, onToggleFavourite,
   backLabel?: string
 }) {
   const content = getExerciseContent(exercise.id)
+  const dexNumber = TRACKING_AUDIT_ROWS_1_TO_804.find((row) => row.sourceId === exercise.sourceId)?.auditNumber
+  const primaryMuscle = exercise.primaryMuscles.join(', ') || 'None specified'
+  const equipment = exercise.equipmentOptions?.join(', ') ?? exercise.equipment
 
   return (
     <Panel className="exercise-detail-panel exercise-record-sheet">
-      <div className="exercise-detail-header">
-        <button className="dex-back-button" type="button" onClick={onBack} aria-label={backLabel ?? "Back to exercise list"}><ArrowLeft size={20} aria-hidden="true" /></button>
-        <div>
+      <div className="exercise-record-header">
+        <div className="exercise-record-actions">
+          <button className="dex-back-button" type="button" onClick={onBack} aria-label={backLabel ?? "Back to exercise list"}><ArrowLeft size={20} aria-hidden="true" /></button>
+          {!picker && onToggleFavourite ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
+        </div>
+        <div className="exercise-record-index">
           <p className="eyebrow">Exercise record</p>
+          {dexNumber ? <span>DEX #{dexNumber}</span> : null}
+        </div>
+        <div className="exercise-record-identity">
           <h2>{exercise.name}</h2>
           <p className="exercise-detail-category">
             {exercise.categories?.join(' · ') ?? exercise.category}
             {exercise.movementPattern ? ` · ${exercise.movementPattern}` : ''}
           </p>
         </div>
-        {!picker && onToggleFavourite ? <button className={favourite ? 'exercise-favourite is-selected' : 'exercise-favourite'} type="button" onClick={onToggleFavourite} aria-label={`${favourite ? 'Remove' : 'Add'} ${exercise.name} ${favourite ? 'from' : 'to'} favorites`} aria-pressed={favourite}><Star size={19} fill={favourite ? 'currentColor' : 'none'} aria-hidden="true" /></button> : null}
       </div>
-      {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseId={exercise.id} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : null}
-      <dl className="exercise-detail-list">
-        <div><dt>Primary muscle</dt><dd>{exercise.primaryMuscles.join(', ')}</dd></div>
-        <div><dt>Secondary muscles</dt><dd>{exercise.secondaryMuscles.length ? exercise.secondaryMuscles.join(', ') : 'None specified'}</dd></div>
-        <div><dt>Region</dt><dd>{exercise.muscleRegions.join(', ')}</dd></div>
-        <div><dt>Equipment</dt><dd>{exercise.equipmentOptions?.join(', ') ?? exercise.equipment}</dd></div>
-        <div><dt>Tracking method</dt><dd>{TRACKING_TYPE_LABELS[exercise.trackingType]}</dd></div>
-        {exercise.movementPattern ? <div><dt>Movement pattern</dt><dd>{exercise.movementPattern}</dd></div> : null}
-        {exercise.cardioSubtype ? <div><dt>Cardio type</dt><dd>{exercise.cardioSubtype}</dd></div> : null}
-        {exercise.instructions ? <div className="exercise-detail-wide"><dt>Notes</dt><dd>{exercise.instructions}</dd></div> : null}
-      </dl>
+      {content?.mediaPath ? <ExerciseMedia key={content.mediaPath} exerciseId={exercise.id} exerciseName={exercise.name} mediaPath={content.mediaPath} mediaType={content.mediaType} /> : <figure className="exercise-detail-media exercise-detail-media-unavailable"><div className="exercise-media-unavailable-mark" aria-hidden="true">⌁</div><p role="status">Exercise demonstration unavailable.</p></figure>}
+      <section className="exercise-record-section exercise-record-data" aria-labelledby="record-data-title">
+        <h3 id="record-data-title">Record data</h3>
+        <dl className="exercise-record-data-grid">
+          <div><dt>Primary muscle</dt><dd>{primaryMuscle}</dd></div>
+          <div><dt>Equipment</dt><dd>{equipment}</dd></div>
+          <div><dt>Tracking</dt><dd>{TRACKING_TYPE_LABELS[exercise.trackingType]}</dd></div>
+          <div><dt>Region</dt><dd>{exercise.muscleRegions.join(', ')}</dd></div>
+        </dl>
+      </section>
+      {exercise.movementPattern ? <section className="exercise-movement-class"><p>Movement class</p><strong>{exercise.movementPattern}</strong></section> : null}
+      <section className="exercise-record-section exercise-muscle-focus" aria-labelledby="muscle-focus-title">
+        <h3 id="muscle-focus-title">Muscle focus</h3>
+        <div className="exercise-muscle-focus-content">
+          <div><p>Primary</p><strong>{primaryMuscle}</strong></div>
+          <div><p>Secondary</p><div className="exercise-muscle-chips">{exercise.secondaryMuscles.length ? exercise.secondaryMuscles.map((muscle) => <span key={muscle}>{muscle}</span>) : <span>None specified</span>}</div></div>
+        </div>
+      </section>
       {content ? (
-        <div className="exercise-detail-content">
+        <div className="exercise-detail-content exercise-field-guide">
           <section>
-            <h3>How to perform</h3>
+            <div className="exercise-field-guide-heading"><h3>How to perform</h3><span>Field guide</span></div>
             <p>{content.howToPerform}</p>
           </section>
           {content.howItHelps ? (
-            <section>
-              <h3>How it helps</h3>
-              <p>{content.howItHelps}</p>
-            </section>
+            <section className="exercise-help-module">
+            <h3>How it helps</h3>
+            <p>{content.howItHelps}</p>
+          </section>
           ) : null}
         </div>
       ) : null}

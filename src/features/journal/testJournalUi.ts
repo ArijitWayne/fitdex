@@ -9,7 +9,8 @@ const repository = fs.readFileSync('src/features/journal/journalRepository.ts', 
 const database = fs.readFileSync('src/data/database.ts', 'utf8')
 
 // Page Header & Date Navigation
-assert.match(page, /terminalTitle="FITDEX \/\/ JOURNAL TERMINAL"/)
+assert.match(page, /terminalTitle="FITDEX \/\/ LOG ARCHIVE"/)
+assert.match(page, /ContextRail[\s\S]*Understood/)
 assert.match(page, /aria-label="Previous day"/)
 assert.match(page, /aria-label="Next day"/)
 assert.match(page, /isLocalToday\(date\)/)
@@ -96,6 +97,7 @@ assert.doesNotMatch(page, /formatEntryTime|firstTime/)
 
 // CSS Architecture & Theme Tokens
 assert.match(css, /\.journal-summary-box,\s*\.journal-ledger-hero \{/s)
+assert.match(css, /\.context-guide-actions > button\s*\{[^}]*min-width:\s*132px;[^}]*border-radius:\s*10px;[^}]*var\(--color-primary\)/s)
 assert.match(css, /\.journal-summary-rows \{/s)
 assert.match(css, /\.proto-item-row,\s*\.journal-item-row \{/s)
 assert.match(css, /\.proto-meal-row,\s*\.journal-meal-row \{/s)
@@ -103,6 +105,8 @@ assert.match(css, /\.proto-meal-slot,\s*\.journal-meal-slot \{/s)
 assert.match(css, /\.proto-meal-art,\s*\.journal-meal-art \{/s)
 assert.match(css, /\.journal-ledger-hero \{[^}]*var\(--color-rpg-accent\)/s)
 assert.match(css, /\.journal-note-quote \{[^}]*var\(--color-surface-raised\)/s)
+assert.match(css, /\.journal-empty\s*\{[^}]*border-radius:\s*14px;[^}]*box-shadow:/s)
+assert.match(css, /\.journal-empty \.empty-glyph\s*\{[^}]*border-radius:\s*12px;[^}]*background:/s)
 const journalCss = css.match(/\/\* Journal V3[\s\S]*?(?=\/\* Progress \+ Personal Records V1\.)/)?.[0] ?? ''
 assert.doesNotMatch(journalCss, /#[0-9a-f]{3,8}/i)
 

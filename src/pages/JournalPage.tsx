@@ -1,4 +1,4 @@
-import { CircleHelp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleHelp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
 import { CommandPageFrame } from '../components/layout/CommandPageFrame'
@@ -47,22 +47,6 @@ const journalHelpSteps: readonly GuideStep[] = [
 
 function formatDate(dateKey: string) {
   return new Intl.DateTimeFormat(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }).format(dateFromLocalDateKey(dateKey))
-}
-
-function getPrevDayLabel(dateKey: string) {
-  const prevDate = shiftLocalDateKey(dateKey, -1)
-  if (isLocalToday(prevDate)) return '‹ Today'
-  const today = getLocalDateKey()
-  if (today === dateKey) return '‹ Yesterday'
-  return '‹ Prev'
-}
-
-function getNextDayLabel(dateKey: string) {
-  const nextDate = shiftLocalDateKey(dateKey, 1)
-  if (isLocalToday(nextDate)) return 'Today ›'
-  const today = getLocalDateKey()
-  if (today === dateKey) return 'Tomorrow ›'
-  return 'Next ›'
 }
 
 export function JournalPage() {
@@ -123,21 +107,37 @@ export function JournalPage() {
 
   return (
     <CommandPageFrame className="page-stack journal-page"
-      terminalTitle="FITDEX // JOURNAL TERMINAL"
-      terminalMeta={`${isLocalToday(date) ? 'LOG ARCHIVE · TODAY · ' : 'LOG ARCHIVE · '}${formatDate(date).toUpperCase()}`}
+      terminalTitle="FITDEX // LOG ARCHIVE"
       headerActions={
-        <button
-          className="page-help-button cmd-icon-btn"
-          type="button"
-          onClick={() => {
-            playEffect('select')
-            setHelpOpen(true)
-          }}
-          aria-label="How Journal Works"
-          title="How Journal Works"
-        >
-          <CircleHelp size={16} aria-hidden="true" />
-        </button>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            className="food-today-button journal-today-button"
+            type="button"
+            style={{ padding: '2px 6px', fontSize: '0.62rem', height: '22px' }}
+            disabled={isLocalToday(date)}
+            aria-label="Go to today"
+            onClick={() => {
+              playEffect('select')
+              setDay(undefined)
+              setError('')
+              setDate(getLocalDateKey())
+            }}
+          >
+            Today
+          </button>
+          <button
+            className="page-help-button cmd-icon-btn"
+            type="button"
+            onClick={() => {
+              playEffect('select')
+              setHelpOpen(true)
+            }}
+            aria-label="How Journal Works"
+            title="How Journal Works"
+          >
+            <CircleHelp size={16} aria-hidden="true" />
+          </button>
+        </div>
       }
     >
       {showFirstUse ? (
@@ -163,7 +163,7 @@ export function JournalPage() {
         </ContextRail>
       ) : null}
 
-      <section className="journal-date-strip journal-date-header">
+      <div className="food-date-nav journal-date-nav" style={{ margin: '0 0 4px' }}>
         <button
           type="button"
           aria-label="Previous day"
@@ -172,28 +172,16 @@ export function JournalPage() {
             navigate(-1)
           }}
         >
-          {getPrevDayLabel(date)}
+          <ChevronLeft />
         </button>
-        <div className="journal-date-title">
+        <span>
           <strong>{formatDate(date)}</strong>
           <small>
             {activityCount === 0
-              ? 'No Activities Logged'
+              ? (isLocalToday(date) ? 'Today · No Activities' : 'No Activities Logged')
               : `${activityCount} ${activityCount === 1 ? 'Activity' : 'Activities'} Logged`}
           </small>
-          {!isLocalToday(date) ? (
-            <button
-              type="button"
-              className="journal-jump-today"
-              onClick={() => {
-                playEffect('select')
-                setDate(getLocalDateKey())
-              }}
-            >
-              Jump to Today
-            </button>
-          ) : null}
-        </div>
+        </span>
         <button
           type="button"
           aria-label="Next day"
@@ -202,9 +190,9 @@ export function JournalPage() {
             navigate(1)
           }}
         >
-          {getNextDayLabel(date)}
+          <ChevronRight />
         </button>
-      </section>
+      </div>
 
       {!day && !error ? (
         <section className="panel journal-loading" role="status" aria-live="polite">

@@ -30,6 +30,7 @@ assert.equal(resolveProfileGate('', false), 'onboarding', 'Fresh user with empty
 const onboardingSrc = fs.readFileSync('src/features/onboarding/Onboarding.tsx', 'utf8')
 const appSrc = fs.readFileSync('src/app/App.tsx', 'utf8')
 const cssSrc = fs.readFileSync('src/styles/app.css', 'utf8')
+const avatarSelectorSrc = fs.readFileSync('src/features/avatar/AvatarSelector.tsx', 'utf8')
 
 // Onboarding structure & titles
 assert.match(onboardingSrc, /function FirstLaunchMission/)
@@ -40,6 +41,9 @@ assert.match(onboardingSrc, /'Choose Your Mode'/)
 assert.doesNotMatch(onboardingSrc, /'Set Your Brightness'/)
 assert.match(onboardingSrc, /'Choose Your Champion'/)
 assert.match(onboardingSrc, /'Optional Nutrition Targets'/)
+assert.match(avatarSelectorSrc, /className="selected-avatar-detail"/)
+assert.match(cssSrc, /\.avatar-selector\.is-compact \.selected-avatar-detail\s*\{[^}]*grid-template-columns:\s*62px minmax\(0, 1fr\);[^}]*column-gap:\s*14px;[^}]*row-gap:\s*6px;/s)
+assert.match(cssSrc, /\.selected-avatar-detail \.selected-avatar-content\s*\{[^}]*min-width:\s*0;/s)
 
 // Issue 1: Faction screen only renders faction names without color-description copy
 assert.match(onboardingSrc, /\{ value: 'spartans', label: 'Spartans' \}/)

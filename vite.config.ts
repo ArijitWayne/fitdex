@@ -30,6 +30,9 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // APKs and GitHub release metadata are remote native-updater resources.
+        // Keep them outside PWA precache and normal runtime caching.
+        navigateFallbackDenylist: [/^\/releases\//, /\.apk(?:$|\?)/],
       },
     }),
   ],

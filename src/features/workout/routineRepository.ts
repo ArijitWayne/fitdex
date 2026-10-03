@@ -45,6 +45,21 @@ export async function renameRoutine(routine: WorkoutRoutine, name: string) {
   return updated
 }
 
+export async function saveRoutineEdits(routine: WorkoutRoutine, name: string, items: readonly RoutineExercise[]) {
+  const timestamp = new Date().toISOString()
+  const updatedRoutine = renameRoutineRecord(routine, name, timestamp)
+  const orderedItems = items.map((item, order) => ({ ...item, order, updatedAt: timestamp }))
+  await db.transaction('rw', db.workoutRoutines, db.routineExercises, async () => {
+    const existing = await db.routineExercises.where('routineId').equals(routine.id).toArray()
+    const nextIds = new Set(orderedItems.map((item) => item.id))
+    const removedIds = existing.filter((item) => !nextIds.has(item.id)).map((item) => item.id)
+    if (removedIds.length) await db.routineExercises.bulkDelete(removedIds)
+    if (orderedItems.length) await db.routineExercises.bulkPut(orderedItems)
+    await db.workoutRoutines.put(updatedRoutine)
+  })
+  return updatedRoutine
+}
+
 async function replaceRoutineItems(routineId: string, items: readonly RoutineExercise[]) {
   await db.transaction('rw', db.routineExercises, db.workoutRoutines, async () => {
     const existing = await db.routineExercises.where('routineId').equals(routineId).toArray()

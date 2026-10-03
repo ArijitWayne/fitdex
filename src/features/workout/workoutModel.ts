@@ -4,6 +4,10 @@ import { displayDistanceFromKm, displayWeightFromKg } from '../../utils/units.ts
 export const DEFAULT_AD_HOC_SETS = 3
 export const DEFAULT_REST_SECONDS = 90
 
+export function shouldReplaceActiveWorkout(activeWorkout: Pick<Workout, 'routineId'> | undefined, requestedRoutineId: string) {
+  return Boolean(activeWorkout && activeWorkout.routineId !== requestedRoutineId)
+}
+
 export function isPauseTimerGuidanceEligible(timerGuidanceActive: boolean, pauseGuidancePending: boolean, timerHasStarted: boolean) {
   return !timerGuidanceActive && pauseGuidancePending && timerHasStarted
 }

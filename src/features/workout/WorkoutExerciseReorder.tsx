@@ -4,6 +4,7 @@ import type { WorkoutExercise, WorkoutSet } from '../../data/models'
 import { applySetDraft, getWorkoutSetLogState, type SetDraft } from './workoutModel'
 import { useAudio } from '../audio/useAudio'
 import { useBackNavigation } from '../navigation/useBackNavigation'
+import { CommandPageFrame } from '../../components/layout/CommandPageFrame'
 
 export interface WorkoutExerciseReorderProps {
   workoutName: string
@@ -332,97 +333,103 @@ export function WorkoutExerciseReorder({
   }
 
   return (
-    <div className="page-stack active-workout-page reorder-view">
-      <div className="active-workout-header">
-        <div className="session-top-row">
-          <button
-            className="session-hub-link"
-            type="button"
-            onClick={() => { playEffect('select'); onCancel() }}
-            aria-label="Cancel and back to workout"
-          >
-            ← Back
-          </button>
-          <span className="session-state-badge">
-            <span>Reorder Mode</span>
-          </span>
+    <CommandPageFrame
+      className="workout-page active-workout-command-frame"
+      terminalTitle="FITDEX // TRAINING TERMINAL"
+      terminalMeta="REORDER"
+    >
+      <div className="active-workout-page reorder-view">
+        <div className="active-workout-header">
+          <div className="session-top-row">
+            <button
+              className="session-hub-link"
+              type="button"
+              onClick={() => { playEffect('select'); onCancel() }}
+              aria-label="Cancel and back to workout"
+            >
+              ← Back
+            </button>
+            <span className="session-state-badge">
+              <span>Reorder Mode</span>
+            </span>
+          </div>
+          <div className="active-workout-title-row">
+            <h1 className="active-workout-name-text">REORDER EXERCISES</h1>
+          </div>
         </div>
-        <div className="active-workout-title-row">
-          <h1 className="active-workout-name-text">REORDER EXERCISES</h1>
+
+        <div className="workout-continuity-strip" role="status">
+          <span>WORKOUT IN PROGRESS</span>
+          <strong>{workoutName}</strong>
         </div>
-      </div>
 
-      <div className="workout-continuity-strip" role="status">
-        <span>WORKOUT IN PROGRESS</span>
-        <strong>{workoutName}</strong>
-      </div>
+        <div className="reorder-header-pane">
+          <p className="reorder-helper">Drag the handle to change the order for this workout.</p>
+          <p className="reorder-subhelper">Changes apply to this workout only. Saved routine remains intact.</p>
+        </div>
 
-      <div className="reorder-header-pane">
-        <p className="reorder-helper">Drag the handle to change the order for this workout.</p>
-        <p className="reorder-subhelper">Changes apply to this workout only. Saved routine remains intact.</p>
-      </div>
+        <div className="reorder-scroll-container">
+          <div className="reorder-list-area" id="reorderList" ref={listRef}>
+            {draftOrder.map((id, index) => {
+              const item = exerciseMap.get(id)
+              if (!item) return null
+              const exerciseName = item.exercise.exerciseNameSnapshot ?? 'Exercise'
+              const loggedCount = item.sets.filter(
+                (s) => getWorkoutSetLogState(applySetDraft(s, setDrafts.get(s.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged'
+              ).length
+              const totalSets = item.sets.length
 
-      <div className="reorder-scroll-container">
-        <div className="reorder-list-area" id="reorderList" ref={listRef}>
-          {draftOrder.map((id, index) => {
-            const item = exerciseMap.get(id)
-            if (!item) return null
-            const exerciseName = item.exercise.exerciseNameSnapshot ?? 'Exercise'
-            const loggedCount = item.sets.filter(
-              (s) => getWorkoutSetLogState(applySetDraft(s, setDrafts.get(s.id)), item.exercise.trackingTypeSnapshot ?? 'reps_only') === 'logged'
-            ).length
-            const totalSets = item.sets.length
-
-            return (
-              <div
-                className="reorder-card"
-                key={id}
-                data-id={id}
-                data-index={index}
-              >
+              return (
                 <div
-                  className="reorder-drag-handle"
-                  data-handle="true"
-                  aria-label={`Reorder ${exerciseName}`}
-                  role="button"
-                  tabIndex={0}
+                  className="reorder-card"
+                  key={id}
+                  data-id={id}
+                  data-index={index}
                 >
-                  <GripVertical size={18} aria-hidden="true" />
+                  <div
+                    className="reorder-drag-handle"
+                    data-handle="true"
+                    aria-label={`Reorder ${exerciseName}`}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <GripVertical size={18} aria-hidden="true" />
+                  </div>
+                  <span className="reorder-card-pos">{index + 1}</span>
+                  <div className="reorder-card-info">
+                    <div className="reorder-card-name">{exerciseName}</div>
+                    <div className="reorder-card-sets">{loggedCount}/{totalSets} sets logged</div>
+                  </div>
+                  <span className={`reorder-card-status ${loggedCount > 0 ? 'logged' : ''}`}>
+                    {loggedCount > 0 ? `${loggedCount} logged` : '0 logged'}
+                  </span>
                 </div>
-                <span className="reorder-card-pos">{index + 1}</span>
-                <div className="reorder-card-info">
-                  <div className="reorder-card-name">{exerciseName}</div>
-                  <div className="reorder-card-sets">{loggedCount}/{totalSets} sets logged</div>
-                </div>
-                <span className={`reorder-card-status ${loggedCount > 0 ? 'logged' : ''}`}>
-                  {loggedCount > 0 ? `${loggedCount} logged` : '0 logged'}
-                </span>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="reorder-footer">
-        <div className="reorder-actions">
-          <button
-            type="button"
-            className="secondary-button btn-cancel"
-            onClick={() => { playEffect('select'); onCancel() }}
-            disabled={isSaving}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="primary-button btn-done"
-            onClick={handleDone}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving…' : 'Done'}
-          </button>
+        <div className="reorder-footer">
+          <div className="reorder-actions">
+            <button
+              type="button"
+              className="secondary-button btn-cancel"
+              onClick={() => { playEffect('select'); onCancel() }}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="primary-button btn-done"
+              onClick={handleDone}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving…' : 'Done'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </CommandPageFrame>
   )
 }

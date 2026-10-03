@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto'
 import assert from 'node:assert/strict'
 import Dexie from 'dexie'
 import { db } from '../../data/database.ts'
-import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getDailyTotals, getFrequentFoods, getMealTotals, getRecentFoods, listFoodEntries, listMealEntries, searchRememberedFoods, updateCustomCategory } from './foodRepository.ts'
+import { addFoodLog, createCustomCategory, deleteCustomFoodCategory, deleteFoodLog, editFoodLog, getDailyTotals, getFrequentFoods, getMealTotals, getRecentFoods, listFoodEntries, listMealEntries, searchRememberedFoods, updateCustomCategory, updateRememberedFood } from './foodRepository.ts'
 import { normalizeFoodName, parseOptionalNutrition, PREDEFINED_FOOD_CATEGORIES, validateNutrition } from './foodModel.ts'
 
 await db.close()
@@ -53,6 +53,25 @@ await addFoodLog(nextDate, 'breakfast', { name: 'Oats', categoryId: 'grains-rice
 assert.equal((await getRecentFoods('breakfast'))[0]?.name, 'Oats')
 assert.equal((await getFrequentFoods('breakfast'))[0]?.name, 'Oats')
 assert.equal((await getRecentFoods('dinner')).some((food) => food.name === 'Salmon'), true)
+
+const historicalBread = await addFoodLog('2026-08-22', 'breakfast', { name: 'Bread', categoryId: 'other', kcal: 130, protein: 22, carbs: 20, fat: 2, fiber: 3, sugar: 2, saturatedFat: 0.4, sodium: 180 })
+const breadMemory = await db.rememberedFoods.get(historicalBread.rememberedFoodId!)
+assert.ok(breadMemory)
+const updatedBread = await updateRememberedFood(breadMemory.id, { name: 'Bread', categoryId: 'other', kcal: 150, protein: 25, carbs: 24, fat: 3, fiber: 4, sugar: 3, saturatedFat: 0.6, sodium: 210 })
+assert.equal(updatedBread.id, breadMemory.id)
+assert.deepEqual(await db.rememberedFoods.get(breadMemory.id), updatedBread)
+assert.equal((await getRecentFoods('breakfast')).find((food) => food.id === breadMemory.id)?.kcal, 150)
+assert.equal((await getRecentFoods('breakfast')).find((food) => food.id === breadMemory.id)?.protein, 25)
+assert.equal(await db.rememberedFoods.where('normalizedName').equals('bread').count(), 1)
+const quickLoggedBread = await addFoodLog(nextDate, 'breakfast', { name: updatedBread.name, categoryId: updatedBread.categoryId, customCategoryId: updatedBread.customCategoryId, kcal: updatedBread.kcal, protein: updatedBread.protein, carbs: updatedBread.carbs, fat: updatedBread.fat, fiber: updatedBread.fiber, sugar: updatedBread.sugar, saturatedFat: updatedBread.saturatedFat, sodium: updatedBread.sodium })
+assert.equal(quickLoggedBread.rememberedFoodId, breadMemory.id)
+assert.equal(quickLoggedBread.kcal, 150)
+assert.equal(quickLoggedBread.protein, 25)
+assert.equal((await db.foodLogEntries.get(historicalBread.id))?.kcal, 130)
+assert.equal((await db.foodLogEntries.get(historicalBread.id))?.protein, 22)
+await editFoodLog(quickLoggedBread.id, { name: 'Bread slice', categoryId: 'other', kcal: 170, protein: 27 })
+assert.equal((await db.rememberedFoods.get(breadMemory.id))?.kcal, 150)
+assert.equal((await db.rememberedFoods.get(breadMemory.id))?.protein, 25)
 
 const custom = await createCustomCategory('Homemade Curry', 'amber')
 const duplicateCustom = await createCustomCategory(' homemade  curry ', 'blue')

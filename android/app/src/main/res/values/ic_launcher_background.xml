@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="fitdex_splash_background">#060908</color>
     <color name="ic_launcher_background">#0B111B</color>
     <color name="ic_launcher_spartan_background">#0B111B</color>
     <color name="ic_launcher_amazonian_background">#291126</color>

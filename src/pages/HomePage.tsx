@@ -1,6 +1,7 @@
 import { Award, BookOpen, ChartNoAxesColumnIncreasing, ChevronRight, CircleHelp, Dumbbell, Flame, Music, NotebookTabs, Pause, Play, SkipBack, SkipForward, Utensils, Volume2, VolumeX } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Panel } from '../components/ui/Panel'
+import { AudioEqualizer, BattleMusicDeck } from '../components/ui/BattleMusicDeck'
 import { AvatarPortrait } from '../features/avatar/AvatarPortrait'
 import { useAvatar } from '../features/avatar/useAvatar'
 import { FOOD_MEAL_LABELS } from '../features/food/foodModel'
@@ -13,7 +14,7 @@ import { getWorkoutDuration, isWorkoutTimerPaused } from '../features/workout/wo
 import type { AppDestination } from '../types/navigation'
 import { getLocalDateKey } from '../utils/localDate'
 import { displayWeightFromKg } from '../utils/units'
-import { WEEKDAY_IDS } from '../data/models'
+import { WEEKDAY_IDS, type BackgroundMusicPreference } from '../data/models'
 import { WEEKDAY_LABELS, weeklyPlanAssignmentLabel } from '../features/workout/weeklyPlan'
 import { GamificationBadge } from '../features/gamification/GamificationBadge'
 import { FreezeSnowflakeIcon, LevelProgress, RankDetailView, StreakDetailView } from '../features/gamification/GamificationViews'
@@ -30,7 +31,7 @@ export type HomeWorkoutEntry = 'hub' | 'active' | 'start' | 'library' | 'create'
 export function HomePage({ onNavigate, onOpenWorkout, onOpenFieldGuide }: { onNavigate: (destination: AppDestination) => void; onOpenWorkout: (entry: HomeWorkoutEntry, targetId?: string) => void; onOpenFieldGuide?: () => void }) {
   const { selectedAvatar } = useAvatar()
   const { displayName } = useProfile()
-  const { playEffect } = useAudio()
+  const { playEffect, backgroundMusic, backgroundMusicPaused } = useAudio()
   const {
     status: updateStatus,
     release: updateRelease,
@@ -81,6 +82,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenFieldGuide }: { onNa
           <h1>{formatHomeGreeting(displayName, now)}</h1>
           <time dateTime={todayDateKey}>{formatHomeDate(todayDateKey)}</time>
           <p>{data && !data.hasHistory ? 'Your fitness journey starts here.' : "Ready for today's training?"}</p>
+          <HomeMusicStatus track={backgroundMusic} paused={backgroundMusicPaused} />
         </div>
       </section>
 
@@ -91,7 +93,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenFieldGuide }: { onNa
             <time dateTime={todayDateKey}>{formatCommandDate(now)}</time>
             {onOpenFieldGuide ? (
               <button
-                className="cmd-icon-btn page-help-btn home-help-btn"
+                className="workout-hub-help cmd-icon-btn page-help-btn home-help-btn"
                 type="button"
                 onClick={() => { playEffect('select'); onOpenFieldGuide() }}
                 aria-label="FitDex Field Guide"
@@ -113,6 +115,7 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenFieldGuide }: { onNa
           {progression ? <button className="home-command-rank" type="button" onClick={() => { playEffect('select'); setGamificationView('rank') }} aria-label={`Open ${progression.rank.name} rank details`}><GamificationBadge kind="rank" size="small" src={rankAssetPath(progression.rank)} label={`${progression.rank.name} rank emblem`} /><small>{progression.rank.name}</small></button> : <div className="home-command-rank is-loading" aria-hidden="true">—</div>}
         </div>
         <div className="home-command-xp"><span>XP</span><div className="home-hero-xp" role="progressbar" aria-label={progression?.maxLevel ? 'Maximum level reached' : progression ? `Level ${progression.level} XP progress` : 'Loading XP progress'} aria-valuemin={0} aria-valuemax={progression?.maxLevel ? 100 : progression?.xpRequiredForNextLevel ?? 100} aria-valuenow={progression?.maxLevel ? 100 : progression?.xpIntoLevel ?? 0}><i style={{ width: `${levelProgress}%` }} /></div><strong>{progression?.totalXp.toLocaleString() ?? '—'}</strong></div>
+        <HomeMusicStatus track={backgroundMusic} paused={backgroundMusicPaused} />
 
         {data ? (
           <HomeConsistencyRail data={data} onOpenStreak={() => { playEffect('select'); setGamificationView('streak') }} />
@@ -184,6 +187,10 @@ export function HomePage({ onNavigate, onOpenWorkout, onOpenFieldGuide }: { onNa
 }
 
 const backgroundTrackLabels = { warrior: 'Warrior', hardened: 'Hardened', villain: 'Villain', none: 'No Music' } as const
+function HomeMusicStatus({ track, paused }: { track: BackgroundMusicPreference; paused: boolean }) {
+  if (track === 'none' || paused) return null
+  return <div className="home-bgm-status" role="status"><Music size={14} aria-hidden="true" /><span><small>NOW PLAYING</small><strong>{backgroundTrackLabels[track]}</strong></span><span className="home-bgm-active"><AudioEqualizer /><b>ACTIVE</b></span></div>
+}
 
 function HomeMusicController() {
   const { ready, backgroundMusic, backgroundMusicPaused, setBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } = useAudio()
@@ -276,14 +283,13 @@ function MobileMusicRow({ number }: { number: string }) {
     else if (backgroundMusicPaused) resumeBackgroundMusic()
     else pauseBackgroundMusic()
   }
-  const chooseTrack = (track: typeof BACKGROUND_TRACK_ORDER[number] | 'none') => {
+  const chooseTrack = (track: BackgroundMusicPreference) => {
     playEffect('select')
     setBackgroundMusic(track)
-    setExpanded(false)
   }
   return <section className="home-mobile-music">
     <div className="home-command-music-row"><button className="home-mobile-music-disclosure" type="button" aria-expanded={expanded} onClick={() => { playEffect('select'); setExpanded((current) => !current) }}><span className="home-command-number">{number}</span><b>Battle Music</b><small>{backgroundTrackLabels[backgroundMusic]} · {state}</small><ChevronRight aria-hidden="true" /></button><button className="home-mobile-music-toggle" type="button" disabled={!ready} onClick={toggleMusic} aria-label={backgroundMusic === 'none' ? 'Turn background music on' : backgroundMusicPaused ? 'Resume background music' : 'Pause background music'}>{backgroundMusic === 'none' || backgroundMusicPaused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}</button></div>
-    {expanded ? <fieldset className="home-mobile-music-tracks"><legend className="sr-only">Battle Music track</legend>{([...BACKGROUND_TRACK_ORDER, 'none'] as const).map((track) => <label key={track}><input type="radio" name="home-background-music" value={track} checked={backgroundMusic === track} disabled={!ready} onChange={() => chooseTrack(track)} /><span>{track === 'none' ? 'None' : backgroundTrackLabels[track]}</span><i aria-hidden="true" /></label>)}</fieldset> : null}
+    {expanded ? <BattleMusicDeck className="home-mobile-music-tracks" name="home-background-music" value={backgroundMusic} disabled={!ready} onSelect={chooseTrack} /> : null}
   </section>
 }
 

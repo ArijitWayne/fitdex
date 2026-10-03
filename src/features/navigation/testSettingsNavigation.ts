@@ -295,10 +295,10 @@ const rootLocation: AppLocation = {
 // 10 & 11. Nutrition Targets ‹ HUB vs global gear
 {
   const settingsSource = fs.readFileSync('src/features/settings/SettingsPage.tsx', 'utf8')
-  // Nutrition Targets uses SettingsSubheader with onBack={backToHub}
-  assert.match(settingsSource, /title="Nutrition Targets"[\s\S]*?onBack=\{backToHub\}/)
-  // SettingsSubheader renders ‹ HUB
-  assert.match(settingsSource, /className="settings-hub-button"[\s\S]*?>\s*‹ HUB\s*<\/button>/)
+  // Nutrition Targets header returns to Settings Hub
+  assert.match(settingsSource, /<NutritionTargetsHeader onBack=\{backToHub\} \/>/)
+  // SettingsSubheader renders HUB command key
+  assert.match(settingsSource, /className="settings-hub-button back-command-key"[\s\S]*?<ArrowLeft size=\{18\} strokeWidth=\{2\.5\} aria-hidden="true" \/><span>HUB<\/span>/)
   // Settings Hub itself retains back-button to FitDex
   assert.match(settingsSource, /className="back-button"[\s\S]*?aria-label="Back to FitDex"/)
 
@@ -433,13 +433,8 @@ const rootLocation: AppLocation = {
   assert.match(appCss, /\.settings-hub \.settings-row-icon\s*\{[^}]*width:\s*36px;/s)
   assert.match(appCss, /\.settings-hub \.settings-hero \.avatar-portrait\s*\{[^}]*border:\s*0;/s)
   assert.match(appCss, /:root\[data-theme-family='amazonians'\]\[data-brightness='dark'\] \.settings-hub\s*\{[^}]*--settings-accent:\s*#d68ac4;/s)
-  assert.match(appCss, /\.settings-hub-button\s*\{[^}]*border-radius:\s*0;/s)
-  assert.match(appCss, /\.settings-hub-button\s*\{[^}]*border:\s*2px solid var\(--color-border-strong\);/s)
-  assert.match(appCss, /\.settings-hub-button\s*\{[^}]*box-shadow:\s*3px 3px 0 var\(--color-border-strong\);/s)
-  assert.match(appCss, /\.settings-hub-button\s*\{[^}]*min-height:\s*44px;/s)
-  assert.match(appCss, /\.settings-hub-button\s*\{[^}]*text-transform:\s*uppercase;/s)
-  assert.match(appCss, /\.settings-hub-button:active\s*\{[^}]*transform:\s*translate\(2px,\s*2px\);/s)
-  assert.match(appCss, /\.settings-hub-button:active\s*\{[^}]*box-shadow:\s*1px 1px 0 var\(--color-border-strong\);/s)
+  assert.match(appCss, /\.back-command-key\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*6px;[^}]*background:\s*var\(--color-surface\);/s)
+  assert.match(appCss, /\.back-command-key:active\s*\{[^}]*transform:\s*scale\(\.97\);/s)
 }
 
 console.log('Settings navigation & origin restore tests passed: 14/14 requirements verified.')

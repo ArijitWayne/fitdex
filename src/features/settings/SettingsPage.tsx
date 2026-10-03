@@ -14,13 +14,14 @@ import { AvatarSelector } from '../avatar/AvatarSelector'
 import { useAvatar } from '../avatar/useAvatar'
 import { useAudio } from '../audio/useAudio'
 import { CommandPageFrame } from '../../components/layout/CommandPageFrame'
+import { BATTLE_MUSIC_LABELS, BattleMusicDeck } from '../../components/ui/BattleMusicDeck'
 import { CollapsibleModule } from '../../components/ui/CollapsibleModule'
 import { BackupSettings } from '../backup/BackupSettings'
 import { ExerciseMediaSettings } from '../exerciseMedia/ExerciseMediaSettings'
 import { listDownloadedExerciseMedia, supportsNativeExerciseMedia } from '../exerciseMedia/exerciseMediaStore'
 import { GamificationHelpButton } from '../gamification/GamificationViews'
 import { useBackNavigation } from '../navigation/useBackNavigation'
-import { calculateProteinDerivedMetrics, calculateRmr, calculateSuggestedCalorieTargets, calculateSuggestedProteinTarget, calculateTdee, PROTEIN_MULTIPLIERS } from '../nutritionTargets/nutritionTargetCalculator'
+import { calculateProteinDerivedMetrics, calculateRmr, calculateSuggestedCalorieTargets, calculateSuggestedProteinTarget, calculateTdee } from '../nutritionTargets/nutritionTargetCalculator'
 import { loadNutritionTargets, saveNutritionTargets } from '../nutritionTargets/nutritionTargetRepository'
 import { displayNameLength, isValidDisplayName, limitDisplayNameInput, MAX_DISPLAY_NAME_LENGTH } from '../profile/displayNameModel'
 import { useProfile } from '../profile/useProfile'
@@ -37,10 +38,6 @@ const brightnessOptions: Array<{ value: BrightnessPreference; label: string }> =
 const familyOptions: Array<{ value: ThemeFamily; label: string }> = [
   { value: 'spartans', label: 'Spartan' }, { value: 'amazonians', label: 'Amazonian' },
 ]
-const musicOptions: Array<{ value: BackgroundMusicPreference; label: string }> = [
-  { value: 'warrior', label: 'Warrior' }, { value: 'hardened', label: 'Hardened' }, { value: 'villain', label: 'Villain' }, { value: 'none', label: 'None' },
-]
-const musicLabels = Object.fromEntries(musicOptions.map((option) => [option.value, option.label])) as Record<BackgroundMusicPreference, string>
 const targetDefaults: Omit<NutritionTargets, 'updatedAt'> = { enabled: true, goal: 'lose', age: 30, sex: 'female', heightCm: 165, weightKg: 65, activityLevel: 'moderate', calorieTarget: 1800, proteinTargetGrams: 0, calorieTargetSource: 'calculated' }
 type SettingsView = 'hub' | 'profile' | 'appearance' | 'units' | 'audio' | 'notifications' | 'nutrition' | 'media' | 'backup' | 'about'
 type NutritionTargetDraft = Record<'age' | 'heightCm' | 'weightKg' | 'calorieTarget' | 'proteinTargetGrams', string>
@@ -56,6 +53,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
   const { displayName, ready: profileReady, saveDisplayName } = useProfile()
   const { ready: audioReady, soundEffectsEnabled, backgroundMusic, playEffect, setSoundEffectsEnabled, setBackgroundMusic } = useAudio()
   const [units, setUnits] = useState<UnitPreference>('metric')
+  const [unitsNoteVisible, setUnitsNoteVisible] = useState(false)
   const [view, setView] = useState<SettingsView>(initialView ?? 'hub')
   const [choosingAvatar, setChoosingAvatar] = useState(false)
   const [nutritionSummary, setNutritionSummary] = useState<Omit<NutritionTargets, 'updatedAt'>>(targetDefaults)
@@ -118,6 +116,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
   const handleSetUnits = async (nextUnits: UnitPreference) => {
     playEffect('select')
     setUnits(nextUnits)
+    setUnitsNoteVisible(true)
     await updateLocalSettings({ units: nextUnits })
   }
 
@@ -132,13 +131,13 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'profile') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-profile-detail">
         <SettingsSubheader eyebrow="Settings / Personalize" title="Display Name & Avatar" description="Local identity for this device. No account required." onBack={backToHub} />
-        <section className="settings-detail-card">
+        <section className="settings-detail-card settings-profile-card">
           <DisplayNameForm key={profileReady ? 'profile-ready' : 'profile-loading'} displayName={displayName} ready={profileReady} onSave={saveDisplayName} />
           <div className="profile-avatar-row">
             <AvatarPortrait avatar={selectedAvatar} size="small" />
-            <div>
+            <div className="profile-avatar-meta">
               <strong>{selectedAvatar.name}</strong>
               <small>{selectedAvatar.archetype}</small>
             </div>
@@ -153,9 +152,9 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'appearance') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-appearance-detail">
         <SettingsSubheader eyebrow="Settings / Personalize" title="Appearance" description="Faction and brightness for FitDex." onBack={backToHub} />
-        <section className="settings-detail-card">
+        <section className="settings-detail-card settings-appearance-card">
           <fieldset className="settings-fieldset">
             <legend>Faction</legend>
             <div className="settings-segmented">
@@ -185,9 +184,9 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'units') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-units-detail">
         <SettingsSubheader eyebrow="Settings / Your System" title="Units" description="Measurement system for workouts and logging." onBack={backToHub} />
-        <section className="settings-detail-card">
+        <section className="settings-detail-card settings-units-card">
           <fieldset className="settings-fieldset">
             <legend>Measurement System</legend>
             <div className="settings-segmented">
@@ -199,8 +198,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
               </button>
             </div>
           </fieldset>
-          <p className="appearance-note">Stored workout values stay canonical. This changes weight and distance display and entry.</p>
-          <p className="appearance-note">Nutrition calculation inputs remain labelled in kilograms and centimetres in today’s data model.</p>
+          {unitsNoteVisible ? <p className="appearance-note units-canonical-note" role="status">Stored workout values stay canonical. This changes weight and distance display and entry.</p> : null}
         </section>
       </div>
     )
@@ -208,7 +206,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'audio') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-audio-detail">
         <SettingsSubheader eyebrow="Settings / Your System" title="Audio" description="Sound effects and background music." onBack={backToHub} />
         <AudioSettings
           ready={audioReady}
@@ -228,9 +226,13 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'nutrition') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
-        <SettingsSubheader eyebrow="Settings / Your System" title="Nutrition Targets" description="Set daily targets using your goal and Calculation Profile." onBack={backToHub} />
-        <NutritionTargetsSettings onLoaded={setNutritionSummary} />
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail nutrition-targets-detail">
+        <div className="nutrition-control-bay-shell">
+          <div className="nutrition-control-bay-screen">
+            <NutritionTargetsHeader onBack={backToHub} />
+            <NutritionTargetsSettings onLoaded={setNutritionSummary} />
+          </div>
+        </div>
       </div>
     )
   }
@@ -253,9 +255,9 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'backup') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-backup-detail">
         <SettingsSubheader eyebrow="Settings / Data & Offline" title="Backup & Restore" description="Protect or restore your local FitDex data." onBack={backToHub} />
-        <div className="settings-detail"><BackupSettings /></div>
+        <BackupSettings />
       </div>
     )
   }
@@ -265,7 +267,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
   }
 
   const appearanceSummary = `Faction: ${family === 'spartans' ? 'Spartan' : 'Amazonian'} · Mode: ${brightness}`
-  const unitsSummary = `${units === 'metric' ? 'Metric (kg/km)' : 'Imperial (lb/mi)'} · SFX ${soundEffectsEnabled ? 'On' : 'Off'} · ${musicLabels[backgroundMusic]}`
+  const unitsSummary = `${units === 'metric' ? 'Metric (kg/km)' : 'Imperial (lb/mi)'} · SFX ${soundEffectsEnabled ? 'On' : 'Off'} · ${BATTLE_MUSIC_LABELS[backgroundMusic]}`
   const nutritionSummaryText = !nutritionSummary.enabled
     ? 'Off'
     : Number(nutritionSummary.proteinTargetGrams) > 0
@@ -275,7 +277,6 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
   return (
     <CommandPageFrame className="settings-page settings-hub"
       terminalTitle="FITDEX // SYSTEM TERMINAL"
-      terminalMeta={`DEVICE CFG · v${APP_VERSION}`}
       headerActions={
         <button
           className="back-button"
@@ -344,7 +345,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
             icon={<Volume2 aria-hidden="true" />}
             title="Audio"
             description="Sound effects and battle music"
-            value={`${soundEffectsEnabled ? 'SFX on' : 'SFX off'} · ${musicLabels[backgroundMusic]}`}
+            value={`${soundEffectsEnabled ? 'SFX on' : 'SFX off'} · ${BATTLE_MUSIC_LABELS[backgroundMusic]}`}
             onClick={() => openView('audio')}
           />
           <SettingsRow
@@ -429,8 +430,8 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 function SettingsSubheader({ eyebrow, title, description, onBack }: { eyebrow: string; title: string; description: string; onBack: () => void }) {
   return (
     <header className="page-header settings-header settings-subheader">
-      <button className="settings-hub-button" type="button" onClick={onBack} aria-label="Back to Settings Hub">
-        ‹ HUB
+      <button className="settings-hub-button back-command-key" type="button" onClick={onBack} aria-label="Back to Settings Hub">
+        <ArrowLeft size={18} strokeWidth={2.5} aria-hidden="true" /><span>HUB</span>
       </button>
       <div>
         <p className="eyebrow">{eyebrow}</p>
@@ -439,6 +440,26 @@ function SettingsSubheader({ eyebrow, title, description, onBack }: { eyebrow: s
       </div>
     </header>
   )
+}
+
+function NutritionTargetsHeader({ onBack }: { onBack: () => void }) {
+  return (
+    <header className="nutrition-targets-header">
+      <div className="nutrition-terminal-status">
+        <button className="settings-hub-button back-command-key" type="button" onClick={onBack} aria-label="Back to Settings Hub"><ArrowLeft size={18} strokeWidth={2.5} aria-hidden="true" /><span>HUB</span></button>
+        <span className="nutrition-terminal-title"><i className="status-terminal-dot" aria-hidden="true" />FITDEX // TARGET SYSTEM</span>
+      </div>
+      <div className="nutrition-targets-heading">
+        <p className="eyebrow">Settings / Your System</p>
+        <h1>NUTRITION TARGETS</h1>
+        <p>Daily energy &amp; protein configuration.</p>
+      </div>
+    </header>
+  )
+}
+
+function ControlBayStatus({ children, online = false }: { children: ReactNode; online?: boolean }) {
+  return <span className={`control-bay-status${online ? ' is-online' : ''}`}><i aria-hidden="true" />{children}</span>
 }
 
 function SettingsRow({ icon, title, description, value, onClick }: { icon: ReactNode; title: string; description: string; value: string; onClick: () => void }) {
@@ -480,7 +501,7 @@ function AboutSettings({ family, onBack }: { family: ThemeFamily; onBack: () => 
   }
 
   return (
-    <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+    <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-notifications-detail">
       <SettingsSubheader eyebrow="Settings / Data & Help" title="About FitDex" description="Retro RPG fitness tracking. Local by design." onBack={onBack} />
       <section className="settings-detail-card">
         <div className="about-row">
@@ -621,28 +642,26 @@ function NotificationSettings({ family, onBack }: { family: ThemeFamily; onBack:
   }
 
   return (
-    <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+    <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-notifications-detail notification-handheld-shell">
       <SettingsSubheader eyebrow="Settings / Your System" title="Notifications" description="Choose FitDex reminders for this device." onBack={onBack} />
 
-      <section className="settings-detail-card notification-master-card">
-        <label className="settings-switch-row notification-master-row">
-          <span>
+      <main className="notification-screen">
+        <section className="notification-master-module">
+          <label className="notification-master-control">
+            <span className="notification-master-copy">
             <small className="notification-master-kicker">MASTER CONTROL</small>
             <strong>Notifications</strong>
             <small>Controls all FitDex notification categories.</small>
-          </span>
-          <input type="checkbox" role="switch" checked={preferences.enabled} disabled={!ready || preferences.permissionState === 'unsupported'} onChange={changeMaster} />
-          <i aria-hidden="true" />
-        </label>
-        <NotificationPermissionStatus preferences={preferences} onEnable={() => setPermissionOpen(true)} />
-      </section>
+            </span>
+            <input type="checkbox" role="switch" checked={preferences.enabled} disabled={!ready || preferences.permissionState === 'unsupported'} onChange={changeMaster} />
+            <i aria-hidden="true" />
+          </label>
+          <NotificationPermissionStatus preferences={preferences} onEnable={() => setPermissionOpen(true)} />
+        </section>
 
-      <div className={`notification-categories-stack ${!interactive ? 'is-disabled' : ''}`} aria-disabled={!interactive}>
-        {/* APP */}
-        <section className="notification-section-card">
-          <header className="group-heading notification-card-eyebrow">
-            <span>APP</span>
-          </header>
+        <div className={`notification-module-stack ${!interactive ? 'is-disabled' : ''}`} aria-disabled={!interactive}>
+          <section className="notification-category-module">
+            <header className="notification-module-label">APP</header>
           <NotificationCategoryRow
             title="New FitDex updates"
             helper="Notify me when a newer stable FitDex version is available."
@@ -650,17 +669,14 @@ function NotificationSettings({ family, onBack }: { family: ThemeFamily; onBack:
             disabled={!interactive}
             onChange={(enabled) => setCategory('update', enabled)}
           />
-          <details className="notification-rule-note">
+            <details className="notification-disclosure">
             <summary>WHEN IT SENDS</summary>
             <p>Sends a notification when a newer stable release of FitDex is available for your device.</p>
           </details>
-        </section>
+          </section>
 
-        {/* WORKOUT */}
-        <section className="notification-section-card">
-          <header className="group-heading notification-card-eyebrow">
-            <span>WORKOUT</span>
-          </header>
+          <section className="notification-category-module">
+            <header className="notification-module-label">WORKOUT</header>
           <NotificationCategoryRow
             title="Today's planned workout"
             helper="Notify me when I have a workout planned for today."
@@ -673,17 +689,14 @@ function NotificationSettings({ family, onBack }: { family: ThemeFamily; onBack:
             disabled={!interactive || !preferences.workoutEnabled}
             onClick={() => { playEffect('select'); setTimeCategory('workout') }}
           />
-          <details className="notification-rule-note">
+            <details className="notification-disclosure">
             <summary>WHEN IT SENDS</summary>
             <p>Sends at your selected reminder time when today's Weekly Plan includes a workout that hasn't been completed yet.</p>
           </details>
-        </section>
+          </section>
 
-        {/* NUTRITION */}
-        <section className="notification-section-card">
-          <header className="group-heading notification-card-eyebrow">
-            <span>NUTRITION</span>
-          </header>
+          <section className="notification-category-module">
+            <header className="notification-module-label">NUTRITION</header>
           <NotificationCategoryRow
             title="Calories below daily target"
             helper="Notify me when my logged calories are still meaningfully below today's target."
@@ -696,12 +709,13 @@ function NotificationSettings({ family, onBack }: { family: ThemeFamily; onBack:
             disabled={!interactive || !preferences.nutritionEnabled}
             onClick={() => { playEffect('select'); setTimeCategory('nutrition') }}
           />
-          <details className="notification-rule-note">
+            <details className="notification-disclosure">
             <summary>WHEN IT SENDS</summary>
             <p>Sends at your selected reminder time when your logged calories are still meaningfully below today's target. No reminder once your target is reached or exceeded.</p>
           </details>
-        </section>
-      </div>
+          </section>
+        </div>
+      </main>
 
       {permissionOpen ? (
         <div className="guide-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) void notNow() }}>
@@ -760,8 +774,8 @@ function NotificationPermissionStatus({ preferences, onEnable }: { preferences: 
 
 function NotificationCategoryRow({ title, helper, checked, disabled, onChange }: { title: string; helper: string; checked: boolean; disabled: boolean; onChange: (enabled: boolean) => void }) {
   return (
-    <label className="settings-switch-row notification-category-row">
-      <span className="notification-row-copy">
+    <label className="notification-setting-row notification-toggle-row">
+      <span className="notification-setting-copy">
         <strong>{title}</strong>
         <small>{helper}</small>
       </span>
@@ -773,7 +787,7 @@ function NotificationCategoryRow({ title, helper, checked, disabled, onChange }:
 
 function ReminderTimeRow({ value, disabled, onClick }: { value: string; disabled: boolean; onClick: () => void }) {
   return (
-    <button type="button" className="notification-time-row" disabled={disabled} onClick={onClick}>
+    <button type="button" className="notification-setting-row notification-reminder-row" disabled={disabled} onClick={onClick}>
       <span className="notification-time-label">REMINDER TIME</span>
       <span className="notification-time-end">
         <strong>{formatReminderTime(value)}</strong>
@@ -819,21 +833,7 @@ function AudioSettings({
         <input type="checkbox" role="switch" checked={soundEffectsEnabled} disabled={!ready} onChange={(event) => void setSoundEffectsEnabled(event.target.checked)} />
         <i aria-hidden="true" />
       </label>
-      <fieldset disabled={!ready}>
-        <legend>Background Music</legend>
-        <div className="settings-radio-list">
-          {musicOptions.map((option) => (
-            <label key={option.value}>
-              <input type="radio" name="background-music" value={option.value} checked={backgroundMusic === option.value} onChange={() => { playEffect('select'); void setBackgroundMusic(option.value) }} />
-              <span>
-                <strong>{option.label}</strong>
-                <small>{option.value === 'none' ? 'Turn battle music off' : 'Loop across navigation'}</small>
-              </span>
-              <i aria-hidden="true" />
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <BattleMusicDeck className="bgm-deck" name="background-music" value={backgroundMusic} disabled={!ready} onSelect={(track) => { playEffect('select'); void setBackgroundMusic(track) }} />
       <p className="appearance-note">Sound effects and battle music follow you throughout FitDex.</p>
     </section>
   )
@@ -878,10 +878,12 @@ function DisplayNameForm({ displayName, ready, onSave }: { displayName: string; 
           aria-invalid={value.length > 0 && !isValidDisplayName(value)}
         />
       </label>
-      <p id="display-name-help">Shown in your FitDex greeting. Stored only on this device.</p>
-      <p className="display-name-count" id="display-name-count" aria-live="polite">
-        {displayNameLength(value)} / {MAX_DISPLAY_NAME_LENGTH}
-      </p>
+      <div className="display-name-info-row">
+        <p id="display-name-help">Shown in your FitDex greeting. Stored only on this device.</p>
+        <p className="display-name-count" id="display-name-count" aria-live="polite">
+          {displayNameLength(value)} / {MAX_DISPLAY_NAME_LENGTH}
+        </p>
+      </div>
       <button className="secondary-button" type="submit" disabled={!ready || saving || !isValidDisplayName(value)}>
         {saving ? 'Saving…' : 'Save Display Name'}
       </button>
@@ -939,7 +941,6 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
   const suggestedProtein = Number.isFinite(weightNum) && weightNum > 0
     ? calculateSuggestedProteinTarget(weightNum, targets.activityLevel)
     : 0
-  const proteinMultiplier = PROTEIN_MULTIPLIERS[targets.activityLevel]
   const currentProteinGrams = Number(draft.proteinTargetGrams) || 0
   const isProteinUnset = !draft.proteinTargetGrams || draft.proteinTargetGrams === '0' || currentProteinGrams === 0
   const currentCalorieTarget = Number(draft.calorieTarget) || 0
@@ -985,206 +986,212 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
     }
   }
 
-  if (!ready) return <section className="nutrition-codex-container"><p aria-live="polite">Loading targets…</p></section>
+  if (!ready) return <section className="control-bay-targets"><p aria-live="polite">Loading targets…</p></section>
 
   return (
-    <section className="nutrition-codex-container">
-      <div className="codex-header-bar">
-        <div>
-          <div className="codex-header-system">Codex System · Calculation Profile</div>
-          <strong className="codex-header-title">Nutrition Targets Codex</strong>
+    <section className="control-bay-targets">
+      <section className="control-bay-module control-bay-engine">
+        <div className="control-bay-module-header">
+          <span>Target Engine</span>
+          <ControlBayStatus online={targets.enabled}>{targets.enabled ? 'Online' : 'Standby'}</ControlBayStatus>
         </div>
-        <div className="cmd-binary-toggle" role="group" aria-label="Target Status">
-          <button
-            type="button"
-            className={`cmd-binary-btn ${targets.enabled ? 'active-on' : ''}`}
-            onClick={() => { playEffect('select'); update('enabled', true) }}
-            aria-pressed={targets.enabled}
-          >
-            ENABLED
-          </button>
-          <button
-            type="button"
-            className={`cmd-binary-btn ${!targets.enabled ? 'active-off' : ''}`}
-            onClick={() => { playEffect('select'); update('enabled', false) }}
-            aria-pressed={!targets.enabled}
-          >
-            DISABLED
-          </button>
+        <div className="control-bay-module-body control-bay-engine-body">
+          <div className="control-bay-engine-readout">
+            <strong>Target Calculation {targets.enabled ? 'Ready' : 'Paused'}</strong>
+            <span>{targets.enabled && parsed ? 'Profile Valid' : targets.enabled ? 'Profile Incomplete' : 'Logging Active'}</span>
+          </div>
+          <div className="control-bay-key-bank control-bay-engine-bank" role="group" aria-label="Target Status">
+            <button
+              type="button"
+              className={`control-bay-key ${targets.enabled ? 'active' : ''}`}
+              onClick={() => { playEffect('select'); update('enabled', true) }}
+              aria-pressed={targets.enabled}
+            >
+              ENABLED
+            </button>
+            <button
+              type="button"
+              className={`control-bay-key ${!targets.enabled ? 'active' : ''}`}
+              onClick={() => { playEffect('select'); update('enabled', false) }}
+              aria-pressed={!targets.enabled}
+            >
+              DISABLED
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
 
       {!targets.enabled ? (
         <p className="appearance-note">Targets are disabled. Re-enabling begins a new eligibility boundary; prior XP remains.</p>
       ) : null}
 
       {/* BASELINE PARAMETERS */}
-      <div className="v3-ledger">
-        <div className="v3-ledger-header">
-          <span>Baseline Parameters</span>
-          <span style={{ color: 'var(--color-primary-text)' }}>Mifflin–St Jeor</span>
-        </div>
-        <div className="v3-ledger-body">
-          <div className="v3-row">
-            <span className="v3-row-label">Objective Directive</span>
-            <div className="cmd-segment-group" role="group" aria-label="Objective Directive">
-              {(['lose', 'maintain', 'gain'] as NutritionGoal[]).map((goal) => (
-                <button
-                  type="button"
-                  key={goal}
-                  className={`cmd-segment-btn ${targets.goal === goal ? 'active' : ''}`}
-                  aria-pressed={targets.goal === goal}
-                  onClick={() => { playEffect('select'); update('goal', goal) }}
-                >
-                  {goal === 'lose' ? 'Lose' : goal === 'gain' ? 'Gain' : 'Maintain'}
-                </button>
-              ))}
-            </div>
+      <CollapsibleModule
+        id="nutrition-baseline"
+        title="Baseline Parameters"
+        badge={<ControlBayStatus>Operator Panel</ControlBayStatus>}
+        defaultExpanded={false}
+        className="control-bay-module control-bay-collapsible control-bay-baseline"
+      >
+        <div className="control-bay-module-body">
+          <div className="control-bay-formula-readout">
+            <span className="control-bay-label">Formula</span>
+            <div><strong>Mifflin-St Jeor</strong><span>Standard</span></div>
           </div>
 
-          <NumericTargetInput
-            label="Subject Age"
-            id="nutrition-age"
-            value={draft.age}
-            onChange={(value) => setNumber('age', value)}
-            min={18}
-            max={120}
-          />
-
-          <div className="v3-row">
-            <label className="v3-row-label" htmlFor="nutrition-sex">Biological Sex</label>
-            <div className="terminal-select-wrapper" style={{ width: '120px' }}>
-              <select
-                id="nutrition-sex"
-                className="terminal-select"
-                value={targets.sex}
-                onChange={(event) => {
-                  playEffect('select')
-                  update('sex', event.target.value as NutritionSex)
-                }}
-              >
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-              </select>
-              <span className="terminal-select-arrow" aria-hidden="true">▼</span>
-            </div>
-          </div>
-
-          <NumericTargetInput
-            label="Stature (cm)"
-            id="nutrition-height"
-            value={draft.heightCm}
-            onChange={(value) => setNumber('heightCm', value)}
-            min={1}
-          />
-
-          <NumericTargetInput
-            label="Body Mass (kg)"
-            id="nutrition-weight"
-            value={draft.weightKg}
-            onChange={(value) => {
-              setNumber('weightKg', value)
-              const n = Number(value)
-              if (proteinSource === 'calculated' && Number.isFinite(n) && n > 0 && !isProteinUnset) {
-                setNumber('proteinTargetGrams', String(calculateSuggestedProteinTarget(n, targets.activityLevel)))
-              }
-            }}
-            min={1}
-            step="0.1"
-            decimal
-          />
-
-          <div style={{ paddingTop: '8px' }}>
-            <label className="v3-row-label" htmlFor="nutrition-activity" style={{ display: 'block', marginBottom: '4px' }}>Activity Index</label>
-            <div className="terminal-select-wrapper">
-              <select
-                id="nutrition-activity"
-                className="terminal-select"
-                value={targets.activityLevel}
-                onChange={(event) => {
-                  playEffect('select')
-                  const act = event.target.value as NutritionActivityLevel
-                  update('activityLevel', act)
-                  const n = Number(draft.weightKg)
-                  if (proteinSource === 'calculated' && Number.isFinite(n) && n > 0 && !isProteinUnset) {
-                    setNumber('proteinTargetGrams', String(calculateSuggestedProteinTarget(n, act)))
-                  }
-                }}
-              >
-                {(Object.keys(ACTIVITY_INFO) as NutritionActivityLevel[]).map((level) => (
-                  <option key={level} value={level}>{ACTIVITY_INFO[level].label}</option>
+          <div className="control-bay-goal-mode">
+            <span className="control-bay-label">Goal Mode</span>
+            <div className="control-bay-key-cluster">
+              <div className="cmd-segment-group control-bay-key-bank control-bay-physical-key-bank control-bay-goal-key-bank" role="group" aria-label="Objective Directive">
+                {(['lose', 'maintain', 'gain'] as NutritionGoal[]).map((goal) => (
+                  <button
+                    type="button"
+                    key={goal}
+                    className={`cmd-segment-btn ${targets.goal === goal ? 'active' : ''}`}
+                    aria-pressed={targets.goal === goal}
+                    onClick={() => { playEffect('select'); update('goal', goal) }}
+                  >
+                    {goal === 'lose' ? 'Lose' : goal === 'gain' ? 'Gain' : 'Maintain'}
+                  </button>
                 ))}
-              </select>
-              <span className="terminal-select-arrow" aria-hidden="true">▼</span>
+              </div>
             </div>
-            <div className="field-help" style={{ marginTop: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-              {ACTIVITY_INFO[targets.activityLevel].desc}
+          </div>
+
+          <div className="profile control-bay-profile-stack">
+            <NumericTargetControl
+              label="AGE"
+              unit="YR"
+              id="nutrition-age"
+              value={draft.age}
+              onStep={(delta) => {
+                playEffect('select')
+                const current = Number(draft.age) || 18
+                const next = Math.max(18, Math.min(120, current + delta))
+                setNumber('age', String(next))
+              }}
+            />
+            <NumericTargetControl
+              label="HEIGHT"
+              unit="CM"
+              id="nutrition-height"
+              value={draft.heightCm}
+              onStep={(delta) => {
+                playEffect('select')
+                const current = Number(draft.heightCm) || 168
+                const next = Math.max(1, current + delta)
+                setNumber('heightCm', String(next))
+              }}
+            />
+            <NumericTargetControl
+              label="WEIGHT"
+              unit="KG"
+              id="nutrition-weight"
+              value={draft.weightKg}
+              onStep={(delta) => {
+                playEffect('select')
+                const current = Number(draft.weightKg) || 64
+                const next = Math.max(1, current + delta)
+                setNumber('weightKg', String(next))
+                if (proteinSource === 'calculated' && !isProteinUnset) {
+                  setNumber('proteinTargetGrams', String(calculateSuggestedProteinTarget(next, targets.activityLevel)))
+                }
+              }}
+            />
+          </div>
+
+          <div className="control-bay-sex-row">
+            <span className="control-bay-label">Biological Sex</span>
+            <div className="control-bay-key-cluster">
+              <div className="cmd-segment-group control-bay-key-bank control-bay-physical-key-bank control-bay-sex-key-bank" role="group" aria-label="Biological Sex">
+                {(['female', 'male'] as NutritionSex[]).map((sex) => <button type="button" key={sex} className={`cmd-segment-btn ${targets.sex === sex ? 'active' : ''}`} aria-pressed={targets.sex === sex} onClick={() => { playEffect('select'); update('sex', sex) }}>{sex}</button>)}
+              </div>
+            </div>
+          </div>
+
+          <div className="control-bay-activity">
+            <label className="control-bay-label" htmlFor="nutrition-activity">Activity Index</label>
+            <div className="control-bay-activity-readout">
+              <div className="terminal-select-wrapper">
+                <select
+                  id="nutrition-activity"
+                  className="terminal-select"
+                  value={targets.activityLevel}
+                  onChange={(event) => {
+                    playEffect('select')
+                    const act = event.target.value as NutritionActivityLevel
+                    update('activityLevel', act)
+                    const n = Number(draft.weightKg)
+                    if (proteinSource === 'calculated' && Number.isFinite(n) && n > 0 && !isProteinUnset) {
+                      setNumber('proteinTargetGrams', String(calculateSuggestedProteinTarget(n, act)))
+                    }
+                  }}
+                >
+                  {(Object.keys(ACTIVITY_INFO) as NutritionActivityLevel[]).map((level) => (
+                    <option key={level} value={level}>{ACTIVITY_INFO[level].label}</option>
+                  ))}
+                </select>
+                <span className="terminal-select-arrow" aria-hidden="true">▼</span>
+              </div>
+              <div className="field-help">
+                {ACTIVITY_INFO[targets.activityLevel].desc}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </CollapsibleModule>
 
       {/* ENERGY ACCOUNTING */}
-      <div className="v3-ledger">
-        <div className="v3-ledger-header">
-          <span>Energy Accounting</span>
-          <span>Telemetrics</span>
+      <CollapsibleModule
+        id="nutrition-energy"
+        title="Energy Accounting"
+        badge={<ControlBayStatus>Telemetry</ControlBayStatus>}
+        defaultExpanded={false}
+        className="control-bay-module control-bay-collapsible control-bay-telemetry"
+      >
+        <div className="control-bay-module-body">
+          <div className="control-bay-telemetry-grid">
+            <div><span className="control-bay-label">RMR</span><strong>{rmr} <small>KCAL</small></strong></div>
+            <div><span className="control-bay-label">TDEE</span><strong>{tdee} <small>KCAL</small></strong></div>
+            <div className="is-goal"><span className="control-bay-label">Goal</span><strong>{suggestions?.defaultTarget ?? 0} <small>KCAL</small></strong></div>
+            <div><span className="control-bay-label">Protein</span><strong>{suggestedProtein} <small>G</small></strong></div>
+          </div>
+          {suggestions ? <button type="button" className="recom-chip control-bay-apply-key" onClick={() => { playEffect('select'); applyCalorie(suggestions.defaultTarget, 'calculated') }}>Apply Calculated {suggestions.defaultTarget} kcal</button> : null}
         </div>
-        <div className="v3-ledger-body">
-          <div className="v3-row">
-            <span className="v3-row-label">Basal Energy (RMR)</span>
-            <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{rmr} kcal</strong>
-          </div>
-          <div className="v3-row">
-            <span className="v3-row-label">Estimated Maintenance (TDEE)</span>
-            <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--color-primary-text)' }}>{tdee} kcal</strong>
-          </div>
-          {suggestions ? (
-            <div className="v3-row">
-              <span className="v3-row-label">Goal Calorie Recommendation</span>
-              <button
-                type="button"
-                className="recom-chip"
-                style={{ margin: 0 }}
-                onClick={() => {
-                  playEffect('select')
-                  applyCalorie(suggestions.defaultTarget, 'calculated')
-                }}
-              >
-                Apply {suggestions.defaultTarget} kcal
-              </button>
-            </div>
-          ) : null}
-          <div className="v3-row">
-            <span className="v3-row-label">Calculated Protein Allocation</span>
-            <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
-              {suggestedProtein} g ({proteinMultiplier} g/kg)
-            </strong>
-          </div>
-        </div>
-      </div>
+      </CollapsibleModule>
 
       {/* DAILY TARGETS */}
-      <div className="v3-ledger">
-        <div className="v3-ledger-header">
-          <span>Daily Targets</span>
-          <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-            <span className={`proto-badge ${targets.calorieTargetSource === 'calculated' ? 'source-calc' : 'source-manual'}`}>
-              CAL: {targets.calorieTargetSource.toUpperCase()}
-            </span>
-            <span className={`proto-badge ${isProteinUnset ? 'protein-unset' : proteinSource === 'calculated' ? 'source-calc' : 'source-manual'}`}>
-              PRO: {isProteinUnset ? 'NOT SET' : proteinSource.toUpperCase()}
-            </span>
+      <CollapsibleModule
+        id="nutrition-daily"
+        title="Daily Targets"
+        badge={<ControlBayStatus>Program Panel</ControlBayStatus>}
+        defaultExpanded={false}
+        className="control-bay-module control-bay-collapsible control-bay-daily"
+      >
+        <div className="control-bay-module-body">
+          <div className="control-bay-source-rail" aria-label="Daily target sources">
+            <div className={`control-bay-source-cell ${targets.calorieTargetSource === 'calculated' ? 'source-calc' : 'source-manual'}`}>
+              <b>CALORIES</b>
+              <small>
+                <span className="source-pip" aria-hidden="true">{targets.calorieTargetSource === 'calculated' ? '●' : '▪'}</span>
+                {targets.calorieTargetSource.toUpperCase()}
+              </small>
+            </div>
+            <div className={`control-bay-source-cell ${isProteinUnset ? 'protein-unset' : proteinSource === 'calculated' ? 'source-calc' : 'source-manual'}`}>
+              <b>PROTEIN</b>
+              <small>
+                <span className="source-pip" aria-hidden="true">{isProteinUnset ? '○' : '●'}</span>
+                {isProteinUnset ? 'NOT SET' : proteinSource.toUpperCase()}
+              </small>
+            </div>
           </div>
-        </div>
-        <div className="v3-ledger-body">
-          <div style={{ marginBottom: '14px' }}>
-            <span className="v3-row-label" style={{ display: 'block', marginBottom: '4px' }}>Daily Calorie Target</span>
-            <div className="terminal-stepper">
-              <button type="button" className="stepper-btn" aria-label="Decrease calorie target" onClick={() => stepCalorie(-50)}>−</button>
+          <div className="control-bay-daily-calorie-deck" style={{ marginBottom: '14px', textAlign: 'center' }}>
+            <span className="control-bay-label" style={{ display: 'block', marginBottom: '6px', textAlign: 'center' }}>Daily Calorie Target</span>
+            <div className="target-programmer control-bay-calorie-stepper">
+              <button type="button" className="calc-key stepper-btn" aria-label="Decrease calorie target" onClick={() => stepCalorie(-50)}>−</button>
               <input
                 type="number"
-                className="stepper-input"
+                className="lcd-input stepper-input"
                 aria-label="Daily calorie target"
                 value={draft.calorieTarget}
                 min={1}
@@ -1193,36 +1200,36 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
                   update('calorieTargetSource', 'manual')
                 }}
               />
-              <button type="button" className="stepper-btn" aria-label="Increase calorie target" onClick={() => stepCalorie(50)}>+</button>
+              <button type="button" className="calc-key stepper-btn" aria-label="Increase calorie target" onClick={() => stepCalorie(50)}>+</button>
             </div>
           </div>
 
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', gap: '6px' }}>
-              <span className="v3-row-label">Daily Protein Target</span>
+            <div className="control-bay-protein-header">
+              <span className="control-bay-label">Daily Protein Target</span>
               {!isProteinUnset && proteinSource === 'manual' ? (
                 <button
                   type="button"
-                  className="cmd-btn compact secondary"
+                  className="control-bay-protein-action is-recalc"
                   onClick={() => {
                     playEffect('select')
                     setNumber('proteinTargetGrams', String(suggestedProtein))
                     setProteinSource('calculated')
                   }}
                 >
-                  ⚡ Recalculate ({suggestedProtein}g)
+                  RECALCULATE ({suggestedProtein}g)
                 </button>
               ) : !isProteinUnset ? (
                 <button
                   type="button"
-                  className="cmd-btn compact secondary"
+                  className="control-bay-protein-action is-unset"
                   onClick={() => {
                     playEffect('select')
                     setNumber('proteinTargetGrams', '0')
                     setProteinSource('manual')
                   }}
                 >
-                  Unset
+                  UNSET
                 </button>
               ) : null}
             </div>
@@ -1251,11 +1258,11 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
               </div>
             ) : (
               <>
-                <div className="terminal-stepper">
-                  <button type="button" className="stepper-btn" aria-label="Decrease protein target" onClick={() => stepProtein(-5)}>−</button>
+                <div className="target-programmer control-bay-programmer">
+                  <button type="button" className="calc-key stepper-btn" aria-label="Decrease protein target" onClick={() => stepProtein(-5)}>−</button>
                   <input
                     type="number"
-                    className="stepper-input"
+                    className="lcd-input stepper-input"
                     aria-label="Daily protein target"
                     value={draft.proteinTargetGrams}
                     min={0}
@@ -1265,7 +1272,7 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
                       setProteinSource('manual')
                     }}
                   />
-                  <button type="button" className="stepper-btn" aria-label="Increase protein target" onClick={() => stepProtein(5)}>+</button>
+                  <button type="button" className="calc-key stepper-btn" aria-label="Increase protein target" onClick={() => stepProtein(5)}>+</button>
                 </div>
                 <div className="nutrition-sub-meta">
                   <span><strong>{currentProteinGrams} g / day</strong></span>
@@ -1280,13 +1287,13 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
             )}
           </div>
         </div>
-      </div>
+      </CollapsibleModule>
 
-      <p className="proto-disclaimer" style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
+      <p className="proto-disclaimer control-bay-fine-print" style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
         Estimates are for healthy adults and not medical prescriptions. FitDex is not medical advice.
       </p>
-      <button className="cmd-btn primary settings-save" type="button" onClick={() => void save()}>
-        Save Targets
+      <button className="cmd-btn primary settings-save control-bay-command" type="button" onClick={() => void save()}>
+        Execute: Save Targets
       </button>
       {status ? (
         <p className={status.includes('could') || status.includes('Enter') ? 'form-error' : 'display-name-status'} role="status">
@@ -1297,40 +1304,50 @@ function NutritionTargetsSettings({ onLoaded }: { onLoaded: (targets: Omit<Nutri
   )
 }
 
-function NumericTargetInput({
+function NumericTargetControl({
   label,
+  unit,
   value,
-  onChange,
-  min,
-  max,
-  step = '1',
-  decimal = false,
+  onStep,
+  ariaLabel,
   id,
 }: {
   label: string
-  value: string
-  onChange: (value: string) => void
-  min: number
-  max?: number
-  step?: string
-  decimal?: boolean
+  unit: string
+  value: string | number
+  onStep: (delta: -1 | 1) => void
+  ariaLabel?: string
   id?: string
 }) {
   return (
-    <div className="v3-row">
-      <label className="v3-row-label" htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        className="terminal-field"
-        type="number"
-        inputMode={decimal ? 'decimal' : 'numeric'}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        style={{ width: '90px', textAlign: 'center' }}
-      />
+    <div className="calc-control control-bay-profile-control">
+      <span className="display-label control-bay-label" id={id ? `${id}-label` : undefined}>{label}</span>
+      <div className="calc-row control-bay-stepper">
+        <button
+          type="button"
+          className="calc-key stepper-btn"
+          aria-label={`Decrease ${label}`}
+          onClick={() => onStep(-1)}
+        >
+          −
+        </button>
+        <output
+          className="lcd"
+          id={id}
+          aria-labelledby={id ? `${id}-label` : undefined}
+          aria-label={ariaLabel || `${label}: ${value} ${unit}`}
+        >
+          {value}<small>{unit}</small>
+        </output>
+        <button
+          type="button"
+          className="calc-key stepper-btn"
+          aria-label={`Increase ${label}`}
+          onClick={() => onStep(1)}
+        >
+          +
+        </button>
+      </div>
     </div>
   )
 }

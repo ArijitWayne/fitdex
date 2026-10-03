@@ -1,6 +1,7 @@
 package com.fitdex.app;
 
 import android.content.Context;
+import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -124,6 +125,12 @@ public class AppInstallerPlugin extends Plugin {
 
         Context context = getContext();
         try {
+            File updaterDirectory = new File(context.getCacheDir(), "updates");
+            String updaterPath = updaterDirectory.getCanonicalPath() + File.separator;
+            if (!file.getCanonicalPath().startsWith(updaterPath) || !file.getName().matches("fitdex-[0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-zA-Z0-9.-]+)?(?:-[0-9]+)?\\.apk")) {
+                call.reject("APK path is not a FitDex updater artifact");
+                return;
+            }
             Uri contentUri = FileProvider.getUriForFile(
                 context,
                 context.getPackageName() + ".fileprovider",
@@ -132,6 +139,7 @@ public class AppInstallerPlugin extends Plugin {
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+            intent.setClipData(ClipData.newRawUri("FitDex update", contentUri));
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
