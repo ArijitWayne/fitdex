@@ -1,5 +1,42 @@
 # FitDex Release Notes
 
+## v2.1.0
+
+Android versionCode: 9
+
+APK: fitdex.2.1.0.apk
+APK size: 64101577 bytes
+SHA-256: a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3
+
+FitDex 2.1.0 is a major polish and consistency update focused on making FitDex feel more cohesive, reliable, and game-like across app.
+
+### Interface and training
+
+- Modernized handheld shells, nested modules, navigation, spacing, responsive behavior, and active selection states across core app surfaces.
+- Refined Training Terminal, active workout, exercise and set presentation, command controls, and Start Rest behavior.
+- Refined Mission Brief champion selection, header utility controls, and faction-aware visual treatment.
+
+### Food and settings
+
+- Modernized food logging, food management, category, meal, nutrient, and Nutrition Breakdown surfaces.
+- Editing remembered food now updates future defaults without changing historical food logs.
+- Refined Settings detail screens for appearance, units, backup and restore, profile, nutrition targets, and audio controls.
+
+### Battle Music and Android
+
+- Added shared Battle Music deck on Home and Settings, with active-track equalizer, static mute indicator for Music Off, and stable Home dropdown control.
+- Replaced default Android startup branding with FitDex faction-aware launch treatment before existing opening animation.
+- Strengthened in-app updates with version-specific artifacts, safe retry cleanup, download verification, and protected installer handoff.
+
+### Fixes and polish
+
+- Improved Home and Settings visual consistency, shell proportions, alignment, and narrow-screen behavior.
+- Removed dead build code found during release cleanup.
+
+### Validation status
+
+Signed APK and integrity metadata are verified. Manual 2.0.1 to 2.1.0 upgrade validation remains pending.
+
 ## v2.0.1
 
 Released: October 2, 2026
@@ -16,8 +53,6 @@ Android versionCode: 7
 - Version Code: 7
 - Package ID: com.fitdex.app
 - APK: fitdex.2.0.1.apk
-
----
 
 ## v2.0.0
 
@@ -65,8 +100,6 @@ Android versionCode: 6
 
 FitDex 1.x is no longer supported. Upgrade to FitDex 2.0+ for the current Exercise Dex and tracking system.
 
----
-
 ## v1.1.1
 
 Released: September 27, 2026
@@ -77,8 +110,6 @@ Android versionCode: 5
 - Android updates now download directly inside FitDex instead of handing APK downloads off to the browser.
 - Added reliable in-app download progress, SHA-256 verification, retry handling, and native Android installer launch.
 - Improved handling for Android's "Install unknown apps" permission flow.
-
----
 
 ## v1.1.0
 
@@ -129,8 +160,6 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
 - Fixed active-workout exercise reorder persistence.
 - Fixed per-set trash control overlapping Log control.
 - Fixed HOW TO PERFORM fallback equipment typing for custom and legacy exercises.
-
----
 
 ## v1.0.0
 

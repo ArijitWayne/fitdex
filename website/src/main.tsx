@@ -1,9 +1,11 @@
 // oxlint-disable react/only-export-components -- standalone Vite entry owns local page components.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useLocation } from './router'
 import { useReleases } from './releases/api'
 import { ChangelogView, formatDate, formatBytes, CopyButton } from './ChangelogView'
+import { InstallView } from './InstallView'
+import { IosEcosystemGlyph } from './PlatformIcons'
 import './styles.css'
 
 const github = 'https://github.com/ArijitWayne/fitdex'
@@ -23,15 +25,15 @@ export type ReleaseMetadata = {
 
 // Published-release fallback. Live GitHub metadata remains the source of truth.
 export const release: ReleaseMetadata = {
-  version: '2.0.0',
-  versionCode: 6,
-  tag: 'v2.0.0',
-  apk: 'fitdex.2.0.0.apk',
-  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.0.0/fitdex.2.0.0.apk',
-  checksum: 'fitdex.2.0.0.apk.sha256',
-  sha256: '8ffb3d512c57db443a65757303abd228c34886164efc56d8316a32b98f647f67',
+  version: '2.1.0',
+  versionCode: 9,
+  tag: 'v2.1.0',
+  apk: 'fitdex.2.1.0.apk',
+  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.1.0/fitdex.2.1.0.apk',
+  checksum: 'fitdex.2.1.0.apk.sha256',
+  sha256: 'a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3',
   releaseNotes: 'RELEASE_NOTES.md',
-  publishedAt: '2026-10-02T12:55:06Z',
+  publishedAt: '2026-10-03T17:37:19Z',
 }
 
 type ShotProps = { src: string; alt: string; label: string; className?: string }
@@ -107,6 +109,7 @@ function App() {
   const closeMenu = () => setMenuOpen(false)
 
   const nav: [string, string][] = [
+    ['INSTALL', '/install'],
     ['FEATURES', '#features'],
     ['EXERCISE DEX', '#dex'],
     ['LOCAL-FIRST', '#local-first'],
@@ -120,13 +123,22 @@ function App() {
     if (href.startsWith('/')) {
       e.preventDefault()
       navigate(href)
-    } else if (pathname === '/changelog') {
+    } else if (pathname !== '/') {
       e.preventDefault()
       navigate('/' + href)
     }
   }
 
   const latest = releaseState.latest
+  const activeRelease = latest ?? release
+
+  useEffect(() => {
+    const installPage = pathname === '/install'
+    document.title = installPage ? 'Install FitDex | Android APK & iPhone Web App' : 'FitDex — Train. Track. Evolve.'
+    document.querySelector('meta[name="description"]')?.setAttribute('content', installPage
+      ? 'Install FitDex on Android using official signed APK, or add FitDex web app to iPhone Home Screen.'
+      : 'FitDex is a local-first fitness tracker for Android and web.')
+  }, [pathname])
 
   return (
     <>
@@ -145,7 +157,7 @@ function App() {
           >
             <img src="/branding/fitdex-logo-spartan.png" alt="" />
             <span>FITDEX</span>
-            <b>{latest ? `v${latest.version} // LATEST` : 'FITDEX 2.0'}</b>
+            <b>{latest ? `v${latest.version} // LATEST` : 'FITDEX'}</b>
           </a>
           <button
             className="menu-button"
@@ -196,15 +208,17 @@ function App() {
       <main id="main">
         {pathname === '/changelog' ? (
           <ChangelogView releaseState={releaseState} onNavigate={navigate} />
+        ) : pathname === '/install' ? (
+          <InstallView release={activeRelease} onNavigate={navigate} pwa={pwa} />
         ) : (
           <>
             <section className="hero section" id="top">
               <div className="shell hero-grid">
                 <div className="hero-copy">
                   <p className="eyebrow">TACTICAL ANDROID FITNESS TRACKER</p>
-                  <p className="wordmark">FITDEX 2.0</p>
+                  <p className="wordmark">FITDEX</p>
                   <h1>TRAIN. TRACK.<br /><em>EVOLVE.</em></h1>
-                  <p className="lede">Major evolution of FitDex. Premium redesign. Refined exercise tracking.</p>
+                  <p className="lede">Fitness command system for training, nutrition, progress, and consistency.</p>
                   <p className="muted">802 active exercises. Local-first data. Demos load on demand.</p>
                   <div className="actions">
                     {latest?.apkDownloadUrl ? (
@@ -230,6 +244,9 @@ function App() {
                       }}
                     >
                       VIEW CHANGELOG
+                    </a>
+                    <a className="button secondary" href="/install" onClick={(e) => { e.preventDefault(); navigate('/install') }}>
+                      INSTALL GUIDE
                     </a>
                     <a className="button secondary" href={pwa} target="_blank" rel="noreferrer">
                       TRY WEB APP
@@ -525,6 +542,7 @@ function App() {
                     </p>
                   )}
                   <a className="text-link" href="/changelog" onClick={(e) => { e.preventDefault(); navigate('/changelog') }} style={{ marginTop: '14px', display: 'inline-block' }}>VIEW PUBLISHED APK ARCHIVE</a>
+                  <a className="text-link" href="/install#android" onClick={(e) => { e.preventDefault(); navigate('/install#android') }} style={{ marginTop: '12px', display: 'inline-block' }}>INSTALL HELP</a>
                 </article>
                 <article>
                   <p className="eyebrow">LIVE PLATFORM</p>
@@ -533,9 +551,11 @@ function App() {
                   <a className="button" href={pwa} target="_blank" rel="noreferrer">OPEN WEB APP</a>
                 </article>
                 <article>
-                  <p className="eyebrow">PLATFORM STATUS</p>
-                  <h2>iOS</h2>
-                  <p className="muted">Future consideration.</p>
+                  <p className="eyebrow">WEB APP</p>
+                  <IosEcosystemGlyph className="platform-ios-icon" />
+                  <h2>iPHONE / iOS</h2>
+                  <p className="muted">Add FitDex to your Home Screen. No native App Store build yet.</p>
+                  <a className="button secondary" href="/install#ios" onClick={(e) => { e.preventDefault(); navigate('/install#ios') }}>INSTALL ON iPHONE</a>
                 </article>
               </div>
             </section>
@@ -592,6 +612,7 @@ function App() {
             >
               Changelog
             </a>
+            <a href="/install" onClick={(e) => { e.preventDefault(); navigate('/install') }}>Install FitDex</a>
             <a
               href="#release-notes"
               onClick={(e) => handleNavClick('#release-notes', e)}
