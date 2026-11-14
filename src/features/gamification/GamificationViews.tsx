@@ -365,15 +365,15 @@ function levelMilestoneAchievementId(beforeLevel: number, afterLevel: number) {
 function AchievementNotification({ unlocks }: { unlocks: Awaited<ReturnType<typeof loadPendingGamificationNotifications>>['unlocks'] }) {
   const unlock = unlocks[0]
   const achievement = unlock ? achievementById.get(unlock.achievementId) : undefined
-  if (!unlock || !achievement || unlocks.length !== 1) return <><p className="eyebrow">Achievements</p><h2 id="gamification-notification-title">{unlocks.length} Achievements Unlocked</h2><p>+{unlocks.length * XP_REWARDS.achievement} XP</p><AchievementUnlockList unlocks={unlocks} /></>
-  return <><GamificationBadge kind="achievement" src={achievementAssetPath(achievement.id)} label={`${achievement.name} achievement badge`} size="large" /><p className="eyebrow">Achievement Unlocked · +{XP_REWARDS.achievement} XP</p><h2 id="gamification-notification-title">{achievement.name}</h2></>
+  if (!unlock || !achievement || unlocks.length !== 1) return <><p className="eyebrow">Achievements</p><h2 id="gamification-notification-title">{unlocks.length} Achievements Unlocked</h2><p className="gamification-reward-total">+{unlocks.length * XP_REWARDS.achievement} XP</p><AchievementUnlockList unlocks={unlocks} /></>
+  return <><GamificationBadge kind="achievement" src={achievementAssetPath(achievement.id)} label={`${achievement.name} achievement badge`} size="large" /><p className="eyebrow">Achievement Unlocked</p><h2 id="gamification-notification-title">{achievement.name}</h2><p className="gamification-reward-total">+{XP_REWARDS.achievement} XP</p></>
 }
 
 function AchievementUnlockList({ unlocks }: { unlocks: Awaited<ReturnType<typeof loadPendingGamificationNotifications>>['unlocks'] }) {
   return <ul className="gamification-notification-unlocks">{unlocks.map((unlock) => {
     const achievement = achievementById.get(unlock.achievementId)
     const name = achievement?.name ?? 'Unknown achievement'
-    return <li key={unlock.id}><GamificationBadge kind="achievement" src={achievementAssetPath(unlock.achievementId)} label={`${name} achievement badge`} size="small" /><span>{name}</span><b style={{ color: 'var(--color-primary)' }}>+{XP_REWARDS.achievement} XP</b></li>
+    return <li key={unlock.id}><GamificationBadge kind="achievement" src={achievementAssetPath(unlock.achievementId)} label={`${name} achievement badge`} size="small" /><span>{name}</span><b className="gamification-unlock-xp">+{XP_REWARDS.achievement} XP</b></li>
   })}</ul>
 }
 

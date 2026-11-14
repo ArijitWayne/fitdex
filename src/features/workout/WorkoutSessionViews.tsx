@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowUpDown, BookOpen, Hourglass, MoreHorizontal, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Panel } from '../../components/ui/Panel'
 import { RetroLoader } from '../../components/ui/RetroLoader'
 import { ContextRail } from '../../components/ui/ContextRail'
@@ -89,6 +89,8 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   const [now, setNow] = useState(() => Date.now())
   const [rest, setRest] = useState<number>()
   const [confirmFinish, setConfirmFinish] = useState(false)
+  const [savingFinish, setSavingFinish] = useState(false)
+  const savingFinishRef = useRef(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [finishValidation, setFinishValidation] = useState<WorkoutFinishValidation>()
   const [finishWasRunning, setFinishWasRunning] = useState(false)
@@ -267,10 +269,31 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
   }
 
   async function cancelFinishFlow() {
+    if (savingFinishRef.current) return
     setConfirmFinish(false)
     if (finishWasRunning) await resumeWorkout(workoutId, Date.now())
     setFinishWasRunning(false)
     await refresh()
+  }
+
+  async function confirmFinishFlow() {
+    if (savingFinishRef.current) return
+    savingFinishRef.current = true
+    setSavingFinish(true)
+    try {
+      await finishWorkout(workoutId)
+      playEffect('progress_complete')
+      onCompleted(workoutId)
+    } catch (error: unknown) {
+      setConfirmFinish(false)
+      if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined)
+      setFinishWasRunning(false)
+      await refresh().catch(() => undefined)
+      if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation)
+      else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.')
+      savingFinishRef.current = false
+      setSavingFinish(false)
+    }
   }
 
   function renderedExerciseHasData(workoutExerciseId: string) {
@@ -695,7 +718,16 @@ export function ActiveWorkoutView({ workoutId, onExit, onCompleted }: {
           <button className="primary-button btn-bottom-primary" type="button" disabled={finishBusy} onClick={() => void beginFinishFlow()}>{finishBusy ? 'Checking workout…' : 'Finish workout'}</button>
         </div>
         {finishValidation ? <FinishValidationDialog validation={finishValidation} onClose={() => setFinishValidation(undefined)} /> : null}
-        {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title"><h2 id="finish-workout-title">Finish workout?</h2><p>{detail.exercises.length} exercises · {loggedSets} logged sets · {formatDuration(getWorkoutDuration(detail.workout, now))} training time</p><button className="secondary-button" type="button" autoFocus onClick={() => void cancelFinishFlow()}>Keep logging</button><button className="primary-button" type="button" onClick={() => void finishWorkout(workoutId).then(() => { playEffect('progress_complete'); onCompleted(workoutId) }).catch(async (error: unknown) => { setConfirmFinish(false); if (finishWasRunning) await resumeWorkout(workoutId, Date.now()).catch(() => undefined); setFinishWasRunning(false); await refresh().catch(() => undefined); if (error instanceof IncompleteWorkoutError) setFinishValidation(error.validation); else setFeedback(error instanceof Error ? error.message : 'Workout could not be finished.') })}>Finish and save</button></section></div> : null}
+        {confirmFinish ? <div className="workout-finish-backdrop"><section className="panel workout-confirm workout-finish-confirm" role="dialog" aria-modal="true" aria-labelledby="finish-workout-title" aria-busy={savingFinish}>
+          <p className="eyebrow">Training summary</p><h2 id="finish-workout-title">Finish workout?</h2>
+          <dl className="workout-finish-stats">
+            <div><dt>Exercises</dt><dd>{detail.exercises.length}</dd></div>
+            <div><dt>Logged sets</dt><dd>{loggedSets}</dd></div>
+            <div><dt>Training time</dt><dd>{formatDuration(getWorkoutDuration(detail.workout, now))}</dd></div>
+          </dl>
+          <button className="secondary-button" type="button" autoFocus disabled={savingFinish} onClick={() => void cancelFinishFlow()}>Keep logging</button>
+          <button className="primary-button" type="button" disabled={savingFinish} onClick={() => void confirmFinishFlow()}>{savingFinish ? 'Saving…' : 'Finish and save'}</button>
+        </section></div> : null}
         {confirmDiscard ? <div className="workout-finish-backdrop"><section className="panel workout-confirm" role="alertdialog" aria-modal="true" aria-labelledby="discard-workout-title"><h2 id="discard-workout-title">Discard workout?</h2><p>This session will not appear in history or previous performance.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmDiscard(false)}>Keep workout</button><button className="danger-button" type="button" onClick={() => void discardWorkout(workoutId).then(onExit)}>Discard</button></section></div> : null}
         {confirmSetRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm set-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-set-title"><h2 id="remove-active-set-title">Delete set?</h2><p>This set contains entered workout data. Deleting it will remove this set from the current workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmSetRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const setId = confirmSetRemovalId; setConfirmSetRemovalId(undefined); void run(() => deleteActiveSet(setId)) }}>Delete set</button></section></div> : null}
         {confirmExerciseRemovalId ? <div className="workout-finish-backdrop"><section className="panel workout-confirm exercise-remove-confirm" role="alertdialog" aria-modal="true" aria-labelledby="remove-active-exercise-title"><h2 id="remove-active-exercise-title">Remove exercise?</h2><p>This exercise contains entered workout data. Removing it will delete its sets from this active workout.</p><button className="secondary-button" type="button" autoFocus onClick={() => setConfirmExerciseRemovalId(undefined)}>Cancel</button><button className="danger-button" type="button" onClick={() => { const exerciseId = confirmExerciseRemovalId; setConfirmExerciseRemovalId(undefined); void run(() => removeActiveExercise(exerciseId)) }}>Remove</button></section></div> : null}
@@ -960,13 +992,13 @@ export function CompletedWorkoutDetail({ workoutId, onBack, onDeleted = onBack }
   }, [workoutId])
   const loggedHistorySets = useMemo(() => detail?.exercises.flatMap((item) => item.sets.filter((set) => isHistoricalWorkoutSetLogged(set, item.exercise.trackingTypeSnapshot ?? 'reps_only'))) ?? [], [detail])
   const resistanceSets = useMemo(() => detail?.exercises.filter((item) => item.exercise.trackingTypeSnapshot === 'weight_reps').flatMap((item) => item.sets) ?? [], [detail])
-  if (!detail) return <Panel><button className="dex-back-button" type="button" onClick={onBack}><ArrowLeft size={20} /></button>{error ? <p role="alert">{error}</p> : <RetroLoader label="LOADING WORKOUT HISTORY..." />}</Panel>
-  return <div className="page-stack completed-workout-page">
-    <Panel className="completed-workout-header"><button className="dex-back-button" type="button" onClick={onBack} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /></button><div><p className="eyebrow">Completed workout</p><h1>{detail.workout.nameSnapshot}</h1><p>{new Date(detail.workout.completedAt ?? detail.workout.startedAt).toLocaleString()}</p></div></Panel>
+  if (!detail) return <CommandPageFrame className="completed-workout-page" terminalTitle="FITDEX // TRAINING RECORD" terminalMeta="HISTORY"><button className="retro-workout-back" type="button" onClick={onBack} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /><span>Workout Hub</span></button><Panel>{error ? <p role="alert">{error}</p> : <RetroLoader label="LOADING WORKOUT HISTORY..." />}</Panel></CommandPageFrame>
+  return <CommandPageFrame className="completed-workout-page" terminalTitle="FITDEX // TRAINING RECORD" terminalMeta="COMPLETED">
+    <header className="completed-workout-header"><button className="retro-workout-back" type="button" onClick={onBack} aria-label="Back to Workout Hub"><ArrowLeft size={20} aria-hidden="true" /><span>Workout Hub</span></button><div><p className="eyebrow">Completed workout</p><h1>{detail.workout.nameSnapshot}</h1><p>{new Date(detail.workout.completedAt ?? detail.workout.startedAt).toLocaleString()}</p></div></header>
     <div className="completed-summary"><span><strong>{formatDuration(detail.workout.durationSeconds ?? 0)}</strong><small>Duration</small></span><span><strong>{detail.exercises.length}</strong><small>Exercises</small></span><span><strong>{loggedHistorySets.length}</strong><small>Logged sets</small></span>{calculateVolume(resistanceSets) > 0 ? <span><strong>{Number(displayWeightFromKg(calculateVolume(resistanceSets), units.preference).toFixed(1))}</strong><small>Resistance volume ({units.weightLabel})</small></span> : null}</div>
     {detail.exercises.map(({ exercise, sets: exerciseSets }, index) => { const trackingType = exercise.trackingTypeSnapshot ?? 'reps_only'; const logged = exerciseSets.filter((set) => isHistoricalWorkoutSetLogged(set, trackingType)); return <Panel className="history-exercise-card" key={exercise.id}><p className="eyebrow">Exercise {index + 1}</p><h2>{exercise.exerciseNameSnapshot ?? 'Historical exercise'}</h2><p>{logged.length}/{exerciseSets.length} sets logged</p><div className="history-set-list">{exerciseSets.map((set, setIndex) => { const setLogged = isHistoricalWorkoutSetLogged(set, trackingType); return <div className={setLogged ? 'history-set is-complete' : 'history-set'} key={set.id}><strong>Set {setIndex + 1}</strong>{set.weight !== undefined ? <span>{displayWeight(set.weight, units)} {units.weightLabel}</span> : null}{set.reps !== undefined ? <span>{set.reps} reps</span> : null}{set.durationSeconds !== undefined ? <span>{set.durationSeconds} sec</span> : null}{set.distance !== undefined ? <span>{displayDistance(set.distance, units)} {units.distanceLabel}</span> : null}<small>{setLogged ? 'Logged' : 'Legacy incomplete row'}</small></div> })}</div>{exercise.notes ? <p>{exercise.notes}</p> : null}</Panel> })}
     {detail.workout.notes ? <Panel eyebrow="Session notes"><p>{detail.workout.notes}</p></Panel> : null}
     <button className="text-button completed-workout-delete" type="button" onClick={() => setConfirmDelete(true)}><Trash2 size={17} aria-hidden="true" /> Delete workout</button>
     {confirmDelete ? <WorkoutDeleteDialog workoutId={workoutId} workoutName={detail.workout.nameSnapshot} onCancel={() => setConfirmDelete(false)} onDeleted={onDeleted} /> : null}
-  </div>
+  </CommandPageFrame>
 }

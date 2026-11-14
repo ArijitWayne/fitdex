@@ -893,7 +893,7 @@ function PersonalRecordsView({
           <button
             type="button"
             className="pr-filter-trigger-btn"
-            style={{ width: '100%', justifyContent: 'center', minHeight: '38px', marginTop: '6px' }}
+            style={{ width: '100%', justifyContent: 'center', minHeight: '44px', marginTop: '6px' }}
             onClick={() => setIsFilterModalOpen(false)}
           >
             Apply Settings

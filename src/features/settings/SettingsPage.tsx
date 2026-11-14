@@ -239,7 +239,7 @@ export function SettingsPage({ onBack, onReplayTutorial, initialView }: { onBack
 
   if (view === 'media') {
     return (
-      <div className="fitdex-page-frame page-stack settings-page settings-detail-page">
+      <div className="fitdex-page-frame page-stack settings-page settings-detail-page settings-modern-detail settings-media-detail">
         <SettingsSubheader eyebrow="Settings / Data & Offline" title="Exercise Media" description="Manage exercise demonstrations saved for offline use." onBack={backToHub} />
         <div className="settings-detail">
           <ExerciseMediaSettings />

@@ -33,7 +33,7 @@ Before approving ANY screen, component, prototype, or redesign, evaluate against
 #### II. Visual Language
 - **Panel Framing**: Strong visible panel borders (`--color-border`), subtle inset/outset framing, distinct section dividers, and console-like casing.
 - **Status Readouts**: Compact, high-density telemetry displays, mono/technical values for weights/timers/calories, and crisp uppercase headers.
-- **Geometry**: Square or mildly rounded frames (4px–12px radius max). Avoid soft floating cards, oversized border-radii (24px+), or pill-saturated layouts.
+- **Geometry**: Follow accepted v2.1.0 production hardware geometry: 16px–20px outer shells and dialogs, 8px–14px nested modules, and 7px–10px tactile action keys. Crisp rectangular telemetry cells, pixel artwork, and joined control banks remain intentional. Avoid floating SaaS cards, oversized 24px+ radii, and pill-saturated layouts.
 - **Controls**: Crisp geometric command buttons with defined borders, obvious active/selection states, and semantic primary highlights.
 - **Prohibited Drift Patterns**: FitDex must NEVER be styled as:
   - A generic SaaS / B2B dashboard
@@ -91,7 +91,7 @@ Website controls retain visible focus, 44px-scale touch targets, explicit proper
 FitDex interactive controls must feel like **tactile, rectangular, framed, game-command widgets** from the 8-bit/16-bit console and handheld era—never modern soft, floating, pill-shaped SaaS components.
 
 #### I. Core Control Principles
-- **Geometry**: Rectangular with crisp 0px–4px corner radii (`border-radius: 2px` to `4px` default). Never use 12px–24px rounded modern CTA corners or floating pill shapes unless semantically necessary.
+- **Geometry**: Use the accepted hardware keys: framed rectangular controls with restrained rounded corners (normally 7px–10px), bevel highlights, and a clear pressed state. Compact terminal entry fields and joined Control Bay banks may retain crisp 0px–5px geometry. Do not replace existing production controls with floating pills.
 - **Borders & Framing**: Strong, high-contrast borders (`1px` or `2px solid var(--color-border-strong)`).
 - **Tactile Depth & Hard Shadows**: Use hard geometric block shadows (`box-shadow: 2px 2px 0 var(--color-border-strong)` or `3px 3px 0 var(--color-border-strong)`) or subtle top/left highlight bevels. Avoid soft, diffused CSS blur dropshadows.
 - **Pressed & Active State**: Immediate, tactile response (~60–120ms transition). On `:active`, controls translate 1px–2px down/right (`transform: translate(2px, 2px)`) while offset shadows collapse, providing immediate physical click feedback.
@@ -286,7 +286,7 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
 - **Inline Summary Badges**: Display verified current state inline in navigation rows (`Arijit · Leonidas`, `Spartan · Dark`, `Metric`, `SFX On · Warrior`, `1,800 kcal · Protein off`).
 - **Unified Audio Entry**: Sound Effects switch and shared Battle Music deck (`Warrior`, `Hardened`, `Villain`, `None`) are consolidated in a dedicated subview. Active tracks use equalizer motion; `None` uses static mute state.
 - **Units Management**: Direct selection between Metric (`kg · km`) and Imperial (`lb · mi`) backed by `SettingsRecord.units` in Dexie.
-- **Nutrition Targets — V3 Nutrition Codex**: Authoritative retro reference and configuration ledger using Style B Pixel Command controls (0px radius, 2px semantic borders, 3px hard block shadows). Structured into `Baseline Parameters` (clean fields with no decorative `RECORD 01` stamps, dropdown with hidden TDEE factors), `Energy Accounting` (RMR, TDEE, Calorie recommendations, and protein allocation), and `Daily Targets` (stepper inputs with direct typing, calculated/manual source badges, `NOT SET` zero state, and `g/day · g/kg · kcal · %` telemetry metadata).
+- **Nutrition Targets — Control Bay**: Authoritative retro reference and configuration ledger using the approved inset readouts, compact physical key banks, and semantic accent rails. Its compact field geometry is intentional; the outer shell follows the rounded handheld frame. Structured into `Baseline Parameters` (clean fields with no decorative `RECORD 01` stamps, dropdown with hidden TDEE factors), `Energy Accounting` (RMR, TDEE, Calorie recommendations, and protein allocation), and `Daily Targets` (stepper inputs with direct typing, calculated/manual source badges, `NOT SET` zero state, and `g/day · g/kg · kcal · %` telemetry metadata).
 - **Replacement-Only Restore**: Full `.fitdex` restore communicates literal replace-not-merge semantics with optional safety backup.
 
 ### 4.7 Primary Page Frame
@@ -330,3 +330,101 @@ Former `prototypes/` and `.temp-prototypes/` workspaces were temporary explorato
 - **Update Dialogs**: Update details use a focused accessible modal with installed and target version/build, publication date, APK size when available, release notes, checksum when provided, and an explicit download/install handoff. Escape and close controls dismiss the modal.
 - **Settings & About**: About offers a manual check and Release Notes. It reports update availability, offline state, and fetch errors clearly. With no public stable GitHub Release, it identifies installed version/build as local baseline.
 - **Offline & Error Copy**: Explain unavailable network or release data without claiming a release exists, without fabricating current-public-release confirmation, and with a clear retry path where applicable.
+
+
+### 4.11 v2.1.0 Application UI Consistency Inventory
+
+This is the production source audit for the application, including conditional and native-only surfaces. It covers all rendering areas in `src/`; the separately deployed public `website/` is outside the application scope. A surface means a named view, reusable UI family, or conditional flow, not every DOM element. Repeated states that share one visual implementation are grouped explicitly below. Theme providers, repositories, and pure rendering helpers are not counted as independent screens.
+
+The inventory contains **77 surfaces**: **48 Modern**, **24 Partially modern**, and **5 Legacy** at entry. The five Legacy surfaces and all listed partial visual gaps are addressed in this pass. Modern surfaces keep their accepted composition; shared fallback controls inherit the refreshed primitive styling. Classification records the entry condition rather than implying that unchanged surfaces were redesigned.
+
+| # | Surface | Before | Source / owner | After |
+| --- | --- | --- | --- | --- |
+| 1 | AppShell header and bottom navigation | Modern | AppShell; HeaderUtilityIcons | Retained production chrome and safe-area ownership. |
+| 2 | Home hero and rank readout | Modern | HomePage | Retained avatar, XP telemetry, and faction composition. |
+| 3 | Home desktop and mobile command menus | Modern | HomePage | Retained command rows and music controls. |
+| 4 | Home training, quests, and consistency rail | Modern | HomePage | Retained workout states and streak navigation. |
+| 5 | Home loading, empty, and error states | Modern | HomePage | Retained context-local status indicators. |
+| 6 | First-launch Mission Brief | Modern | FirstLaunchMission | Retained staged setup, controls, and nutrition parameters. |
+| 7 | Field Guide and replay | Modern | FieldGuide | Retained chapter navigation and responsive action bar. |
+| 8 | Feature help dialogs | Partially modern | GuideDialog; app.css | Retained accepted composition; replaced fixed black shadow with theme shadow. |
+| 9 | Contextual first-use dialogs | Modern | ContextRail | Retained existing content and acknowledgement actions. |
+| 10 | Required display-name prompt | Partially modern | RequiredDisplayNamePrompt; app.css | Bounded and scrollable in short viewports; semantic shadow. |
+| 11 | Champion selector and portrait fallback | Modern | AvatarSelector; AvatarPortrait | Retained radio selection, artwork, faction labels, and error fallback. |
+| 12 | Exercise Codex index and category cards | Modern | ExerciseDex | Retained accepted cover, category sprites, and search. |
+| 13 | Exercise search, favorites, empty, and error states | Modern | ExerciseDex; ExerciseRows | Retained local filtering, recovery actions, and empty modules. |
+| 14 | Contextual exercise picker and Add/Added rows | Modern | ExerciseRows | Retained picker layout, selection, and scroll restoration. |
+| 15 | Exercise Record | Modern | ExerciseDetail | Retained approved information hierarchy and media frame. |
+| 16 | Picker exercise-removal confirmation | Partially modern | ExerciseDex; .workout-confirm | Adopted shared hardware dialog casing and tactile actions through CSS. |
+| 17 | Exercise media loading and unavailable states | Modern | ExerciseMedia | Retained rendering and media resolution without changes. |
+| 18 | Workout Training Hub | Modern | WorkoutPage | Retained accepted Mission Stack and dynamic state actions. |
+| 19 | Workout quick-launch sheet | Modern | WorkoutPage | Retained tactile options and active-session guards. |
+| 20 | Routine chooser sheet | Modern | WorkoutPage | Retained saved-routine summaries and launch behavior. |
+| 21 | Active-workout replacement confirmation | Modern | WorkoutPage | Retained accepted destructive casing and actions. |
+| 22 | Build Today preparation | Modern | PreparedWorkout | Retained approved shell and temporary selection behavior. |
+| 23 | Start-workout selection | Partially modern | StartWorkoutSelection; FlowHeading | Added CommandPageFrame, production hardware back key, and discrete tactile routine choices. |
+| 24 | Create Routine | Modern | CreateRoutine | Retained accepted module, fields, and action hierarchy. |
+| 25 | Routine editor, rename, and inline deletion | Partially modern | RoutineEditor | Added command frame/back key; raised rename targets to 44px; retained transactional edits. |
+| 26 | Weekly-plan summary list | Partially modern | WeeklyPlanPanel | Replaced flat list with discrete assignment-aware command rows. |
+| 27 | Weekly Plan editor | Legacy | WeeklyPlanEditor | Added command shell, hardware navigation, assignment states, and inset notice. |
+| 28 | Weekly-plan first-use guidance | Modern | WeeklyPlanEditor; ContextRail | Retained acknowledgement and scheduling explanation. |
+| 29 | Weekday assignment and saved-routine chooser | Partially modern | WeeklyPlanEditor | Added tactile options, current checkmark, and aria-pressed state. |
+| 30 | Post-workout plan feedback variants | Legacy | WeeklyPlanFeedbackDialog | Shared rounded dialog, separate explanation modules, and stacked actions; all five branches retained. |
+| 31 | Active Workout and timer controls | Modern | ActiveWorkoutView | Retained accepted exercise/set console and timer state handling. |
+| 32 | Active-workout exercise reorder | Modern | WorkoutExerciseReorder | Retained existing drag, keyboard, and touch interaction. |
+| 33 | Finish-workout confirmation | Legacy | ActiveWorkoutView | Added three telemetry readouts and immediate duplicate-submit guard. |
+| 34 | Discard-workout confirmation | Partially modern | ActiveWorkoutView; .workout-confirm | Shared casing and tactile secondary/destructive commands. |
+| 35 | Active set-removal confirmation | Partially modern | ActiveWorkoutView; .workout-confirm | Shared casing; preserved confirmation and removal handler. |
+| 36 | Active exercise-removal confirmation | Partially modern | ActiveWorkoutView; .workout-confirm | Shared casing; preserved confirmation and removal handler. |
+| 37 | Incomplete-workout validation | Partially modern | FinishValidationDialog | Shared casing with readable inset issue rows and return command. |
+| 38 | Completed-workout deletion confirmation | Partially modern | WorkoutDeleteDialog | Shared casing; retained irreversible warning, busy guard, and error state. |
+| 39 | Completed-workout history detail | Legacy | CompletedWorkoutDetail | Added command shell/back key, inset summary modules, rounded set ledger, and distinguished delete action. |
+| 40 | Journal summary, workout, and meal ledger | Modern | JournalPage | Retained existing rounded Field Notes composition and date navigation. |
+| 41 | Journal note display and editor | Modern | JournalNoteSection | Retained existing fields and save/clear states. |
+| 42 | Progress overview, periods, charts, and no-data states | Modern | ProgressPage | Retained accepted character sheet, calculations, and accessible chart data. |
+| 43 | Personal Records archive and drawers | Modern | PersonalRecordsView; PrPreview | Retained chapter/search hierarchy and record values. |
+| 44 | Personal Records filter/sort sheet | Partially modern | PersonalRecordsView; .proto-filter-sheet | Bounded scroll, safe-area overlay, 44px actions/options, semantic overlay, and explicit transitions. |
+| 45 | Rank journey and level detail | Partially modern | RankDetailView | Retained accepted modules; raised back key to 44px and added bevel. |
+| 46 | Consistency Deck and protection state | Modern | StreakDetailView | Retained accepted freeze/pause cards and streak data. |
+| 47 | Travel/Sickness Pause dialog | Partially modern | PauseDialog | Shared casing, tactile reason/date fields, narrow date stacking, and framed close key. |
+| 48 | Achievements archive and filters | Partially modern | AchievementsView | Retained accepted artwork/archive; raised back key to 44px and added bevel. |
+| 49 | Achievement, level, rank, and freeze reward notification | Legacy | GamificationNotificationDialog; AchievementNotification; AchievementUnlockList | Shared casing, inset reward rows, distinct XP totals, and full-width Continue; reward order and values retained. |
+| 50 | Settings hub and navigation rows | Modern | SettingsPage; SettingsRow | Retained accepted collapsible command modules and profile summary. |
+| 51 | Appearance/faction and brightness controls | Modern | SettingsPage | Retained theme selection and semantic previews. |
+| 52 | Display Name & Avatar settings | Modern | DisplayNameForm; AvatarSelector | Retained accepted profile modules, validation, and persistence. |
+| 53 | Units settings | Modern | SettingsPage | Retained direct metric/imperial control and canonical-unit explanation. |
+| 54 | Audio settings and Battle Music deck | Modern | AudioSettings; BattleMusicDeck | Retained tactile track controls, native sounds, and equalizer behavior. |
+| 55 | Notifications categories and permission states | Modern | NotificationSettings | Retained accepted handheld modules, toggles, disclosures, and time controls. |
+| 56 | Notification permission dialog | Modern | NotificationSettings | Retained current rounded dialog and explicit permission intent. |
+| 57 | Reminder time dialog | Modern | ReminderTimePicker | Retained current rounded time fields and AM/PM selection. |
+| 58 | Nutrition Control Bay and target entry | Modern | NutritionTargetsSettings; NumericTargetControl | Retained approved compact hardware banks and calculations. |
+| 59 | Backup & Restore settings panel | Modern | BackupSettings | Retained accepted grouped module and platform-specific export behavior. |
+| 60 | Backup preview, replacement confirmation, progress, and result | Modern | BackupDialog | Retained rounded sheet, focus handling, replace semantics, warnings, and summary. |
+| 61 | Native Exercise Media settings and status | Partially modern | ExerciseMediaSettings; shared panel/buttons | Adopted modern Settings shell, inset count/storage readouts, and tactile management actions; storage logic unchanged. |
+| 62 | Native download manager and remove-all confirmation | Partially modern | MediaDialog; .exercise-media-dialog | Shared casing, 44px close key, wrapped inset download rows, and existing actions. |
+| 63 | About, local baseline, and update-check status | Modern | AboutSettings | Retained accepted settings module and release-state wording. |
+| 64 | Faction-change/relaunch confirmation | Partially modern | FactionChangeDialog | Bounded scroll and rounded casing for non-notification entry point. |
+| 65 | Update-available banner | Partially modern | UpdateBanner; updater.css | Rounded existing banner, wrapped actions, and explicit reduced-motion behavior. |
+| 66 | Update details, transfer, verification, and errors | Partially modern | UpdateDetailsModal; updater.css | Rounded shell/readouts, semantic success/error colors, and safe-area height; updater logic unchanged. |
+| 67 | Release Notes modal and release cards | Partially modern | ReleaseNotesModal; updater.css | Retained accepted layout; replaced fixed black shadow and dark-only inline-code background. |
+| 68 | Shared panels, commands, navigation, and disabled states | Partially modern | Panel; app.css | Updated root fallback casing and button bevels; retained specialized production styling and literal actions. |
+| 69 | Shared loading, empty, inline error, and success messages | Partially modern | RetroLoader; Panel; .form-error; .workout-empty | Retained loader and status semantics; rounded fallback empty/error modules. |
+| 70 | Cold-start boot and warm-resume handoff | Modern | AppBootSequence; BootWarriorSprite; boot.css | Retained identity-specific artwork and reduced-motion behavior. |
+| 71 | Food/Nutrition hub and breakdown | Modern | FoodPage; DailyTargetsCard; NutritionBreakdownCard | Retained accepted rounded hub and nutritional telemetry. |
+| 72 | Meal detail, selector, and empty state | Modern | MealDetail | Retained accepted modules, navigation, artwork, and add action. |
+| 73 | Add Food search, suggestions, and quick logging | Modern | FoodEditor; SuggestionGroup | Retained approved housed search and remembered-food rows. |
+| 74 | Food entry creation/edit and optional nutrition fields | Modern | FoodEditor; NutritionInput | Retained accepted fields, validation, and saved snapshots. |
+| 75 | Daily-target detail popup | Modern | DailyTargetsCard | Retained accepted readouts and target-state explanations. |
+| 76 | Food category picker, creation, and deletion | Modern | CategoryDialog | Retained accepted rounded sheet, color selection, and deletion warning. |
+| 77 | Food-entry deletion confirmation | Modern | MealDetail | Retained accepted rounded destructive dialog and error recovery. |
+
+**Shared implementation contracts.** `CommandPageFrame` owns the recurring terminal enclosure for Weekly Plan, routine editing, workout selection, and completed history, as it already does for the accepted main pages. Existing `Panel`, primary/secondary/destructive commands, and the `retro-workout-back` key supply fallback geometry without a new component system. Completion, safety, schedule, pause, reward, and native-media overlays share one CSS casing rule; status accents and feature-owned actions stay separate. Weekday selection is exposed through `aria-pressed`, a visible check, and a persistent assignment label. Finish confirmation uses labeled exercise/set/duration readouts. Its immediate ref guard and disabled actions prevent repeated submission while the existing completion promise runs; validation, timer restoration, and repository behavior remain authoritative.
+
+**Themes and responsiveness.** All changed surface colors, overlays, shadows, and states derive from existing semantic tokens in `src/index.css`. Spartan Light/Dark and Amazonian Light/Dark are checked against those token contracts; no faction palette is added. Rewards retain gold framing, destructive actions use danger ink, and general controls use faction accents. Overlays use dynamic viewport height and safe-area insets. Long exercise/routine names wrap; grids use `minmax(0, 1fr)`; narrow confirmations, date fields, and rename controls stack. Newly added press transforms are suppressed under reduced motion, and new hover treatments are restricted to fine pointers. No entrance animation is added to frequently used dialogs.
+
+**Intentional exceptions.** Pixel-art brick tiles, chart bars, joined nutrition control banks, ledger dividers, and compact numeric fields remain crisp where geometry conveys information. Standard native date/radio/select inputs retain platform behavior inside styled wrappers; they are not replaced with an app-specific calendar or selection engine. Audio, boot, and existing accepted animation behavior remain feature-owned. There is no separate toast/snackbar implementation in this application: success and failure feedback use the existing inline status/alert modules and update banner. These are deliberate production patterns, not unfinished legacy screens.
+
+**Verification boundary.** This pass uses source inspection, TypeScript/build checks, focused UI contracts, and repository/model tests. Browser automation is intentionally not run. Physical-device visual QA (including software-keyboard and Safari rendering) remains a release check; this inventory does not claim a screenshot comparison or live-device test.
+
+
+**Validation results.** Required `npx tsc --noEmit`, `test:workout-ui`, `test:responsive-ui`, `npm run build`, and `git diff --check` pass. Additional passing suites cover weekly plans/inference, workout sessions/timers/set logging/deletion/routines, gamification/plan streak, backup/backup UI, Food UI, Journal UI, Progress UI, Home UI, Exercise Dex, updater, display name, and exercise media. Three additional source-contract suites also fail with the unchanged HEAD stylesheet: `test:nutrition-targets-ui` expects an obsolete centered `.control-bay-key-cluster` declaration; `test:guides` expects `justify-items: center` on `.context-guide-actions`; `test:notifications` expects the retired `notification-master-card` JSX class. These pre-existing test expectations are documented rather than changing the accepted production layouts to satisfy them. No repository business logic is changed to bypass a test.

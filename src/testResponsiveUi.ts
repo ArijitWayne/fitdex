@@ -157,7 +157,7 @@ assert.match(css, /\.guide-backdrop \{[^}]*safe-area-inset-top[^}]*safe-area-ins
 assert.match(css, /\.guide-dialog \{[^}]*100dvh[^}]*overflow: hidden/s)
 assert.match(css, /\.guide-content \{[^}]*min-height: 0[^}]*overflow-y: auto/s)
 assert.match(css, /@media \(max-height: 480px\) and \(orientation: landscape\)/)
-assert.match(css, /\.weekly-plan-list button \{[^}]*min-width: 0[^}]*grid-template-columns: 46px minmax\(0, 1fr\) auto/s)
+assert.match(css, /\.weekly-plan-list button \{[^}]*min-width: 0[^}]*grid-template-columns: 44px minmax\(0, 1fr\) auto/s)
 assert.match(css, /@media\s*\(max-width:\s*599px\)[\s\S]*\.home-week-grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,/s)
 assert.match(weeklyPlan, /WEEKDAY_IDS\.map/)
 assert.match(weeklyPlan, /No routines yet/)
@@ -200,4 +200,17 @@ assert.match(updaterCss, /\.update-checksum-code\s*\{[^}]*overflow-wrap:\s*anywh
 assert.match(updaterCss, /\.update-release-paragraph\s*\{[^}]*overflow-wrap:\s*anywhere[^}]*word-break:\s*break-word/s)
 assert.match(updaterCss, /\.inline-code\s*\{[^}]*overflow-wrap:\s*anywhere[^}]*word-break:\s*break-all/s)
 
+
+// Rare and conditional surfaces must retain reachable controls on narrow/short viewports.
+assert.match(css, /\.profile-name-prompt \{[^}]*max-height: calc\(100dvh[^}]*overflow-y: auto;/s)
+assert.match(css, /\.proto-filter-sheet \{[^}]*max-height: calc\(100dvh[^}]*overflow-y: auto;/s)
+assert.match(css, /\.proto-modal-backdrop \{[^}]*var\(--color-overlay\)[^}]*safe-area-inset-bottom/s)
+assert.match(css, /\.proto-sheet-close \{[^}]*min-height: 44px;[^}]*min-width: 44px;/s)
+assert.match(css, /\.proto-sheet-opt-btn \{[^}]*min-height: 44px;/s)
+assert.match(css, /@media \(max-width: 374px\) \{\s*\.workout-confirm \{\s*grid-template-columns: minmax\(0, 1fr\);/s)
+assert.match(css, /@media \(max-width: 374px\) \{\s*\.pause-dates-grid,\s*\.routine-rename-inline \{\s*grid-template-columns: minmax\(0, 1fr\);/s)
+assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{[^}]*weekly-plan-list[^}]*transform: none;/s)
+assert.doesNotMatch(updaterCss, /#[a-f0-9]{3,8}\b|rgba?\(/i, 'Updater presentation must use production theme tokens in every state')
+assert.match(updaterCss, /\.update-error-banner \{[^}]*var\(--color-danger\)/s)
+assert.match(updaterCss, /\.update-details-dialog \{[^}]*safe-area-inset-bottom[^}]*border-radius: 16px;/s)
 console.log('Responsive UI assertions passed: fluid root, landscape-capable PWA, safe areas, dynamic-height dialogs, compact workout rows, wrapping, touch targets, media, charts, search focus, avatars, updater modal wrapping, and precache safety')
