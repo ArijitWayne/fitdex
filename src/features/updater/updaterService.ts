@@ -1,3 +1,4 @@
+import { requestReleaseData } from './releaseRequest.ts';
 import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion.ts';
 import { isNewerRelease } from './semver.ts';
 import {
@@ -20,7 +21,6 @@ import {
   type UpdateDownloadProgress,
 } from './nativeAppInstaller.ts';
 
-const GITHUB_RELEASES_API = 'https://api.github.com/repos/ArijitWayne/fitdex/releases';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 let cachedResult: UpdateCheckResult | null = null;
@@ -47,41 +47,16 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
       error: 'Device is offline. Connect to check for updates.',
       checkedAt: new Date().toISOString(),
     };
-    if (!cachedResult) cachedResult = offlineResult;
     return offlineResult;
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
-
   try {
-    const response = await fetch(GITHUB_RELEASES_API, {
-      headers: { Accept: 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' },
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response.status === 404) {
-      const noReleaseResult: UpdateCheckResult = {
-        status: 'no-release',
-        currentVersion: APP_VERSION,
-        currentBuild: APP_BUILD_NUMBER,
-        checkedAt: new Date().toISOString(),
-      };
-      cachedResult = noReleaseResult;
-      lastCheckTime = now;
-      return noReleaseResult;
-    }
-
-    if (!response.ok) {
-      throw new Error(`GitHub API returned status ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await requestReleaseData();
     const releases = normalizeGitHubReleases(data);
 
+    if (releases.length === 0 && data.some(item => { const release = item as Record<string, unknown>; return !release.draft && !release.prerelease && release.published_at })) {
+      throw new Error('Malformed release metadata: no valid published release could be read.');
+    }
     if (releases.length === 0) {
       const noReleaseResult: UpdateCheckResult = {
         status: 'no-release',
@@ -95,6 +70,9 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
     }
 
     const latest = releases[0];
+    if (!latest.apkDownloadUrl || !isValidReleaseDownloadUrl(latest.apkDownloadUrl) || !latest.sha256 || !/^[a-f0-9]{64}$/i.test(latest.sha256) || !Number.isInteger(latest.versionCode)) {
+      throw new Error('Malformed release metadata: latest release needs an official APK, SHA-256 and versionCode in its release notes.');
+    }
     const hasUpdate = isNewerRelease(
       { version: latest.version, versionCode: latest.versionCode },
       { version: APP_VERSION, versionCode: APP_BUILD_NUMBER },
@@ -116,8 +94,6 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
     }
     return result;
   } catch (err: unknown) {
-    clearTimeout(timeoutId);
-
     const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
     const errorMessage =
       err instanceof Error
@@ -134,12 +110,7 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
       checkedAt: new Date().toISOString(),
     };
 
-    // If we have a previously cached good result, don't overwrite with transient network error
-    if (!cachedResult) {
-      cachedResult = errorResult;
-      lastCheckTime = now;
-    }
-
+    // Errors are never cached as successful discovery; the next check can retry.
     return errorResult;
   }
 }
@@ -148,24 +119,9 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
  * Fetches all published stable releases for release notes display.
  */
 export async function fetchReleaseHistory(): Promise<AppRelease[]> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
-
-    const response = await fetch(GITHUB_RELEASES_API, {
-      headers: { Accept: 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' },
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) return [];
-    const data = await response.json();
-    return normalizeGitHubReleases(data);
-  } catch {
-    return [];
-  }
+  // Preserve the history modal's existing empty-history fallback on failure.
+  // The update checker reports the categorized discovery error to the user.
+  try { return normalizeGitHubReleases(await requestReleaseData()); } catch { return []; }
 }
 
 

@@ -295,12 +295,12 @@ assert.equal(normNoApk.apkDownloadUrl, undefined, 'Missing APK asset must leave 
 // 12. Missing checksum behavior
 assert.equal(normNoApk.sha256, undefined, 'Missing checksum must not be fabricated')
 
-// 13. Published v2.1.0 release state in production files
+// 13. Published v2.2.0 release state in production files
 assert.doesNotMatch(mainSource, /PUBLICATION PENDING/, 'Landing page must no longer contain PUBLICATION PENDING')
 assert.doesNotMatch(mainSource, /const upcomingRelease/, 'Landing page must not use upcomingRelease variable')
-assert.match(mainSource, /version:\s*'2\.1\.0'/, 'Landing page must declare FitDex 2.1.0 in fallback release')
-assert.match(mainSource, /versionCode:\s*9/, 'Landing page must declare versionCode 9 in fallback release')
-assert.match(mainSource, /a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3/, 'Landing page must contain v2.1.0 SHA-256 hash')
+assert.match(mainSource, /version:\s*'2\.2\.0'/, 'Landing page must declare FitDex 2.2.0 in fallback release')
+assert.match(mainSource, /versionCode:\s*10/, 'Landing page must declare versionCode 10 in fallback release')
+assert.match(mainSource, /aa1c29e840e4d74b67ea2cab91bc0e03447ff12e2bdf58da710d4bad4fb0f1f7/, 'Landing page must contain v2.2.0 SHA-256 hash')
 assert.match(mainSource, /FitDex 1\.x may use outdated exercise data, tracking rules, and media links\./, 'Landing page must explain legacy support status')
 assert.match(mainSource, /FITDEX 2\.0\+/, 'Landing page must state FITDEX 2.0+ support status')
 assert.match(mainSource, /SUPPORTED/, 'Landing page must state SUPPORTED')

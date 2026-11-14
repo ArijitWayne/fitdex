@@ -25,15 +25,15 @@ export type ReleaseMetadata = {
 
 // Published-release fallback. Live GitHub metadata remains the source of truth.
 export const release: ReleaseMetadata = {
-  version: '2.1.0',
-  versionCode: 9,
-  tag: 'v2.1.0',
-  apk: 'fitdex.2.1.0.apk',
-  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.1.0/fitdex.2.1.0.apk',
-  checksum: 'fitdex.2.1.0.apk.sha256',
-  sha256: 'a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3',
+  version: '2.2.0',
+  versionCode: 10,
+  tag: 'v2.2.0',
+  apk: 'fitdex.2.2.0.apk',
+  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.2.0/fitdex.2.2.0.apk',
+  checksum: 'fitdex.2.2.0.apk.sha256',
+  sha256: 'aa1c29e840e4d74b67ea2cab91bc0e03447ff12e2bdf58da710d4bad4fb0f1f7',
   releaseNotes: 'RELEASE_NOTES.md',
-  publishedAt: '2026-10-03T17:37:19Z',
+  publishedAt: '2026-11-14T07:34:57Z',
 }
 
 type ShotProps = { src: string; alt: string; label: string; className?: string }
@@ -359,7 +359,7 @@ function App() {
               {releaseState.status === 'error' && (
                 <div className="shell">
                   <div className="tactical-status-ticker" style={{ borderColor: 'var(--danger)', color: '#ff9999' }}>
-                    <span>RELEASE DATA FEED UNAVAILABLE // OPERATING IN LOCAL PRE-RELEASE MODE</span>
+                    <span>{releaseState.error || 'RELEASE DATA FEED UNAVAILABLE'} // SHOWING LAST KNOWN RELEASE</span>
                     <button
                       className="button small"
                       type="button"

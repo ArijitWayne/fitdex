@@ -1,7 +1,7 @@
 {
   "name": "fitdex",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.2.1",
   "type": "module",
   "license": "SEE LICENSE IN LICENSING.md",
   "scripts": {
@@ -80,7 +80,8 @@
     "test:create-id": "node --experimental-strip-types src/utils/testCreateId.ts",
     "test:local-date": "node --experimental-strip-types src/utils/testLocalDate.ts",
     "validate:exercises": "node --experimental-strip-types src/features/exerciseDex/validateExercises.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:release-discovery": "node scripts/testReleaseDiscovery.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",

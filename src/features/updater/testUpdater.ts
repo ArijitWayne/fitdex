@@ -480,7 +480,7 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
   assert.match(installer, /Filesystem\.rename/);
   assert.match(installer, /UPDATER_FILE_PATTERN/);
   assert.match(installer, /Filesystem\.readdir/);
-  assert.match(service, /cache:\s*'no-store'/);
+  assert.match(fs.readFileSync('src/features/updater/releaseRequest.ts', 'utf8'), /cache:\s*'no-store'/);
   assert.match(service, /Official release integrity metadata is incomplete/);
   assert.match(service, /verifyRes\.sizeBytes !== expectedApkSize/);
   assert.match(service, /canInstallPackages/);
