@@ -1,3 +1,4 @@
+import { getReleaseStatus, isInstallableRelease } from '../../../shared/releasePolicy.ts';
 import { requestReleaseData } from './releaseRequest.ts';
 import { APP_VERSION, APP_BUILD_NUMBER } from '../../appVersion.ts';
 import { isNewerRelease } from './semver.ts';
@@ -54,7 +55,7 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
     const data = await requestReleaseData();
     const releases = normalizeGitHubReleases(data);
 
-    if (releases.length === 0 && data.some(item => { const release = item as Record<string, unknown>; return !release.draft && !release.prerelease && release.published_at })) {
+    if (releases.length === 0 && data.some(item => { const release = item as Record<string, unknown>; return getReleaseStatus(release.body as string) === 'successful' && !release.draft && !release.prerelease && release.published_at })) {
       throw new Error('Malformed release metadata: no valid published release could be read.');
     }
     if (releases.length === 0) {
@@ -69,9 +70,9 @@ export async function checkForUpdates(forceRefresh = false): Promise<UpdateCheck
       return noReleaseResult;
     }
 
-    const latest = releases[0];
-    if (!latest.apkDownloadUrl || !isValidReleaseDownloadUrl(latest.apkDownloadUrl) || !latest.sha256 || !/^[a-f0-9]{64}$/i.test(latest.sha256) || !Number.isInteger(latest.versionCode)) {
-      throw new Error('Malformed release metadata: latest release needs an official APK, SHA-256 and versionCode in its release notes.');
+    const latest = releases.find(isInstallableRelease);
+    if (!latest) {
+      throw new Error('Malformed release metadata: no approved release has a valid official APK, SHA-256 and versionCode.');
     }
     const hasUpdate = isNewerRelease(
       { version: latest.version, versionCode: latest.versionCode },

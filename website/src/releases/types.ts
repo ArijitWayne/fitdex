@@ -13,6 +13,7 @@ export type ReleaseHighlight = {
 }
 
 export type FitDexRelease = {
+  releaseStatus?: 'successful'
   version: string
   versionCode?: number
   tag: string

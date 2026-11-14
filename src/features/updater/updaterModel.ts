@@ -1,3 +1,4 @@
+import { getReleaseStatus } from '../../../shared/releasePolicy.ts'
 /**
  * FitDex In-App Updater Release Types and Normalization.
  * Compatible with Phase 6 published-release contract.
@@ -22,6 +23,7 @@ export interface GitHubRelease {
 }
 
 export interface AppRelease {
+  releaseStatus?: 'successful';
   version: string;
   versionCode?: number;
   tag: string;
@@ -118,6 +120,7 @@ export function normalizeGitHubReleases(rawReleases: unknown): AppRelease[] {
   for (const raw of list) {
     if (!raw || typeof raw !== 'object') continue;
     const item = raw as Partial<GitHubRelease>;
+    if (getReleaseStatus(item.body) !== 'successful') continue
 
     // 1. Filter out draft releases
     if (item.draft === true) continue;
@@ -137,6 +140,7 @@ export function normalizeGitHubReleases(rawReleases: unknown): AppRelease[] {
     const versionCode = extractVersionCodeFromBody(item.body);
 
     normalized.push({
+      releaseStatus: 'successful',
       version,
       versionCode,
       tag,

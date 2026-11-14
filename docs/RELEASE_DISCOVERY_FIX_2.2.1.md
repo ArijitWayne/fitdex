@@ -1,3 +1,5 @@
+> Historical investigation. Its earlier APK hash and publication steps are superseded by [final publication readiness](RELEASE_PUBLICATION_2.2.1.md). Use the final notes and APK checksum.
+
 # FitDex release discovery investigation and fix
 
 ## Result and limits

@@ -12,6 +12,7 @@ const github = 'https://github.com/ArijitWayne/fitdex'
 const pwa = 'https://fitdex.fitdexapp.workers.dev/'
 
 export type ReleaseMetadata = {
+  releaseStatus: 'successful'
   version: string
   versionCode: number
   tag: string
@@ -25,15 +26,16 @@ export type ReleaseMetadata = {
 
 // Published-release fallback. Live GitHub metadata remains the source of truth.
 export const release: ReleaseMetadata = {
-  version: '2.2.0',
-  versionCode: 10,
-  tag: 'v2.2.0',
-  apk: 'fitdex.2.2.0.apk',
-  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.2.0/fitdex.2.2.0.apk',
-  checksum: 'fitdex.2.2.0.apk.sha256',
-  sha256: 'aa1c29e840e4d74b67ea2cab91bc0e03447ff12e2bdf58da710d4bad4fb0f1f7',
+  releaseStatus: 'successful',
+  version: '2.1.0',
+  versionCode: 9,
+  tag: 'v2.1.0',
+  apk: 'fitdex.2.1.0.apk',
+  apkDownloadUrl: 'https://github.com/ArijitWayne/fitdex/releases/download/v2.1.0/fitdex.2.1.0.apk',
+  checksum: 'fitdex.2.1.0.apk.sha256',
+  sha256: 'a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3',
   releaseNotes: 'RELEASE_NOTES.md',
-  publishedAt: '2026-11-14T07:34:57Z',
+  publishedAt: '2026-10-03T17:37:19Z',
 }
 
 type ShotProps = { src: string; alt: string; label: string; className?: string }
@@ -359,7 +361,7 @@ function App() {
               {releaseState.status === 'error' && (
                 <div className="shell">
                   <div className="tactical-status-ticker" style={{ borderColor: 'var(--danger)', color: '#ff9999' }}>
-                    <span>{releaseState.error || 'RELEASE DATA FEED UNAVAILABLE'} // SHOWING LAST KNOWN RELEASE</span>
+                    <span>{releaseState.error || 'RELEASE DATA FEED UNAVAILABLE'} // SHOWING LAST APPROVED RELEASE</span>
                     <button
                       className="button small"
                       type="button"
@@ -375,7 +377,7 @@ function App() {
               {latest ? (
                 <div className="shell release-grid">
                   <div>
-                    <p className="eyebrow">RELEASE // LATEST</p>
+                    <p className="eyebrow">RELEASE // LAST APPROVED FALLBACK</p>
                     <h2>v{latest.version}</h2>
                     <p className="release-status">LATEST STABLE BUILD</p>
                     <p className="muted">Published {formatDate(latest.publishedAt)} · tag {latest.tag}</p>
@@ -442,9 +444,9 @@ function App() {
               ) : (
                 <div className="shell release-grid">
                   <div>
-                    <p className="eyebrow">RELEASE // LATEST</p>
+                    <p className="eyebrow">RELEASE // LAST APPROVED FALLBACK</p>
                     <h2>FITDEX v{release.version}</h2>
-                    <p className="release-status">LATEST STABLE BUILD</p>
+                    <p className="release-status">LAST APPROVED RELEASE</p>
                     <p className="muted">
                       Published {formatDate(release.publishedAt)} · tag {release.tag}
                     </p>

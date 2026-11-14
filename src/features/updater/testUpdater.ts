@@ -5,12 +5,15 @@ import {
   extractVersion,
   extractVersionCodeFromBody,
   findApkAsset,
-  normalizeGitHubReleases,
+  normalizeGitHubReleases as normalizeApprovedReleases,
   isValidReleaseDownloadUrl,
   type GitHubRelease,
 } from './updaterModel.ts';
 
 console.log('--- RUNNING PHASE 7 IN-APP UPDATER & BOOT TESTS ---');
+
+// Historical fixtures below represent successful releases; policy rejection has dedicated raw-parser tests.
+const normalizeGitHubReleases = (raw: unknown) => normalizeApprovedReleases(Array.isArray(raw) ? raw.map(item => item && typeof item === 'object' ? { ...item, body: `FitDex-Release-Status: successful\n${item.body ?? ''}` } : item) : raw)
 
 // 1. Semantic Version Parsing
 {

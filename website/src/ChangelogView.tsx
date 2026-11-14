@@ -113,7 +113,7 @@ export function ChangelogView({ releaseState, onNavigate }: ChangelogViewProps) 
                 <span className="stat-lbl">PUBLISHED</span>
               </div>
               <div className="stat-cell">
-                <span className="stat-num">{releases[0]?.version ? `v${releases[0].version}` : '—'}</span>
+                <span className="stat-num">{releaseState.latest?.version ? `v${releaseState.latest.version}` : '—'}</span>
                 <span className="stat-lbl">CURRENT</span>
               </div>
               <div className="stat-cell">
@@ -204,8 +204,8 @@ export function ChangelogView({ releaseState, onNavigate }: ChangelogViewProps) 
 
         {status === 'success' && releases.length > 0 && (
           <div className="archive-stream" aria-label="Chronological releases stream">
-            {releases.map((rel, index) => {
-              const isLatest = index === 0
+            {releases.map((rel) => {
+              const isLatest = rel.tag === releaseState.latest?.tag
               const highlights = (rel.releaseNotes.highlights ?? []).filter((highlight) => highlight.category !== 'other')
               const highlightGroups = ['new', 'improved', 'android', 'fixed'] as const
               const highlightGroupLabels = {

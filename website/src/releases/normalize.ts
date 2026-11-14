@@ -1,3 +1,4 @@
+import { getReleaseStatus } from '../../../shared/releasePolicy'
 import { parseReleaseNotes } from './releaseNotes'
 import { releaseMetadataByTag } from './metadata'
 import type { FitDexRelease } from './types'
@@ -69,6 +70,7 @@ export function normalizeGitHubReleases(rawReleases: unknown): FitDexRelease[] {
   for (const raw of rawReleases) {
     if (!raw || typeof raw !== 'object') continue
     const item = raw as Partial<GitHubRelease>
+    if (getReleaseStatus(item.body) !== 'successful') continue
 
     // 1. Filter out draft releases
     if (item.draft === true) continue
@@ -89,6 +91,7 @@ export function normalizeGitHubReleases(rawReleases: unknown): FitDexRelease[] {
     const versionCode = extractVersionCodeFromBody(item.body) ?? releaseMetadataByTag[tag]?.versionCode
 
     const release: FitDexRelease = {
+      releaseStatus: 'successful',
       version,
       versionCode,
       tag,

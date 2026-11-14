@@ -10,7 +10,7 @@ const viteServer = await createServer({
 })
 
 const {
-  normalizeGitHubReleases,
+  normalizeGitHubReleases: normalizeApprovedReleases,
   findApkAsset,
   extractSha256FromBody,
 } = await viteServer.ssrLoadModule('/src/releases/normalize.ts')
@@ -25,6 +25,9 @@ const changelogSource = await readFile(new URL('../src/ChangelogView.tsx', impor
 const cssSource = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
 
 console.log('Running FitDex Phase 6 Release Hub verification suite...')
+
+// Historical fixtures below represent successful releases; policy rejection has dedicated raw-parser tests.
+const normalizeGitHubReleases = (raw) => normalizeApprovedReleases(Array.isArray(raw) ? raw.map(item => item && typeof item === 'object' ? { ...item, body: `FitDex-Release-Status: successful\n${item.body ?? ''}` } : item) : raw)
 
 // 1. Empty release list handling
 const emptyResult = normalizeGitHubReleases([])
@@ -295,12 +298,12 @@ assert.equal(normNoApk.apkDownloadUrl, undefined, 'Missing APK asset must leave 
 // 12. Missing checksum behavior
 assert.equal(normNoApk.sha256, undefined, 'Missing checksum must not be fabricated')
 
-// 13. Published v2.2.0 release state in production files
+// 13. Published v2.1.0 release state in production files
 assert.doesNotMatch(mainSource, /PUBLICATION PENDING/, 'Landing page must no longer contain PUBLICATION PENDING')
 assert.doesNotMatch(mainSource, /const upcomingRelease/, 'Landing page must not use upcomingRelease variable')
-assert.match(mainSource, /version:\s*'2\.2\.0'/, 'Landing page must declare FitDex 2.2.0 in fallback release')
-assert.match(mainSource, /versionCode:\s*10/, 'Landing page must declare versionCode 10 in fallback release')
-assert.match(mainSource, /aa1c29e840e4d74b67ea2cab91bc0e03447ff12e2bdf58da710d4bad4fb0f1f7/, 'Landing page must contain v2.2.0 SHA-256 hash')
+assert.match(mainSource, /version:\s*'2\.1\.0'/, 'Landing page must declare FitDex 2.1.0 in fallback release')
+assert.match(mainSource, /versionCode:\s*9/, 'Landing page must declare versionCode 9 in fallback release')
+assert.match(mainSource, /a7f5feeb17063bc806fb6ae1ec75167df6ed193698efb5d9595d4e04778770e3/, 'Landing page must contain v2.1.0 SHA-256 hash')
 assert.match(mainSource, /FitDex 1\.x may use outdated exercise data, tracking rules, and media links\./, 'Landing page must explain legacy support status')
 assert.match(mainSource, /FITDEX 2\.0\+/, 'Landing page must state FITDEX 2.0+ support status')
 assert.match(mainSource, /SUPPORTED/, 'Landing page must state SUPPORTED')
@@ -407,3 +410,5 @@ console.log('✓ All 19 FitDex Phase 6 release system, hero parity, gallery clea
   assert.equal(normalizeGitHubReleases([{ ...candidate, published_at: null }]).length, 0)
   assert.equal(normalizeGitHubReleases([{ ...candidate, body: '' }])[0].versionCode, 10)
 }
+
+assert.match(changelogSource, /const isLatest = rel\.tag === releaseState\.latest\?\.tag/, 'Archive promotion must use the approved installable selection, not array position')
