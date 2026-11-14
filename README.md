@@ -216,6 +216,8 @@ FitDex can also be run in any modern web browser or installed as a standalone Pr
 1. Navigate to [https://fitdex.fitdexapp.workers.dev/](https://fitdex.fitdexapp.workers.dev/).
 2. In Chrome or your browser menu, select **Install FitDex** or **Add to Home Screen**.
 
+Exercise demonstrations stream on demand from the separate FitDex media host. Production builds should set `VITE_EXERCISE_MEDIA_BASE_URL=https://fitdex-media.fitdexapp.workers.dev/exercises/` at build time; this is also the built-in default. Valid local `/exercises/*.mp4` paths remain a fallback when no valid remote URL resolves and local files are present. PWA precaching excludes MP4s; selective offline video downloads are Android-only. See [production media requirements](PROJECT_NOTES.md#37-remote-exercise-media--selective-offline-downloads-v1) for Range and CORS requirements.
+
 ---
 
 ## Updating

@@ -1,9 +1,9 @@
 import { Capacitor } from '@capacitor/core'
 import { Directory, Filesystem } from '@capacitor/filesystem'
 import { FileTransfer } from '@capacitor/file-transfer'
-import { deviceStorage } from '../../platform/deviceStorage'
+import { deviceStorage } from '../../platform/deviceStorage.ts'
 import { EXERCISE_MEDIA_DIRECTORY, EXERCISE_MEDIA_METADATA_KEY } from './exerciseMediaConfig.ts'
-import { canonicalExerciseVideoKey, resolveRemoteExerciseMediaUrl } from './exerciseMediaResolver.ts'
+import { canonicalExerciseVideoKey, resolveBrowserExerciseMediaPlayback, resolveRemoteExerciseMediaUrl } from './exerciseMediaResolver.ts'
 
 export interface DownloadedExerciseMedia { exerciseId: string; videoKey: string; localPath: string; downloadedAt: string; sizeBytes: number; mediaVersion?: string }
 export interface MediaPlayback { source?: string; kind: 'local' | 'remote' | 'unavailable' }
@@ -48,7 +48,7 @@ export async function getExerciseMediaPlayback(exerciseId: string, mediaPath?: s
     }
     return { kind: 'unavailable' }
   }
-  return mediaPath ? { source: mediaPath, kind: 'local' } : { kind: 'unavailable' }
+  return resolveBrowserExerciseMediaPlayback(mediaPath)
 }
 
 export async function listDownloadedExerciseMedia() {

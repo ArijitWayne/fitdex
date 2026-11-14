@@ -16,3 +16,11 @@ export function resolveRemoteExerciseMediaUrl(mediaPath?: string, baseUrl = EXER
     return new URL(encodeURIComponent(key), base).toString()
   } catch { return undefined }
 }
+
+export function resolveBrowserExerciseMediaPlayback(mediaPath?: string, baseUrl = EXERCISE_MEDIA_BASE_URL) {
+  const source = resolveRemoteExerciseMediaUrl(mediaPath, baseUrl)
+  if (source) return { source, kind: 'remote' as const }
+  return canonicalExerciseVideoKey(mediaPath)
+    ? { source: mediaPath, kind: 'local' as const }
+    : { kind: 'unavailable' as const }
+}
