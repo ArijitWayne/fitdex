@@ -512,3 +512,24 @@ Smarter Weekly Plans and streak handling pair with a stronger Active Workout exp
 }
 
 console.log('--- ALL PHASE 7 UPDATER TESTS PASSED SUCCESSFULLY ---');
+
+// Prepared v2.2.0 publication contract (synthetic feed; not production release data).
+{
+  const sha = 'a'.repeat(64)
+  const url = 'https://github.com/ArijitWayne/fitdex/releases/download/v2.2.0/fitdex.2.2.0.apk'
+  const candidate = {
+    tag_name: 'v2.2.0', name: 'FitDex v2.2.0', draft: false, prerelease: false,
+    published_at: '2026-11-14T00:00:00Z', html_url: 'https://github.com/ArijitWayne/fitdex/releases/tag/v2.2.0',
+    body: `versionCode: 10\nSHA-256: ${sha}`,
+    assets: [{ name: 'fitdex.2.2.0.apk', size: 64000000, browser_download_url: url }],
+  }
+  const result = normalizeGitHubReleases([candidate])[0]
+  assert.equal(result.version, '2.2.0')
+  assert.equal(result.versionCode, 10)
+  assert.equal(result.sha256, sha)
+  assert.equal(result.apkDownloadUrl, url)
+  assert.equal(normalizeGitHubReleases([{ ...candidate, draft: true }]).length, 0)
+  assert.equal(normalizeGitHubReleases([{ ...candidate, published_at: null }]).length, 0)
+  assert.equal(isNewerRelease(result, { version: '2.1.0', versionCode: 9 }), true)
+  assert.equal(isValidReleaseDownloadUrl(url), true)
+}

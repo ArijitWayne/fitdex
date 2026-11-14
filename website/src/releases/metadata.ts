@@ -4,5 +4,7 @@ export const releaseMetadataByTag: Readonly<Record<string, { versionCode?: numbe
   'v1.1.0': { versionCode: 4 },
   'v1.1.1': { versionCode: 5 },
   'v2.0.0': { versionCode: 6 },
+  'v2.1.0': { versionCode: 9 },
+  'v2.2.0': { versionCode: 10 },
 }
 

@@ -1,3 +1,28 @@
+# FitDex v2.2.0
+
+## What's New
+- Application-wide UI modernization brings cohesive shells, compact panels, clear hierarchy, and consistent controls across FitDex.
+
+## Improvements
+- Weekly Plan presentation and navigation make planned training easier to scan and manage.
+- Workout completion and history views present completed sessions and results more clearly.
+- Achievement presentation improves grouping, readability, and progression feedback.
+- Dialogs and navigation use consistent spacing, controls, and interaction states.
+
+## Fixes
+- Fixed exercise video URL compatibility in web and installed PWA builds while preserving native Android media handling.
+
+## Notes
+- Android package: com.fitdex.app
+- versionCode: 10
+- APK: fitdex.2.2.0.apk
+- APK size: 64102873 bytes
+- SHA-256: aa1c29e840e4d74b67ea2cab91bc0e03447ff12e2bdf58da710d4bad4fb0f1f7
+- Existing signing identity and local-first storage are preserved. No user-data reset or migration is introduced by this release preparation.
+- Physical-device installation and upgrade smoke testing remain required before publication.
+
+---
+
 # FitDex Release Notes
 
 ## v2.1.0

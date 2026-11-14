@@ -5,6 +5,10 @@ import path from 'node:path'
 import { artifactNames, createReleaseMetadata, nextVersion, parseVersionCode, releaseNotesTemplate, verifyArtifactChecksum } from './release-system.mjs'
 import { assertReleaseBranchAndClean, getReleasePlan, parsePrepareArguments } from './prepare-release.mjs'
 
+const currentPackage = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+const currentCode = parseVersionCode(await readFile(new URL('../android/app/build.gradle', import.meta.url), 'utf8'))
+const patchVersion = nextVersion(currentPackage.version, 'patch')
+
 assert.equal(nextVersion('1.0.0', 'patch'), '1.0.1')
 assert.equal(nextVersion('1.0.0', 'minor'), '1.1.0')
 assert.equal(nextVersion('1.0.0', 'major'), '2.0.0')
@@ -16,11 +20,11 @@ assert.throws(() => assertReleaseBranchAndClean({ run: () => ' M package.json' }
 assert.throws(() => assertReleaseBranchAndClean({ run: (_command, args) => args[1] === '--show-current' ? 'main' : '' }))
 assert.deepEqual(
   await getReleasePlan({ type: 'patch', firstRelease: false }),
-  { currentVersion: '2.0.1', currentVersionCode: 7, version: '2.0.2', versionCode: 8, tag: 'v2.0.2', apk: 'fitdex.2.0.2.apk', checksum: 'fitdex.2.0.2.apk.sha256' },
+  { currentVersion: currentPackage.version, currentVersionCode: currentCode, version: patchVersion, versionCode: currentCode + 1, tag: `v${patchVersion}`, ...artifactNames(patchVersion) },
 )
 assert.deepEqual(
   await getReleasePlan({ firstRelease: true }),
-  { currentVersion: '2.0.1', currentVersionCode: 7, version: '2.0.1', versionCode: 8, tag: 'v2.0.1', apk: 'fitdex.2.0.1.apk', checksum: 'fitdex.2.0.1.apk.sha256' },
+  { currentVersion: currentPackage.version, currentVersionCode: currentCode, version: currentPackage.version, versionCode: currentCode + 1, tag: `v${currentPackage.version}`, ...artifactNames(currentPackage.version) },
 )
 assert.equal(parseVersionCode('versionCode 3'), 3)
 assert.deepEqual(artifactNames('1.0.1'), { apk: 'fitdex.1.0.1.apk', checksum: 'fitdex.1.0.1.apk.sha256' })

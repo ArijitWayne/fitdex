@@ -423,7 +423,7 @@ function App() {
                   <div>
                     <dl className="release-data">
                       <div><dt>VERSION</dt><dd>v{latest.version}</dd></div>
-                      <div><dt>VERSION CODE</dt><dd>{latest.versionCode ?? 6}</dd></div>
+                      <div><dt>VERSION CODE</dt><dd>{latest.versionCode ?? '—'}</dd></div>
                       <div><dt>PUBLISHED AT</dt><dd>{formatDate(latest.publishedAt)}</dd></div>
                       <div><dt>WHAT&apos;S NEW</dt><dd>{latest.releaseNotes.new?.length ? `${latest.releaseNotes.new.length} items logged` : 'Reviewed on GitHub'}</dd></div>
                       <div><dt>IMPROVEMENTS</dt><dd>{latest.releaseNotes.improved?.length ? `${latest.releaseNotes.improved.length} items logged` : 'Reviewed on GitHub'}</dd></div>

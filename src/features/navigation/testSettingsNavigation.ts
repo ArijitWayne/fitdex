@@ -432,7 +432,7 @@ const rootLocation: AppLocation = {
   assert.match(appCss, /\.settings-hub \.settings-row\s*\{[^}]*border-radius:\s*8px;/s)
   assert.match(appCss, /\.settings-hub \.settings-row-icon\s*\{[^}]*width:\s*36px;/s)
   assert.match(appCss, /\.settings-hub \.settings-hero \.avatar-portrait\s*\{[^}]*border:\s*0;/s)
-  assert.match(appCss, /:root\[data-theme-family='amazonians'\]\[data-brightness='dark'\] \.settings-hub\s*\{[^}]*--settings-accent:\s*#d68ac4;/s)
+  assert.match(appCss, /\.settings-hub\s*\{[^}]*--settings-accent:\s*var\(--color-theme-accent\);/s)
   assert.match(appCss, /\.back-command-key\s*\{[^}]*min-height:\s*40px;[^}]*border-radius:\s*6px;[^}]*background:\s*var\(--color-surface\);/s)
   assert.match(appCss, /\.back-command-key:active\s*\{[^}]*transform:\s*scale\(\.97\);/s)
 }
